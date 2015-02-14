@@ -1,0 +1,6 @@
+// Main configuration file for the libIGES project
+
+// Version
+#define LIB_VERSION_MAJOR (@LIBIGES_VERSION_MAJOR@)
+#define LIB_VERSION_MINOR (@LIBIGES_VERSION_MINOR@)
+

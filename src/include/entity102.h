@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef ENTITY_102_H
@@ -72,8 +72,30 @@ private:
     // XXX - TO BE IMPLEMENTED
 
 public:
+    // Inherited virtual functions
+    virtual bool AddReference(IGES_ENTITY* aParentEntity);
+    virtual bool DelReference(IGES_ENTITY* aParentEntity);
+    virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile);
+    virtual bool ReadPD(std::ifstream& aFile);
+    virtual bool WriteDE(std::ofstream& aFile);
+    virtual bool WritePD(std::ofstream& aFile);
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetLineFontPattern(IGES_LINEFONT_PATTERN aPattern);
+    virtual bool SetLineFontPattern(IGES_ENTITY* aPattern);
+    virtual bool SetLevel(int aLevel);
+    virtual bool SetLevel(IGES_ENTITY* aLevel);
+    virtual bool SetView(IGES_ENTITY* aView);
+    virtual bool SetTransform(IGES_ENTITY* aTransform);
+    virtual bool SetLabelAssoc(IGES_ENTITY* aLabelAssoc);
+    virtual bool SetColor(IGES_COLOR aColor);
+    virtual bool SetColor(IGES_ENTITY* aColor);
+    virtual bool SetLineWeightNum(int aLineWeight);
+    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
+    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    
     // XXX - TO BE IMPLEMENTED
 
-}
+};
 
 #endif  // ENTITY_102_H

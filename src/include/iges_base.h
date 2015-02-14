@@ -232,25 +232,18 @@ enum IGES_ENTITY_TYPE
 };
 
 
-// Status num is an integer representing 2-digit flags, from MSB to LSB:
-// Blank Status
-// Subordinate entity switch
-// Entity Use
-// Hierarchy
-enum IGES_STATUS_NUM
+enum IGES_STAT_DEPENDS
 {
-    STAT_HIER_ALL_SUB = 0,
-    STAT_HIER_NO_SUB = 1,
-    STAT_HIER_INDEPENDENT = 2,
+    STAT_INDEPENDENT = 0,
+    STAT_DEP_PHY = 1,
+    STAT_DEP_LOG = 2,
+    STAT_DEP_PHYLOG = 3,
+    STAT_DEP_END
+};
 
-    STAT_BLANK_VISIBLE = 0,
-    STAT_BLANK_INVISIBLE = 1,
 
-    STAT_SUBENT_INDEPENDENT = 0,
-    STAT_SUBENT_DEP_PHY = 1,
-    STAT_SUBENT_DEP_LOG = 2,
-    STAT_SUBENT_DEP_PHYLOG = 3,
-
+enum IGES_STAT_USE
+{
     STAT_USE_GEOMETRY = 0,
     STAT_USE_ANNOTATION = 1,
     STAT_USE_DEFINITION = 2,
@@ -258,11 +251,16 @@ enum IGES_STATUS_NUM
     STAT_USE_LOGICAL = 4,
     STAT_USE_2D_PARAMETRIC = 5,
     STAT_USE_CONSTRUCTION_GEOM = 6,
+    STAT_USE_END
+};
 
-    STAT_HIER_COEFF = 1,
-    STAT_USE_COEFF = 100,
-    STAT_SUBENT_COEFF = 10000,
-    STAT_BLANK_COEFF = 1000000
+
+enum IGES_STAT_HIER
+{
+    STAT_HIER_ALL_SUB = 0,
+    STAT_HIER_NO_SUB = 1,
+    STAT_HIER_INDEPENDENT = 2,
+    STAT_HIER_END
 };
 
 #endif  // IGES_BASE_H

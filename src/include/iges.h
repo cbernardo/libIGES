@@ -58,7 +58,7 @@ struct IGES_GLOBAL
     double      minResolution;              // Min. user intended resolution (RN)
     double      maxCoordinateValue;         // Max. used coordinate value (normally set to '0.0' = not determined) (RD: 0.0)
     std::string author;                     // name of author (RD: "")
-    std::string organization;               // namo of author's organization (RD: "")
+    std::string organization;               // name of author's organization (RD: "")
     int         igesVersion;                // flag indicating IGES version of the file; 3..11 (RD: 3)
     IGES_DRAFTING_STANDARD draftStandard;   // flag indicating drafting standard (if any) (RD: 0)
     std::string modificationDate;           // [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)

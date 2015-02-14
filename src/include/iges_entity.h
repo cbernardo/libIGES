@@ -25,14 +25,20 @@
 #ifndef IGES_ENTITY_H
 #define IGES_ENTITY_H
 
+#include <iostream>
+#include <string>
+#include <list>
+
 #include "iges_base.h"
 
-class IGES; // Overarching data structure and parent to all entities
+class IGES;             // Overarching data structure and parent to all entities
+struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
 
 // NOTE: Base class for all IGES entities
 class IGES_ENTITY
 {
 private:
+    IGES*               parent;             // master IGES object; contains globals and manages entity I/O
     IGES_ENTITY_TYPE    entityType;         // #, Entity Type (only a select few values are allowed)
     int                 parameterData;      // P, first sequence number of associated parameterData
     int                 structure;          // 0P, index to DirEnt of the definition entity which specifies this entity's meaning
@@ -41,7 +47,10 @@ private:
     int                 view;               // 0P, 0 (def) or index to DirEnt for one of (a) View Entity (410) or (b) Views Visible Associativity Instance (402-3/4/19)
     int                 transform;          // 0P, 0 (def) or index to Transormation Matrix (124)
     int                 labelAssoc;         // 0P, 0 (def) or index to label Display Associativity (402-5)
-    int                 statusNumber;       // #, Flags for Blank Status/Subordinate Entity Switch/Entity Use Flag/Hierarchy
+    bool                visible;            // Status Number: Blank Status (default 0: visible == true)
+    IGES_STAT_DEPENDS   depends;            // Status Number: Subordinate Entity Switch (default 0 = independent)
+    IGES_STAT_USE       use;                // Status Number: Entity Use (default 0 = Geometry)
+    IGES_STAT_HIER      hierarchy;          // Status Number: Hierarchy (default 0 = all DE attributes apply to subordinates)
     int                 lineWeightNum;      // #, System line width thickness, 0 .. Global::maxLinewidthGrad
     int                 colorNum;           // #P, 0 (def), Color ID, or index to Color Definition (314)
     int                 paramLineCount;     // #, number of associated Parameter Lines
@@ -58,9 +67,8 @@ private:
     IGES_ENTITY* pLabelAssoc;
     IGES_ENTITY* pColor;
 
-    // XXX - Requires:
-    // + list of parent pointers in order to manage reference counting
-    //   related to the implementation of the StatusNumber
+    // list of referring (superior) entities
+    std::list<IGES_ENTITY*> refs;
 
     // XXX - TO BE IMPLEMENTED
     // associate: associate pointers with other entities after reading all data; retrictions on types
@@ -79,8 +87,8 @@ public:
     // Add/DelReference is needed for management of StatusNumber
     virtual bool AddReference(IGES_ENTITY* aParentEntity) = 0;
     virtual bool DelReference(IGES_ENTITY* aParentEntity) = 0;
+    size_t       GetNRefs(void);
 
-    // XXX - TO BE IMPLEMENTED
     // Read the DE data from the given records
     virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile) = 0;
     // virtual bool Read: read Parameter Data
@@ -94,7 +102,7 @@ public:
     virtual bool WritePD(std::ofstream& aFile) = 0;
 
     // Set the parent object; this is required for operations such as 'Import'
-    void SetParentIGES(IGES* aParent);
+    bool SetParentIGES(IGES* aParent);
     // Retrieve the parent object
     IGES* GetParentIGES(void);
 
@@ -104,10 +112,10 @@ public:
     // some entities have only one form and default to that form on creation.
     virtual bool     SetEntityForm(int aForm) = 0;
 
-    // Get/Set the Structure entity; this is unused in most entity types
+    // Set/Get the Structure entity; this is unused in most entity types
     // and the defaults return false
-    virtual bool GetStructure(IGES_ENTITY** aStructure);
     virtual bool SetStructure(IGES_ENTITY* aStructure);
+    virtual bool GetStructure(IGES_ENTITY** aStructure);
 
     // Get/Set the LineFont Pattern; this may be an IGES_LINEFONT_PATTERN
     // or a LinefontPattern Entity
@@ -117,8 +125,8 @@ public:
     // the internal LineFontPattern type; in the case of type 0,
     // the GetLineFontPatternEntity() function sets the argument
     // to NULL and returns true.
-    virtual bool GetLineFontPattern(IGES_LINEFONT_PATTERN& aPattern) = 0;
-    bool         GetLineFontPatternEntity(IGES_ENTITY** aPattern);
+    bool GetLineFontPattern(IGES_LINEFONT_PATTERN& aPattern);
+    bool GetLineFontPatternEntity(IGES_ENTITY** aPattern);
 
     // Get/Set the Entity Level; this may be an int or a Definition Level Entity;
     // default level is 0
@@ -130,6 +138,8 @@ public:
     virtual bool SetView(IGES_ENTITY* aView) = 0;
     bool         GetView(IGES_ENTITY** aView);
 
+    // XXX - may require other forms to retrieve compound transforms
+    // XXX - may also require a Transform(some point) to transform individual points
     virtual bool SetTransform(IGES_ENTITY* aTransform) = 0;
     bool         GetTransform(IGES_ENTITY** aTransform);
 
@@ -144,7 +154,7 @@ public:
     bool          GetColorEntity(IGES_ENTITY** aColor);
 
     virtual bool SetLineWeightNum(int aLineWeight) = 0;
-    bool         GetLineWeightNum(int& aLineWeight) = 0;
+    bool         GetLineWeightNum(int& aLineWeight);
 
     bool SetLabel(const std::string aLabel);
     void GetLabel(std::string& aLabel);
@@ -160,14 +170,14 @@ public:
     bool SetVisibility(bool isVisible);
     bool GetVisibility(bool& isVisible);
 
-    virtual bool SetDependency(int aDependency) = 0;
-    bool         GetDependency(int& aDependency);
+    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency) = 0;
+    bool         GetDependency(IGES_STAT_DEPENDS& aDependency);
 
-    virtual bool SetEntityUse(int) = 0;
-    bool         GetEntityUse(int);
+    virtual bool SetEntityUse(IGES_STAT_USE aUseCase) = 0;
+    bool         GetEntityUse(IGES_STAT_USE& aUseCase);
 
-    virtual bool SetHierarchy(int aHierarchy) = 0;
-    bool         GetHierarchy(int& aHierarchy);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy) = 0;
+    bool         GetHierarchy(IGES_STAT_HIER& aHierarchy);
 };
 
 #endif  // IGES_ENTITY_H

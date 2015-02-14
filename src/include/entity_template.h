@@ -1,0 +1,58 @@
+/*
+ * file: entity_template.h
+ *
+ * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
+ *
+ * Description: Sample entity template based on
+ * IGES Entity 124: Transformation Matrix, Section 4.21, p.123+ (151+)
+ *
+ */
+
+#error This is a template only and not suitable for compilation or inclusion
+
+#ifndef ENTITY_TEMP_H
+#define ENTITY_TEMP_H
+
+#include "iges_entity.h"
+
+// NOTE:
+// The associated parameter data are:
+// + R11: Real: Top Row
+// + R12: Real:
+// + R13: Real:
+// + T1:  Real:
+// + R21: Real: Second Row
+// + R22: Real:
+// + R23: Real:
+// + T2:  Real:
+// + R21: Real: Third Row
+// + R22: Real:
+// + R23: Real:
+// + T2:  Real:
+//
+// Forms:
+//  0: Matrix is Orthonormal and with a Determinant of 1; output will be in a Right-Hand Coordinate System
+//  1: Matrix is Orthonormal and with a Determinant of -1; output will be in a Left-Hand Coordinate System
+//  10, 11, 12: For Finite Element Analysis only
+//
+// Unused DE items:
+// + Structure
+// + Line Font Pattern
+// + Level
+// + View
+// + Label Display Association
+// + Line weight
+// + Color number
+//
+
+class IGES_ENTITY_TEMP : IGES_ENTITY
+{
+private:
+    // XXX - TO BE IMPLEMENTED
+
+public:
+    // XXX - TO BE IMPLEMENTED
+
+}
+
+#endif  // ENTITY_TEMP_H

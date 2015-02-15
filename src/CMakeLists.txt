@@ -31,5 +31,14 @@ include_directories(
     )
 
 # pull in the sources
-add_subdirectory ( entities )
-add_subdirectory ( iges )
+#add_subdirectory ( entities )
+#add_subdirectory ( iges )
+
+set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
+set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
+
+add_library( iges SHARED
+    "${SRC_ENT}/iges_entity.cpp"
+    "${SRC_ENT}/entityNULL.cpp"
+    "${SRC_IGS}/iges_io.cpp"
+    )

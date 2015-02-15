@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -47,7 +47,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_100 : IGES_ENTITY
+class IGES_ENTITY_100 : public IGES_ENTITY
 {
 private:
     // XXX - TO BE IMPLEMENTED

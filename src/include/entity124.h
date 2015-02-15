@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -67,7 +67,7 @@
 // application of all subordinate transforms.
 //
 
-class IGES_ENTITY_124 : IGES_ENTITY
+class IGES_ENTITY_124 : public IGES_ENTITY
 {
 private:
     // XXX - TO BE IMPLEMENTED
@@ -94,7 +94,7 @@ public:
     virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
-    
+
     // XXX - TO BE IMPLEMENTED
 
 };

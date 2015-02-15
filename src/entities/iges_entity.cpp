@@ -18,14 +18,20 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 // Note: This base class must never be instantiated.
 
+#include <iomanip>
 #include <error_macros.h>
 #include <iges_entity.h>
+#include <iges_io.h>
+
+
+using namespace std;
+
 
 IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 {
@@ -104,7 +110,241 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 IGES_ENTITY::~IGES_ENTITY()
 {
     // XXX - TO BE IMPLEMENTED
+    return;
 }   // IGES_ENTITY::~IGES_ENTITY()
+
+
+bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
+{
+    // Read in the basic DE data only; it is the responsibility of
+    // the individual entities to impose any further checks on
+    // data integrity
+
+    if( !aRecord )
+    {
+        ERRMSG << "\n + [BUG]: NULL pointer passed for parameter 'aRecord'\n";
+        return false;
+    }
+
+    // DE10: Ensure type is 'D' and sequence number is odd
+    if( aRecord->section_type != 'D' )
+    {
+        ERRMSG << "\n + [BUG]: Expecting Directory Entry marker 'D' (0x44), got 0x";
+        cerr << hex << setw(2) << setfill('0') << ((unsigned int)aRecord->section_type) << "\n";
+        cerr << dec << setfill(' ');
+        return false;
+    }
+
+    if( aRecord->index <= 0 || aRecord->index >= 9999997 )
+    {
+        ERRMSG << "\n + [BUG]: invalid sequence number: " << aRecord->index << "\n";
+        return false;
+    }
+
+    if( 0 == (aRecord->index & 1) )
+    {
+        ERRMSG << "\n + [BUG]: expecting an odd sequence number in DE Record 1, got " << aRecord->index << "\n";
+        return false;
+    }
+
+    // DE1: Entity Type Number
+    int tmpInt;
+
+    if( !DEItemToInt(aRecord->data, 0, tmpInt, NULL))
+    {
+        ERRMSG << "\n + could not extract Entity Type number\n";
+        return false;
+    }
+
+    if( tmpInt != entityType )
+    {
+        ERRMSG << "\n + [BUG] retrieved entity type (" << tmpInt;
+        cerr << ") does not match internal type (" << entityType << ")\n";
+        return false;
+    }
+
+    // DE2: Parameter Data Sequence Number
+    if( !DEItemToInt(aRecord->data, 1, tmpInt, NULL))
+    {
+        ERRMSG << "\n + could not extract Parameter Data sequence number\n";
+        return false;
+    }
+
+    if( tmpInt <= 0 )
+    {
+        ERRMSG << "\n + invalid Parameter Data sequence number: " << tmpInt << "\n";
+        return false;
+    }
+
+    parameterData = tmpInt;
+
+    // DE3: Structure (normally 0 - not applicable)
+    int defInt = 0;
+
+    if( !DEItemToInt(aRecord->data, 2, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract Structure pointer\n";
+        return false;
+    }
+
+    if( tmpInt > 0 )
+    {
+        ERRMSG << "\n + invalid Structure pointer (" << tmpInt << "); must be <= 0\n";
+        return false;
+    }
+
+    structure = tmpInt;
+
+    // DE4: Line Font Pattern (IGES_LINEFONT_PATTERN or negative)
+    if( !DEItemToInt(aRecord->data, 3, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract Line Font Pattern\n";
+        return false;
+    }
+
+    if( tmpInt >= (int)LINEFONT_END )
+    {
+        ERRMSG << "\n + invalid Line Font Pattern (" << tmpInt << "); must be < " << LINEFONT_END << "\n";
+        return false;
+    }
+
+    lineFontPattern = tmpInt;
+
+    // DE5: Level
+    if( !DEItemToInt(aRecord->data, 4, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract Level value\n";
+        return false;
+    }
+
+    if( tmpInt < 0 )
+    {
+        ERRMSG << "\n + invalid Level value (" << tmpInt << "); must be >= 0\n";
+        return false;
+    }
+
+    level = tmpInt;
+
+    // DE6: View
+    if( !DEItemToInt(aRecord->data, 5, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract View value\n";
+        return false;
+    }
+
+    if( tmpInt > 0 )
+    {
+        ERRMSG << "\n + invalid View value (" << tmpInt << "); must be <= 0\n";
+        return false;
+    }
+
+    view = tmpInt;
+
+    // DE7: Transformation Matrix
+    if( !DEItemToInt(aRecord->data, 6, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract Transformation Matrix\n";
+        return false;
+    }
+
+    if( tmpInt > 0 )
+    {
+        ERRMSG << "\n + invalid Transformation Matrix pointer (" << tmpInt << "); must be <= 0\n";
+        return false;
+    }
+
+    transform = tmpInt;
+
+    // DE8: Label Display Associativity
+    if( !DEItemToInt(aRecord->data, 7, tmpInt, &defInt))
+    {
+        ERRMSG << "\n + could not extract Label Display Associativity\n";
+        return false;
+    }
+
+    if( tmpInt > 0 )
+    {
+        ERRMSG << "\n + invalid Label Display Associativity pointer (" << tmpInt << "); must be <= 0\n";
+        return false;
+    }
+
+    labelAssoc = tmpInt;
+
+    // DE9: Status Number
+    if( !DEItemToInt(aRecord->data, 8, tmpInt, NULL))
+    {
+        ERRMSG << "\n + could not extract Status Number\n";
+        return false;
+    }
+
+    if( tmpInt < 0 )
+    {
+        ERRMSG << "\n + invalid Status Number (" << tmpInt << "); must be >= 0\n";
+        return false;
+    }
+
+    // DE9: Status Number: Hierarchy Flag
+    int tmpInt2 = tmpInt % 100;
+
+    if( tmpInt2 > 2 )
+    {
+        ERRMSG << "\n + invalid Status Number::Hierarchy Flag (" << tmpInt2 << "); must be 0..2\n";
+        return false;
+    }
+
+    hierarchy = (IGES_STAT_HIER)tmpInt2;
+
+    // DE9: Status Number: Entity Use Flag
+    tmpInt2 = (tmpInt / 100) % 100;
+
+    if( tmpInt2 > 6 )
+    {
+        ERRMSG << "\n + invalid Status Number::Entity Use Flag (" << tmpInt2 << "); must be 0..6\n";
+        return false;
+    }
+
+    use = (IGES_STAT_USE)tmpInt2;
+
+    // DE9: Status Number: Dependency Flag (Subordinate Entity Switch)
+    tmpInt2 = (tmpInt / 10000) % 100;
+
+    if( tmpInt2 > 3 )
+    {
+        ERRMSG << "\n + invalid Status Number::Dependency Flag (" << tmpInt2 << "); must be 0..3\n";
+        return false;
+    }
+
+    depends = (IGES_STAT_DEPENDS)tmpInt2;
+
+    // DE9: Status Number: Blank Status Flag
+    tmpInt2 = (tmpInt / 1000000) % 100;
+
+    if( tmpInt2 > 1 )
+    {
+        ERRMSG << "\n + invalid Status Number::Blank Status Flag (" << tmpInt2 << "); must be 0,1\n";
+        return false;
+    }
+
+    if( tmpInt2 == 0 )
+        visible = true;
+    else
+        visible = false;
+
+    // DE10: Type flag and Sequence Number (already checked)
+
+    // Load and check the next part of the DE record
+    IGES_RECORD rec;
+
+    if( ! ReadIGESRecord(&rec, aFile) )
+    {
+        ERRMSG << "\n + could not read second DE line\n";
+        return false;
+    }
+
+    qwerty
+
+    return false;
+}
 
 
 bool IGES_ENTITY::SetParentIGES(IGES* aParent)

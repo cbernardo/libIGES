@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -85,99 +85,99 @@ public:
     virtual ~IGES_ENTITY();
 
     // Add/DelReference is needed for management of StatusNumber
-    virtual bool AddReference(IGES_ENTITY* aParentEntity) = 0;
-    virtual bool DelReference(IGES_ENTITY* aParentEntity) = 0;
-    size_t       GetNRefs(void);
+    virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
+    virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
+    size_t       GetNRefs( void );
 
     // Read the DE data from the given records
-    virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile) = 0;
+    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile );
     // virtual bool Read: read Parameter Data
-    virtual bool ReadPD(std::ifstream& aFile) = 0;
+    virtual bool ReadPD( std::ifstream& aFile ) = 0;
 
     // virtual bool Write: write entity data
     // XXX - In preparation for a Write we need to perform a Cull() to destroy any orphan entities
     // then we need to re-enumerate [Reorder()] the DE and PD fields by traversing the Entity List and passing
     // a DE and PD accumulator to each in sequence.
-    virtual bool WriteDE(std::ofstream& aFile) = 0;
-    virtual bool WritePD(std::ofstream& aFile) = 0;
+    virtual bool WriteDE( std::ofstream& aFile ) = 0;
+    virtual bool WritePD( std::ofstream& aFile ) = 0;
 
     // Set the parent object; this is required for operations such as 'Import'
-    bool SetParentIGES(IGES* aParent);
+    bool SetParentIGES( IGES* aParent );
     // Retrieve the parent object
-    IGES* GetParentIGES(void);
+    IGES* GetParentIGES( void );
 
-    IGES_ENTITY_TYPE GetEntityType(void);
-    int              GetEntityForm(void);
+    IGES_ENTITY_TYPE GetEntityType( void );
+    int              GetEntityForm( void );
     // Set the entity form. This can only succeed if a form has not yet been set;
     // some entities have only one form and default to that form on creation.
-    virtual bool     SetEntityForm(int aForm) = 0;
+    virtual bool     SetEntityForm( int aForm ) = 0;
 
     // Set/Get the Structure entity; this is unused in most entity types
     // and the defaults return false
-    virtual bool SetStructure(IGES_ENTITY* aStructure);
-    virtual bool GetStructure(IGES_ENTITY** aStructure);
+    virtual bool SetStructure( IGES_ENTITY* aStructure );
+    virtual bool GetStructure( IGES_ENTITY** aStructure );
 
     // Get/Set the LineFont Pattern; this may be an IGES_LINEFONT_PATTERN
     // or a LinefontPattern Entity
-    virtual bool SetLineFontPattern(IGES_LINEFONT_PATTERN aPattern) = 0;
-    virtual bool SetLineFontPattern(IGES_ENTITY* aPattern) = 0;
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern ) = 0;
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern ) = 0;
     // The Get functions return false if the argument does not match
     // the internal LineFontPattern type; in the case of type 0,
     // the GetLineFontPatternEntity() function sets the argument
     // to NULL and returns true.
-    bool GetLineFontPattern(IGES_LINEFONT_PATTERN& aPattern);
-    bool GetLineFontPatternEntity(IGES_ENTITY** aPattern);
+    bool GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern );
+    bool GetLineFontPatternEntity( IGES_ENTITY** aPattern );
 
     // Get/Set the Entity Level; this may be an int or a Definition Level Entity;
     // default level is 0
-    virtual bool SetLevel(int aLevel) = 0;
-    virtual bool SetLevel(IGES_ENTITY* aLevel) = 0;
-    bool         GetLevel(int aLevel);
-    bool         GetLevelEntity(IGES_ENTITY** aLevel);
+    virtual bool SetLevel( int aLevel ) = 0;
+    virtual bool SetLevel( IGES_ENTITY* aLevel ) = 0;
+    bool         GetLevel( int aLevel );
+    bool         GetLevelEntity( IGES_ENTITY** aLevel );
 
-    virtual bool SetView(IGES_ENTITY* aView) = 0;
-    bool         GetView(IGES_ENTITY** aView);
+    virtual bool SetView( IGES_ENTITY* aView ) = 0;
+    bool         GetView( IGES_ENTITY** aView );
 
     // XXX - may require other forms to retrieve compound transforms
     // XXX - may also require a Transform(some point) to transform individual points
-    virtual bool SetTransform(IGES_ENTITY* aTransform) = 0;
-    bool         GetTransform(IGES_ENTITY** aTransform);
+    virtual bool SetTransform( IGES_ENTITY* aTransform ) = 0;
+    bool         GetTransform( IGES_ENTITY** aTransform );
 
-    virtual bool SetLabelAssoc(IGES_ENTITY* aLabelAssoc) = 0;
-    bool         GetLabelAssoc(IGES_ENTITY** aLabelAssoc);
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc ) = 0;
+    bool         GetLabelAssoc( IGES_ENTITY** aLabelAssoc );
 
     // Get/Set the entity Color; this may be an IGES_COLOR or a
     // Color Definition Entity
-    virtual bool SetColor(IGES_COLOR aColor) = 0;
-    virtual bool SetColor(IGES_ENTITY* aColor) = 0;
-    bool          GetColor(IGES_COLOR& aColor);
-    bool          GetColorEntity(IGES_ENTITY** aColor);
+    virtual bool SetColor( IGES_COLOR aColor ) = 0;
+    virtual bool SetColor( IGES_ENTITY* aColor ) = 0;
+    bool          GetColor( IGES_COLOR& aColor );
+    bool          GetColorEntity( IGES_ENTITY** aColor );
 
-    virtual bool SetLineWeightNum(int aLineWeight) = 0;
-    bool         GetLineWeightNum(int& aLineWeight);
+    virtual bool SetLineWeightNum( int aLineWeight ) = 0;
+    bool         GetLineWeightNum( int& aLineWeight );
 
-    bool SetLabel(const std::string aLabel);
-    void GetLabel(std::string& aLabel);
+    bool SetLabel( const std::string aLabel );
+    void GetLabel( std::string& aLabel );
 
-    bool SetEntitySubscript(int aSubscript);
-    bool GetEntitySubscript(int& aSubscript);
+    bool SetEntitySubscript( int aSubscript );
+    bool GetEntitySubscript( int& aSubscript );
 
     // StatusNum is a flag for 4 different things so we shall use separate Set/Get functions for:
     // Visibility: 0/1, 0 (default) = visible, 1 = invisible
     // Depedency: 0 (default, independent) to 3. See p.27/55+
     // EntityUse: 0..6 (Geometry, etc. See p.29/57+)
     // Hierarchy: int (0..99999), 0=default
-    bool SetVisibility(bool isVisible);
-    bool GetVisibility(bool& isVisible);
+    bool SetVisibility( bool isVisible );
+    bool GetVisibility( bool& isVisible );
 
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency) = 0;
-    bool         GetDependency(IGES_STAT_DEPENDS& aDependency);
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency ) = 0;
+    bool         GetDependency( IGES_STAT_DEPENDS& aDependency );
 
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase) = 0;
-    bool         GetEntityUse(IGES_STAT_USE& aUseCase);
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase ) = 0;
+    bool         GetEntityUse( IGES_STAT_USE& aUseCase );
 
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy) = 0;
-    bool         GetHierarchy(IGES_STAT_HIER& aHierarchy);
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy ) = 0;
+    bool         GetHierarchy( IGES_STAT_HIER& aHierarchy );
 };
 
 #endif  // IGES_ENTITY_H

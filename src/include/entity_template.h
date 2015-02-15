@@ -45,7 +45,7 @@
 // + Color number
 //
 
-class IGES_ENTITY_TEMP : IGES_ENTITY
+class IGES_ENTITY_TEMP : public IGES_ENTITY
 {
 private:
     // XXX - TO BE IMPLEMENTED

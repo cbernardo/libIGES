@@ -37,7 +37,7 @@ struct IGES_RECORD;     // Partially parsed single line of data from an IGES fil
 // NOTE: Base class for all IGES entities
 class IGES_ENTITY
 {
-private:
+protected:
     IGES*               parent;             // master IGES object; contains globals and manages entity I/O
     IGES_ENTITY_TYPE    entityType;         // #, Entity Type (only a select few values are allowed)
     int                 parameterData;      // P, first sequence number of associated parameterData
@@ -76,7 +76,6 @@ private:
     // prepare(&index): prepare data for writing; Parameter Data is formatted using the given index;
     //                  each Entity must have been previously assigned a correct Sequence Number
 
-protected:
     friend class IGES;
     int sequenceNumber;     // first sequence number of this Directory Entry
 
@@ -90,7 +89,7 @@ public:
     size_t       GetNRefs( void );
 
     // Read the DE data from the given records
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile );
+    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile ) = 0;
     // virtual bool Read: read Parameter Data
     virtual bool ReadPD( std::ifstream& aFile ) = 0;
 

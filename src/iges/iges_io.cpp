@@ -43,7 +43,7 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
         return false;
     }
 
-    if( input.length() < 8 * (field + 1) )
+    if( input.length() < (unsigned int)(8 * (field + 1)) )
     {
         ERRMSG << "\n + [BUG]: input string too short; required length: ";
         cerr << (8 * (field + 1)) << ", actual length: " << input.length() << "\n";
@@ -110,7 +110,7 @@ bool DEItemToStr( const std::string& input, int field, std::string& var )
         return false;
     }
 
-    if( input.length() < 8 * (field + 1) )
+    if( input.length() < (unsigned int)(8 * (field + 1)) )
     {
         ERRMSG << "\n + [BUG]: input string too short; required length: ";
         cerr << (8 * (field + 1)) << ", actual length: " << input.length() << "\n";

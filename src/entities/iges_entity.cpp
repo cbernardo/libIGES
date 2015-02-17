@@ -26,6 +26,7 @@
 
 #include <iomanip>
 #include <error_macros.h>
+#include <iges.h>
 #include <iges_entity.h>
 #include <iges_io.h>
 
@@ -341,9 +342,135 @@ bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
         return false;
     }
 
-    qwerty
+    if( rec.section_type != 'D' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected section type 'D', got '";
+        cerr << rec.section_type << "'\n";
+        cerr << " + DE #" << (aRecord->index + 1) << "\n";
+        return false;
+    }
 
-    return false;
+    if( rec.index != (aRecord->index + 1) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected DE index '" << (aRecord->index + 1);
+        cerr << "', got '" << rec.index << "'\n";
+        return false;
+    }
+
+    // DE11: Must match current type
+    if( !DEItemToInt(rec.data, 0, tmpInt, NULL) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not extract Entity Type number from DE #";
+        cerr << rec.index << "'\n";
+        return false;
+    }
+
+    if( tmpInt != entityType )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] retrieved entity type (" << tmpInt;
+        cerr << ") does not match internal type (" << entityType << ")\n";
+        cerr << " + DE #" << rec.index << "\n";
+        return false;
+    }
+
+    // DE12: Line Weight Number (note: in the spec there is no default for this)
+    if( !DEItemToInt(rec.data, 1, tmpInt, NULL) )
+    {
+        ERRMSG << "\n + could not extract Line Weight Number\n";
+        return false;
+    }
+
+    if( tmpInt < 0 )
+    {
+        ERRMSG << "\n + invalid Line Weight Number: " << tmpInt << "\n";
+        return false;
+    }
+
+    if( parent && tmpInt > parent->globalData.maxLinewidthGrad )
+    {
+        ERRMSG << "\n + [WARNING] DEFECTIVE FILE, DE #" << rec.index << "\n";
+        cerr << " + Line Weight Number (" << tmpInt;
+        cerr << ") exceeds global maximum (" << parent->globalData.maxLinewidthGrad << ")\n";
+        tmpInt = parent->globalData.maxLinewidthGrad;
+    }
+
+    lineWeightNum = tmpInt;
+
+    // DE13: Color Number
+    if( !DEItemToInt(rec.data, 2, tmpInt, &defInt) )
+    {
+        ERRMSG << "\n + could not extract Color Number\n";
+        return false;
+    }
+
+    if( tmpInt >= COLOR_END )
+    {
+        ERRMSG << "\n + invalid Color Number (" << tmpInt << ")\n";
+        return false;
+    }
+
+    colorNum = tmpInt;
+
+    // DE14: Parameter Line Count
+    if( !DEItemToInt(rec.data, 3, tmpInt, NULL) )
+    {
+        ERRMSG << "\n + could not extract Parameter Line Count\n";
+        return false;
+    }
+
+    if( tmpInt < 1 )
+    {
+        ERRMSG << "\n + invalid Parameter Line Count: " << tmpInt << "\n";
+        return false;
+    }
+
+    paramLineCount = tmpInt;
+
+    // DE15: Form Number
+    if( !DEItemToInt(rec.data, 4, tmpInt, &defInt) )
+    {
+        ERRMSG << "\n + could not extract Form Number\n";
+        return false;
+    }
+
+    if( tmpInt < 0 )
+    {
+        ERRMSG << "\n + invalid Form Number (" << tmpInt << ")\n";
+        return false;
+    }
+
+    form = tmpInt;
+
+    // DE16: Not Used
+    // DE17: Not Used
+
+    // DE18: Entity Label
+    string tmpStr;
+
+    if( !DEItemToStr(rec.data, 7, tmpStr) )
+    {
+        ERRMSG << "\n + could not extract Entity Label\n";
+        return false;
+    }
+
+    label = tmpStr;
+
+    // DE19: Entity Subscript Number
+    if( !DEItemToInt(rec.data, 8, tmpInt, &defInt) )
+    {
+        ERRMSG << "\n + could not extract Entity Subscript Number\n";
+        return false;
+    }
+
+    if( tmpInt < 0 )
+    {
+        ERRMSG << "\n + invalid Entity Subscript Number (" << tmpInt << ")\n";
+        return false;
+    }
+
+    entitySubscript = tmpInt;
+
+    return true;
 }
 
 

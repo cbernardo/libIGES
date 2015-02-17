@@ -28,6 +28,7 @@
 
 IGES_ENTITY_NULL::IGES_ENTITY_NULL(IGES* aParent) : IGES_ENTITY(aParent)
 {
+    entityType = ENT_NULL;
     // XXX - TO BE IMPLEMENTED
     return;
 }

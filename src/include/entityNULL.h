@@ -48,7 +48,7 @@
 // + Form number
 //
 
-class IGES_ENTITY_NULL : public IGES_ENTITY
+class IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
     // XXX - TO BE IMPLEMENTED

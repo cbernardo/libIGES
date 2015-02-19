@@ -36,6 +36,9 @@
 // data will help ensure neater output files. Note that the
 // deletion of dangling entities is another matter.
 //
+// All currently unsupported entities should also be treated
+// as a NULL Entity
+//
 // Unused DE items:
 // + Structure
 // + Line Font Pattern
@@ -52,32 +55,44 @@ class IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
     // XXX - TO BE IMPLEMENTED
+    int trueEntity;     // actual Entity Type; non-zero in the case of
+                        // a currently unsupported entity
+
+protected:
+
+    // Remove a child entity; this is invoked by a child which is being deleted
+    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
+
+    friend class IGES;
+    void setEntityType( int aEntityID );
 
 public:
     IGES_ENTITY_NULL(IGES* aParent);
     virtual ~IGES_ENTITY_NULL();
 
     // Inherited virtual functions
-    virtual bool AddReference(IGES_ENTITY* aParentEntity);
-    virtual bool DelReference(IGES_ENTITY* aParentEntity);
-    virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile);
-    virtual bool ReadPD(std::ifstream& aFile);
-    virtual bool WriteDE(std::ofstream& aFile);
-    virtual bool WritePD(std::ofstream& aFile);
-    virtual bool SetEntityForm(int aForm);
-    virtual bool SetLineFontPattern(IGES_LINEFONT_PATTERN aPattern);
-    virtual bool SetLineFontPattern(IGES_ENTITY* aPattern);
-    virtual bool SetLevel(int aLevel);
-    virtual bool SetLevel(IGES_ENTITY* aLevel);
-    virtual bool SetView(IGES_ENTITY* aView);
-    virtual bool SetTransform(IGES_ENTITY* aTransform);
-    virtual bool SetLabelAssoc(IGES_ENTITY* aLabelAssoc);
-    virtual bool SetColor(IGES_COLOR aColor);
-    virtual bool SetColor(IGES_ENTITY* aColor);
-    virtual bool SetLineWeightNum(int aLineWeight);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual bool Unlink( IGES_ENTITY* aChild );
+    virtual bool IsOrphaned( void );
+    virtual bool AddReference( IGES_ENTITY* aParentEntity );
+    virtual bool DelReference( IGES_ENTITY* aParentEntity );
+    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile );
+    virtual bool ReadPD( std::ifstream& aFile );
+    virtual bool WriteDE( std::ofstream& aFile );
+    virtual bool WritePD( std::ofstream& aFile );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetLevel( int aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // XXX - TO BE IMPLEMENTED
 

@@ -43,7 +43,7 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
 bool DEItemToStr( const std::string& input, int field, std::string& var );
 
 struct IGES_RECORD;
-bool ReadIGESRecord(IGES_RECORD* aRecord, std::ifstream& aFile);
+bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos* aRefPos = NULL );
 
 // a single-line data record
 struct IGES_RECORD

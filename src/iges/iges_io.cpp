@@ -134,7 +134,7 @@ bool DEItemToStr( const std::string& input, int field, std::string& var )
 }
 
 
-bool ReadIGESRecord(IGES_RECORD* aRecord, std::ifstream& aFile)
+bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos* aRefPos )
 {
     string iline;
 
@@ -143,6 +143,9 @@ bool ReadIGESRecord(IGES_RECORD* aRecord, std::ifstream& aFile)
         ERRMSG << "\n + I/O problems\n";
         return false;
     }
+
+    if( aRefPos )
+        *aRefPos = aFile.tellg();
 
     std::getline( aFile, iline );
 

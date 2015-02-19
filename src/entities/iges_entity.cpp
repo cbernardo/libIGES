@@ -110,7 +110,24 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 
 IGES_ENTITY::~IGES_ENTITY()
 {
-    // XXX - TO BE IMPLEMENTED
+    if( !refs.empty() )
+    {
+        std::list<IGES_ENTITY*>::iterator rbeg = refs.begin();
+        std::list<IGES_ENTITY*>::iterator rend = refs.end();
+
+        while( rbeg != rend )
+        {
+            if( !(*rbeg)->Unlink( this ) )
+            {
+                ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
+            }
+
+            ++rbeg;
+        }
+
+        refs.clear();
+    }
+
     return;
 }   // IGES_ENTITY::~IGES_ENTITY()
 
@@ -496,7 +513,7 @@ size_t IGES_ENTITY::GetNRefs(void)
 }
 
 
-IGES_ENTITY_TYPE IGES_ENTITY::GetEntityType(void)
+int IGES_ENTITY::GetEntityType(void)
 {
     return entityType;
 }

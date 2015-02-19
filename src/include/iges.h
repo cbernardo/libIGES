@@ -63,8 +63,6 @@ struct IGES_GLOBAL
     IGES_DRAFTING_STANDARD draftStandard;   // flag indicating drafting standard (if any) (RD: 0)
     std::string modificationDate;           // [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
     std::string applicationNote;            // Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
-
-    // XXX - TO BE IMPLEMENTED: routines to read/write
 };
 
 
@@ -80,6 +78,8 @@ private:
 
     std::vector<IGES_ENTITY*> entities;     // all existing IGES entities and their data
 
+    bool init(void);
+
     // XXX - TO BE IMPLEMENTED
     // associate: associate pointers with other entities after reading all data; retrictions on types
     //            must be enforced to ensure data integrity and software stability
@@ -87,14 +87,30 @@ private:
     //          each Entity must have been previously assigned a correct Sequence Number
 
 public:
+    IGES();
+    ~IGES();
+
     struct IGES_GLOBAL     globalData;      // Global Section data
 
-    // bool Read/Write: read and write entity data
-    // bool export(IGES*): Export all entities to the given IGES* (to be used for creating Assemblies)
-    // GetGlobals(): return * to globs for purposes of merging other files
-    // NewEntity(Type)
-    // AddEntity(Entity *)  -- Add an entity from another IGES object or an entity created without NewEntity()
-    // DelEntity(Entity *)  -- Delete an entity and any dependent children
+    /// delete all entities and reinitialize global data
+    bool Clear( void );
+
+    /// open and read the file with the given name
+    bool Read( const char* aFileName );
+
+    /// open a file with the given name and write out all data
+    bool Write( const char* aFileName, bool fOverwrite = false );
+
+    // bool export( IGES* ): Export all entities to the given IGES* (to be used for creating Assemblies)
+
+    /// create an entity of the given type
+    bool NewEntity( int aEntityType );
+
+    /// add an entity from another IGES object or an entity created without NewEntity()
+    bool AddEntity( IGES_ENTITY* aEntity );
+
+    /// delete an entity and any dependent children
+    bool DelEntity( IGES_ENTITY* aEntity );
 
 };
 

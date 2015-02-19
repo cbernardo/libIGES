@@ -61,11 +61,17 @@
 
 class IGES_ENTITY_104 : public IGES_ENTITY
 {
-private:
+protected:
+
+    // Remove a child entity; this is invoked by a child which is being deleted
+    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
+
     // XXX - TO BE IMPLEMENTED
 
 public:
     // Inherited virtual functions
+    virtual bool Unlink( IGES_ENTITY* aChild );
+    virtual bool IsOrphaned( void );
     virtual bool AddReference(IGES_ENTITY* aParentEntity);
     virtual bool DelReference(IGES_ENTITY* aParentEntity);
     virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile);

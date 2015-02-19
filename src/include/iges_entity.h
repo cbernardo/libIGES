@@ -39,7 +39,7 @@ class IGES_ENTITY
 {
 protected:
     IGES*               parent;             // master IGES object; contains globals and manages entity I/O
-    IGES_ENTITY_TYPE    entityType;         // #, Entity Type (only a select few values are allowed)
+    int                 entityType;         // #, Entity Type (values are somewhat restricted but Implementor Macros require 'int' rather than 'enum')
     int                 parameterData;      // P, first sequence number of associated parameterData
     int                 structure;          // 0P, index to DirEnt of the definition entity which specifies this entity's meaning
     int                 lineFontPattern;    // 0#P, 0 (def), Line font pattern number, or index to Line Font Definition (304)
@@ -76,12 +76,22 @@ protected:
     // prepare(&index): prepare data for writing; Parameter Data is formatted using the given index;
     //                  each Entity must have been previously assigned a correct Sequence Number
 
+    // Remove a child entity; this is invoked by a child which is being deleted
+    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
+
     friend class IGES;
     int sequenceNumber;     // first sequence number of this Directory Entry
 
 public:
     IGES_ENTITY(IGES* aParent);
     virtual ~IGES_ENTITY();
+
+    // Routines to manage reference deletion
+
+    /// remove a chiled entity from the parent's list
+    virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
+    /// return true if the entity is invalidated and can be deleted
+    virtual bool IsOrphaned( void ) = 0;
 
     // Add/DelReference is needed for management of StatusNumber
     virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
@@ -105,11 +115,11 @@ public:
     // Retrieve the parent object
     IGES* GetParentIGES( void );
 
-    IGES_ENTITY_TYPE GetEntityType( void );
-    int              GetEntityForm( void );
+    int          GetEntityType( void );
+    int          GetEntityForm( void );
     // Set the entity form. This can only succeed if a form has not yet been set;
     // some entities have only one form and default to that form on creation.
-    virtual bool     SetEntityForm( int aForm ) = 0;
+    virtual bool SetEntityForm( int aForm ) = 0;
 
     // Set/Get the Structure entity; this is unused in most entity types
     // and the defaults return false

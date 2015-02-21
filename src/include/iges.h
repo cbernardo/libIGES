@@ -32,6 +32,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <fstream>
 #include "iges_base.h"
 #include "iges_entity.h"
 
@@ -70,8 +71,6 @@ class IGES
 {
 private:
     std::list<std::string> startSection;    // text from the Start section
-    int                    nStartSecLines;  // number of lines in the Start section
-
     int                    nGlobSecLines;   // number of lines in the Global section
     int                    nDESecLines;     // number of lines in the Directory Entry section
     int                    nPDSecLines;     // number of lines in the Parameter Data section
@@ -79,6 +78,16 @@ private:
     std::vector<IGES_ENTITY*> entities;     // all existing IGES entities and their data
 
     bool init(void);
+
+    bool readGlobals( IGES_RECORD& rec, std::ifstream& file );
+    // XXX - must rewind a non-DE entry
+    bool readDE( IGES_RECORD& rec, std::ifstream& file );
+    // XXX - reads data based on existing entities' record on # of PD lines
+    bool readPD( IGES_RECORD& rec, std::ifstream& file );
+    // XXX - reads the TERMINATE section and verifies data
+    bool readTS( IGES_RECORD& rec, std::ifstream& file );
+
+
 
     // XXX - TO BE IMPLEMENTED
     // associate: associate pointers with other entities after reading all data; retrictions on types

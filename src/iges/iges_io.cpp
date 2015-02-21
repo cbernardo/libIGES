@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 
@@ -81,7 +82,7 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
     char *cp = NULL;
 
     errno = 0;
-    i = strtol(tmp, &cp, 10);
+    i = strtol( tmp, &cp, 10 );
 
     if( errno || cp == tmp )
     {
@@ -204,5 +205,238 @@ bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos*
 
     aRecord->index = tmpInt;
 
+    return true;
+}
+
+
+bool ParseHString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd )
+{
+    param.clear();
+
+    if( idx >= (int)data.length() )
+    {
+        ERRMSG << "\n + [BUG] out of bounds\n";
+        return false;
+    }
+
+    if( data[idx] == pd || data[idx] == rd )
+    {
+        if( data[idx] == rd )
+            eor = true;
+
+        ++idx;
+        return true;
+    }
+
+    const char* cp = &(data.c_str()[idx]);
+    char* rp;
+
+    errno = 0;
+    int i = strtol( cp, &rp, 10 );
+
+    if( errno || cp == rp )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid Hollerith string\n";
+        cerr << "Data: " << cp << "\n";
+        return false;
+    }
+
+    idx += (rp - cp);
+
+    if( data[idx] != 'H' )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid Hollerith string (no 'H' following length)\n";
+        cerr << "Data: " << cp << "\n";
+        return false;
+    }
+
+    if( i <= 0 )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid Hollerith string length (" << i << ")\n";
+        cerr << "Data: " << cp << "\n";
+        return false;
+    }
+
+    if( idx + i >= (int)data.length() )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid Hollerith string length (" << i << ")\n";
+        cerr << " + requested string length exceeds record length\n";
+        cerr << "Data: " << cp << "\n";
+        return false;
+    }
+
+    param = data.substr(idx, i);
+
+    idx += i;
+
+    if( data[idx] == rd )
+    {
+        ++idx;
+        eor = true;
+        return true;
+    }
+
+    if( data[idx] == pd )
+    {
+        ++idx;
+        return true;
+    }
+
+    ERRMSG << "\n + [BAD DATA]: invalid record; no Parameter or Record delimeter after Hollerith string\n";
+    cerr << "Data: " << cp << "\n";
+    return false;
+}
+
+
+bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd )
+{
+    param.clear();
+    int tidx = idx;
+
+    if( idx >= (int)data.length() )
+    {
+        ERRMSG << "\n + [BUG] out of bounds\n";
+        return false;
+    }
+
+    if( data[idx] == pd || data[idx] == rd )
+    {
+        if( data[idx] == rd )
+            eor = true;
+
+        ++idx;
+        return true;
+    }
+
+    size_t strEnd = data.find_first_of( pd, idx );
+
+    if( strEnd == string::npos )
+    {
+        strEnd = data.find_first_of( rd, idx );
+
+        if( strEnd == string::npos )
+        {
+            ERRMSG << "\n + [BAD DATA] no Parameter or Record delimeter found in data\n";
+            cerr << "Data: " << data.substr( idx ) << "\n";
+            return false;
+        }
+    }
+
+    param = data.substr( idx, strEnd - idx );
+    idx += (int)param.length();
+
+    if( data[idx] == rd )
+    {
+        ++idx;
+        eor = true;
+        return true;
+    }
+
+    if( data[idx] == pd )
+    {
+        ++idx;
+        return true;
+    }
+
+    ERRMSG << "\n + [BAD DATA]: invalid record; no Parameter or Record delimeter after string\n";
+    cerr << "Data: " << data.substr(tidx) << "\n";
+    return false;
+}
+
+
+bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault )
+{
+    std::string tmp;
+    int tidx = idx;
+
+    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
+    {
+        ERRMSG << "[BAD DATA]\n";
+        return false;
+    }
+
+    if( tmp.empty() )
+    {
+        if( idefault )
+        {
+            param = *idefault;
+            return true;
+        }
+
+        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    const char* cp = tmp.c_str();
+    char* rp;
+
+    errno = 0;
+    int i = strtol( cp, &rp, 10 );
+
+    if( errno || cp == rp )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid integer\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    if( rp - cp != (int)tmp.length() )
+    {
+        ERRMSG << "\n + [WARNING]: extra characters at end of integer\n";
+        cerr << "Integer value: " << i << "\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+    }
+
+    param = i;
+    return true;
+}
+
+
+bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault )
+{
+    std::string tmp;
+    int tidx = idx;
+
+    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
+    {
+        ERRMSG << "[BAD DATA]\n";
+        return false;
+    }
+
+    if( tmp.empty() )
+    {
+        if( ddefault )
+        {
+            param = *ddefault;
+            return true;
+        }
+
+        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    const char* cp = tmp.c_str();
+    char* rp;
+
+    errno = 0;
+    double d = strtod( cp, &rp );
+
+    if( errno || cp == rp )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid floating point number\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    if( rp - cp != (int)tmp.length() )
+    {
+        ERRMSG << "\n + [WARNING]: extra characters at end of floating point number\n";
+        cerr << "Float value: " << setprecision(12) << d << setprecision(0) << "\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+    }
+
+    param = d;
     return true;
 }

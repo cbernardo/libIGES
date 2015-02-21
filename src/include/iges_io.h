@@ -45,6 +45,21 @@ bool DEItemToStr( const std::string& input, int field, std::string& var );
 struct IGES_RECORD;
 bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos* aRefPos = NULL );
 
+// parse a Hollerith string and return true on success
+// idx: contains an index to the starting position in the data stream; returns index just past
+//      the parameter or record delimeter
+// param: will contain the parsed string, if any
+// eor: set to true if the record delimeter has been encountered
+bool ParseHString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd );
+
+// parse a LanguageString (a generic string up to the first encountered delimeter )
+bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd );
+
+bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault = NULL );
+
+bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault = NULL );
+
+
 // a single-line data record
 struct IGES_RECORD
 {

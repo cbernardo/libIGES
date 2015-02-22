@@ -132,7 +132,7 @@ IGES_ENTITY::~IGES_ENTITY()
 }   // IGES_ENTITY::~IGES_ENTITY()
 
 
-bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
+bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
     // Read in the basic DE data only; it is the responsibility of
     // the individual entities to impose any further checks on
@@ -250,9 +250,9 @@ bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
         return false;
     }
 
-    if( tmpInt > 0 )
+    if( tmpInt < 0 )
     {
-        ERRMSG << "\n + invalid View value (" << tmpInt << "); must be <= 0\n";
+        ERRMSG << "\n + invalid View value (" << tmpInt << "); must be >= 0\n";
         return false;
     }
 
@@ -265,9 +265,9 @@ bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
         return false;
     }
 
-    if( tmpInt > 0 )
+    if( tmpInt < 0 )
     {
-        ERRMSG << "\n + invalid Transformation Matrix pointer (" << tmpInt << "); must be <= 0\n";
+        ERRMSG << "\n + invalid Transformation Matrix pointer (" << tmpInt << "); must be >= 0\n";
         return false;
     }
 
@@ -280,9 +280,9 @@ bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
         return false;
     }
 
-    if( tmpInt > 0 )
+    if( tmpInt < 0 )
     {
-        ERRMSG << "\n + invalid Label Display Associativity pointer (" << tmpInt << "); must be <= 0\n";
+        ERRMSG << "\n + invalid Label Display Associativity pointer (" << tmpInt << "); must be >= 0\n";
         return false;
     }
 
@@ -486,6 +486,7 @@ bool IGES_ENTITY::ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile)
     }
 
     entitySubscript = tmpInt;
+    aSequenceVar += 2;
 
     return true;
 }
@@ -525,13 +526,13 @@ int IGES_ENTITY::GetEntityForm(void)
 }
 
 
-bool SetStructure(IGES_ENTITY* aStructure)
+bool IGES_ENTITY::SetStructure(IGES_ENTITY* aStructure)
 {
     return false;
 }
 
 
-bool GetStructure(IGES_ENTITY** aStructure)
+bool IGES_ENTITY::GetStructure(IGES_ENTITY** aStructure)
 {
     *aStructure = NULL;
     return false;

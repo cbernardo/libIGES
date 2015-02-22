@@ -30,6 +30,9 @@
 
 using namespace std;
 
+// Note: a default of 11 = IGES5.3
+#define DEFAULT_IGES_VERSION (11)
+
 static std::string UNIT_NAMES[UNIT_END] =
 {
     "IN",
@@ -155,7 +158,7 @@ bool IGES::Read( const char* aFileName )
 
     if( !ReadIGESRecord( &rec, file ) )
     {
-        ERRMSG << "\n + [INFO] could read file\n";
+        ERRMSG << "\n + [INFO] could not read file\n";
         cerr << " + filename: '" << aFileName << "'\n";
         file.close();
         Clear();
@@ -253,7 +256,7 @@ bool IGES::Read( const char* aFileName )
         return false;
     }
 
-    // read the PE section
+    // read the PD section
     if( rec.section_type != 'P' )
     {
         ERRMSG << "\n + [CORRUPT FILE] file does not contain a PARAMETER section\n";
@@ -275,7 +278,7 @@ bool IGES::Read( const char* aFileName )
     // read the T section
     if( ! readTS( rec, file ) )
     {
-        ERRMSG << "\n + [CORRUPT FILE]\n";
+        ERRMSG << "\n + [CORRUPT FILE] could not read Terminate Section\n";
         cerr << " + filename: '" << aFileName << "'\n";
         file.close();
         Clear();
@@ -301,10 +304,33 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
 
 
 // create an entity of the given type
-bool IGES::NewEntity( int aEntityType )
+bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    IGES_ENTITY* ep = NULL;
+    *aEntityPointer = NULL;
+
+    switch( aEntityType )
+    {
+        case ENT_CIRCULAR_ARC:
+            //ep = new IGES_ENTITY_100( this );
+            //break;
+
+        default:
+            ep = new IGES_ENTITY_NULL( this );
+            ((IGES_ENTITY_NULL*)ep)->setEntityType( aEntityType );
+            break;
+    }
+
+    if( !ep )
+    {
+        ERRMSG << "\n + [INFO] could not create a new IGES_ENTITY with ID ";
+        cerr << aEntityType << "\n";
+        return false;
+    }
+
+    *aEntityPointer = ep;
+    entities.push_back( ep );
+    return true;
 }
 
 
@@ -499,6 +525,7 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
             return false;
         }
     }
+    cerr << "XXX: nIntegerBits: " << globalData.nIntegerBits << "\n";
 
     // G8: Single Precision Magnitude, REQUIRED NO DEFAULT
     if( !ParseInt( globs, idx, globalData.floatMaxExp, eor, delim, rdelim ) )
@@ -510,7 +537,7 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
     {
         // since we *only* use doubles for internal representation,
         // check that this number is <= MAX on a 64-bit IEEE float
-        if( globalData.floatMaxExp < 4 || globalData.floatMaxExp > 307 )
+        if( globalData.floatMaxExp < 4 || globalData.floatMaxExp > 308 )
         {
             ERRMSG << "\n + [INFO] Sending System floats not supported by this library (Max Mag: ";
             cerr << globalData.floatMaxExp << ")\n";
@@ -546,7 +573,7 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
     {
         // since we *only* use doubles for internal representation,
         // check that this number is <= MAX on a 64-bit IEEE float
-        if( globalData.doubleMaxExp < 4 || globalData.doubleMaxExp > 307 )
+        if( globalData.doubleMaxExp < 4 || globalData.doubleMaxExp > 308 )
         {
             ERRMSG << "\n + [INFO] Sending System doubles not supported by this library (Max Mag: ";
             cerr << globalData.doubleMaxExp << ")\n";
@@ -630,11 +657,166 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
             globalData.unitsName = UNIT_NAMES[globalData.unitsFlag];
     }
 
-    // G16: qwerty
+    // G16: Max. Number of LineWidth Gradations
+    if( !ParseInt( globs, idx, globalData.maxLinewidthGrad, eor, delim, rdelim, &idefault ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Max. Linewidth Gradations\n";
+        return false;
+    }
 
-    // XXX - TO BE IMPLEMENTED: Process the globals
+    if( globalData.maxLinewidthGrad < 1 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid Max. Linewidth Gradations (";
+        cerr << globalData.maxLinewidthGrad << ")\n";
+        return false;
+    }
 
-    return false;
+    // G17: Max. Line Width
+    if( !ParseReal( globs, idx, globalData.maxLinewidth, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Max. Linewidth\n";
+        return false;
+    }
+
+    if( globalData.maxLinewidth < 0.0 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid Max. Linewidth (";
+        cerr << globalData.maxLinewidthGrad << ")\n";
+        return false;
+    }
+
+    // G18: Creation Date
+    if( !ParseHString( globs, idx, globalData.creationDate, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve file creation date\n";
+        return false;
+    }
+    else if( globalData.creationDate.empty() )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] empty creation date\n";
+        return false;
+    }
+
+    // XXX - ideally we should parse the string to ensure it's a valid date
+    if( globalData.creationDate.length() != 13
+        && globalData.creationDate.length() != 15 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid creation date '";
+        cerr << globalData.creationDate << "'\n";
+        return false;
+    }
+
+    // G19: Min. User-intended resolution
+    if( !ParseReal( globs, idx, globalData.minResolution, eor, delim, rdelim, NULL ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve min. user-intended resolution\n";
+        return false;
+    }
+
+    if( globalData.minResolution <= 0.0 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid min. user-intended resolution (";
+        cerr << globalData.minResolution << ")\n";
+        return false;
+    }
+
+    // G20: Approx. Max. Coordinate
+    rdefault = 0.0;
+
+    if( !ParseReal( globs, idx, globalData.maxCoordinateValue, eor, delim, rdelim, &rdefault ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve approx. max coordinate\n";
+        return false;
+    }
+
+    if( globalData.maxCoordinateValue < 0.0 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid max. coordinate value (";
+        cerr << globalData.maxCoordinateValue << ")\n";
+        return false;
+    }
+
+    // G21: Author, REQUIRED, DEFAULT NULL
+    if( !ParseHString( globs, idx, globalData.author, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Author\n";
+        return false;
+    }
+
+    // G22: Organization, REQUIRED, DEFAULT NULL
+    if( !ParseHString( globs, idx, globalData.organization, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Organization\n";
+        return false;
+    }
+
+    // G23: Version Flag
+    idefault = DEFAULT_IGES_VERSION;
+
+    if( !ParseInt( globs, idx, globalData.igesVersion, eor, delim, rdelim, &idefault ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve IGES version\n";
+        return false;
+    }
+
+    if( globalData.igesVersion < 3 )
+        globalData.igesVersion = 3;
+    else if( globalData.igesVersion > 11 )    /* this should never happen since IGES is an unmaintained standard */
+        globalData.igesVersion = 11;
+
+    // G24: Drafting Standard, REQUIRED DEFAULT 0
+    idefault = 0;
+
+    if( !ParseInt( globs, idx, tint, eor, delim, rdelim, &idefault ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Drafting Standard\n";
+        return false;
+    }
+
+    if( tint < DRAFT_NONE || tint > DRAFT_JIS )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid Drafting Standard (";
+        cerr << tint << ")\n";
+    }
+
+    globalData.draftStandard = (IGES_DRAFTING_STANDARD)tint;
+
+    // G25: Modification Date
+    if( !ParseHString( globs, idx, globalData.modificationDate, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve file creation date\n";
+        return false;
+    }
+
+    // XXX - ideally we should parse the string to ensure it's a valid date
+    if( globalData.modificationDate.length() > 0 && globalData.modificationDate.length() != 13
+        && globalData.modificationDate.length() != 15 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid modification date '";
+        cerr << globalData.modificationDate << "'\n";
+        return false;
+    }
+
+    if( eor )
+    {
+        globalData.applicationNote.clear();
+        return true;
+    }
+
+    // G26: Application Protocol / Subset Identifier, REQUIRED DEFAULT NULL
+    if( !ParseHString( globs, idx, globalData.applicationNote, eor, delim, rdelim ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] could not retrieve AP / Subset Identifier string\n";
+        return false;
+    }
+
+    if( !eor )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] no end-of-record marker found in Global Section\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -643,18 +825,85 @@ bool IGES::readDE( IGES_RECORD& rec, std::ifstream& file )
     // on entry the record contains the first DIRECTORY ENTRY record
     std::streampos pos;
 
-    // XXX - TO BE IMPLEMENTED
+    if( rec.index != 1 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] first DE sequence is not 1 (received: ";
+        cerr << rec.index << ")\n";
+        return false;
+    }
+
+    int tmpInt;
+    IGES_ENTITY* ep;
+
+    while( rec.section_type == 'D' )
+    {
+        if( !DEItemToInt( rec.data, 0, tmpInt, NULL) )
+        {
+            ERRMSG << "\n + could not extract Entity Type number\n";
+            return false;
+        }
+
+        if( !NewEntity( tmpInt, &ep ) )
+        {
+            ERRMSG << "\n + could not create Entity #" << tmpInt << "\n";
+            return false;
+        }
+
+        if( !ep->ReadDE( &rec, file, nDESecLines ) )
+        {
+            ERRMSG << "\n + [INFO] could not read Directory Entry\n";
+            return false;
+        }
+
+        // read the first line of the next DE
+        if( !ReadIGESRecord( &rec, file, &pos ) )
+        {
+            ERRMSG << "\n + [INFO] could not read subsequent IGES record\n";
+            return false;
+        }
+    }
 
     // on exit the file must be rewound to the start of the first PD line
-    return false;
+    // reset the file pointer to the previous line
+    if( file.bad() )
+        file.clear();
+
+    file.seekg( pos );
+
+    if( file.bad() )
+    {
+        ERRMSG << "\n + [INFO] could not rewind the file stream\n";
+        return false;
+    }
+
+    return true;
 }
 
 
 bool IGES::readPD( IGES_RECORD& rec, std::ifstream& file )
 {
     // on entry the record contains the first PARAMETER DATA record
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    // but the stream should have been rewound to the start of that
+    // line
+
+    std::vector<IGES_ENTITY*>::iterator sEnt = entities.begin();
+    std::vector<IGES_ENTITY*>::iterator eEnt = entities.end();
+    size_t i = 0;
+
+    while( sEnt != eEnt )
+    {
+        if( !(*sEnt)->ReadPD( file, nPDSecLines ) )
+        {
+            ERRMSG << "\n + [INFO] could not read parameter data for Entity[";
+            cerr << i << "]\n";
+            return false;
+        }
+
+        ++i;
+        ++sEnt;
+    }
+
+    return true;
 }
 
 

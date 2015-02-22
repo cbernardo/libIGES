@@ -60,9 +60,6 @@ private:
 
 protected:
 
-    // Remove a child entity; this is invoked by a child which is being deleted
-    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
-
     friend class IGES;
     void setEntityType( int aEntityID );
 
@@ -75,8 +72,8 @@ public:
     virtual bool IsOrphaned( void );
     virtual bool AddReference( IGES_ENTITY* aParentEntity );
     virtual bool DelReference( IGES_ENTITY* aParentEntity );
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile );
-    virtual bool ReadPD( std::ifstream& aFile );
+    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
+    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool WriteDE( std::ofstream& aFile );
     virtual bool WritePD( std::ofstream& aFile );
     virtual bool SetEntityForm( int aForm );

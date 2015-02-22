@@ -65,6 +65,8 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
         if( !defaulted )
         {
             ERRMSG << "\n + [BUG/BAD DATA]: no data for non-default parameter\n";
+            cerr << " + string: '" << input.substr(j, 8) << "'\n";
+            cerr << " + position: " << j << "\n";
             return false;
         }
 
@@ -90,9 +92,10 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
         return false;
     }
 
-    if( cp != &tmp[8] )
+    if( 0 != *cp )
     {
         ERRMSG << "\n + [BAD DATA]: integer not right justified: '" << tmp << "'\n";
+        cerr << " + string: '" << tmp << "'\n";
         return false;
     }
 
@@ -156,6 +159,17 @@ bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos*
         return false;
     }
 
+    if( iline.length() )
+    {
+        char estr = iline[iline.length() -1];
+
+        while( (estr == '\n' || estr == '\r' || estr == '\f') && iline.size() > 1 )
+        {
+            iline.erase( --iline.end() );
+            estr = iline[iline.length() -1];
+        }
+    }
+
     if( iline.length() != 80 )
     {
         ERRMSG << "\n + invalid line length (" << iline.length() << "); must be 80\n";
@@ -180,14 +194,13 @@ bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos*
             ERRMSG << "\n + invalid Section Flag ('" << iline[72] << "')\n";
             cerr << " + line: '" << iline << "'\n";
             return false;
-            return false;
             break;
     }
 
     iline[72] = ' ';
     int tmpInt;
 
-    if( !DEItemToInt(aRecord->data, 8, tmpInt, NULL))
+    if( !DEItemToInt(iline, 9, tmpInt, NULL))
     {
         iline[72] = aRecord->section_type;
         ERRMSG << "\n + no sequence number\n";
@@ -250,6 +263,8 @@ bool ParseHString( const std::string& data, int& idx, std::string& param, bool& 
         return false;
     }
 
+    ++idx;
+
     if( i <= 0 )
     {
         ERRMSG << "\n + [BAD DATA]: invalid Hollerith string length (" << i << ")\n";
@@ -284,6 +299,8 @@ bool ParseHString( const std::string& data, int& idx, std::string& param, bool& 
 
     ERRMSG << "\n + [BAD DATA]: invalid record; no Parameter or Record delimeter after Hollerith string\n";
     cerr << "Data: " << cp << "\n";
+    cerr << "String: '" << param << "'\n";
+    cerr << "Character found in place of delimeter: '" << data[idx] << "'\n";
     return false;
 }
 

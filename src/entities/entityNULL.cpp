@@ -45,13 +45,6 @@ IGES_ENTITY_NULL::~IGES_ENTITY_NULL()
 }
 
 
-bool removeChild( IGES_ENTITY* aChildEntity )
-{
-    ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
-    return false;
-}
-
-
 void IGES_ENTITY_NULL::setEntityType( int aEntityID )
 {
     switch( aEntityID )
@@ -200,11 +193,11 @@ bool IGES_ENTITY_NULL::DelReference( IGES_ENTITY* aParentEntity )
 }
 
 
-bool IGES_ENTITY_NULL::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
+bool IGES_ENTITY_NULL::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
     entityType = trueEntity;
 
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile ) )
+    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -216,7 +209,7 @@ bool IGES_ENTITY_NULL::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
 }
 
 
-bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile)
+bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 {
     if( parameterData < 1 || parameterData > 9999999 )
     {
@@ -233,6 +226,8 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile)
 
     IGES_RECORD rec;
 
+    cout << "[INFO] Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+
     for(int i = 0; i < paramLineCount; ++i)
     {
         if( !ReadIGESRecord( &rec, aFile ) )
@@ -243,6 +238,8 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile)
             cerr << " + [INFO] Parameter Line # (" << (parameterData + i) << ")\n";
             return false;
         }
+
+        cout << "    " << rec.data << "\n";
 
         if( rec.section_type != 'P' )
         {
@@ -264,7 +261,10 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile)
         }
     }
 
-    return false;
+    cout << "-----\n";
+    aSequenceVar += paramLineCount;
+
+    return true;
 }
 
 

@@ -113,7 +113,7 @@ public:
     // bool export( IGES* ): Export all entities to the given IGES* (to be used for creating Assemblies)
 
     /// create an entity of the given type
-    bool NewEntity( int aEntityType );
+    bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
 
     /// add an entity from another IGES object or an entity created without NewEntity()
     bool AddEntity( IGES_ENTITY* aEntity );

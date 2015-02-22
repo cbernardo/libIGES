@@ -32,7 +32,7 @@
 using namespace std;
 
 
-bool IGES_ENTITY_TEMP::removeChild( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_TEMP::Unlink( IGES_ENTITY* aChildEntity )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
@@ -56,7 +56,7 @@ bool IGES_ENTITY_TEMP::DelReference( IGES_ENTITY* aParentEntity )
 }
 
 
-bool IGES_ENTITY_TEMP::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
+bool IGES_ENTITY_TEMP::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
@@ -64,7 +64,7 @@ bool IGES_ENTITY_TEMP::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
 }
 
 
-bool IGES_ENTITY_TEMP::ReadPD( std::ifstream& aFile )
+bool IGES_ENTITY_TEMP::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
@@ -80,7 +80,7 @@ bool IGES_ENTITY_TEMP::WriteDE( std::ofstream& aFile )
 }
 
 
-bool IGES_ENTITY_TEMP::WritePD( std::ofstream& aFile )
+bool IGES_ENTITY_TEMP::WritePD( std::ofstream& aFile, int& aSequenceVar )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";

@@ -94,9 +94,9 @@ bool IGES_ENTITY_100::DelReference( IGES_ENTITY* aParentEntity )
 }
 
 
-bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
+bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile ) )
+    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -115,7 +115,7 @@ bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile )
 }
 
 
-bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile )
+bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";

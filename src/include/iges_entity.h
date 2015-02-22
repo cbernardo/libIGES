@@ -76,9 +76,6 @@ protected:
     // prepare(&index): prepare data for writing; Parameter Data is formatted using the given index;
     //                  each Entity must have been previously assigned a correct Sequence Number
 
-    // Remove a child entity; this is invoked by a child which is being deleted
-    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
-
     friend class IGES;
     int sequenceNumber;     // first sequence number of this Directory Entry
 
@@ -88,7 +85,7 @@ public:
 
     // Routines to manage reference deletion
 
-    /// remove a chiled entity from the parent's list
+    /// remove a child entity from the parent's list
     virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
     /// return true if the entity is invalidated and can be deleted
     virtual bool IsOrphaned( void ) = 0;
@@ -99,9 +96,9 @@ public:
     size_t       GetNRefs( void );
 
     // Read the DE data from the given records
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile ) = 0;
+    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
     // virtual bool Read: read Parameter Data
-    virtual bool ReadPD( std::ifstream& aFile ) = 0;
+    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;
 
     // virtual bool Write: write entity data
     // XXX - In preparation for a Write we need to perform a Cull() to destroy any orphan entities

@@ -41,7 +41,6 @@ IGES_ENTITY_NULL::IGES_ENTITY_NULL( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_NULL::~IGES_ENTITY_NULL()
 {
-    disassociate();
     return;
 }
 
@@ -205,7 +204,8 @@ bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity )
 
 bool IGES_ENTITY_NULL::DelReference( IGES_ENTITY* aParentEntity )
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    ERRMSG << "\n + [BUG] invoking DelReference on NULL Entity\n";
+    return false;
 }
 
 
@@ -292,10 +292,17 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 }
 
 
+bool IGES_ENTITY_NULL::format( int &index )
+{
+    ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
+    return false;
+}
+
+
 bool IGES_ENTITY_NULL::WriteDE(std::ofstream& aFile)
 {
     ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
-    return true;    // do not interfere with other write operations
+    return false;
 }
 
 

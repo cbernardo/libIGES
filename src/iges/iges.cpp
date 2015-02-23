@@ -34,6 +34,7 @@ using namespace std;
 // Note: a default of 11 = IGES5.3
 #define DEFAULT_IGES_VERSION (11)
 
+
 static std::string UNIT_NAMES[UNIT_END] =
 {
     "IN",
@@ -49,6 +50,7 @@ static std::string UNIT_NAMES[UNIT_END] =
     "UIN"
 };
 
+
 // This class magically manages switching between the C locale and
 // the user's locale
 class IGES_LOCALE
@@ -56,12 +58,12 @@ class IGES_LOCALE
 public:
     IGES_LOCALE()
     {
-        setlocale( LC_NUMERIC, "C" );    // switch the numerics locale to "C"
+        setlocale( LC_NUMERIC, "C" );   // switch the numerics locale to "C"
     }
 
     ~IGES_LOCALE()
     {
-        setlocale( LC_NUMERIC, "" );      // revert to the current numerics default locale
+        setlocale( LC_NUMERIC, "" );    // revert to the current numerics default locale
     }
 };
 
@@ -363,8 +365,8 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
     switch( aEntityType )
     {
         case ENT_CIRCULAR_ARC:
-            //ep = new IGES_ENTITY_100( this );
-            //break;
+            ep = new IGES_ENTITY_100( this );
+            break;
 
         default:
             ep = new IGES_ENTITY_NULL( this );
@@ -388,15 +390,53 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
 // add an entity from another IGES object or an entity created without NewEntity()
 bool IGES::AddEntity( IGES_ENTITY* aEntity )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( !aEntity )
+    {
+        ERRMSG << "\n + [BUG] AddEntity() invoked with NULL argument\n";
+        return false;
+    }
+
+    std::vector<IGES_ENTITY*>::iterator sEnt = entities.begin();
+    std::vector<IGES_ENTITY*>::iterator eEnt = entities.end();
+
+    while( sEnt != eEnt )
+    {
+        if( *sEnt == aEntity )
+            return true;
+
+        ++sEnt;
+    }
+
+    entities.push_back( aEntity );
+
+    return true;
 }
 
 
-// delete an entity and any dependent children
+// delete an entity
 bool IGES::DelEntity( IGES_ENTITY* aEntity )
 {
-    // XXX - TO BE IMPLEMENTED
+    if( !aEntity )
+    {
+        ERRMSG << "\n + [BUG] DelEntity() invoked with NULL argument\n";
+        return false;
+    }
+
+    std::vector<IGES_ENTITY*>::iterator sEnt = entities.begin();
+    std::vector<IGES_ENTITY*>::iterator eEnt = entities.end();
+
+    while( sEnt != eEnt )
+    {
+        if( *sEnt == aEntity )
+        {
+            delete *sEnt;
+            entities.erase( sEnt );
+            return true;
+        }
+
+        ++sEnt;
+    }
+
     return false;
 }
 

@@ -49,6 +49,9 @@ class IGES_ENTITY_TEMP : public IGES_ENTITY
 {
 protected:
 
+    friend class IGES;
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    virtual bool format( int &index );
     // XXX - TO BE IMPLEMENTED
 
 public:

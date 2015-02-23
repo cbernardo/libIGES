@@ -51,14 +51,14 @@ class IGES_ENTITY_100 : public IGES_ENTITY
 {
 protected:
 
-    // Remove a child entity; this is invoked by a child which is being deleted
-    virtual bool removeChild( IGES_ENTITY* aChildEntity );
-
+    friend class IGES;
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    virtual bool format( int &index );
     // XXX - TO BE IMPLEMENTED
 
 public:
     IGES_ENTITY_100( IGES* aParent );
-    ~IGES_ENTITY_100();
+    virtual ~IGES_ENTITY_100();
 
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );

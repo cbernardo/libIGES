@@ -50,6 +50,8 @@ class IGES_ENTITY_430 : public IGES_ENTITY
 {
 protected:
 
+    friend class IGES;
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     // XXX - TO BE IMPLEMENTED
 
 public:

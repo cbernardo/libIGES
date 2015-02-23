@@ -87,13 +87,9 @@ private:
     // XXX - reads the TERMINATE section and verifies data
     bool readTS( IGES_RECORD& rec, std::ifstream& file );
 
-
-
     // XXX - TO BE IMPLEMENTED
-    // associate: associate pointers with other entities after reading all data; retrictions on types
-    //            must be enforced to ensure data integrity and software stability
-    // prepare: prepare data for writing; Parameter Data is formatted using the given index;
-    //          each Entity must have been previously assigned a correct Sequence Number
+    // format: prepare data for writing; Parameter Data is formatted using the given index
+    //          and the DE items are updated; the Sequence Number must have been previously allocated.
 
 public:
     IGES();
@@ -118,7 +114,7 @@ public:
     /// add an entity from another IGES object or an entity created without NewEntity()
     bool AddEntity( IGES_ENTITY* aEntity );
 
-    /// delete an entity and any dependent children
+    /// delete an entity
     bool DelEntity( IGES_ENTITY* aEntity );
 
 };

@@ -69,20 +69,20 @@ protected:
 
     // list of referring (superior) entities
     std::list<IGES_ENTITY*> refs;
+    // data formatted for output
+    std::string pdout;
 
     friend class IGES;
     int sequenceNumber;     // first sequence number of this Directory Entry
 
-    // XXX - TO BE IMPLEMENTED
     // associate: associate pointers with other entities after reading all data; retrictions on types
     //            must be enforced to ensure data integrity and software stability
     virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
 
-    // break associations in preparation for deletion
-    void disassociate(void);
-
-    // prepare(&index): prepare data for writing; Parameter Data is formatted using the given index;
-    //                  each Entity must have been previously assigned a correct Sequence Number
+    // format(&index): prepare data for writing; Parameter Data is formatted using the given index
+    //                 and DE items are updated; each Entity must have been previously assigned a
+    //                 correct Sequence Number
+    virtual bool format( int &index ) = 0;
 
 public:
     IGES_ENTITY(IGES* aParent);

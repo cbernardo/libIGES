@@ -29,7 +29,6 @@
 
 using namespace std;
 
-
 IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_ENTITY( aParent )
 {
     entityType = 100;
@@ -49,53 +48,58 @@ IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_100::~IGES_ENTITY_100()
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    return;
 }   // ~IGES_ENTITY_100()
+
+
+bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool IGES_ENTITY_100::format( int &index )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
 
 
 bool IGES_ENTITY_100::Unlink( IGES_ENTITY* aChild )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    return IGES_ENTITY::Unlink( aChild );
 }
 
 
 bool IGES_ENTITY_100::IsOrphaned( void )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
+    // TRUE when:
+    // a. there are no parent references AND
+    // b. the object is not Independent (depends == 0)
 
+    if( refs.empty() && depends != 0 )
+        return true;
 
-bool IGES_ENTITY_100::removeChild( IGES_ENTITY* aChildEntity )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
     return false;
 }
 
 
 bool IGES_ENTITY_100::IGES_ENTITY_100::AddReference( IGES_ENTITY* aParentEntity )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    return IGES_ENTITY::AddReference( aParentEntity );
 }
 
 
 bool IGES_ENTITY_100::DelReference( IGES_ENTITY* aParentEntity )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    return IGES_ENTITY::DelReference( aParentEntity );
 }
 
 
 bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
+    //qwerty;
     if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";

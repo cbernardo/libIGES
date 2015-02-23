@@ -110,50 +110,6 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 
 IGES_ENTITY::~IGES_ENTITY()
 {
-    return;
-}
-
-
-bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
-{
-    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
-    std::list<IGES_ENTITY*>::iterator eref = refs.end();
-
-    while( bref != eref )
-    {
-        if( aParentEntity == *bref )
-            return true;
-
-        ++bref;
-    }
-
-    refs.push_back( aParentEntity );
-    return true;
-}
-
-
-bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
-{
-    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
-    std::list<IGES_ENTITY*>::iterator eref = refs.end();
-
-    while( bref != eref )
-    {
-        if( aParentEntity == *bref )
-        {
-            refs.erase( bref );
-            return true;
-        }
-
-        ++bref;
-    }
-
-    return false;
-}
-
-
-void IGES_ENTITY::disassociate(void)
-{
     if( !refs.empty() )
     {
         std::list<IGES_ENTITY*>::iterator rbeg = refs.begin();
@@ -218,6 +174,124 @@ void IGES_ENTITY::disassociate(void)
 }   // IGES_ENTITY::~IGES_ENTITY()
 
 
+bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
+{
+    // unlink and return true if the child matches
+    // one of:
+    // pStructure;
+    // pLineFontPattern;
+    // pLevel;
+    // pView;
+    // pTransform;
+    // pLabelAssoc;
+    // pColor;
+
+    if( !aChild )
+    {
+        ERRMSG << "\n + [BUG] Unlink() invoked with NULL argument\n";
+        return false;
+    }
+
+    if( aChild == pStructure )
+    {
+        pStructure = NULL;
+        return true;
+    }
+
+    if( aChild == pLineFontPattern )
+    {
+        pLineFontPattern = NULL;
+        return true;
+    }
+
+    if( aChild == pLevel )
+    {
+        pLevel = NULL;
+        return true;
+    }
+
+    if( aChild == pView )
+    {
+        pView = NULL;
+        return true;
+    }
+
+    if( aChild == pTransform )
+    {
+        pTransform = NULL;
+        return true;
+    }
+
+    if( aChild == pLabelAssoc )
+    {
+        pLabelAssoc = NULL;
+        return true;
+    }
+
+    if( aChild == pColor )
+    {
+        pColor = NULL;
+        return true;
+    }
+
+    return false;
+}
+
+
+bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
+{
+    if( !aParentEntity )
+    {
+        ERRMSG << "\n + [BUG] NULL pointer passed for aParentEntity\n";
+        return false;
+    }
+
+    // Ensure we have no direct circular references
+    if( aParentEntity == pStructure || aParentEntity == pLineFontPattern
+        || aParentEntity == pLevel || aParentEntity == pView
+        || aParentEntity == pTransform || aParentEntity == pLabelAssoc
+        || aParentEntity == pColor )
+    {
+        ERRMSG << "\n + [BUG] requested a circular dependency on a DE item\n";
+        return false;
+    }
+
+    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
+    std::list<IGES_ENTITY*>::iterator eref = refs.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+            return true;
+
+        ++bref;
+    }
+
+    refs.push_back( aParentEntity );
+    return true;
+}
+
+
+bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
+{
+    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
+    std::list<IGES_ENTITY*>::iterator eref = refs.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+        {
+            refs.erase( bref );
+            return true;
+        }
+
+        ++bref;
+    }
+
+    return false;
+}
+
+
 bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 {
     // All entities must read in the following:
@@ -250,8 +324,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pStructure == this )
             {
                 pStructure = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by structure (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by structure (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -266,7 +340,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pStructure)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -278,7 +352,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pStructure = NULL;
@@ -287,8 +361,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by structure (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by structure (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -304,8 +378,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pLineFontPattern == this )
             {
                 pLineFontPattern = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Line Font Pattern (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Line Font Pattern (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -320,7 +394,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pLineFontPattern)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -332,7 +406,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pLineFontPattern = NULL;
@@ -343,7 +417,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
                 if( eType != 304 && eType != 0 )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << pLineFontPattern->GetEntityType();
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type ";
+                    cerr << pLineFontPattern->GetEntityType();
                     cerr << ") is not a LineFont Pattern (304)\n";
                     pLineFontPattern = NULL;
                     ok = false;
@@ -352,8 +427,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Line Font Pattern (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Line Font Pattern (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -369,8 +444,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pLevel == this )
             {
                 pLevel = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Level (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Level (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -385,7 +460,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pLevel)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -397,7 +472,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pLevel = NULL;
@@ -409,7 +484,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
                 if( eType != 0 && (eType != 406 || eForm != 1) )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type " << eType;
                     cerr << "-" << eForm << ") is not a Definition Levels Property (406-1)\n";
                     pLevel = NULL;
                     ok = false;
@@ -418,8 +493,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Level (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Level (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -435,8 +510,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pView == this )
             {
                 pView = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by View (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by View (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -451,7 +526,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pView)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -463,7 +538,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pView = NULL;
@@ -476,7 +551,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 if( eType != 0 && ((eType != 410 && eType != 402)
                     || (eType == 402 && eForm != 3 && eForm != 4 && eForm != 19 )) )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type " << eType;
                     cerr << "-" << eForm << ") is not a View or Views Visible Associativity Instance (410 or 402-3/4/19)\n";
                     pView = NULL;
                     ok = false;
@@ -485,8 +560,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by View (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by View (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -502,8 +577,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pTransform == this )
             {
                 pTransform = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -518,7 +593,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pTransform)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -530,7 +605,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pTransform = NULL;
@@ -541,7 +616,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
                 if( eType != 124 && eType != 0 )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type " << eType;
                     cerr << ") is not a Transform entity (124)\n";
                     pTransform = NULL;
                     ok = false;
@@ -550,8 +625,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Transform (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Transform (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -567,8 +642,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pLabelAssoc == this )
             {
                 pLabelAssoc = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -583,7 +658,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pLabelAssoc)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -595,7 +670,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pLabelAssoc = NULL;
@@ -607,7 +682,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
                 if( (eType != 0 && eType != 402) || (eType == 402 && eForm != 5) )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type " << eType;
                     cerr << "-" << eForm << ") is not a Label Display Associativity (402-5)\n";
                     pLabelAssoc = NULL;
                     ok = false;
@@ -616,8 +691,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Label Display Association (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Label Display Association (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }
@@ -633,8 +708,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
             if( pColor == this )
             {
                 pColor = NULL;
-                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Color Number (";
-                cerr << idx + 1 << ")\n";
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Color Number (DE";
+                cerr << (idx >> 1) + 1 << ")\n";
                 ok = false;
             }
 
@@ -649,7 +724,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                 {
                     tEnt = ((IGES_ENTITY_NULL*)pColor)->GetTrueEntityType();
 
-                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    ERRMSG << "\n + [WARNING] inconsistent data file; entity [DE";
                     cerr << sequenceNumber << "] contains a reference to ";
 
                     if( !tEnt )
@@ -661,7 +736,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         cerr << "an unsupported (Type " << tEnt << ")";
                     }
 
-                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                    cerr << " entity [DE" << (idx << 1) + 1 << "]\n";
                 }
 
                 pColor = NULL;
@@ -672,7 +747,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
                 if( eType != 0 && eType != 314 )
                 {
-                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[DE" << (idx >> 1) + 1 << "] (Type " << eType;
                     cerr << ") is not a Color Definition (314)\n";
                     pColor = NULL;
                     ok = false;
@@ -681,8 +756,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
         else
         {
-            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Color Number (";
-            cerr << idx + 1 << ") does not exist\n";
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Color Number (DE";
+            cerr << (idx >> 1) + 1 << ") does not exist\n";
             ok = false;
         }
     }

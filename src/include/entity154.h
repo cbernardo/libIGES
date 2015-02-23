@@ -48,9 +48,8 @@ class IGES_ENTITY_154 : public IGES_ENTITY
 {
 protected:
 
-    // Remove a child entity; this is invoked by a child which is being deleted
-    virtual bool removeChild( IGES_ENTITY* aChildEntity ) = 0;
-
+    friend class IGES;
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     // XXX - TO BE IMPLEMENTED
 
 public:

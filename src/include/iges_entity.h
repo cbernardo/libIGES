@@ -45,7 +45,7 @@ protected:
     int                 lineFontPattern;    // 0#P, 0 (def), Line font pattern number, or index to Line Font Definition (304)
     int                 level;              // 0#P, Level number for this entity, else index to Definition Levels Property (406-1)
     int                 view;               // 0P, 0 (def) or index to DirEnt for one of (a) View Entity (410) or (b) Views Visible Associativity Instance (402-3/4/19)
-    int                 transform;          // 0P, 0 (def) or index to Transormation Matrix (124)
+    int                 transform;          // 0P, 0 (def) or index to Transformation Matrix (124)
     int                 labelAssoc;         // 0P, 0 (def) or index to label Display Associativity (402-5)
     bool                visible;            // Status Number: Blank Status (default 0: visible == true)
     IGES_STAT_DEPENDS   depends;            // Status Number: Subordinate Entity Switch (default 0 = independent)
@@ -70,14 +70,19 @@ protected:
     // list of referring (superior) entities
     std::list<IGES_ENTITY*> refs;
 
+    friend class IGES;
+    int sequenceNumber;     // first sequence number of this Directory Entry
+
     // XXX - TO BE IMPLEMENTED
     // associate: associate pointers with other entities after reading all data; retrictions on types
     //            must be enforced to ensure data integrity and software stability
+    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
+
+    // break associations in preparation for deletion
+    void disassociate(void);
+
     // prepare(&index): prepare data for writing; Parameter Data is formatted using the given index;
     //                  each Entity must have been previously assigned a correct Sequence Number
-
-    friend class IGES;
-    int sequenceNumber;     // first sequence number of this Directory Entry
 
 public:
     IGES_ENTITY(IGES* aParent);

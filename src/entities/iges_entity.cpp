@@ -27,7 +27,7 @@
 #include <iomanip>
 #include <error_macros.h>
 #include <iges.h>
-#include <iges_entity.h>
+#include <all_entities.h>
 #include <iges_io.h>
 
 
@@ -110,6 +110,50 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 
 IGES_ENTITY::~IGES_ENTITY()
 {
+    return;
+}
+
+
+bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
+{
+    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
+    std::list<IGES_ENTITY*>::iterator eref = refs.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+            return true;
+
+        ++bref;
+    }
+
+    refs.push_back( aParentEntity );
+    return true;
+}
+
+
+bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
+{
+    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
+    std::list<IGES_ENTITY*>::iterator eref = refs.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+        {
+            refs.erase( bref );
+            return true;
+        }
+
+        ++bref;
+    }
+
+    return false;
+}
+
+
+void IGES_ENTITY::disassociate(void)
+{
     if( !refs.empty() )
     {
         std::list<IGES_ENTITY*>::iterator rbeg = refs.begin();
@@ -128,8 +172,523 @@ IGES_ENTITY::~IGES_ENTITY()
         refs.clear();
     }
 
+    if( pStructure )
+    {
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+
+    if( pLineFontPattern )
+    {
+        pLineFontPattern->DelReference( this );
+        pLineFontPattern = NULL;
+    }
+
+    if( pLevel )
+    {
+        pLevel->DelReference( this );
+        pLevel = NULL;
+    }
+
+    if( pView )
+    {
+        pView->DelReference( this );
+        pView = NULL;
+    }
+
+    if( pTransform )
+    {
+        pTransform->DelReference( this );
+        pTransform = NULL;
+    }
+
+    if( pLabelAssoc )
+    {
+        pLabelAssoc->DelReference( this );
+        pLabelAssoc = NULL;
+    }
+
+    if( pColor )
+    {
+        pColor->DelReference( this );
+        pColor = NULL;
+    }
+
     return;
 }   // IGES_ENTITY::~IGES_ENTITY()
+
+
+bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
+{
+    // All entities must read in the following:
+    //
+    // structure
+    // *lineFontPattern
+    // *level
+    // view
+    // transform
+    // labelAssoc
+    // *colorNum
+    //
+    // Note: it is the responsibility of the individual
+    // entities to ensure that there is no data entry for
+    // parameters which do not apply. For example, most
+    // entities must have 0 for the 'structure' parameter.
+
+    bool ok = true;
+    int idx;
+    int tEnt;
+
+    if( structure > 0 )
+    {
+        idx = structure >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pStructure = (*entities)[idx];
+
+            if( pStructure == this )
+            {
+                pStructure = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by structure (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pStructure->AddReference( this ) )
+            {
+                if( pStructure->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pStructure)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pStructure = NULL;
+            }
+
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by structure (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( lineFontPattern < 0 )
+    {
+        idx = (-lineFontPattern) >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pLineFontPattern = (*entities)[idx];
+
+            if( pLineFontPattern == this )
+            {
+                pLineFontPattern = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Line Font Pattern (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pLineFontPattern->AddReference( this ) )
+            {
+                if( pLineFontPattern->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pLineFontPattern)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pLineFontPattern = NULL;
+            }
+            else
+            {
+                int eType = pLineFontPattern->GetEntityType();
+
+                if( eType != 304 && eType != 0 )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << pLineFontPattern->GetEntityType();
+                    cerr << ") is not a LineFont Pattern (304)\n";
+                    pLineFontPattern = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Line Font Pattern (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( level < 0 )
+    {
+        idx = (-level) >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pLevel = (*entities)[idx];
+
+            if( pLevel == this )
+            {
+                pLevel = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Level (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pLevel->AddReference( this ) )
+            {
+                if( pLevel->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pLevel)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pLevel = NULL;
+            }
+            else
+            {
+                int eType = pLevel->GetEntityType();
+                int eForm = pLevel->GetEntityForm();
+
+                if( eType != 0 && (eType != 406 || eForm != 1) )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    cerr << "-" << eForm << ") is not a Definition Levels Property (406-1)\n";
+                    pLevel = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Level (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( view > 0 )
+    {
+        idx = view >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pView = (*entities)[idx];
+
+            if( pView == this )
+            {
+                pView = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by View (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pView->AddReference( this ) )
+            {
+                if( pView->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pView)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pView = NULL;
+            }
+            else
+            {
+                int eType = pView->GetEntityType();
+                int eForm = pView->GetEntityForm();
+
+                if( eType != 0 && ((eType != 410 && eType != 402)
+                    || (eType == 402 && eForm != 3 && eForm != 4 && eForm != 19 )) )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    cerr << "-" << eForm << ") is not a View or Views Visible Associativity Instance (410 or 402-3/4/19)\n";
+                    pView = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by View (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( transform > 0 )
+    {
+        idx = transform >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pTransform = (*entities)[idx];
+
+            if( pTransform == this )
+            {
+                pTransform = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pTransform->AddReference( this ) )
+            {
+                if( pTransform->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pTransform)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pTransform = NULL;
+            }
+            else
+            {
+                int eType = pTransform->GetEntityType();
+
+                if( eType != 124 && eType != 0 )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    cerr << ") is not a Transform entity (124)\n";
+                    pTransform = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Transform (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( labelAssoc > 0 )
+    {
+        idx = labelAssoc >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pLabelAssoc = (*entities)[idx];
+
+            if( pLabelAssoc == this )
+            {
+                pLabelAssoc = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Transform (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pLabelAssoc->AddReference( this ) )
+            {
+                if( pLabelAssoc->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pLabelAssoc)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pLabelAssoc = NULL;
+            }
+            else
+            {
+                int eType = pLabelAssoc->GetEntityType();
+                int eForm = pLabelAssoc->GetEntityForm();
+
+                if( (eType != 0 && eType != 402) || (eType == 402 && eForm != 5) )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    cerr << "-" << eForm << ") is not a Label Display Associativity (402-5)\n";
+                    pLabelAssoc = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Label Display Association (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    if( colorNum < 0 )
+    {
+        idx = (-colorNum) >> 1;
+
+        if( idx < (int)entities->size() )
+        {
+            pColor = (*entities)[idx];
+
+            if( pColor == this )
+            {
+                pColor = NULL;
+                ERRMSG << "\n + [CORRUPT FILE] self-referential entity referenced by Color Number (";
+                cerr << idx + 1 << ")\n";
+                ok = false;
+            }
+
+            if( !pColor->AddReference( this ) )
+            {
+                if( pColor->GetEntityType() != 0 )
+                {
+                    ERRMSG << "\n + [INFO] could not add a reference to a non-NULL entity\n";
+                    ok = false;
+                }
+                else
+                {
+                    tEnt = ((IGES_ENTITY_NULL*)pColor)->GetTrueEntityType();
+
+                    ERRMSG << " + [WARNING] inconsistent data file; entity [DE";
+                    cerr << sequenceNumber << "] contains a reference to ";
+
+                    if( !tEnt )
+                    {
+                        cerr << "a NULL";
+                    }
+                    else
+                    {
+                        cerr << "an unsupported (Type " << tEnt << ")";
+                    }
+
+                    cerr << " entity [" << (idx >> 1) + 1 << "]\n";
+                }
+
+                pColor = NULL;
+            }
+            else
+            {
+                int eType = pColor->GetEntityType();
+
+                if( eType != 0 && eType != 314 )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE] Entity[" << idx + 1 << "] (Type " << eType;
+                    cerr << ") is not a Color Definition (314)\n";
+                    pColor = NULL;
+                    ok = false;
+                }
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] entity referenced by Color Number (";
+            cerr << idx + 1 << ") does not exist\n";
+            ok = false;
+        }
+    }
+
+    return ok;
+}
 
 
 bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
@@ -164,6 +723,8 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
         ERRMSG << "\n + [BUG]: expecting an odd sequence number in DE Record 1, got " << aRecord->index << "\n";
         return false;
     }
+
+    sequenceNumber = aRecord->index;
 
     // DE1: Entity Type Number
     int tmpInt;

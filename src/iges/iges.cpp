@@ -23,6 +23,7 @@
  *
  */
 
+#include <locale.h>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -47,6 +48,23 @@ static std::string UNIT_NAMES[UNIT_END] =
     "CM",
     "UIN"
 };
+
+// This class magically manages switching between the C locale and
+// the user's locale
+class IGES_LOCALE
+{
+public:
+    IGES_LOCALE()
+    {
+        setlocale( LC_NUMERIC, "C" );    // switch the numerics locale to "C"
+    }
+
+    ~IGES_LOCALE()
+    {
+        setlocale( LC_NUMERIC, "" );      // revert to the current numerics default locale
+    }
+};
+
 
 IGES::IGES()
 {
@@ -127,8 +145,8 @@ bool IGES::Clear( void )
 // open and read the file with the given name
 bool IGES::Read( const char* aFileName )
 {
-    // XXX - Set the LOCALE so that we get correct translation of floats;
-    // use the "C" locale - see KiCad VRML export for clues.
+    IGES_LOCALE igloc;
+
     if( !aFileName )
     {
         ERRMSG << "\n + [BUG] null pointer passed for filename\n";
@@ -285,19 +303,52 @@ bool IGES::Read( const char* aFileName )
         return false;
     }
 
-    // XXX - establish correct entity associations
-    // XXX - cull unsupported entities
+    // Associate entities
+    size_t nEnt = entities.size();
+    size_t iEnt;
 
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( !entities[iEnt]->associate( &entities ) )
+        {
+            ERRMSG << "\n + [INFO] could not establish file associations\n";
+            return false;
+        }
+    }
+
+    // cull unsupported entities
+    int nCulled = 0;
+    std::vector<IGES_ENTITY*> tmpEnts;
+
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( entities[iEnt]->IsOrphaned() )
+        {
+            ++nCulled;
+            delete entities[iEnt];
+        }
+        else
+        {
+            tmpEnts.push_back( entities[iEnt] );
+        }
+    }
+
+    entities = tmpEnts;
+
+#ifdef DEBUG
+    cout << " + [INFO] Entities culled: " << nCulled << "\n";
+    cout << " + [INFO] Entities remaining: " << entities.size() << "\n";
+#endif
+
+    return true;
 }
 
 
 // open a file with the given name and write out all data
 bool IGES::Write( const char* aFileName, bool fOverwrite )
 {
-    // XXX - Set the LOCALE so that we get correct translation of floats;
-    // use the "C" locale - see KiCad VRML export for clues.
+    IGES_LOCALE igloc;
+
     // XXX - TO BE IMPLEMENTED
     return false;
 }
@@ -525,7 +576,6 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
             return false;
         }
     }
-    cerr << "XXX: nIntegerBits: " << globalData.nIntegerBits << "\n";
 
     // G8: Single Precision Magnitude, REQUIRED NO DEFAULT
     if( !ParseInt( globs, idx, globalData.floatMaxExp, eor, delim, rdelim ) )
@@ -720,90 +770,127 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
         return false;
     }
 
-    // G20: Approx. Max. Coordinate
-    rdefault = 0.0;
-
-    if( !ParseReal( globs, idx, globalData.maxCoordinateValue, eor, delim, rdelim, &rdefault ) )
+    // G20: Approx. Max. Coordinate, REQUIRED DEFAULT 0
+    if( eor )
     {
-        ERRMSG << "\n + [CORRUPT FILE] could not retrieve approx. max coordinate\n";
-        return false;
+        globalData.maxCoordinateValue = 0.0;
     }
-
-    if( globalData.maxCoordinateValue < 0.0 )
+    else
     {
-        ERRMSG << "\n + [CORRUPT FILE] invalid max. coordinate value (";
-        cerr << globalData.maxCoordinateValue << ")\n";
-        return false;
+        rdefault = 0.0;
+
+        if( !ParseReal( globs, idx, globalData.maxCoordinateValue, eor, delim, rdelim, &rdefault ) )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] could not retrieve approx. max coordinate\n";
+            return false;
+        }
+
+        if( globalData.maxCoordinateValue < 0.0 )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid max. coordinate value (";
+            cerr << globalData.maxCoordinateValue << ")\n";
+            return false;
+        }
     }
 
     // G21: Author, REQUIRED, DEFAULT NULL
-    if( !ParseHString( globs, idx, globalData.author, eor, delim, rdelim ) )
+    if( eor )
+    {
+        globalData.author.clear();
+    }
+    else if( !ParseHString( globs, idx, globalData.author, eor, delim, rdelim ) )
     {
         ERRMSG << "\n + [CORRUPT FILE] could not retrieve Author\n";
         return false;
     }
 
     // G22: Organization, REQUIRED, DEFAULT NULL
-    if( !ParseHString( globs, idx, globalData.organization, eor, delim, rdelim ) )
+    if( eor )
+    {
+        globalData.organization.clear();
+    }
+    else if( !ParseHString( globs, idx, globalData.organization, eor, delim, rdelim ) )
     {
         ERRMSG << "\n + [CORRUPT FILE] could not retrieve Organization\n";
         return false;
     }
 
-    // G23: Version Flag
-    idefault = DEFAULT_IGES_VERSION;
-
-    if( !ParseInt( globs, idx, globalData.igesVersion, eor, delim, rdelim, &idefault ) )
+    // G23: Version Flag, REQUIRED DEFAULT 3
+    if( eor )
     {
-        ERRMSG << "\n + [CORRUPT FILE] could not retrieve IGES version\n";
-        return false;
-    }
-
-    if( globalData.igesVersion < 3 )
         globalData.igesVersion = 3;
-    else if( globalData.igesVersion > 11 )    /* this should never happen since IGES is an unmaintained standard */
-        globalData.igesVersion = 11;
+    }
+    else
+    {
+        idefault = DEFAULT_IGES_VERSION;
+
+        if( !ParseInt( globs, idx, globalData.igesVersion, eor, delim, rdelim, &idefault ) )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] could not retrieve IGES version\n";
+            return false;
+        }
+
+        if( globalData.igesVersion < 3 )
+            globalData.igesVersion = 3;
+        else if( globalData.igesVersion > 11 )    /* this should never happen since IGES is an unmaintained standard */
+            globalData.igesVersion = 11;
+
+    }
 
     // G24: Drafting Standard, REQUIRED DEFAULT 0
-    idefault = 0;
-
-    if( !ParseInt( globs, idx, tint, eor, delim, rdelim, &idefault ) )
+    if( eor )
     {
-        ERRMSG << "\n + [CORRUPT FILE] could not retrieve Drafting Standard\n";
-        return false;
+        globalData.draftStandard = DRAFT_NONE;
+    }
+    else
+    {
+        idefault = 0;
+
+        if( !ParseInt( globs, idx, tint, eor, delim, rdelim, &idefault ) )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] could not retrieve Drafting Standard\n";
+            return false;
+        }
+
+        if( tint < DRAFT_NONE || tint > DRAFT_JIS )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid Drafting Standard (";
+            cerr << tint << ")\n";
+        }
+
+        globalData.draftStandard = (IGES_DRAFTING_STANDARD)tint;
     }
 
-    if( tint < DRAFT_NONE || tint > DRAFT_JIS )
+    // G25: Modification Date, REQUIRED DEFAULT NULL
+    if( eor )
     {
-        ERRMSG << "\n + [CORRUPT FILE] invalid Drafting Standard (";
-        cerr << tint << ")\n";
+        globalData.modificationDate.clear();
+    }
+    else
+    {
+        if( !ParseHString( globs, idx, globalData.modificationDate, eor, delim, rdelim ) )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] could not retrieve file creation date\n";
+            return false;
+        }
+
+        // XXX - ideally we should parse the string to ensure it's a valid date
+        if( globalData.modificationDate.length() > 0 && globalData.modificationDate.length() != 13
+            && globalData.modificationDate.length() != 15 )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid modification date '";
+            cerr << globalData.modificationDate << "'\n";
+            return false;
+        }
     }
 
-    globalData.draftStandard = (IGES_DRAFTING_STANDARD)tint;
-
-    // G25: Modification Date
-    if( !ParseHString( globs, idx, globalData.modificationDate, eor, delim, rdelim ) )
-    {
-        ERRMSG << "\n + [CORRUPT FILE] could not retrieve file creation date\n";
-        return false;
-    }
-
-    // XXX - ideally we should parse the string to ensure it's a valid date
-    if( globalData.modificationDate.length() > 0 && globalData.modificationDate.length() != 13
-        && globalData.modificationDate.length() != 15 )
-    {
-        ERRMSG << "\n + [CORRUPT FILE] invalid modification date '";
-        cerr << globalData.modificationDate << "'\n";
-        return false;
-    }
-
+    // G26: Application Protocol / Subset Identifier, REQUIRED DEFAULT NULL
     if( eor )
     {
         globalData.applicationNote.clear();
         return true;
     }
 
-    // G26: Application Protocol / Subset Identifier, REQUIRED DEFAULT NULL
     if( !ParseHString( globs, idx, globalData.applicationNote, eor, delim, rdelim ) )
     {
         ERRMSG << "\n + [CORRUPT FILE] could not retrieve AP / Subset Identifier string\n";
@@ -909,6 +996,109 @@ bool IGES::readPD( IGES_RECORD& rec, std::ifstream& file )
 
 bool IGES::readTS( IGES_RECORD& rec, std::ifstream& file )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( !ReadIGESRecord( &rec, file ) )
+    {
+        ERRMSG << "\n + [INFO] could not read Terminate Section from file\n";
+        return false;
+    }
+
+    if( rec.section_type != 'T' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expecting Terminate Section 'T', received '";
+        cerr << rec.section_type << "'\n";
+        return false;
+    }
+
+    if( rec.index != 1 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected Sequence Number '1', got '";
+        cerr << rec.index << "'\n";
+        return false;
+    }
+
+    if( rec.data[0] != 'S' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected 'S' in column 1, got '";
+        cerr << rec.data[0] << "'\n";
+        return false;
+    }
+
+    if( rec.data[8] != 'G' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected 'G' in column 9, got '";
+        cerr << rec.data[8] << "'\n";
+        return false;
+    }
+
+    if( rec.data[16] != 'D' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected 'D' in column 17, got '";
+        cerr << rec.data[16] << "'\n";
+        return false;
+    }
+
+    if( rec.data[24] != 'P' )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] expected 'P' in column 25, got '";
+        cerr << rec.data[24] << "'\n";
+        return false;
+    }
+
+    rec.data[0] = 32;
+    rec.data[8] = 32;
+    rec.data[16] = 32;
+    rec.data[24] = 32;
+
+    // bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted )
+    int tmpInt;
+
+    if( !DEItemToInt( rec.data, 0, tmpInt, NULL ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] no Start Sequence Count in Terminate Section\n";
+        return false;
+    }
+
+    if( tmpInt != (int)startSection.size() )
+    {
+        ERRMSG << "\n + [INCONSISTENT FILE] file has " << startSection.size() << "lines ";
+        cerr << "in the Start Section; Terminate Section reports " << tmpInt << "\n";
+    }
+
+    if( !DEItemToInt( rec.data, 1, tmpInt, NULL ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] no Global Sequence Count in Terminate Section\n";
+        return false;
+    }
+
+    if( tmpInt != nGlobSecLines )
+    {
+        ERRMSG << "\n + [INCONSISTENT FILE] file has " << nGlobSecLines << "lines ";
+        cerr << "in the Global Section; Terminate Section reports " << tmpInt << "\n";
+    }
+
+    if( !DEItemToInt( rec.data, 2, tmpInt, NULL ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] no Directory Sequence Count in Terminate Section\n";
+        return false;
+    }
+
+    if( tmpInt != nDESecLines )
+    {
+        ERRMSG << "\n + [INCONSISTENT FILE] file has " << nDESecLines << "lines ";
+        cerr << "in the Directory Section; Terminate Section reports " << tmpInt << "\n";
+    }
+
+    if( !DEItemToInt( rec.data, 3, tmpInt, NULL ) )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] no Parameter Sequence Count in Terminate Section\n";
+        return false;
+    }
+
+    if( tmpInt != nPDSecLines )
+    {
+        ERRMSG << "\n + [INCONSISTENT FILE] file has " << nPDSecLines << "lines ";
+        cerr << "in the Parameter Section; Terminate Section reports " << tmpInt << "\n";
+    }
+
+    return true;
 }

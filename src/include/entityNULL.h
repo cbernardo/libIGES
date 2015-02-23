@@ -54,7 +54,6 @@
 class IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
-    // XXX - TO BE IMPLEMENTED
     int trueEntity;     // actual Entity Type; non-zero in the case of
                         // a currently unsupported entity
 
@@ -62,10 +61,16 @@ protected:
 
     friend class IGES;
     void setEntityType( int aEntityID );
+    virtual bool associate(std::vector<IGES_ENTITY*>* entities);
 
 public:
     IGES_ENTITY_NULL(IGES* aParent);
     virtual ~IGES_ENTITY_NULL();
+
+    int GetTrueEntityType(void)
+    {
+        return trueEntity;
+    }
 
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );

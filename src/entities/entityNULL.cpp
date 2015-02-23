@@ -41,6 +41,7 @@ IGES_ENTITY_NULL::IGES_ENTITY_NULL( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_NULL::~IGES_ENTITY_NULL()
 {
+    disassociate();
     return;
 }
 
@@ -162,6 +163,22 @@ void IGES_ENTITY_NULL::setEntityType( int aEntityID )
 }
 
 
+bool IGES_ENTITY_NULL::associate(std::vector<IGES_ENTITY*>* entities)
+{
+    // Since a NULL entity knows nothing of the Parameter Data,
+    // the only associations which can be formed are the ones
+    // provided by the base class implementation of associate().
+
+    if( !IGES_ENTITY::associate( entities ) )
+    {
+        ERRMSG << "\n + [INFO] association failed; see messages above\n";
+        return false;
+    }
+
+    return true;
+}
+
+
 bool IGES_ENTITY_NULL::Unlink( IGES_ENTITY* aChild )
 {
     // there are no properly established links so in
@@ -188,8 +205,7 @@ bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity )
 
 bool IGES_ENTITY_NULL::DelReference( IGES_ENTITY* aParentEntity )
 {
-    ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
-    return false;
+    return IGES_ENTITY::DelReference( aParentEntity );
 }
 
 
@@ -226,7 +242,10 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 
     IGES_RECORD rec;
 
-    cout << "[INFO] Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+#ifdef DEBUG
+    cout << "[INFO] Entity(NULL/" << trueEntity;
+    cout << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+#endif
 
     for(int i = 0; i < paramLineCount; ++i)
     {
@@ -239,7 +258,9 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             return false;
         }
 
+#ifdef DEBUG
         cout << "    " << rec.data << "\n";
+#endif
 
         if( rec.section_type != 'P' )
         {
@@ -261,7 +282,10 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
         }
     }
 
+#ifdef DEBUG
     cout << "-----\n";
+#endif
+
     aSequenceVar += paramLineCount;
 
     return true;

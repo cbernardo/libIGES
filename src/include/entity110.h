@@ -63,8 +63,6 @@ public:
     virtual bool DelReference(IGES_ENTITY* aParentEntity);
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
-    virtual bool WriteDE(std::ofstream& aFile);
-    virtual bool WritePD(std::ofstream& aFile);
     virtual bool SetEntityForm(int aForm);
     virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);

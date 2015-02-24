@@ -22,6 +22,9 @@
  *
  */
 
+// XXX - BUG:
+// How do we sort entities such that we avoid back-pointers?
+
 #ifndef IGES_ENTITY_H
 #define IGES_ENTITY_H
 
@@ -69,6 +72,12 @@ protected:
 
     // list of referring (superior) entities
     std::list<IGES_ENTITY*> refs;
+    // list of extra entities (optional PD entries)
+    std::list<IGES_ENTITY*> extras;
+    // XXX - need to be able to access extras (get/add/delete)
+    // list of optional comments
+    // XXX - need to be able to access comments (get/add/delete)
+    std::list<std::string> comments;
     // data formatted for output (also used for reading PDs from file)
     std::string pdout;
 
@@ -84,6 +93,15 @@ protected:
     //                 correct Sequence Number
     virtual bool format( int &index ) = 0;
     void         unformat( void );
+
+    // read optional (extra) PD parameters
+    bool readExtraParams( int& index );
+    // read optional (extra) PD comments
+    bool readComments( int& index );
+    // format optional (extra) PD parameters for output
+    bool formatExtraParams( std::string& fStr,int& pdSeq, char pd, char rd );
+    // format optional (extra) PD comments for output
+    bool formatComments( int& pdSeq );
 
 public:
     IGES_ENTITY(IGES* aParent);
@@ -110,8 +128,8 @@ public:
     // XXX - In preparation for a Write we need to perform a Cull() to destroy any orphan entities
     // then we need to re-enumerate [Reorder()] the DE and PD fields by traversing the Entity List and passing
     // a DE and PD accumulator to each in sequence.
-    virtual bool WriteDE( std::ofstream& aFile ) = 0;
-    virtual bool WritePD( std::ofstream& aFile ) = 0;
+    virtual bool WriteDE( std::ofstream& aFile );
+    virtual bool WritePD( std::ofstream& aFile );
 
     // Set the parent object; this is required for operations such as 'Import'
     bool SetParentIGES( IGES* aParent );

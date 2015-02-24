@@ -22,6 +22,7 @@
  *
  */
 
+#include <sstream>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -66,8 +67,100 @@ bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
 
 bool IGES_ENTITY_100::format( int &index )
 {
+    pdout.clear();
+
+    if( index < 1 || index > 9999999 )
+    {
+        ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
+        return false;
+    }
+
+    parameterData = index;
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [INFO] method invoked with no parent IGES object\n";
+        return false;
+    }
+
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+    double uir = parent->globalData.minResolution;
+
+    ostringstream ostr;
+    ostr << entityType << pd;
+    string fStr = ostr.str();
+    string tStr;
+
+    if( !FormatPDREal( tStr, zOffset, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format zOffset\n";
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, xCenter, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format xCenter\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, yCenter, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format yCenter\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, xStart, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format xStart\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, yStart, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format yStart\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, xEnd, pd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format xEnd\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
     // XXX - TO BE IMPLEMENTED
-    return false;
+    // NOTE: 2 sets of OPTIONAL parameters may exist at the end of
+    // any PD; see p.32/60+ for details; if optional parameters
+    // need to be written then we should use 'pd' rather than 'rd'
+    // in this call to FormatPDREal()
+    if( !FormatPDREal( tStr, yEnd, rd, uir ) )
+    {
+        ERRMSG << "\n + [INFO] could not format yEnd\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    paramLineCount = index - parameterData;
+    return true;
 }
 
 
@@ -80,6 +173,8 @@ bool IGES_ENTITY_100::Unlink( IGES_ENTITY* aChild )
 bool IGES_ENTITY_100::IsOrphaned( void )
 {
     // TRUE when there are no parent references regardless of dependency setting
+    // XXX - DEBUG ONLY
+    return false;
 
     if( refs.empty() )
         return true;
@@ -177,28 +272,25 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( !eor )
+    if( eor )
     {
-        ERRMSG << "\n + [BAD FILE] no end of record delimeter for Circle Entity\n";
-        return false;
+        pdout.clear();
+        return true;
     }
 
-    return true;
-}
-
-
-bool IGES_ENTITY_100::WriteDE( std::ofstream& aFile )
-{
     // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
+    // if( eor )
+    // {
+    //     ReadComments();
+    //     pdout.clear();
+    //     return true;
+    // }
 
+    // ReadExtraParams()
+    // ReadComments();
+    // pdout.clear();
+    // return true;
 
-bool IGES_ENTITY_100::WritePD( std::ofstream& aFile )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
     return false;
 }
 

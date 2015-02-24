@@ -27,6 +27,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 #include <error_macros.h>
@@ -455,5 +456,126 @@ bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, cha
     }
 
     param = d;
+    return true;
+}
+
+
+bool FormatDEInt( std::string& out, const int num )
+{
+    if( num > 9999999 || num < -9999999 )
+    {
+        ERRMSG << "\n + [BUG] integer to format (" << num;
+        cerr << ") exceeds 7-digit limitation of IGES format\n";
+        return false;
+    }
+
+    ostringstream ostr;
+    ostr << num;
+
+    out.clear();
+    size_t len = ostr.str().length();
+
+    if( len < 8 )
+        out.append( 8 - len, ' ' );
+
+    out.append( ostr.str() );
+
+    return true;
+}
+
+
+// format a real number as a float or double and tack on a delimeter (may be PD or RD)
+bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+// tack the delimited PD Item tStr onto fStr and when appropriate update fOut and index;
+// if the delimeter of tStr == rd then the PD entry is finalized
+bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
+                int& index, int sequenceNumber, char pd, char rd )
+{
+    if( tStr.length() > 64 )
+    {
+        ERRMSG << "\n + [BUG] parameter length exceeds max. permissible by IGES specification\n";
+        return false;
+    }
+
+    if( fStr.length() > 64 )
+    {
+        ERRMSG << "\n + [BUG] PD entry exceeds max. permissible by IGES specification\n";
+        return false;
+    }
+
+    if( fStr.length() + tStr.length() > 64 )
+    {
+        int len = 64 - fStr.length();
+
+        if( len > 0 )
+            fStr.append( len, ' ' );
+
+        // add sequence number
+        std::string seq;
+
+        if( !FormatDEInt( seq, sequenceNumber ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on Sequence Number\n";
+            return false;
+        }
+
+        fStr += seq;
+
+        // add PD Sequence Number
+        if( !FormatDEInt( seq, index ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on PD Sequence Number\n";
+            return false;
+        }
+
+        seq[0] = 'P';
+        fStr += seq;
+        fOut += fStr;
+        fStr.clear();
+        ++index;
+    }
+
+    // tack tStr onto fStr
+    fStr += tStr;
+
+    if( tStr[tStr.length() -1] == rd )
+    {
+        // this is the final entry
+        int len = 64 - fStr.length();
+
+        if( len > 0 )
+            fStr.append( len, ' ' );
+
+        // add sequence number
+        std::string seq;
+
+        if( !FormatDEInt( seq, sequenceNumber ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on Sequence Number\n";
+            return false;
+        }
+
+        fStr += seq;
+
+        // add PD Sequence Number
+        if( !FormatDEInt( seq, index ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on PD Sequence Number\n";
+            return false;
+        }
+
+        seq[0] = 'P';
+        fStr += seq;
+        fOut += fStr;
+        fStr.clear();
+        ++index;
+    }
+
+    tStr.clear();
     return true;
 }

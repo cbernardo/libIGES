@@ -164,7 +164,7 @@ bool IGES::Read( const char* aFileName )
 
     ifstream file;
 
-    file.open( aFileName, ios::in );
+    file.open( aFileName, ios::in | ios::binary );
 
     if( !file.is_open() )
     {
@@ -318,30 +318,7 @@ bool IGES::Read( const char* aFileName )
         }
     }
 
-    // cull unsupported entities
-    int nCulled = 0;
-    std::vector<IGES_ENTITY*> tmpEnts;
-
-    for( iEnt = 0; iEnt < nEnt; ++iEnt )
-    {
-        if( entities[iEnt]->IsOrphaned() )
-        {
-            ++nCulled;
-            delete entities[iEnt];
-        }
-        else
-        {
-            tmpEnts.push_back( entities[iEnt] );
-        }
-    }
-
-    entities = tmpEnts;
-
-#ifdef DEBUG
-    cout << " + [INFO] Entities culled: " << nCulled << "\n";
-    cout << " + [INFO] Entities remaining: " << entities.size() << "\n";
-#endif
-
+    cull();
     return true;
 }
 
@@ -351,7 +328,69 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
 {
     IGES_LOCALE igloc;
 
+    if( !aFileName )
+    {
+        ERRMSG << "\n + [BUG] null pointer passed for filename\n";
+        return false;
+    }
+
+    cull();
+
+    if( entities.empty() )
+    {
+        ERRMSG << "\n + [INFO ] no entities to save\n";
+        return false;
+    }
+
+    // Assign Sequence numbers
+    size_t nEnt = entities.size();
+    size_t iEnt;
+    int index = 1;
+
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+        entities[iEnt]->sequenceNumber = (int)(iEnt << 1) + 1;
+
+    // Format PD entries for output and update some DE items
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( !entities[iEnt]->format( index ) )
+        {
+            ERRMSG << "\n + [INFO] could not format entity for output\n";
+
+            for( nEnt = 0; nEnt < iEnt; ++nEnt )
+                entities[iEnt]->unformat();
+
+            return false;
+        }
+    }
+
+    // XXX - Establish DE Associations
+
+    ofstream file;
+
+    if( fOverwrite )
+        file.open( aFileName, ios::out | ios::binary | ios::trunc );
+    else
+        file.open( aFileName, ios::out | ios::binary );
+
+    if( !file.is_open() )
+    {
+        for( iEnt = 0; iEnt < nEnt; ++iEnt )
+            entities[iEnt]->unformat();
+
+        ERRMSG << "\n + [INFO] could not open file\n";
+        cerr << " + filename: '" << aFileName << "'\n";
+        return false;
+    }
+
     // XXX - TO BE IMPLEMENTED
+
+    // XXX - Write START
+    // XXX - Write GLOBALS
+    // XXX - Write DEs
+    // XXX - Write PDs
+    // XXX - Write TS
+
     return false;
 }
 
@@ -1141,4 +1180,36 @@ bool IGES::readTS( IGES_RECORD& rec, std::ifstream& file )
     }
 
     return true;
+}
+
+
+// cull unsupported and orphaned entities
+void IGES::cull( void )
+{
+    size_t nEnt = entities.size();
+    size_t iEnt;
+    int nCulled = 0;
+    std::vector<IGES_ENTITY*> tmpEnts;
+
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( entities[iEnt]->IsOrphaned() )
+        {
+            ++nCulled;
+            delete entities[iEnt];
+        }
+        else
+        {
+            tmpEnts.push_back( entities[iEnt] );
+        }
+    }
+
+    entities = tmpEnts;
+
+#ifdef DEBUG
+    cout << " + [INFO] Entities culled: " << nCulled << "\n";
+    cout << " + [INFO] Entities remaining: " << entities.size() << "\n";
+#endif
+
+    return;
 }

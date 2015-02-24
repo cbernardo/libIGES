@@ -110,6 +110,8 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 
 IGES_ENTITY::~IGES_ENTITY()
 {
+    comments.clear();
+
     if( !refs.empty() )
     {
         std::list<IGES_ENTITY*>::iterator rbeg = refs.begin();
@@ -126,6 +128,24 @@ IGES_ENTITY::~IGES_ENTITY()
         }
 
         refs.clear();
+    }
+
+    if( !extras.empty() )
+    {
+        std::list<IGES_ENTITY*>::iterator rbeg = extras.begin();
+        std::list<IGES_ENTITY*>::iterator rend = extras.end();
+
+        while( rbeg != rend )
+        {
+            if( !(*rbeg)->Unlink( this ) )
+            {
+                ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
+            }
+
+            ++rbeg;
+        }
+
+        extras.clear();
     }
 
     if( pStructure )
@@ -185,6 +205,7 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
     // pTransform;
     // pLabelAssoc;
     // pColor;
+    // extras<>
 
     if( !aChild )
     {
@@ -234,6 +255,24 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
         return true;
     }
 
+    if( !extras.empty() )
+    {
+        std::list<IGES_ENTITY*>::iterator rbeg = extras.begin();
+        std::list<IGES_ENTITY*>::iterator rend = extras.end();
+
+        while( rbeg != rend )
+        {
+            if( *rbeg == aChild )
+            {
+                (*rbeg)->DelReference( this );
+                extras.erase( rbeg );
+                return true;
+            }
+
+            ++rbeg;
+        }
+    }
+
     return false;
 }
 
@@ -266,6 +305,9 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
 
         ++bref;
     }
+
+    // check if the entity is a child in extras<>
+    // XXX - TO BE IMPLEMENTED
 
     refs.push_back( aParentEntity );
     return true;
@@ -303,6 +345,8 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
     // transform
     // labelAssoc
     // *colorNum
+    //
+    // (optional) extras<>
     //
     // Note: it is the responsibility of the individual
     // entities to ensure that there is no data entry for
@@ -762,8 +806,11 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
     }
 
+    // XXX - TO BE IMPLEMENTED
+    // associate the extras<>
+
     return ok;
-}
+}   // associate()
 
 
 void IGES_ENTITY::unformat( void )
@@ -1135,6 +1182,8 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
 
 bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 {
+    pdout.clear();
+
     if( parameterData < 1 || parameterData > 9999999 )
     {
         ERRMSG << "\n + [BUG] invalid Parameter Data Index (" << parameterData << ")\n";
@@ -1155,7 +1204,6 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
     }
 
     IGES_RECORD rec;
-    pdout.clear();
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
 
@@ -1175,6 +1223,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
             cerr << " + [INFO] Parameter Line # (" << (parameterData + i) << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -1189,6 +1238,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
             cerr << " + [INFO] Parameter Line # (" << (parameterData + i) << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -1198,6 +1248,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
             cerr << " + [INFO] Expected Parameter Line # (" << (parameterData + i) << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -1207,6 +1258,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             ERRMSG << "\n + [BAD FILE] invalid Parameter Data line; col[64] is not blank\n";
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -1215,6 +1267,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             ERRMSG << "\n + [BAD FILE] invalid Parameter Data line; could not read DE number\n";
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            pdout.clear();
             return false;
         }
         else if( tmpInt != sequenceNumber )
@@ -1223,6 +1276,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
             cerr << ") does not match parent (" << sequenceNumber << ")\n";
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -1238,6 +1292,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
                 ERRMSG << "\n + [BAD FILE] No Entity Number in Parameter Data\n";
                 cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
                 cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                pdout.clear();
                 return false;
             }
             else if( tmpInt != entityType )
@@ -1246,6 +1301,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
                 cerr << ") does not match parent (" << entityType << ")\n";
                 cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
                 cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                pdout.clear();
                 return false;
             }
             else if( eor )
@@ -1253,6 +1309,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
                 ERRMSG << "\n + [BAD FILE] Parameter Data, premature end of record\n";
                 cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
                 cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                pdout.clear();
                 return false;
             }
             else
@@ -1271,6 +1328,292 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 #ifdef DEBUG
     cout << "-----\n";
 #endif
+
+    return true;
+}   // ReadPD()
+
+
+bool IGES_ENTITY::WriteDE( std::ofstream& aFile )
+{
+    std::string oln1;   // DE Line 1
+    std::string oln2;   // DE Line 2
+    std::string tstr;   // temporary string for formatting
+
+    // DE1:  ENTITY TYPE NUMBER
+    // DE11: ENTITY TYPE NUMBER
+    if( !FormatDEInt( tstr, entityType ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Entity Type Number to Directory Entry\n";
+        return false;
+    }
+
+    oln1 = tstr;
+    oln2 = tstr;
+
+    // DE2:  PARAMETER DATA (max. 7 digits)
+    if( parameterData + paramLineCount > 10000000 )
+    {
+        ERRMSG << "\n + [BUG] cannot write Parameter Data Line to Directory Entry\n";
+        cerr << " + [INFO] capacity of IGES specification has been exceeded\n";
+        return false;
+    }
+
+    if( !FormatDEInt( tstr, parameterData ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Entity Type Number to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE3:  STRUCTURE (0 or -P)
+    bool fStat;
+
+    if( !pStructure )
+        fStat = FormatDEInt( tstr, 0 );
+    else
+        fStat = FormatDEInt( tstr, -pStructure->sequenceNumber );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Structure Pointer to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE4:  LINE FONT PATTERN (Num, 0, or -P)
+    if( pLineFontPattern )
+        fStat = FormatDEInt( tstr, -pLineFontPattern->sequenceNumber );
+    else if( lineFontPattern >= LINEFONT_NONE && lineFontPattern < LINEFONT_END )
+        fStat = FormatDEInt( tstr, lineFontPattern );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Line Font Pattern to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE5:  LEVEL (Num, 0, or -P)
+    if( pLevel )
+        fStat = FormatDEInt( tstr, -pLevel->sequenceNumber );
+    else if( level >= 0 )
+        fStat = FormatDEInt( tstr, level );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Level to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE6:  VIEW (0 or +P)
+    if( pView )
+        fStat = FormatDEInt( tstr, pView->sequenceNumber );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Line Font Pattern to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE7:  TRANSFORM (0 or +P)
+    if( pTransform )
+        fStat = FormatDEInt( tstr, pTransform->sequenceNumber );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Transform to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE8:  LABEL DISPLAY ASSOCIATIVITY (0 or +P)
+    if( pLabelAssoc )
+        fStat = FormatDEInt( tstr, pLabelAssoc->sequenceNumber );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Label Display Associativity to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE9:  STATUS NUMBER
+    int tmpInt;
+    // Blank Status
+    if( visible )
+        tmpInt = 0;
+    else
+        tmpInt = 100;
+    // Dependency (Subordinate Entity Switch)
+    tmpInt += depends;
+    tmpInt *= 100;
+    // Entity Use Flag
+    tmpInt += use;
+    tmpInt *= 100;
+    // Hierarchy
+    tmpInt += hierarchy;
+
+    if( !FormatDEInt( tstr, tmpInt ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Status Number to Directory Entry\n";
+        return false;
+    }
+
+    oln1 += tstr;
+
+    // DE10: SECTION CODE AND SEQUENCE
+    if( !FormatDEInt( tstr, sequenceNumber ) || tstr[0] != ' ' )
+    {
+        ERRMSG << "\n + [BUG] cannot write Section Code and Sequence Number to Directory Entry\n";
+        return false;
+    }
+
+    tstr[0] = 'D';
+    oln1 += tstr;
+
+    if( oln1.length() != 80 )
+    {
+        ERRMSG << "\n + [BUG] Directory Entry was incorrectly formatted (length = ";
+        cerr << oln1.length() << ")\n";
+        return false;
+    }
+
+    oln1 += "\n";
+
+    // DE12: LINE WEIGHT NUMBER (0 .. globalData.maxLinewidthGrad)
+    if( !FormatDEInt( tstr, lineWeightNum ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Line Weight Number to Directory Entry\n";
+        return false;
+    }
+
+    oln2 += tstr;
+
+    // DE13: COLOR NUMBER (Num, 0, or -P)
+    if( pColor )
+        fStat = FormatDEInt( tstr, -pColor->sequenceNumber );
+    else if( colorNum >= COLOR_NONE && colorNum < COLOR_END )
+        fStat = FormatDEInt( tstr, colorNum );
+    else
+        fStat = FormatDEInt( tstr, 0 );
+
+    if( !fStat )
+    {
+        ERRMSG << "\n + [BUG] cannot write Color Number to Directory Entry\n";
+        return false;
+    }
+
+    oln2 += tstr;
+
+    // DE14: PARAMETER LINE COUNT NUMBER (+INT)
+    if( !FormatDEInt( tstr, paramLineCount ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Parameter Line Count Number to Directory Entry\n";
+        return false;
+    }
+
+    oln2 += tstr;
+
+    // DE15: FORM NUMBER (+INT)
+    if( !FormatDEInt( tstr, form ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Form Number to Directory Entry\n";
+        return false;
+    }
+
+    oln2 += tstr;
+
+    // DE16: NOT USED
+    // DE17: NOT USED
+    oln2.append( 16, ' ' );
+
+    // DE18: ENTITY LABEL
+    tmpInt = (int)label.length();
+    tstr.clear();
+
+    if( tmpInt < 8 )
+        tstr.append( 8 - tmpInt, ' ' );
+
+    tstr += label.substr(0, 8);
+    oln2 += tstr;
+
+    // DE19: ENTITY SUBSCRIPT NUMBER (INT)
+    if( !FormatDEInt( tstr, entitySubscript ) )
+    {
+        ERRMSG << "\n + [BUG] cannot write Entity Subscript Number to Directory Entry\n";
+        return false;
+    }
+
+    oln2 += tstr;
+
+    // DE20: SECTION CODE AND SEQUENCE+1
+    if( !FormatDEInt( tstr, sequenceNumber + 1 ) || tstr[0] != ' ' )
+    {
+        ERRMSG << "\n + [BUG] cannot write Section Code and Sequence Number + 1 to Directory Entry\n";
+        return false;
+    }
+
+    tstr[0] = 'D';
+    oln2 += tstr;
+
+    if( oln2.length() != 80 )
+    {
+        ERRMSG << "\n + [BUG] Directory Entry (line 2) was incorrectly formatted (length = ";
+        cerr << oln2.length() << ")\n";
+        return false;
+    }
+
+    oln2 += "\n";
+
+    aFile << oln1;
+    aFile << oln2;
+
+    if( aFile.fail() )
+    {
+        ERRMSG << "\n + [INFO] could not write data to file\n";
+        return false;
+    }
+
+    return true;
+}
+
+
+bool IGES_ENTITY::WritePD( std::ofstream& aFile )
+{
+    if( pdout.empty() || 0 != (pdout.length() % 81) )
+    {
+        ERRMSG << "\n + [INFO] improperly formatted PD output (length=";
+        cerr << pdout.length() << ")\n";
+        return false;
+    }
+
+    aFile << pdout;
+    pdout.clear();
+
+    if( aFile.fail() )
+    {
+        ERRMSG << "\n + [INFO] could not write data to file\n";
+        return false;
+    }
 
     return true;
 }
@@ -1821,4 +2164,32 @@ bool IGES_ENTITY::GetHierarchy(IGES_STAT_HIER& aHierarchy)
 {
     aHierarchy = hierarchy;
     return true;
+}
+
+// read optional (extra) PD parameters
+bool IGES_ENTITY::readExtraParams( int& index )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+// read optional (extra) PD comments
+bool IGES_ENTITY::readComments( int& index )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+// format optional (extra) PD parameters for output
+bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char rd )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+// format optional (extra) PD comments for output
+bool IGES_ENTITY::formatComments( int& pdSeq )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
 }

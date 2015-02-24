@@ -72,22 +72,6 @@ bool IGES_ENTITY_TEMP::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 }
 
 
-bool IGES_ENTITY_TEMP::WriteDE( std::ofstream& aFile )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_TEMP::WritePD( std::ofstream& aFile, int& aSequenceVar )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
 bool IGES_ENTITY_TEMP::SetEntityForm( int aForm )
 {
     // XXX - TO BE IMPLEMENTED

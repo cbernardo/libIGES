@@ -43,21 +43,35 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
 bool DEItemToStr( const std::string& input, int field, std::string& var );
 
 struct IGES_RECORD;
+// read a single line of the IGES file and parse into the record fields
 bool ReadIGESRecord( IGES_RECORD* aRecord, std::ifstream& aFile, std::streampos* aRefPos = NULL );
 
-// parse a Hollerith string and return true on success
+// parse a free-form Hollerith string and return true on success
 // idx: contains an index to the starting position in the data stream; returns index just past
 //      the parameter or record delimeter
 // param: will contain the parsed string, if any
 // eor: set to true if the record delimeter has been encountered
 bool ParseHString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd );
 
-// parse a LanguageString (a generic string up to the first encountered delimeter )
+// parse a free-form LanguageString (a generic string up to the first encountered delimeter )
 bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd );
 
+// parse a free-form string to retrieve an integer
 bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault = NULL );
 
+// parse a free-form string to retrieve a floating point number
 bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault = NULL );
+
+// format and right-justify an integer; pad to 8 characters using spaces
+bool FormatDEInt( std::string& out, const int num );
+
+// format a real number as a float or double and tack on a delimeter (may be PD or RD)
+bool FormatPDREal( std::string &tStr, double var, char delim, double minRes );
+
+// tack the delimited PD Item tStr onto fStr and when appropriate update fOut and index;
+// if the delimeter of tStr == rd then the PD entry is finalized
+bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
+                int& index, int sequenceNumber, char pd, char rd );
 
 
 // a single-line data record

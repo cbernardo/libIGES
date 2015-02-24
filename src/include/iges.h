@@ -86,6 +86,8 @@ private:
     bool readPD( IGES_RECORD& rec, std::ifstream& file );
     // XXX - reads the TERMINATE section and verifies data
     bool readTS( IGES_RECORD& rec, std::ifstream& file );
+    // cull orphaned entities
+    void cull( void );
 
     // XXX - TO BE IMPLEMENTED
     // format: prepare data for writing; Parameter Data is formatted using the given index

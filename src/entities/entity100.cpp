@@ -54,8 +54,13 @@ IGES_ENTITY_100::~IGES_ENTITY_100()
 
 bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( !IGES_ENTITY::associate( entities ) )
+    {
+        ERRMSG << "\n + [INFO] failed to establish associations\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -74,11 +79,9 @@ bool IGES_ENTITY_100::Unlink( IGES_ENTITY* aChild )
 
 bool IGES_ENTITY_100::IsOrphaned( void )
 {
-    // TRUE when:
-    // a. there are no parent references AND
-    // b. the object is not Independent (depends == 0)
+    // TRUE when there are no parent references regardless of dependency setting
 
-    if( refs.empty() && depends != 0 )
+    if( refs.empty() )
         return true;
 
     return false;
@@ -99,14 +102,14 @@ bool IGES_ENTITY_100::DelReference( IGES_ENTITY* aParentEntity )
 
 bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
-    //qwerty;
     if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
     }
 
-    structure = 0;  // N.A.
+    structure = 0;                  // N.A.
+    hierarchy = STAT_HIER_ALL_SUB;  // field ignored
 
     if( form != 0 )
     {
@@ -121,9 +124,66 @@ bool IGES_ENTITY_100::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 
 bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    {
+        ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
+        return false;
+    }
+
+    int idx = 0;
+    bool eor = false;
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    if( !ParseReal( pdout, idx, zOffset, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no zOffset datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, xCenter, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no xCenter datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, yCenter, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no yCenter datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, xStart, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no xStart datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, yStart, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no yStart datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, xEnd, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no xEnd datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, yEnd, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no yEnd datum for Circle Entity\n";
+        return false;
+    }
+
+    if( !eor )
+    {
+        ERRMSG << "\n + [BAD FILE] no end of record delimeter for Circle Entity\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -149,87 +209,7 @@ bool IGES_ENTITY_100::SetEntityForm( int aForm )
         return true;
 
     ERRMSG << "\n + [BUG] Circle Entity only supports Form 0 (requested form: ";
-    cerr << aForm << "\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLineFontPattern( IGES_ENTITY* aPattern )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLevel( int aLevel )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLevel( IGES_ENTITY* aLevel )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetView( IGES_ENTITY* aView )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetTransform( IGES_ENTITY* aTransform )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetColor( IGES_COLOR aColor )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetColor( IGES_ENTITY* aColor )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetLineWeightNum( int aLineWeight )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    cerr << aForm << ")\n";
     return false;
 }
 

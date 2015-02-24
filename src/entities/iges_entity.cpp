@@ -766,6 +766,12 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 }
 
 
+void IGES_ENTITY::unformat( void )
+{
+    pdout.clear();
+}
+
+
 bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
     // Read in the basic DE data only; it is the responsibility of
@@ -1127,6 +1133,148 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
     return true;
 }
 
+bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
+{
+    if( parameterData < 1 || parameterData > 9999999 )
+    {
+        ERRMSG << "\n + [BUG] invalid Parameter Data Index (" << parameterData << ")\n";
+        return false;
+    }
+
+    if( paramLineCount < 1 || (parameterData + paramLineCount) > 10000000 )
+    {
+        ERRMSG << "\n + [BUG] invalid Parameter Line Count (" << paramLineCount << ")\n";
+        cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+        return false;
+    }
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [BUG] ReadPD invoked with no parent IGES object\n";
+        return false;
+    }
+
+    IGES_RECORD rec;
+    pdout.clear();
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+#ifdef DEBUG
+    cout << "[INFO] Entity(" << entityType;
+    cout << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+#endif
+
+    bool first = true;
+    int tmpInt;
+
+    for(int i = 0; i < paramLineCount; ++i)
+    {
+        if( !ReadIGESRecord( &rec, aFile ) )
+        {
+            ERRMSG << "\n + could not read Parameter Data\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            cerr << " + [INFO] Parameter Line # (" << (parameterData + i) << ")\n";
+            return false;
+        }
+
+#ifdef DEBUG
+        cout << "    " << rec.data << "\n";
+#endif
+
+        if( rec.section_type != 'P' )
+        {
+            ERRMSG << "\n + [BUG or BAD FILE] not a Parameter Data section (type: '";
+            cerr << rec.section_type << "'\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            cerr << " + [INFO] Parameter Line # (" << (parameterData + i) << ")\n";
+            return false;
+        }
+
+        if( rec.index != (parameterData + i) )
+        {
+            ERRMSG << "\n + [BAD FILE] incorrect Parameter Line # (" << rec.index << ")\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            cerr << " + [INFO] Expected Parameter Line # (" << (parameterData + i) << ")\n";
+            return false;
+        }
+
+        // check the DE sequence number
+        if( rec.data[64] != ' ' )
+        {
+            ERRMSG << "\n + [BAD FILE] invalid Parameter Data line; col[64] is not blank\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            return false;
+        }
+
+        if( !DEItemToInt( rec.data, 8, tmpInt, NULL ) )
+        {
+            ERRMSG << "\n + [BAD FILE] invalid Parameter Data line; could not read DE number\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            return false;
+        }
+        else if( tmpInt != sequenceNumber )
+        {
+            ERRMSG << "\n + [BAD FILE] Parameter Data DE Sequence (" << tmpInt;
+            cerr << ") does not match parent (" << sequenceNumber << ")\n";
+            cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+            cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+            return false;
+        }
+
+        if( first )
+        {
+            first = false;
+            int idx = 0;
+            bool eor = false;
+
+            // check EntityID
+            if( !ParseInt( rec.data, idx, tmpInt, eor, pd, rd ) )
+            {
+                ERRMSG << "\n + [BAD FILE] No Entity Number in Parameter Data\n";
+                cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+                cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                return false;
+            }
+            else if( tmpInt != entityType )
+            {
+                ERRMSG << "\n + [BAD FILE] Parameter Data Entity ID (" << tmpInt;
+                cerr << ") does not match parent (" << entityType << ")\n";
+                cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+                cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                return false;
+            }
+            else if( eor )
+            {
+                ERRMSG << "\n + [BAD FILE] Parameter Data, premature end of record\n";
+                cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
+                cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
+                return false;
+            }
+            else
+            {
+                pdout += rec.data.substr( idx, 64 - idx );
+            }
+        }
+        else
+        {
+            pdout += rec.data.substr( 0, 64 );
+        }
+
+        ++aSequenceVar;
+    }
+
+#ifdef DEBUG
+    cout << "-----\n";
+#endif
+
+    return true;
+}
+
 
 bool IGES_ENTITY::SetParentIGES(IGES* aParent)
 {
@@ -1164,22 +1312,36 @@ int IGES_ENTITY::GetEntityForm(void)
 
 bool IGES_ENTITY::SetStructure(IGES_ENTITY* aStructure)
 {
+    // most entities do not support 'structure' so default is false
+    ERRMSG << "\n + [BUG] attempting to set 'structure' parameter on Entity Type ";
+    cerr << entityType << "\n";
     return false;
 }
 
 
 bool IGES_ENTITY::GetStructure(IGES_ENTITY** aStructure)
 {
+    // most entities do not support 'structure' so default is false
     *aStructure = NULL;
+
+    ERRMSG << "\n + [BUG] attempting to read 'structure' parameter on Entity Type ";
+    cerr << entityType << "\n";
+
     return false;
 }
 
 
 bool IGES_ENTITY::GetLineFontPattern(IGES_LINEFONT_PATTERN& aPattern)
 {
-    if( lineFontPattern & 0x80000000 )
+    if( pLineFontPattern )
     {
         aPattern = LINEFONT_NONE;
+        return false;
+    }
+
+    if( lineFontPattern < LINEFONT_NONE || lineFontPattern >= LINEFONT_END )
+    {
+        ERRMSG << "\n + [BUG] method invoked without valid LineFontPattern association\n";
         return false;
     }
 
@@ -1192,31 +1354,74 @@ bool IGES_ENTITY::GetLineFontPatternEntity(IGES_ENTITY** aPattern)
 {
     *aPattern = NULL;
 
-    if( 0 == (lineFontPattern & 0x80000000) )
-    {
-        if( 0 == lineFontPattern )
-            return true;
-        else
-            return false;
-
-    }
-
-    if( pLineFontPattern == NULL )
-    {
-        ERRMSG << "\n + [BAD DATA] invalid line pattern\n";
+    if( !pLineFontPattern )
         return false;
-    }
 
     *aPattern = pLineFontPattern;
     return true;
 }
 
 
-bool IGES_ENTITY::GetLevel(int aLevel)
+bool IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 {
-    if( level & 0x80000000 )
+    if( pLineFontPattern )
+    {
+        pLineFontPattern->DelReference( this );
+        pLineFontPattern = NULL;
+    }
+
+    if( aPattern < LINEFONT_NONE || aPattern >= LINEFONT_END )
+    {
+        ERRMSG << "\n + [BUG] method invoked with invalid linefont pattern (";
+        cerr << aPattern << ") in entity type #" << entityType << "\n";
+        return false;
+    }
+
+    lineFontPattern = aPattern;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
+{
+    lineFontPattern = 0;
+
+    if( pLineFontPattern )
+    {
+        pLineFontPattern->DelReference( this );
+        pLineFontPattern = NULL;
+    }
+
+    if( !aPattern )
+        return true;
+
+    int tEnt = aPattern->GetEntityType();
+
+    if( tEnt != 304 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (#" << tEnt;
+        cerr << ") assigned to LineFontPattern (expecting 304) ";
+        cerr << "in entity type #" << entityType << "\n";
+        return false;
+    }
+
+    pLineFontPattern = aPattern;
+    return true;
+}
+
+
+bool IGES_ENTITY::GetLevel(int &aLevel)
+{
+    if( pLevel )
     {
         aLevel = 0;
+        return false;
+    }
+
+    if( level < 0 )
+    {
+        ERRMSG << "\n + [BUG] method invoked without valid level assignment in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
@@ -1229,22 +1434,61 @@ bool IGES_ENTITY::GetLevelEntity(IGES_ENTITY** aLevel)
 {
     *aLevel = NULL;
 
-    if( 0 == (level & 0x80000000) )
+    if( pLevel )
     {
-        if( level == 0 )
-            return true;
-        else
-            return false;
-
+        *aLevel = pLevel;
+        return true;
     }
 
-    if( !pLevel )
+    return false;
+}
+
+
+bool IGES_ENTITY::SetLevel( int aLevel )
+{
+    if( pLevel )
     {
-        ERRMSG << "\n + [BAD DATA] invalid level pointer\n";
+        pLevel->DelReference( this );
+        pLevel = NULL;
+    }
+
+    if( aLevel < 0 )
+    {
+        ERRMSG << "\n + [BUG] method invoked with invalid level (< 0) in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
-    *aLevel = pLevel;
+    level = aLevel;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
+{
+    level = 0;
+
+    if( pLevel )
+    {
+        pLevel->DelReference( this );
+        pLevel = NULL;
+    }
+
+    if( !aLevel )
+        return true;
+
+    int tEnt = aLevel->GetEntityType();
+    int tFrm = aLevel->GetEntityForm();
+
+    if( tEnt != 406 || tFrm != 1 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
+        cerr << ") assigned to level (expecting 406-1) in entity type #";
+        cerr << entityType << "\n";
+        return false;
+    }
+
+    pLevel = aLevel;
     return true;
 }
 
@@ -1253,16 +1497,42 @@ bool IGES_ENTITY::GetView(IGES_ENTITY** aView)
 {
     *aView = NULL;
 
-    if( 0 == (view & 0x80000000) )
+    if( pView )
+    {
+        *aView = pView;
+        return true;
+    }
+
+    return false;
+}
+
+
+bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
+{
+    view = 0;
+
+    if( pView )
+    {
+        pView->DelReference( this );
+        pView = NULL;
+    }
+
+    if( !aView )
         return true;
 
-    if( !pView )
+    int tEnt = aView->GetEntityType();
+    int tFrm = aView->GetEntityForm();
+
+    if( tEnt != 410 || tEnt != 402
+        || (tEnt == 402 && tFrm != 3 && tFrm != 4 && tFrm != 19) )
     {
-        ERRMSG << "\n + [BAD DATA] invalid view pointer\n";
+        ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
+        cerr << ") assigned to level (expecting 410 or 402-3/4/19) in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
-    *aView = pView;
+    pView = aView;
     return true;
 }
 
@@ -1271,16 +1541,40 @@ bool IGES_ENTITY::GetTransform(IGES_ENTITY** aTransform)
 {
     *aTransform = NULL;
 
-    if( 0 == (transform & 0x80000000) )
+    if( pTransform )
+    {
+        *aTransform = pTransform;
+        return true;
+    }
+
+    return false;
+}
+
+
+bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
+{
+    transform = 0;
+
+    if( pTransform )
+    {
+        pTransform->DelReference( this );
+        pTransform = NULL;
+    }
+
+    if( !aTransform )
         return true;
 
-    if( !pTransform )
+    int tEnt = aTransform->GetEntityType();
+
+    if( tEnt != 124 )
     {
-        ERRMSG << "\n + [BAD DATA] invalid transform pointer\n";
+        ERRMSG << "\n + [BUG] invalid entity (" << tEnt;
+        cerr << ") assigned to transform (expecting 124) in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
-    *aTransform = pTransform;
+    pTransform = aTransform;
     return true;
 }
 
@@ -1294,11 +1588,41 @@ bool IGES_ENTITY::GetLabelAssoc(IGES_ENTITY** aLabelAssoc)
 
     if( !pLabelAssoc )
     {
-        ERRMSG << "\n + [BAD DATA] invalid Label Association pointer\n";
+        ERRMSG << "\n + [BAD DATA] invalid Label Association pointer in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
     *aLabelAssoc = pLabelAssoc;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
+{
+    labelAssoc = 0;
+
+    if( pLabelAssoc )
+    {
+        pLabelAssoc->DelReference( this );
+        pLabelAssoc = NULL;
+    }
+
+    if( !aLabelAssoc )
+        return true;
+
+    int tEnt = aLabelAssoc->GetEntityType();
+    int tFrm = aLabelAssoc->GetEntityForm();
+
+    if( tEnt != 402 || tFrm != 5 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
+        cerr << ") assigned to Label Display Associativity (expecting 402-5) in entity type #";
+        cerr << entityType << "\n";
+        return false;
+    }
+
+    pLabelAssoc = aLabelAssoc;
     return true;
 }
 
@@ -1331,11 +1655,60 @@ bool IGES_ENTITY::GetColorEntity(IGES_ENTITY** aColor)
 
     if( pColor == NULL )
     {
-        ERRMSG << "\n + [BAD DATA] invalid color entity\n";
+        ERRMSG << "\n + [BAD DATA] invalid color entity in entity type #";
+        cerr << entityType << "\n";
         return false;
     }
 
     *aColor = pColor;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetColor( IGES_COLOR aColor )
+{
+    if( pColor )
+    {
+        pColor->DelReference( this );
+        pColor = NULL;
+    }
+
+    if( aColor < COLOR_NONE || aColor >= COLOR_END )
+    {
+        ERRMSG << "\n + [BUG] method invoked with invalid color (";
+        cerr << aColor << ") in entity type #" << entityType << "\n";
+        return false;
+    }
+
+    colorNum = aColor;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
+{
+    colorNum = 0;
+
+    if( pColor )
+    {
+        pColor->DelReference( this );
+        pColor = NULL;
+    }
+
+    if( !aColor )
+        return true;
+
+    int tEnt = aColor->GetEntityType();
+
+    if( tEnt != 314 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (#" << tEnt;
+        cerr << ") assigned to Color Definition (expecting 314) in entity type #";
+        cerr << entityType << "\n";
+        return false;
+    }
+
+    pColor = aColor;
     return true;
 }
 
@@ -1347,9 +1720,45 @@ bool IGES_ENTITY::GetLineWeightNum(int& aLineWeight)
 }
 
 
+bool IGES_ENTITY::SetLineWeightNum( int aLineWeight )
+{
+    if( aLineWeight < 0 )
+    {
+    }
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [BUG] method invoked without parent entity in entity type #";
+        cerr << entityType << "\n";
+        return false;
+    }
+
+    int tmpLW = parent->globalData.maxLinewidthGrad;
+
+    if( aLineWeight > tmpLW )
+    {
+        ERRMSG << "\n + [WARNING] lineweight (" << aLineWeight;
+        cerr << ") exceeds max gradation (" << tmpLW << ") in entity type #";
+        cerr << entityType << "\n";
+        lineWeightNum = tmpLW;
+        return true;
+    }
+
+    lineWeightNum = aLineWeight;
+    return true;
+}
+
+
 bool IGES_ENTITY::SetLabel(const std::string aLabel)
 {
     label = aLabel.substr(0, 8);
+
+    if( aLabel.length() > 8 )
+    {
+        ERRMSG << "\n + [WARNING] label exceeds 8 characters; truncating to '";
+        cerr << label << "' in entity type #" << entityType << "\n";
+    }
+
     return true;
 }
 

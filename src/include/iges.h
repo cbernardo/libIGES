@@ -116,7 +116,6 @@ public:
 
     /// delete an entity
     bool DelEntity( IGES_ENTITY* aEntity );
-
 };
 
 

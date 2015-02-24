@@ -78,16 +78,6 @@ public:
     virtual bool WriteDE(std::ofstream& aFile);
     virtual bool WritePD(std::ofstream& aFile);
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetLineFontPattern(IGES_LINEFONT_PATTERN aPattern);
-    virtual bool SetLineFontPattern(IGES_ENTITY* aPattern);
-    virtual bool SetLevel(int aLevel);
-    virtual bool SetLevel(IGES_ENTITY* aLevel);
-    virtual bool SetView(IGES_ENTITY* aView);
-    virtual bool SetTransform(IGES_ENTITY* aTransform);
-    virtual bool SetLabelAssoc(IGES_ENTITY* aLabelAssoc);
-    virtual bool SetColor(IGES_COLOR aColor);
-    virtual bool SetColor(IGES_ENTITY* aColor);
-    virtual bool SetLineWeightNum(int aLineWeight);
     virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);

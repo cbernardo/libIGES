@@ -274,7 +274,7 @@ bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 
         if( rec.index != (parameterData + i) )
         {
-            ERRMSG << "\n + [BAD FILE] incorrect Parameter Line # (" << rec.index << ")";
+            ERRMSG << "\n + [BAD FILE] incorrect Parameter Line # (" << rec.index << ")\n";
             cerr << " + [INFO] Parameter Data Index (" << parameterData << ")\n";
             cerr << " + [INFO] Parameter Line Count (" << paramLineCount << ")\n";
             cerr << " + [INFO] Expected Parameter Line # (" << (parameterData + i) << ")\n";

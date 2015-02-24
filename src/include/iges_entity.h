@@ -69,7 +69,7 @@ protected:
 
     // list of referring (superior) entities
     std::list<IGES_ENTITY*> refs;
-    // data formatted for output
+    // data formatted for output (also used for reading PDs from file)
     std::string pdout;
 
     friend class IGES;
@@ -83,6 +83,7 @@ protected:
     //                 and DE items are updated; each Entity must have been previously assigned a
     //                 correct Sequence Number
     virtual bool format( int &index ) = 0;
+    void         unformat( void );
 
 public:
     IGES_ENTITY(IGES* aParent);
@@ -130,8 +131,8 @@ public:
 
     // Get/Set the LineFont Pattern; this may be an IGES_LINEFONT_PATTERN
     // or a LinefontPattern Entity
-    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern ) = 0;
-    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern ) = 0;
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
     // The Get functions return false if the argument does not match
     // the internal LineFontPattern type; in the case of type 0,
     // the GetLineFontPatternEntity() function sets the argument
@@ -141,30 +142,30 @@ public:
 
     // Get/Set the Entity Level; this may be an int or a Definition Level Entity;
     // default level is 0
-    virtual bool SetLevel( int aLevel ) = 0;
-    virtual bool SetLevel( IGES_ENTITY* aLevel ) = 0;
-    bool         GetLevel( int aLevel );
+    virtual bool SetLevel( int aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    bool         GetLevel( int& aLevel );
     bool         GetLevelEntity( IGES_ENTITY** aLevel );
 
-    virtual bool SetView( IGES_ENTITY* aView ) = 0;
+    virtual bool SetView( IGES_ENTITY* aView );
     bool         GetView( IGES_ENTITY** aView );
 
     // XXX - may require other forms to retrieve compound transforms
     // XXX - may also require a Transform(some point) to transform individual points
-    virtual bool SetTransform( IGES_ENTITY* aTransform ) = 0;
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
     bool         GetTransform( IGES_ENTITY** aTransform );
 
-    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc ) = 0;
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
     bool         GetLabelAssoc( IGES_ENTITY** aLabelAssoc );
 
     // Get/Set the entity Color; this may be an IGES_COLOR or a
     // Color Definition Entity
-    virtual bool SetColor( IGES_COLOR aColor ) = 0;
-    virtual bool SetColor( IGES_ENTITY* aColor ) = 0;
-    bool          GetColor( IGES_COLOR& aColor );
-    bool          GetColorEntity( IGES_ENTITY** aColor );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    bool         GetColor( IGES_COLOR& aColor );
+    bool         GetColorEntity( IGES_ENTITY** aColor );
 
-    virtual bool SetLineWeightNum( int aLineWeight ) = 0;
+    virtual bool SetLineWeightNum( int aLineWeight );
     bool         GetLineWeightNum( int& aLineWeight );
 
     bool SetLabel( const std::string aLabel );

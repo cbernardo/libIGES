@@ -64,6 +64,11 @@ struct IGES_GLOBAL
     IGES_DRAFTING_STANDARD draftStandard;   // flag indicating drafting standard (if any) (RD: 0)
     std::string modificationDate;           // [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
     std::string applicationNote;            // Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
+
+    // derived scale to be applied to quantities to derive mm units with model scale 1.0
+    double      cf;
+    bool        convert;                    // true if we need to convert to mm upon reading
+    bool        minResAdj;                  // adjusted minimum resolution
 };
 
 

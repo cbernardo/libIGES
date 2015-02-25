@@ -68,6 +68,7 @@ bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
 bool IGES_ENTITY_100::format( int &index )
 {
     pdout.clear();
+    iExtras.clear();
 
     if( index < 1 || index > 9999999 )
     {
@@ -85,7 +86,7 @@ bool IGES_ENTITY_100::format( int &index )
 
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
-    double uir = parent->globalData.minResolution;
+    double uir = parent->globalData.minResAdj;
 
     ostringstream ostr;
     ostr << entityType << pd;
@@ -145,12 +146,18 @@ bool IGES_ENTITY_100::format( int &index )
 
     AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
-    // XXX - TO BE IMPLEMENTED
-    // NOTE: 2 sets of OPTIONAL parameters may exist at the end of
+    // note: 2 sets of OPTIONAL parameters may exist at the end of
     // any PD; see p.32/60+ for details; if optional parameters
     // need to be written then we should use 'pd' rather than 'rd'
     // in this call to FormatPDREal()
-    if( !FormatPDREal( tStr, yEnd, rd, uir ) )
+    char idelim;
+
+    if( extras.empty() )
+        idelim = rd;
+    else
+        idelim = pd;
+
+    if( !FormatPDREal( tStr, yEnd, idelim, uir ) )
     {
         ERRMSG << "\n + [INFO] could not format yEnd\n";
         pdout.clear();
@@ -159,7 +166,23 @@ bool IGES_ENTITY_100::format( int &index )
 
     AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
+    if( !extras.empty() && !formatExtraParams( fStr, index, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] could not format optional parameters\n";
+        pdout.clear();
+        iExtras.clear();
+        return false;
+    }
+
+    if( !formatComments( index ) )
+    {
+        ERRMSG << "\n + [INFO] could not format comments\n";
+        pdout.clear();
+        return false;
+    }
+
     paramLineCount = index - parameterData;
+
     return true;
 }
 
@@ -225,10 +248,21 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    int idx = 0;
+    int idx;
     bool eor = false;
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
+
+    idx = pdout.find( pd );
+
+    if( idx < 1 || idx > 8 )
+    {
+        ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
+        cerr << idx << ")\n";
+        return false;
+    }
+
+    ++idx;
 
     if( !ParseReal( pdout, idx, zOffset, eor, pd, rd ) )
     {
@@ -272,26 +306,20 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( eor )
+    if( !eor && !readExtraParams( idx ) )
     {
-        pdout.clear();
-        return true;
+        ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        return false;
     }
 
-    // XXX - TO BE IMPLEMENTED
-    // if( eor )
-    // {
-    //     ReadComments();
-    //     pdout.clear();
-    //     return true;
-    // }
+    if( !readComments( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        return false;
+    }
 
-    // ReadExtraParams()
-    // ReadComments();
-    // pdout.clear();
-    // return true;
-
-    return false;
+    pdout.clear();
+    return true;
 }
 
 

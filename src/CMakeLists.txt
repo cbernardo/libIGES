@@ -30,7 +30,7 @@ include_directories(
     "${LIBIGES_SOURCE_DIR}/include"
     )
 
-set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG" )
+set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm" )
 
 # pull in the sources
 #add_subdirectory ( entities )

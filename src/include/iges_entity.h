@@ -22,8 +22,6 @@
  *
  */
 
-// XXX - BUG:
-// How do we sort entities such that we avoid back-pointers?
 
 #ifndef IGES_ENTITY_H
 #define IGES_ENTITY_H
@@ -74,6 +72,7 @@ protected:
     std::list<IGES_ENTITY*> refs;
     // list of extra entities (optional PD entries)
     std::list<IGES_ENTITY*> extras;
+    std::list<int> iExtras;
     // XXX - need to be able to access extras (get/add/delete)
     // list of optional comments
     // XXX - need to be able to access comments (get/add/delete)
@@ -99,7 +98,7 @@ protected:
     // read optional (extra) PD comments
     bool readComments( int& index );
     // format optional (extra) PD parameters for output
-    bool formatExtraParams( std::string& fStr,int& pdSeq, char pd, char rd );
+    bool formatExtraParams( std::string& fStr, int& pdSeq, char pd, char rd );
     // format optional (extra) PD comments for output
     bool formatComments( int& pdSeq );
 
@@ -118,17 +117,25 @@ public:
     virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
     virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
     size_t       GetNRefs( void );
+    // XXX: GetNOptionalEntities()
+    // XXX: GetOptionalEntities() - retrieve the list of extra<> entities
+    // XXX: AddOptionalEntity()
+    // XXX: DelOptionalEntity() - redirects to DelReference()
+    // XXX: GetNComments()
+    // XXX: GetComments() - retrieve list of comments
+    // XXX: AddComment() -
+    // XXX: DelComment()
 
     // Read the DE data from the given records
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
     // virtual bool Read: read Parameter Data
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;
 
-    // virtual bool Write: write entity data
-    // XXX - In preparation for a Write we need to perform a Cull() to destroy any orphan entities
-    // then we need to re-enumerate [Reorder()] the DE and PD fields by traversing the Entity List and passing
-    // a DE and PD accumulator to each in sequence.
+    // Write out a Directory Entry; prior to invoking this method a valid
+    // Sequence Number must have been assigned and the format() method invoked
     virtual bool WriteDE( std::ofstream& aFile );
+    // Write out a Parameter Data block; prior to invoking this method a valid
+    // Sequence Number must have been assigned and the format() method invoked
     virtual bool WritePD( std::ofstream& aFile );
 
     // Set the parent object; this is required for operations such as 'Import'

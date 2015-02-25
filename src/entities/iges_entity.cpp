@@ -137,9 +137,22 @@ IGES_ENTITY::~IGES_ENTITY()
 
         while( rbeg != rend )
         {
-            if( !(*rbeg)->Unlink( this ) )
+            if( (*rbeg)->GetEntityType() == 402 )
             {
-                ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
+                // If the entity type is 402 then the reference is a 'back pointer'
+                // and the item behaves as a parent, not a child, so Unlink() is used.
+                if( !(*rbeg)->Unlink( this ) )
+                {
+                    ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
+                }
+            }
+            else
+            {
+                // All other entities are children so DelReference() must be called.
+                if( !(*rbeg)->DelReference( this ) )
+                {
+                    ERRMSG << "\n + [BUG] could not delete reference from a child entity\n";
+                }
             }
 
             ++rbeg;
@@ -264,7 +277,6 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
         {
             if( *rbeg == aChild )
             {
-                (*rbeg)->DelReference( this );
                 extras.erase( rbeg );
                 return true;
             }
@@ -307,7 +319,16 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
     }
 
     // check if the entity is a child in extras<>
-    // XXX - TO BE IMPLEMENTED
+    bref = extras.begin();
+    eref = extras.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+            return true;
+
+        ++bref;
+    }
 
     refs.push_back( aParentEntity );
     return true;
@@ -324,6 +345,20 @@ bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
         if( aParentEntity == *bref )
         {
             refs.erase( bref );
+            return true;
+        }
+
+        ++bref;
+    }
+
+    bref = extras.begin();
+    eref = extras.end();
+
+    while( bref != eref )
+    {
+        if( aParentEntity == *bref )
+        {
+            extras.erase( bref );
             return true;
         }
 
@@ -806,8 +841,51 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         }
     }
 
-    // XXX - TO BE IMPLEMENTED
     // associate the extras<>
+    std::list<int>::iterator bext = iExtras.begin();
+    std::list<int>::iterator eext = iExtras.end();
+    int sEnt = (int)entities->size();
+
+    // Note: the Associativity Instance is a back-pointer so we do not
+    // request that the entity add a reference since one must already
+    // exist. All other allowed entities are children and a reference
+    // must be added.
+    while( bext != eext )
+    {
+        if( *bext >= 0 && *bext < sEnt )
+        {
+            tEnt = (*entities)[*bext]->GetEntityType();
+
+            switch( tEnt )
+            {
+                case ENT_GENERAL_NOTE:
+                case ENT_TEXT_DISPLAY_TEMPLATE:
+                    if( !(*entities)[*bext]->AddReference( this ) )
+                    {
+                        ERRMSG << "\n + [INFO] failed to add reference to child\n";
+                        ok = false;
+                    }
+
+                case ENT_ASSOCIATIVITY_INSTANCE:
+                    extras.push_back( (*entities)[*bext] );
+                    break;
+
+                default:
+                    ERRMSG << "\n + [CORRUPT FILE] invalid entity (" << tEnt;
+                    cerr << ") in Optional Parameters section for Entity DE ";
+                    cerr << sequenceNumber << "\n";
+                    ok = false;
+                    break;
+            }
+        }
+        else
+        {
+            ERRMSG << "\n + [CORRUPT FILE] optional entity referenced does not exist\n";
+            ok = false;
+        }
+
+        ++bext;
+    }
 
     return ok;
 }   // associate()
@@ -1312,16 +1390,9 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
                 pdout.clear();
                 return false;
             }
-            else
-            {
-                pdout += rec.data.substr( idx, 64 - idx );
-            }
-        }
-        else
-        {
-            pdout += rec.data.substr( 0, 64 );
         }
 
+        pdout += rec.data.substr( 0, 64 );
         ++aSequenceVar;
     }
 
@@ -2176,13 +2247,35 @@ bool IGES_ENTITY::readExtraParams( int& index )
 // read optional (extra) PD comments
 bool IGES_ENTITY::readComments( int& index )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( index % 64 )
+        index += 64 - (index % 64);
+
+    int sz = (int)pdout.length();
+    std::string comment;
+
+    while( index + 64 <= sz )
+    {
+        comment = pdout.substr( index, 64 );
+        comments.push_back( comment );
+        index += 64;
+    }
+
+    if( index != (int)pdout.length() )
+    {
+        ERRMSG << "\n + [WARNING] comment block does not seem to be a multiple of 64 bytes\n";
+    }
+
+    return true;
 }
 
 // format optional (extra) PD parameters for output
 bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char rd )
 {
+    // XXX - establish entity numbers of extras<> and write them out
+    // XXX - remember to sort the extras into Types 402+212 for
+    // the first section of the pointer list and Type 312 for the
+    // second section of the list
+
     // XXX - TO BE IMPLEMENTED
     return false;
 }

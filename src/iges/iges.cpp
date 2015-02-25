@@ -117,6 +117,10 @@ bool IGES::init(void)
     globalData.modificationDate.clear();
     globalData.applicationNote.clear();
 
+    globalData.cf = 1.0;
+    globalData.minResAdj = 1.0;
+    globalData.convert = false;
+
     startSection.clear();
     nGlobSecLines = 0;
     nDESecLines = 0;
@@ -363,8 +367,6 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
             return false;
         }
     }
-
-    // XXX - Establish DE Associations
 
     ofstream file;
 
@@ -980,6 +982,67 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
     {
         ERRMSG << "\n + [CORRUPT FILE] no end-of-record marker found in Global Section\n";
         return false;
+    }
+
+    // XXX - TO BE IMPLEMENTED
+    // + Calculate a scale factor to convert from model space to mm.
+    // + adjust the User Intended Minimum to represent the mm equivalent (if possible)
+    // Note: if the Unit Type is UNIT_EXTERN then the scale factor shall be based on
+    // the model scale only.
+    switch( globalData.unitsFlag )
+    {
+        case UNIT_INCH:
+            globalData.cf = 25.4 / globalData.modelScale;
+            break;
+
+        case UNIT_MILLIMETER:
+            globalData.cf = 1.0 / globalData.modelScale;
+            break;
+
+        case UNIT_FOOT:
+            globalData.cf = 304.8 / globalData.modelScale;
+            break;
+
+        case UNIT_MILE:
+            globalData.cf = 5280.0 * 304.8 / globalData.modelScale;
+            break;
+
+        case UNIT_METER:
+            globalData.cf = 1000.0 / globalData.modelScale;
+            break;
+
+        case UNIT_KILOMETER:
+            globalData.cf = 1000000.0 / globalData.modelScale;
+            break;
+
+        case UNIT_MIL:
+            globalData.cf = 0.0254 / globalData.modelScale;
+            break;
+
+        case UNIT_MICRON:
+            globalData.cf = 0.001 / globalData.modelScale;
+            break;
+
+        case UNIT_CENTIMETER:
+            globalData.cf = 10.0 / globalData.modelScale;
+            break;
+
+        case UNIT_MICROINCH:
+            globalData.cf = 0.0000254 / globalData.modelScale;
+            break;
+
+        default:
+            // UNIT_EXTERN
+            globalData.cf = 1.0 / globalData.modelScale;
+            break;
+    }
+
+    globalData.minResAdj = globalData.minResolution;
+
+    if( globalData.cf < 0.9999998 || globalData.cf > 0.0000002 )
+    {
+        globalData.minResAdj *= globalData.cf;
+        globalData.convert = true;
     }
 
     return true;

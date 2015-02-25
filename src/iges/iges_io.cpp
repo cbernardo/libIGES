@@ -29,6 +29,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cmath>
 
 #include <error_macros.h>
 #include <iges_io.h>
@@ -487,8 +488,74 @@ bool FormatDEInt( std::string& out, const int num )
 // format a real number as a float or double and tack on a delimeter (may be PD or RD)
 bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    double vlim = var / minRes;
+
+    if( vlim < -1.0 )
+        vlim = -vlim;
+
+    if( vlim < 10.0 )
+        vlim = 10.0;
+
+    // estimate the number of digits required to represent a number
+    // to the stated minimum
+    int nc = (int)(log(vlim)/ 2.3025850929940457 + 1.00000000000001);
+    ostringstream ostr;
+
+    if( nc > 16 )
+        nc = 16;
+
+    // if magnitudes are big enough then switch to scientific notation
+    if( var > 999.9 || var < -999.9 )
+        ostr << scientific;
+
+    // if magnitudes are small enough then switch to scientific notation
+    if( var > -0.00001 && var < -0.00001 )
+        ostr << scientific;
+
+    ostr.precision( nc );
+    ostr << var;
+
+    // trim off any excess to ensure the most compact notation
+    tStr = ostr.str();
+
+    size_t pdot = tStr.find_first_of( '.' );
+    size_t pexp = tStr.find_first_of( "eE" );
+    size_t pidx;
+
+    if( pdot != string::npos )
+    {
+        // strip any zeroes if we can
+        if( pexp != string::npos )
+            pidx = pexp - 1;
+        else
+            pidx = tStr.length() - 1;
+
+        while( tStr[pidx] == '0' )
+            --pidx;
+
+        // don't eat up the first zero to the right of the dot
+        if( tStr[pidx] == '.' )
+            ++pidx;
+
+        if( pexp != string::npos )
+        {
+            if( nc > 7 )
+                tStr[pexp] = 'D'; // change exponent to 'D' (double)
+            else
+                tStr[pexp] = 'E'; // change exponent to 'E' (float)
+
+            tStr = tStr.substr( 0, pidx + 1 ) + tStr.substr( pexp );
+        }
+        else
+        {
+            tStr = tStr.substr( 0, pidx + 1 );
+        }
+
+    }
+
+    tStr += delim;
+
+    return true;
 }
 
 // tack the delimited PD Item tStr onto fStr and when appropriate update fOut and index;

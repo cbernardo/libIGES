@@ -409,3 +409,10 @@ bool IGES_ENTITY_NULL::SetHierarchy(IGES_STAT_HIER aHierarchy)
     ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
     return false;
 }
+
+
+bool IGES_ENTITY_NULL::rescale( double sf )
+{
+    ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
+    return false;
+}

@@ -56,6 +56,8 @@ protected:
 
     friend class IGES;
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    virtual bool format( int &index );
+    virtual bool rescale( double sf );
     // XXX - TO BE IMPLEMENTED
 
 public:

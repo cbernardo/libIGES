@@ -2277,12 +2277,55 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
     // second section of the list
 
     // XXX - TO BE IMPLEMENTED
+#warning UNIMPLEMENTED
+    return true;
     return false;
 }
 
 // format optional (extra) PD comments for output
 bool IGES_ENTITY::formatComments( int& pdSeq )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( 0 != pdout.length() % 81 )
+    {
+        ERRMSG << "\n + [BUG] PD output is not a multiple of 81\n";
+        return false;
+    }
+
+    if( comments.empty() )
+        return true;
+
+    std::list<std::string>::iterator sCom = comments.begin();
+    std::list<std::string>::iterator eCom = comments.end();
+    std::string tmp;
+    std::string tmp1;
+
+    size_t sz;
+    size_t sidx;
+
+    while( sCom != eCom )
+    {
+        sz = sCom->length();
+
+        for( sidx = 0; sidx < sz; )
+        {
+            tmp = sCom->substr( sidx, 72 );
+            sidx += tmp.length();
+
+            if( tmp.length() < 72 )
+                tmp.append( 72 - tmp.length(), ' ' );
+
+                if( !FormatDEInt( tmp1, pdSeq++ ) )
+                {
+                    ERRMSG << "\n + [BUG] could not format optional parameter comment\n";
+                    return false;
+                }
+
+                tmp1[0] = 'P';
+                tmp += tmp1 + "\n";
+                pdout += tmp;
+        }
+        ++sCom;
+    }
+
+    return true;
 }

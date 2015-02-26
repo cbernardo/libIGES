@@ -23,7 +23,11 @@
  *
  */
 
+#include <libigesconf.h>
 #include <locale.h>
+#include <sstream>
+#include <limits>
+#include <iomanip>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -77,7 +81,7 @@ IGES::IGES()
 
 IGES::~IGES()
 {
-    // XXX - TO BE IMPLEMENTED
+    Clear();
     return;
 }
 
@@ -118,7 +122,6 @@ bool IGES::init(void)
     globalData.applicationNote.clear();
 
     globalData.cf = 1.0;
-    globalData.minResAdj = 1.0;
     globalData.convert = false;
 
     startSection.clear();
@@ -144,7 +147,7 @@ bool IGES::Clear( void )
     }
 
     init();
-    return false;
+    return true;
 }
 
 
@@ -354,6 +357,8 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
         entities[iEnt]->sequenceNumber = (int)(iEnt << 1) + 1;
 
+    nDESecLines = nEnt << 1;
+
     // Format PD entries for output and update some DE items
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
@@ -368,12 +373,30 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
         }
     }
 
+    nPDSecLines = index - 1;
+
     ofstream file;
 
-    if( fOverwrite )
-        file.open( aFileName, ios::out | ios::binary | ios::trunc );
+    file.open( aFileName, ios::out | ios_base::in | ios::binary );
+
+    if( file.is_open() )
+    {
+        if( !fOverwrite )
+        {
+            ERRMSG << "\n + [INFO] file already exists; not overwriting\n";
+            cerr << " + filename: '" << aFileName << "'\n";
+            file.close();
+            return false;
+        }
+
+        // reopen the file and truncate it
+        file.close();
+        file.open( aFileName, ios::out | ios_base::in | ios::binary | ios::trunc );
+    }
     else
+    {
         file.open( aFileName, ios::out | ios::binary );
+    }
 
     if( !file.is_open() )
     {
@@ -385,15 +408,109 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
         return false;
     }
 
-    // XXX - TO BE IMPLEMENTED
+    // START SECTION
+    if( !writeStart( file ) )
+    {
+        ERRMSG << "\n + [INFO] could not write START section\n";
+        file.close();
+        return false;
+    }
 
-    // XXX - Write START
-    // XXX - Write GLOBALS
-    // XXX - Write DEs
-    // XXX - Write PDs
-    // XXX - Write TS
+    // GLOBAL SECTION
+    if( !writeGlobals( file ) )
+    {
+        ERRMSG << "\n + [INFO] could not write GLOBAL section\n";
+        file.close();
+        return false;
+    }
 
-    return false;
+    // DIRECTORY ENTRY SECTION
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( !entities[iEnt]->WriteDE( file ) )
+        {
+            ERRMSG << "\n + [INFO] could not write out Directory Entries\n";
+            file.close();
+            return false;
+        }
+    }
+
+    // PARAMETER DATA SECTION
+    for( iEnt = 0; iEnt < nEnt; ++iEnt )
+    {
+        if( !entities[iEnt]->WritePD( file ) )
+        {
+            ERRMSG << "\n + [INFO] could not write out Parameter Data\n";
+            file.close();
+            return false;
+        }
+    }
+
+    // TERMINATE SECTION
+    std::string oline;
+    std::string tmp;
+
+    if( !FormatDEInt( tmp, startSection.size() ) )
+    {
+        ERRMSG << "\n + [INFO] could not format S* entry in terminal line\n";
+        file.close();
+        return false;
+    }
+
+    tmp[0] = 'S';
+    oline = tmp;
+
+    if( !FormatDEInt( tmp, nGlobSecLines ) )
+    {
+        ERRMSG << "\n + [INFO] could not format G* entry in terminal line\n";
+        file.close();
+        return false;
+    }
+
+    tmp[0] = 'G';
+    oline += tmp;
+
+    if( !FormatDEInt( tmp, nDESecLines) )
+    {
+        ERRMSG << "\n + [INFO] could not format D* entry in terminal line\n";
+        file.close();
+        return false;
+    }
+
+    tmp[0] = 'D';
+    oline += tmp;
+
+    if( !FormatDEInt( tmp, nPDSecLines ) )
+    {
+        ERRMSG << "\n + [INFO] could not format P* entry in terminal line\n";
+        file.close();
+        return false;
+    }
+
+    tmp[0] = 'P';
+    oline += tmp;
+    oline.append( 40, ' ' );
+
+    if( !FormatDEInt( tmp, 1 ) )
+    {
+        ERRMSG << "\n + [INFO] could not format T* entry in terminal line\n";
+        file.close();
+        return false;
+    }
+
+    tmp[0] = 'T';
+    oline += tmp;
+    oline += "\n";
+    file << oline;
+
+    if( file.fail() )
+    {
+        file.close();
+        return false;
+    }
+
+    file.close();
+    return true;
 }
 
 
@@ -984,64 +1101,12 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
         return false;
     }
 
-    // XXX - TO BE IMPLEMENTED
-    // + Calculate a scale factor to convert from model space to mm.
-    // + adjust the User Intended Minimum to represent the mm equivalent (if possible)
-    // Note: if the Unit Type is UNIT_EXTERN then the scale factor shall be based on
-    // the model scale only.
-    switch( globalData.unitsFlag )
+    // apply a scale if the model scale is not 1.0
+    if( globalData.modelScale < 0.9999998 || globalData.modelScale > 1.000001 )
     {
-        case UNIT_INCH:
-            globalData.cf = 25.4 / globalData.modelScale;
-            break;
-
-        case UNIT_MILLIMETER:
-            globalData.cf = 1.0 / globalData.modelScale;
-            break;
-
-        case UNIT_FOOT:
-            globalData.cf = 304.8 / globalData.modelScale;
-            break;
-
-        case UNIT_MILE:
-            globalData.cf = 5280.0 * 304.8 / globalData.modelScale;
-            break;
-
-        case UNIT_METER:
-            globalData.cf = 1000.0 / globalData.modelScale;
-            break;
-
-        case UNIT_KILOMETER:
-            globalData.cf = 1000000.0 / globalData.modelScale;
-            break;
-
-        case UNIT_MIL:
-            globalData.cf = 0.0254 / globalData.modelScale;
-            break;
-
-        case UNIT_MICRON:
-            globalData.cf = 0.001 / globalData.modelScale;
-            break;
-
-        case UNIT_CENTIMETER:
-            globalData.cf = 10.0 / globalData.modelScale;
-            break;
-
-        case UNIT_MICROINCH:
-            globalData.cf = 0.0000254 / globalData.modelScale;
-            break;
-
-        default:
-            // UNIT_EXTERN
-            globalData.cf = 1.0 / globalData.modelScale;
-            break;
-    }
-
-    globalData.minResAdj = globalData.minResolution;
-
-    if( globalData.cf < 0.9999998 || globalData.cf > 0.0000002 )
-    {
-        globalData.minResAdj *= globalData.cf;
+        globalData.minResolution /= globalData.modelScale;
+        globalData.cf = 1.0 / globalData.modelScale;
+        globalData.modelScale = 1.0;
         globalData.convert = true;
     }
 
@@ -1275,4 +1340,587 @@ void IGES::cull( void )
 #endif
 
     return;
+}
+
+
+bool IGES::ConvertUnits( IGES_UNIT newUnit )
+{
+    if( globalData.unitsFlag == newUnit )
+        return true;
+
+    if( globalData.unitsFlag == UNIT_EXTERN )
+    {
+        ERRMSG << "\n + [INFO] cannot convert units; internal units is UNIT_EXTERN\n";
+        return false;
+    }
+
+    if( newUnit == UNIT_EXTERN )
+    {
+        ERRMSG << "\n + [INFO] cannot convert units; user-specified units is UNIT_EXTERN\n";
+        return false;
+    }
+
+    double factors[UNIT_END] =
+    {
+        25.4,       // mm/inch
+        1.0,        // mm/mm
+        1.0,        // UNIT_EXTERN - this is only here as a filler
+        304.8,      // mm/foot
+        1609344.0,  // mm/mile
+        1000.0,     // mm/m
+        1000000.0,  // mm/km
+        0.0254,     // mm/mil
+        0.001,      // mm/micron
+        10.0,       // mm/cm
+        2.54e-5     // mm/microinch
+    };
+
+    double cf;
+
+    // + Calculate a scale factor to convert units.
+    // + adjust the User Intended Minimum to represent the mm equivalent (if possible)
+    cf = factors[globalData.unitsFlag] / factors[newUnit];
+
+    if( cf > 0.9999998 && cf < 1.000001 )
+        return true;
+
+    globalData.minResolution *= cf;
+
+    // scale all existing entities
+    size_t nEnt = entities.size();
+
+    for( size_t i = 0; i < nEnt; ++ i )
+    {
+        if( !entities[i]->rescale(cf) )
+        {
+            ERRMSG << "\n + [BUG] cannot convert units\n";
+            return false;
+        }
+    }
+
+    globalData.unitsFlag = newUnit;
+
+    return true;
+}
+
+
+bool IGES::ChangeModelScale( double aScale )
+{
+    if( aScale < 6.0e-8 )
+    {
+        ERRMSG << "\n + [INFO] rejecting scale (< 6.0e-8)\n";
+        return false;
+    }
+
+    if( aScale > 17000000.0 )
+    {
+        ERRMSG << "\n + [INFO] rejecting scale (> 17000000.0)\n";
+        return false;
+    }
+
+    double cf = aScale / globalData.modelScale;
+    globalData.minResolution *= aScale;
+    globalData.modelScale = aScale;
+
+    // scale all existing entities
+    size_t nEnt = entities.size();
+
+    for( size_t i = 0; i < nEnt; ++ i )
+    {
+        if( !entities[i]->rescale(cf) )
+        {
+            ERRMSG << "\n + [BUG] cannot convert units\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+std::list<std::string>* IGES::GetHeaders(void)
+{
+    return &startSection;
+}
+
+
+size_t IGES::GetNHeaderLines(void)
+{
+    return startSection.size();
+}
+
+
+bool IGES::AddToHeader( const std::string& comments )
+{
+    if( comments.empty() )
+        return true;
+
+    std::string tStr = comments;
+    std::string tStr1;
+
+    size_t slen = tStr.length();
+    size_t slen1;
+
+    if( slen < 72 )
+    {
+        tStr.append( 72 - slen, ' ' );
+        startSection.push_back( tStr );
+    }
+    else if( slen > 72 )
+    {
+        for( size_t i = 0; i < slen; i += 72 )
+        {
+            tStr1 = tStr.substr(i, 72);
+            slen1 = tStr1.length();
+
+            if( slen1 < 72 )
+                tStr1.append( 72 - slen1, ' ' );
+
+            startSection.push_back( tStr1 );
+        }
+    }
+
+    return true;
+}
+
+// write out the START SECTION
+bool IGES::writeStart( std::ofstream& file )
+{
+    if( startSection.empty() )
+        startSection.push_back( "# NOTE: no user-provided comment. This comment is provided to meet spec." );
+
+    std::list<std::string>::iterator ssc = startSection.begin();
+    std::list<std::string>::iterator esc = startSection.end();
+    std::string tStr;
+    std::string tStr1;
+
+    size_t slen;
+    size_t slen1;
+
+    while( ssc != esc )
+    {
+        slen = (*ssc).length();
+
+        if( slen < 72 )
+        {
+            (*ssc).append( 72 - slen, ' ' );
+        }
+        else if( slen > 72 )
+        {
+            tStr = *ssc;
+
+            for( size_t i = 0; i < slen; i += 72 )
+            {
+                tStr1 = tStr.substr(i, 72);
+                slen1 = tStr1.length();
+
+                if( slen1 < 72 )
+                    tStr1.append( 72 - slen1, ' ' );
+
+                startSection.insert( ssc, tStr1  );
+            }
+
+            ssc = startSection.erase( ssc );
+        }
+
+        ++ssc;
+    }
+
+    ssc = startSection.begin();
+    int nsc = 1;
+
+    while( ssc != esc )
+    {
+        if( !FormatDEInt( tStr1, nsc++ ) )
+        {
+            ERRMSG << "\n + [INFO] could not format START section\n";
+            return false;
+        }
+
+        tStr1[0] = 'S';
+        tStr = *ssc + tStr1 + "\n";
+        file << tStr;
+
+        if( file.fail() )
+        {
+            ERRMSG << "\n + [INFO] could not write START section\n";
+            return false;
+        }
+
+        ++ssc;
+    }
+
+    return true;
+}
+
+
+// write out the GLOBAL SECTION
+bool IGES::writeGlobals( std::ofstream& file )
+{
+    std::string gstr;   // Global Section data as a single string
+    std::string lstr;   // one line of Global Section Data being assembled
+    std::string tstr;   // single item being formatted for output
+
+    nGlobSecLines = 0;
+
+    char pd = globalData.pdelim;
+    char rd = globalData.rdelim;
+
+    if( globalData.minResolution < 1e-12 )
+        globalData.minResolution = 0.001;
+
+    // Item 1: (HStr) Parameter Delimeter
+    // REQ DEF ","
+    if( pd == ',' )
+        lstr = ",";
+    else
+        lstr = lstr + "1H" + pd + pd;
+
+    // Item 2: (HStr) Record Delimeter
+    // REQ DEF ";"
+    if( rd == ';' )
+        lstr = lstr + pd;
+    else
+        lstr = lstr + "1H" + rd + pd;
+
+    // Item 3: (HStr) Product ID from Sending System
+    // REQ NODEF (set to "none" if no ID provided by user)
+    tstr = globalData.productIDSS;
+
+    if( tstr.empty() )
+        tstr = "none";
+
+    int idx = 1;
+
+    if( !AddSecHStr( tstr, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Product ID, Sending System\n";
+        return false;
+    }
+
+    // Item 4: (HStr) Filename
+    // REQ NODEF - value must be derived from the actual filename
+    tstr = globalData.fileName;
+
+    if( tstr.empty() )
+    {
+        ERRMSG << "\n + [BUG] file name not set by IGES::Write()\n";
+        return false;
+    }
+
+    if( !AddSecHStr( tstr, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add File Name\n";
+        return false;
+    }
+
+    // Item 5: (HStr) Native System ID
+    // REQ NODEF - (set to "none" if no ID provided by application)
+    tstr = globalData.nativeSystemID;
+
+    if( tstr.empty() )
+        tstr = "none";
+
+    if( !AddSecHStr( tstr, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add File Name\n";
+        return false;
+    }
+
+    // Item 6: (HStr) Preprocessor Version
+    // REQ NODEF - Version String of libIGES
+    ostringstream ostr;
+    ostr << "libIGES Version " << LIB_VERSION_MAJOR << ".";
+    ostr << LIB_VERSION_MINOR;
+
+    if( !AddSecHStr( ostr.str(), lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Preprocessor Version\n";
+        return false;
+    }
+
+    // Item 7: (int) number of binary bits for Integer representation
+    // REQ NODEF = numeric_limits<unsigned int>::max() >> N
+    unsigned int maxN = numeric_limits<unsigned int>::max();
+    int nbit = 0;
+
+    while( maxN )
+    {
+        maxN >>= 1;
+        ++nbit;
+    }
+
+    ostr.str("");
+    ostr << nbit << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add N bits for integer representation\n";
+        return false;
+    }
+
+    // Item 8: (int) max power of 10 for single float
+    // REQ NODEF = numeric_limits<float>::max_exponent10
+    nbit = numeric_limits<float>::max_exponent10;
+
+    ostr.str("");
+    ostr << nbit << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max Exponent (float)\n";
+        return false;
+    }
+
+    // Item 9: (int) max number of significant digits for single float
+    // REQ NODEF = numeric_limits<float>::(max_)digits10
+    nbit = numeric_limits<float>::digits10;
+
+    ostr.str("");
+    ostr << nbit << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max Digits (float)\n";
+        return false;
+    }
+
+    // Item 10: (int) max power of 10 for double float
+    // REQ NODEF = numeric_limits<double>::max_exponent10
+    nbit = numeric_limits<double>::max_exponent10;
+
+    ostr.str("");
+    ostr << nbit << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max Exponent (double)\n";
+        return false;
+    }
+
+    // Item 11: (int) max number of significant digits for double float
+    // REQ NODEF = numeric_limits<double>::(max_)digits10
+    nbit = numeric_limits<double>::digits10;
+
+    ostr.str("");
+    ostr << nbit << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max Digits (double)\n";
+        return false;
+    }
+
+    // Item 12: (HStr) Product ID for Receiving System
+    // REQ DEF = same as Item 3
+    tstr = globalData.productIDRS;
+
+    if( !AddSecHStr( tstr, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Product ID, Receiving System\n";
+        return false;
+    }
+
+    // Item 13: (Real) Model Space Scale
+    // REQ DEF = 1.0
+    if( !FormatPDREal( tstr, globalData.modelScale, pd, globalData.minResolution ) )
+    {
+        ERRMSG << "\n + [INFO] failed to format Model Scale\n";
+        return false;
+    }
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Model Scale\n";
+        return false;
+    }
+
+    // Item 14: (int) Units Flag
+    // REQ DEF = 0 (INCH)
+    ostr.str("");
+    ostr << globalData.unitsFlag << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Units Flag\n";
+        return false;
+    }
+
+    // Item 15: (HStr) Units Name
+    // REQ DEF : UNIT_NAMES[Unit Flag]
+    if( !AddSecHStr( UNIT_NAMES[globalData.unitsFlag - UNIT_START], lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Units Name\n";
+        return false;
+    }
+
+    // Item 16: (int) Max. Number of Linewidth Gradations
+    // REQ DEF = 1, must be > 0
+    if( globalData.maxLinewidthGrad < 1 )
+        globalData.maxLinewidthGrad = 1;
+
+    ostr.str("");
+    ostr << globalData.maxLinewidthGrad << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max. Linewidth Gradations\n";
+        return false;
+    }
+
+    // Item 17: (Real) Max. Width of Lines
+    // REQ NODEF ( use 1.0 if none specified )
+    if( globalData.maxLinewidth < 1e-6 )
+        globalData.maxLinewidthGrad = 1.0;
+
+    if( !FormatPDREal( tstr, globalData.maxLinewidthGrad, pd, globalData.minResolution ) )
+    {
+        ERRMSG << "\n + [INFO] failed to format Max. Linewidth\n";
+        return false;
+    }
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Max. Linewidth\n";
+        return false;
+    }
+
+    // Item 18: (HStr) Creation Date (15HYYYYMMDD.hhmmss OR 13HYYYYMMDD.hhmmss)
+    // only generate a date if none currently exist
+    if( globalData.creationDate.empty() )
+    {
+        time_t tt = time( NULL );
+        struct tm tmt;
+        gmtime_r( &tt, &tmt );
+        ostr.str("");
+        ostr << setw(4) << setfill('0') << (tmt.tm_year + 1900);
+        ostr << setw(2) << (tmt.tm_mon + 1) << setw(2) << tmt.tm_mday << ".";
+        ostr << setw(2) << tmt.tm_hour << setw(2) << tmt.tm_min;
+        ostr << setw(2) << tmt.tm_sec << setw(0) << setfill(' ');
+    }
+
+    if( !AddSecHStr( globalData.creationDate, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Creation Date\n";
+        return false;
+    }
+
+    // Item 19: (Real) Min. user intended resolution/granularity
+    // REQ NODEF ( use 0.001mm if none specified )
+    if( !FormatPDREal( tstr, globalData.minResolution, pd, globalData.minResolution ) )
+    {
+        ERRMSG << "\n + [INFO] failed to format Min. Intended Resolution\n";
+        return false;
+    }
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Min. Intended Resolution\n";
+        return false;
+    }
+
+    // Item 20: (Real) Approx. max. coordinate value or 0.
+    // REQ DEF = 0.0; TODO: set to default until we can calculate a value
+    // XXX - TO BE IMPLEMENTED
+    tstr = "0.0";
+    tstr += pd;
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Approx. Max. Coordinate\n";
+        return false;
+    }
+
+    // Item 21: (HStr) Name of Author
+    // REQ DEF = NULL
+    if( !AddSecHStr( globalData.author, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Author\n";
+        return false;
+    }
+
+    // Item 22: (HStr) Author's Organization
+    // REQ DEF = NULL
+    if( !AddSecHStr( globalData.organization, lstr, gstr, idx, pd, rd, pd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Organization\n";
+        return false;
+    }
+
+    // Item 23: (int) Specification Version Flag
+    // REQ DEF = 3 : value = 11 since this library supports IGES5.3 (6.0)
+    tstr = "11";
+    tstr += pd;
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Specification Version Flag\n";
+        return false;
+    }
+
+    // Item 24: (int) Drafting Standard Flag
+    // REQ DEF = 0 : NONE
+    ostr.str("");
+    ostr << globalData.draftStandard << pd;
+    tstr = ostr.str();
+
+    if( !AddSecItem( tstr, lstr, gstr, idx, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Drafting Standard Flag\n";
+        return false;
+    }
+
+    // Item 25: (HStr) Modification Date (must update it here)
+    // Format: 15HYYYYMMDD.hhmmss
+    do
+    {
+        time_t tt = time( NULL );
+        struct tm tmt;
+        gmtime_r( &tt, &tmt );
+        ostr.str("");
+        ostr << setw(4) << setfill('0') << (tmt.tm_year + 1900);
+        ostr << setw(2) << (tmt.tm_mon + 1) << setw(2) << tmt.tm_mday << ".";
+        ostr << setw(2) << tmt.tm_hour << setw(2) << tmt.tm_min;
+        ostr << setw(2) << tmt.tm_sec << setw(0) << setfill(' ');
+    } while(0);
+
+    char delim = pd;
+
+    if( globalData.applicationNote.empty() )
+        delim = rd;
+
+    if( !AddSecHStr( ostr.str(), lstr, gstr, idx, pd, rd, delim ) )
+    {
+        ERRMSG << "\n + [INFO] failed to add Modification Date\n";
+        return false;
+    }
+
+    // Item 26: (HStr) Application Protocol
+    // REQ DEF = NULL
+    if( delim == pd )
+    {
+        if( !AddSecHStr( globalData.applicationNote, lstr, gstr, idx, pd, rd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] failed to add Modification Date\n";
+            return false;
+        }
+    }
+
+    file << gstr;
+    nGlobSecLines = idx - 1;
+
+    if( file.fail() )
+    {
+        ERRMSG << "\n +[INFO] could not write Global Section to file\n";
+        return false;
+    }
+
+    return true;
 }

@@ -496,6 +496,9 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
     if( vlim < 10.0 )
         vlim = 10.0;
 
+    // estimate the exponent size
+    double ne = log(var) / 2.3025850929940457;
+
     // estimate the number of digits required to represent a number
     // to the stated minimum
     int nc = (int)(log(vlim)/ 2.3025850929940457 + 1.00000000000001);
@@ -539,7 +542,7 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 
         if( pexp != string::npos )
         {
-            if( nc > 7 )
+            if( nc > 7 || ne < -38.0 || ne > 38.0 )
                 tStr[pexp] = 'D'; // change exponent to 'D' (double)
             else
                 tStr[pexp] = 'E'; // change exponent to 'E' (float)
@@ -552,13 +555,29 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
         }
 
     }
+    else
+    {
+        // Note: as per specification, the 'E' or the '.' may
+        // be missing, but not both
+        if( pexp == string::npos )
+        {
+            tStr += ".0";
+        }
+        else
+        {
+            if( nc > 7 )
+                tStr[pexp] = 'D'; // change exponent to 'D' (double)
+            else
+                tStr[pexp] = 'E'; // change exponent to 'E' (float)
+        }
+    }
 
     tStr += delim;
 
     return true;
 }
 
-// tack the delimited PD Item tStr onto fStr and when appropriate update fOut and index;
+// tack the delimited section item tStr onto fStr and when appropriate update fOut and index;
 // if the delimeter of tStr == rd then the PD entry is finalized
 bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
                 int& index, int sequenceNumber, char pd, char rd )
@@ -603,6 +622,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         seq[0] = 'P';
         fStr += seq;
         fOut += fStr;
+        fOut += "\n";
         fStr.clear();
         ++index;
     }
@@ -639,10 +659,214 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         seq[0] = 'P';
         fStr += seq;
         fOut += fStr;
+        fOut += "\n";
         fStr.clear();
         ++index;
     }
 
     tStr.clear();
+    return true;
+}
+
+
+// Add an item to the Global Section entry
+bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
+                 int& index, char pd, char rd )
+{
+    if( tStr.empty() )
+    {
+        ERRMSG << "\n + [BUG] item (tStr) is a null string\n";
+        return false;
+    }
+
+    char tc = tStr[tStr.length() -1];
+
+    if( tc != pd && tc != rd )
+    {
+        ERRMSG << "\n + [BUG] delimeter at end of item (" << tc;
+        cerr << ") is neither pd (" << pd << ") nor rd (" << rd << ")\n";
+        return false;
+    }
+
+    if( tStr.length() > 72 )
+    {
+        ERRMSG << "\n + [BUG] item length exceeds max. permissible by IGES specification\n";
+        return false;
+    }
+
+    if( fStr.length() > 72 )
+    {
+        ERRMSG << "\n + [BUG] global entry exceeds max. permissible by IGES specification\n";
+        return false;
+    }
+
+    if( fStr.length() + tStr.length() > 72 )
+    {
+        int len = 72 - fStr.length();
+
+        if( len > 0 )
+            fStr.append( len, ' ' );
+
+        // add global section sequence number
+        std::string seq;
+
+        if( !FormatDEInt( seq, index ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on Global Sequence Number\n";
+            return false;
+        }
+
+        seq[0] = 'G';
+        fStr += seq;
+        fOut += fStr;
+        fOut += "\n";
+        fStr.clear();
+        ++index;
+    }
+
+    // tack tStr onto fStr
+    fStr += tStr;
+
+    if( tStr[tStr.length() -1] == rd )
+    {
+        // this is the final entry
+        int len = 72 - fStr.length();
+
+        if( len > 0 )
+            fStr.append( len, ' ' );
+
+        // add sequence number
+        std::string seq;
+
+        if( !FormatDEInt( seq, index ) )
+        {
+            ERRMSG << "\n + [BUG] cannot tack on Global Sequence Number\n";
+            return false;
+        }
+
+        seq[0] = 'G';
+        fStr += seq;
+        fOut += fStr;
+        fOut += "\n";
+        fStr.clear();
+        ++index;
+    }
+
+    tStr.clear();
+    return true;
+}
+
+
+// get the Hollerith constant of a given string
+bool GetHConst( const std::string& tStr, std::string& hConst )
+{
+    if( tStr.empty() )
+        return false;
+
+    ostringstream ostr;
+    ostr << tStr.length() << "H";
+    hConst = ostr.str();
+
+    return true;
+}
+
+// convert the string in tStr to a Hollerith string and append to the Global Section fOut
+bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
+                 int& index, char pd, char rd, char delim )
+{
+    std::string hc;
+    std::string tmp;
+
+    if( tStr.empty() )
+    {
+        tmp = delim;
+
+        if( !AddSecItem( tmp, fStr, fOut, index, pd, rd ) )
+        {
+            ERRMSG << "\n + [BUG] could not add defaulted Hollerith string\n";
+            return false;
+        }
+
+        return true;
+    }
+
+    if( delim != pd && delim != rd )
+    {
+        ERRMSG << "\n + [BUG] 'delim' (" << delim << ") is neither a parameter (";
+        cerr << pd << ") nor record (" << rd << ") delimeter\n";
+        return false;
+    }
+
+    if( !GetHConst( tStr, hc ) )
+    {
+        ERRMSG << "\n + [BUG] could not retrieve Hollerith constant for '";
+        cerr << tStr << "'\n";
+        return false;
+    }
+
+    // note: as per spec, if the Hollerith constant cannot fit on
+    // the current line then it must be placed on the next line.
+    if( fStr.length() + hc.length() > 72 )
+    {
+        fStr.append( 72 - fStr.length(), ' ' );
+
+        if( !FormatDEInt( tmp, index++ ) )
+        {
+            ERRMSG << "\n + [BUG] could not format global section sequence number\n";
+            return false;
+        }
+
+        tmp[0] = 'G';
+        fStr += tmp + "\n";
+        fOut += fStr;
+        fStr.clear();
+    }
+
+    // concatenate the Hollerith string
+    hc += tStr + delim;
+
+    size_t sz = hc.length();
+    size_t sidx;
+
+    for( sidx = 0; sidx < sz; )
+    {
+        tmp = hc.substr( sidx, 72 - fStr.length() );
+        sidx += tmp.length();
+
+        fStr += tmp;
+
+        if( fStr.length() == 72 )
+        {
+            if( !FormatDEInt( tmp, index++ ) )
+            {
+                ERRMSG << "\n + [BUG] could not format global section sequence number\n";
+                return false;
+            }
+
+            tmp[0] = 'G';
+            fStr += tmp + "\n";
+            fOut += fStr;
+            fStr.clear();
+        }
+    }
+
+    // check if we should finalize the entry
+    if( fStr.length() && delim == rd )
+    {
+        if( fStr.length() != 72 )
+            fStr.append( 72 - fStr.length(), ' ' );
+
+        if( !FormatDEInt( tmp, index++ ) )
+        {
+            ERRMSG << "\n + [BUG] could not format global section sequence number\n";
+            return false;
+        }
+
+        tmp[0] = 'G';
+        fStr += tmp + "\n";
+        fOut += fStr;
+        fStr.clear();
+    }
+
     return true;
 }

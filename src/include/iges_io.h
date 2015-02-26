@@ -66,12 +66,22 @@ bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, cha
 bool FormatDEInt( std::string& out, const int num );
 
 // format a real number as a float or double and tack on a delimeter (may be PD or RD)
-bool FormatPDREal( std::string &tStr, double var, char delim, double minRes );
+bool FormatPDREal( std::string& tStr, double var, char delim, double minRes );
+
+// get the Hollerith constant of a given string
+bool GetHConst( const std::string& tStr, std::string& hConst );
 
 // tack the delimited PD Item tStr onto fStr and when appropriate update fOut and index;
 // if the delimeter of tStr == rd then the PD entry is finalized
 bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
-                int& index, int sequenceNumber, char pd, char rd );
+                 int& index, int sequenceNumber, char pd, char rd );
+
+bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
+                 int& index, char pd, char rd );
+
+// convert the string in tStr to a Hollerith string and append to the Global Section fOut
+bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
+                 int& index, char pd, char rd, char delim );
 
 
 // a single-line data record
@@ -80,40 +90,6 @@ struct IGES_RECORD
     std::string data;           // data section (columns 1..72)
     char        section_type;   // column  73
     int         index;          // columns 74..80
-};
-
-
-// XXX - move this elsewhere; the end user never has to see it
-// Flags: determines whether the item is Required or Optional,
-// Defaulted or non-defaulted type, and whether the item read
-// was defaulted.
-class IGES_DATUM
-{
-    IGES_TYPE type;
-    int       flags;
-
-public:
-    IGES_DATUM();
-    virtual ~IGES_DATUM();
-
-    union
-    {
-        int i;          // Integer
-        float f;        // Real (E)
-        double d;       // Real (D)
-        int p;          // IGES pointer
-        bool b;         // Logical
-        std::string* s; // Language String or Hollerith String
-    } data;
-
-    IGES_TYPE GetType( void );
-    bool      SetType( IGES_TYPE aType );
-
-    int       GetFlags( void );
-    void      SetFlags( int aFlag );
-
-    // XXX - routines to read and write?
-    // bool Read(const std::string&, IGES_TYPE, FLAGS&, {DEFAULT})
 };
 
 #endif  // IGES_IO_H

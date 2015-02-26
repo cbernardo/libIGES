@@ -86,7 +86,7 @@ bool IGES_ENTITY_100::format( int &index )
 
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
-    double uir = parent->globalData.minResAdj;
+    double uir = parent->globalData.minResolution;
 
     ostringstream ostr;
     ostr << entityType << pd;
@@ -318,6 +318,18 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
+    if( parent->globalData.convert )
+    {
+        double cf = parent->globalData.cf;
+        zOffset *= cf;
+        xCenter *= cf;
+        yCenter *= cf;
+        xStart *= cf;
+        yStart *= cf;
+        xEnd *= cf;
+        yEnd *= cf;
+    }
+
     pdout.clear();
     return true;
 }
@@ -355,4 +367,18 @@ bool IGES_ENTITY_100::SetHierarchy( IGES_STAT_HIER aHierarchy )
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
     return false;
+}
+
+
+bool IGES_ENTITY_100::rescale( double sf )
+{
+    zOffset *= sf;
+    xCenter *= sf;
+    yCenter *= sf;
+    xStart *= sf;
+    yStart *= sf;
+    xEnd *= sf;
+    yEnd *= sf;
+
+    return true;
 }

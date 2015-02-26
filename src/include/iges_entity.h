@@ -102,6 +102,10 @@ protected:
     // format optional (extra) PD comments for output
     bool formatComments( int& pdSeq );
 
+    // change the internal scale; this routine may be invoked by teh parent IGES object
+    // to change the internal units or the Model Scale.
+    virtual bool rescale( double sf ) = 0;
+
 public:
     IGES_ENTITY(IGES* aParent);
     virtual ~IGES_ENTITY();

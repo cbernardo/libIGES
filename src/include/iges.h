@@ -66,9 +66,8 @@ struct IGES_GLOBAL
     std::string applicationNote;            // Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
 
     // derived scale to be applied to quantities to derive mm units with model scale 1.0
-    double      cf;
+    double      cf;                         // conversion factor for normalizing input when model scale != 1.0
     bool        convert;                    // true if we need to convert to mm upon reading
-    bool        minResAdj;                  // adjusted minimum resolution
 };
 
 
@@ -85,18 +84,19 @@ private:
     bool init(void);
 
     bool readGlobals( IGES_RECORD& rec, std::ifstream& file );
-    // XXX - must rewind a non-DE entry
+    // Read all Directory Entries (when a Parameter Data Entry is encountered. rewind to the start of that line)
     bool readDE( IGES_RECORD& rec, std::ifstream& file );
-    // XXX - reads data based on existing entities' record on # of PD lines
+    // Read data based on existing entities' record on # of PD lines
     bool readPD( IGES_RECORD& rec, std::ifstream& file );
-    // XXX - reads the TERMINATE section and verifies data
+    // Read the TERMINATE section and verifies data
     bool readTS( IGES_RECORD& rec, std::ifstream& file );
     // cull orphaned entities
     void cull( void );
 
-    // XXX - TO BE IMPLEMENTED
-    // format: prepare data for writing; Parameter Data is formatted using the given index
-    //          and the DE items are updated; the Sequence Number must have been previously allocated.
+    // write out the START SECTION
+    bool writeStart( std::ofstream& file );
+    // write out the GLOBAL SECTION
+    bool writeGlobals( std::ofstream& file );
 
 public:
     IGES();
@@ -123,6 +123,18 @@ public:
 
     /// delete an entity
     bool DelEntity( IGES_ENTITY* aEntity );
+
+    /// convert to a different type of units; this method may fail
+    /// if either the internal units or newUnit are == UNIT_EXTERN
+    bool ConvertUnits( IGES_UNIT newUnit );
+
+    /// change the model scale; remember Real Units = Model Units / Scale
+    bool ChangeModelScale( double aScale );
+
+    // routines to manipulate START SECTION (headers)
+    std::list<std::string>* GetHeaders(void);
+    size_t GetNHeaderLines(void);
+    bool AddToHeader( const std::string& comments );
 };
 
 

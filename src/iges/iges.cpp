@@ -25,6 +25,8 @@
 
 #include <libigesconf.h>
 #include <locale.h>
+#include <cstdlib>
+#include <cerrno>
 #include <sstream>
 #include <limits>
 #include <iomanip>
@@ -32,6 +34,7 @@
 #include <iges.h>
 #include <iges_io.h>
 #include <all_entities.h>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 
@@ -53,6 +56,124 @@ static std::string UNIT_NAMES[UNIT_END] =
     "CM",
     "UIN"
 };
+
+static int mdays[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+
+static bool checkDate( const std::string aDate )
+{
+    if( aDate.length() != 13 && aDate.length() != 15 )
+        return false;
+
+    std::string dyear;
+    std::string dmon;
+    std::string dmday;
+    std::string dhour;
+    std::string dmin;
+    std::string dsec;
+
+    int idx = 0;
+    bool ok = true;
+
+    if( aDate.length() == 13 )
+    {
+        dyear = "19" + aDate.substr( 0, 2 );
+        idx += 2;
+    }
+    else
+    {
+        dyear = aDate.substr( 0, 4 );
+        idx += 4;
+    }
+
+    dmon = aDate.substr( idx, 2 );
+    idx += 2;
+    dmday = aDate.substr( idx, 2 );
+    idx += 2;
+
+    if( aDate[idx] != '.' )
+        ok = false;
+
+    ++idx;
+    dhour = aDate.substr( idx, 2 );
+    idx += 2;
+    dmin = aDate.substr( idx, 2 );
+    idx += 2;
+    dsec = aDate.substr( idx, 2 );
+
+    int iyear;
+    int imon;
+    int iday;
+    int ihour;
+    int imin;
+    int isec;
+
+    const char* cp0;
+    char* cp1;
+
+    errno = 0;
+    cp0 = dyear.c_str();
+    iyear = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 4 )
+        ok = false;
+
+    if( iyear < 1970 )
+        ok = false;
+
+    errno = 0;
+    cp0 = dmon.c_str();
+    imon = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 2 )
+        ok = false;
+
+    if( imon < 1 || imon > 12 )
+        ok = false;
+
+    errno = 0;
+    cp0 = dmday.c_str();
+    iday = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 2 )
+        ok = false;
+
+    if( iday < 1 || iday > mdays[imon -1] )
+        ok = false;
+
+    errno = 0;
+    cp0 = dhour.c_str();
+    ihour = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 2 )
+        ok = false;
+
+    if( ihour < 0 || ihour > 23 )
+        ok = false;
+
+    errno = 0;
+    cp0 = dmin.c_str();
+    imin = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 2 )
+        ok = false;
+
+    if( imin < 0 || imin > 59 )
+        ok = false;
+
+    errno = 0;
+    cp0 = dsec.c_str();
+    isec = strtol( cp0, &cp1, 10 );
+
+    if( errno || cp1 == cp0 || (cp1 - cp0) != 2 )
+        ok = false;
+
+    // note: using '60' ensures we allow leap seconds
+    if( isec < 0 || imin > 60 )
+        ok = false;
+
+    return ok;
+}
 
 
 // This class magically manages switching between the C locale and
@@ -256,13 +377,27 @@ bool IGES::Read( const char* aFileName )
         return false;
     }
 
-    // XXX - Ideally we compare the filename with the name stored
-    // in the IGES file (case insensitive to appease defective
-    // file storage protocols). If the names are not the same.
-    // print out a warning message. Keep in mind that the
+    // Compare the filename with the name stored
+    // in the IGES file. If the names are not the same then
+    // print out a warning message and set the internal filename
+    // to match the name on disk. Keep in mind that the
     // name discrepancies may result in the failure of some
     // IGES implementations to correctly load externally
     // referenced files.
+    std::string fName;
+    do
+    {
+        boost::filesystem::path bp( aFileName );
+        fName = bp.filename().string();
+    } while(0);
+
+    if( fName.compare( globalData.fileName ) )
+    {
+        ERRMSG << "\n + [INFO] filename mismatch:\n";
+        cerr << " + internal filename: '" << globalData.fileName << "'\n";
+        cerr << " + filename on disk: '" << fName << "'\n";
+        globalData.fileName = fName;
+    }
 
     // read the DE section
     if( rec.section_type != 'D' )
@@ -407,6 +542,12 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
         cerr << " + filename: '" << aFileName << "'\n";
         return false;
     }
+
+    do
+    {
+        boost::filesystem::path bp( aFileName );
+        globalData.fileName = bp.filename().string();
+    } while(0);
 
     // START SECTION
     if( !writeStart( file ) )
@@ -945,9 +1086,7 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
         return false;
     }
 
-    // XXX - ideally we should parse the string to ensure it's a valid date
-    if( globalData.creationDate.length() != 13
-        && globalData.creationDate.length() != 15 )
+    if( !checkDate( globalData.creationDate ) )
     {
         ERRMSG << "\n + [CORRUPT FILE] invalid creation date '";
         cerr << globalData.creationDate << "'\n";
@@ -1072,9 +1211,7 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
             return false;
         }
 
-        // XXX - ideally we should parse the string to ensure it's a valid date
-        if( globalData.modificationDate.length() > 0 && globalData.modificationDate.length() != 13
-            && globalData.modificationDate.length() != 15 )
+        if( !checkDate( globalData.modificationDate ) )
         {
             ERRMSG << "\n + [CORRUPT FILE] invalid modification date '";
             cerr << globalData.modificationDate << "'\n";

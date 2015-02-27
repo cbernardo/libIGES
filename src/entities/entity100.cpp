@@ -346,27 +346,10 @@ bool IGES_ENTITY_100::SetEntityForm( int aForm )
 }
 
 
-bool IGES_ENTITY_100::SetDependency( IGES_STAT_DEPENDS aDependency )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
-bool IGES_ENTITY_100::SetEntityUse( IGES_STAT_USE aUseCase )
-{
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
-}
-
-
 bool IGES_ENTITY_100::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    // the hierarchy is ignored by a Circle Entity so this function always succeeds
+    return true;
 }
 
 

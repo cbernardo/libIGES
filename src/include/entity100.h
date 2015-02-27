@@ -68,8 +68,6 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm( int aForm );
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     double zOffset;     // ZT in the IGES spec

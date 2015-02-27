@@ -25,6 +25,7 @@
 // Note: This base class must never be instantiated.
 
 #include <iomanip>
+#include <sstream>
 #include <error_macros.h>
 #include <iges.h>
 #include <all_entities.h>
@@ -358,6 +359,11 @@ bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
     {
         if( aParentEntity == *bref )
         {
+            int eType = (*bref)->GetEntityType();
+
+            if( eType != 402 )
+                (*bref)->DelReference( this );
+
             extras.erase( bref );
             return true;
         }
@@ -955,7 +961,7 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
         return false;
     }
 
-    if( tmpInt <= 0 )
+    if( tmpInt < 0 )
     {
         ERRMSG << "\n + invalid Parameter Data sequence number: " << tmpInt << "\n";
         return false;
@@ -1202,7 +1208,10 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
         return false;
     }
 
-    if( tmpInt < 1 )
+    // Note: a NULL entity (but no other entity) may specify
+    // 0 for the Parameter Count; however as per spec the
+    // Parameter Sequence must be > 0.
+    if( tmpInt < 0 || (tmpInt == 0 && entityType != 0) )
     {
         ERRMSG << "\n + invalid Parameter Line Count: " << tmpInt << "\n";
         return false;
@@ -1261,6 +1270,11 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
 bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 {
     pdout.clear();
+
+    // As per IGES specification, a NULL Entity may
+    // specify 0 lines of parameter data
+    if( parameterData == 0 && entityType == 0 )
+        return true;
 
     if( parameterData < 1 || parameterData > 9999999 )
     {
@@ -2240,9 +2254,87 @@ bool IGES_ENTITY::GetHierarchy(IGES_STAT_HIER& aHierarchy)
 // read optional (extra) PD parameters
 bool IGES_ENTITY::readExtraParams( int& index )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    int nAType;
+    int nBType;
+    int idef = 0;
+    bool eor = false;
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+    int ent;
+    iExtras.clear();
+
+    if( !ParseInt( pdout, index, nAType, eor, pd, rd, &idef ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the number of extra entities\n";
+        return false;
+    }
+
+    if( nAType < 0 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of entities: " << nAType << "\n";
+        return false;
+    }
+
+    int i;
+
+    for( i = 0; i < nAType; ++i )
+    {
+        if( !ParseInt( pdout, index, ent, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read the entity DE index\n";
+            return false;
+        }
+
+        if( ent < 1 || (ent & 1) == 0 || ent > 9999997 )
+        {
+            ERRMSG << "\n + [INFO] invalid DE index (" << ent << ")\n";
+            return false;
+        }
+
+        iExtras.push_back( ent );
+    }
+
+    if( eor )
+        return true;
+
+    if( !ParseInt( pdout, index, nBType, eor, pd, rd, &idef ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the number of extra entities (Type 312)\n";
+        return false;
+    }
+
+    if( nBType < 0 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of entities: " << nBType << "\n";
+        return false;
+    }
+
+    for( i = 0; i < nBType; ++i )
+    {
+        if( !ParseInt( pdout, index, ent, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read the entity DE index\n";
+            return false;
+        }
+
+        if( ent < 1 || (ent & 1) == 0 || ent > 9999997 )
+        {
+            ERRMSG << "\n + [INFO] invalid DE index (" << ent << ")\n";
+            return false;
+        }
+
+        iExtras.push_back( ent );
+    }
+
+    if( !eor )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] did not find End-of-Record marker in optional section\n";
+        return false;
+    }
+
+    return true;
 }
+
 
 // read optional (extra) PD comments
 bool IGES_ENTITY::readComments( int& index )
@@ -2271,16 +2363,115 @@ bool IGES_ENTITY::readComments( int& index )
 // format optional (extra) PD parameters for output
 bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char rd )
 {
-    // XXX - establish entity numbers of extras<> and write them out
-    // XXX - remember to sort the extras into Types 402+212 for
-    // the first section of the pointer list and Type 312 for the
-    // second section of the list
+    if( extras.empty() )
+    {
+        ERRMSG << "\n + [BUG] invoked when there were no extra parameters\n";
+        return false;
+    }
 
-    // XXX - TO BE IMPLEMENTED
-#warning UNIMPLEMENTED
+    std::list<int> secA;    // section for Types 402 and 212
+    std::list<int> secB;    // section for Types 4312
+
+    std::list<IGES_ENTITY*>::iterator sExt = extras.begin();
+    std::list<IGES_ENTITY*>::iterator eExt = extras.end();
+    int eType;
+
+    while( sExt != eExt )
+    {
+        eType = (*sExt)->GetEntityType();
+
+        switch( eType )
+        {
+            case 402:
+            case 212:
+                secA.push_back( eType );
+                break;
+
+            case 312:
+                secB.push_back( eType );
+                break;
+
+            default:
+                ERRMSG << "\n + [BUG] invalid type in Optional Entities (extras) list: ";
+                cerr << eType << "\n";
+                return false;
+                break;
+        }
+
+        ++sExt;
+    }
+
+    std::string tstr;   // individual item to add to optional entities
+
+    ostringstream ostr;
+    std::list<int>::iterator sSec;
+    std::list<int>::iterator eSec;
+
+    // if there is no data in Section A, write a parameter delimeter to
+    if( secA.empty() )
+    {
+        tstr = pd;
+
+        AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+    }
+    else
+    {
+        sSec = secA.begin();
+        eSec = secA.end();
+
+        if( secB.empty() )
+            --eSec;
+
+        ostr.str("");
+        ostr << secA.size() << pd;
+        tstr = ostr.str();
+        AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+
+        while( sSec != eSec )
+        {
+            ostr.str("");
+            ostr << *sSec << pd;
+            tstr = ostr.str();
+            AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+            ++sSec;
+        }
+
+        if( secB.empty() )
+        {
+            ostr.str("");
+            ostr << *sSec << rd;
+            tstr = ostr.str();
+            AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+            return true;
+        }
+    }
+
+    sSec = secB.begin();
+    eSec = secB.end();
+    --eSec;
+
+    ostr.str("");
+    ostr << secB.size() << pd;
+    tstr = ostr.str();
+    AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+
+    while( sSec != eSec )
+    {
+        ostr.str("");
+        ostr << *sSec << pd;
+        tstr = ostr.str();
+        AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+        ++sSec;
+    }
+
+    ostr.str("");
+    ostr << *sSec << rd;
+    tstr = ostr.str();
+    AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
+
     return true;
-    return false;
 }
+
 
 // format optional (extra) PD comments for output
 bool IGES_ENTITY::formatComments( int& pdSeq )
@@ -2327,5 +2518,152 @@ bool IGES_ENTITY::formatComments( int& pdSeq )
         ++sCom;
     }
 
+    return true;
+}
+
+
+
+int IGES_ENTITY::GetNOptionalEntities( void )
+{
+    return extras.size();
+}
+
+
+std::list<IGES_ENTITY*>* IGES_ENTITY::GetOptionalEntities( void )
+{
+    return &extras;
+}
+
+
+bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
+{
+    if( !aEntity )
+    {
+        ERRMSG << "\n + [BUG] NULL pointer passed for entity\n";
+        return false;
+    }
+
+    int eType = aEntity->GetEntityType();
+
+    if( eType != 402 && eType != 212 && eType != 312 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (Type " << eType;
+        cerr << "); only types 402, 212, and 312 are valid.\n";
+        return false;
+    }
+
+    if( eType != 402 )
+    {
+        if( !aEntity->AddReference( this ) )
+        {
+            ERRMSG << "\n + [info] could not add reference to specified entity.\n";
+            return false;
+        }
+    }
+
+    extras.push_back( aEntity );
+    return true;
+}
+
+
+bool IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
+{
+    if( !aEntity )
+    {
+        ERRMSG << "\n + [BUG] NULL pointer passed for entity\n";
+        return false;
+    }
+
+    int eType = aEntity->GetEntityType();
+
+    if( eType != 402 && eType != 212 && eType != 312 )
+    {
+        ERRMSG << "\n + [BUG] invalid entity (Type " << eType;
+        cerr << "); only types 402, 212, and 312 are valid.\n";
+        return false;
+    }
+
+    if( !DelReference( aEntity ) )
+    {
+        ERRMSG << "\n + [INFO] could not delete reference\n";
+        return false;
+    }
+
+    return true;
+}
+
+
+int IGES_ENTITY::GetNComments( void )
+{
+    return comments.size();
+}
+
+
+std::list<std::string>* IGES_ENTITY::GetComments( void )
+{
+    return &comments;
+}
+
+
+bool IGES_ENTITY::AddComment( const std::string& aComment )
+{
+    if( aComment.empty() )
+    {
+        ERRMSG << "\n + [INFO] empty comment string\n";
+    }
+
+    comments.push_back( aComment );
+    return true;
+}
+
+
+bool IGES_ENTITY::DelComment( int index )
+{
+    if( index < 0 || index >= (int)comments.size() )
+    {
+        ERRMSG << "\n + [INFO] invalid index (" << index << ") ";
+        cerr << "valid indices are 0 .. " << (comments.size() -1) << "\n";
+        return false;
+    }
+
+    list<string>::iterator bs = comments.begin();
+
+    int i = 0;
+    while( i < index )
+    {
+        ++i;
+        ++bs;
+    }
+
+    comments.erase( bs );
+    return true;
+}
+
+
+bool IGES_ENTITY::ClearComments( void )
+{
+    comments.clear();
+    return true;
+}
+
+
+bool IGES_ENTITY::SetDependency( IGES_STAT_DEPENDS aDependency )
+{
+    depends = aDependency;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetEntityUse( IGES_STAT_USE aUseCase )
+{
+    use = aUseCase;
+    return true;
+}
+
+
+bool IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
+{
+    // XXX - require that a hierarchy object be set first?
+    hierarchy = aHierarchy;
     return true;
 }

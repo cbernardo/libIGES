@@ -35,7 +35,7 @@
 class IGES;             // Overarching data structure and parent to all entities
 struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
 
-// NOTE: Base class for all IGES entities
+// Base class for all IGES entities
 class IGES_ENTITY
 {
 protected:
@@ -73,9 +73,7 @@ protected:
     // list of extra entities (optional PD entries)
     std::list<IGES_ENTITY*> extras;
     std::list<int> iExtras;
-    // XXX - need to be able to access extras (get/add/delete)
     // list of optional comments
-    // XXX - need to be able to access comments (get/add/delete)
     std::list<std::string> comments;
     // data formatted for output (also used for reading PDs from file)
     std::string pdout;
@@ -121,14 +119,19 @@ public:
     virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
     virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
     size_t       GetNRefs( void );
-    // XXX: GetNOptionalEntities()
-    // XXX: GetOptionalEntities() - retrieve the list of extra<> entities
-    // XXX: AddOptionalEntity()
-    // XXX: DelOptionalEntity() - redirects to DelReference()
-    // XXX: GetNComments()
-    // XXX: GetComments() - retrieve list of comments
-    // XXX: AddComment() -
-    // XXX: DelComment()
+
+    // Routines for manipulating extra entity list
+    int GetNOptionalEntities( void );
+    std::list<IGES_ENTITY*>* GetOptionalEntities( void );
+    bool AddOptionalEntity( IGES_ENTITY* );
+    bool DelOptionalEntity( IGES_ENTITY* );
+
+    // Routines for manipulating the optional comments
+    int GetNComments( void );
+    std::list<std::string>* GetComments( void );
+    bool AddComment( const std::string& aComment );
+    bool DelComment( int index );
+    bool ClearComments( void );
 
     // Read the DE data from the given records
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
@@ -211,13 +214,13 @@ public:
     bool SetVisibility( bool isVisible );
     bool GetVisibility( bool& isVisible );
 
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency ) = 0;
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
     bool         GetDependency( IGES_STAT_DEPENDS& aDependency );
 
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase ) = 0;
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
     bool         GetEntityUse( IGES_STAT_USE& aUseCase );
 
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy ) = 0;
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     bool         GetHierarchy( IGES_STAT_HIER& aHierarchy );
 };
 

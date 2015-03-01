@@ -60,12 +60,81 @@
 // Set/GetChildTransform(): Sets/gets the child transform in the DE
 // Set/GetTopTransform(): Sets/gets this entity's transform data
 // GetTransformMatrix(): Gets the overall transform matrix
-// Transform(X,Y,X): Performs a transform on the given point
+// Transform(X,Y,Z): Performs a transform on the given point
 //
 // Note that GetTransformMatrix() produces the matrix by combining the
 // Top matrix with the child's GetTransformMatrix(). This ensures correct
 // application of all subordinate transforms.
 //
+
+
+struct IGES_MATRIX;
+struct IGES_POINT
+{
+    double x;
+    double y;
+    double z;
+
+    IGES_POINT();
+    IGES_POINT( const IGES_POINT& p );
+    IGES_POINT( const double x, const double y, const double z );
+    IGES_POINT& operator*=( const double scalar );
+    IGES_POINT& operator+=( const IGES_POINT& v );
+    IGES_POINT  operator+( const IGES_POINT& v );
+    IGES_POINT& operator-=( const IGES_POINT& v );
+    IGES_POINT  operator-( const IGES_POINT& v );
+};
+
+// V1 = V0 * scalar
+IGES_POINT operator*( const IGES_POINT& v, const double scalar );
+// V1 = scalar * V0
+IGES_POINT operator*( const double scalar, const IGES_POINT& v );
+
+struct IGES_MATRIX
+{
+    double v[3][3];
+
+    IGES_MATRIX();
+    IGES_MATRIX( const IGES_MATRIX& m );
+
+    // Matrix *= scalar
+    IGES_MATRIX& operator*=( double scalar );
+    // MatrixA *= MatrixB
+    IGES_MATRIX& operator*=( const IGES_MATRIX& m );
+    IGES_MATRIX& operator+=( const IGES_MATRIX& m );
+    IGES_MATRIX  operator+( const IGES_MATRIX& m );
+    IGES_MATRIX& operator-=( const IGES_MATRIX& m );
+    IGES_MATRIX operator-( const IGES_MATRIX& m );
+};
+
+// C = MatrixA * MatrixB
+IGES_MATRIX operator*( const IGES_MATRIX& m, const IGES_MATRIX& n );
+// C = MatrixA * scalar
+IGES_MATRIX operator*( const IGES_MATRIX& lhs, double rhs );
+// C = scalar * MatrixA
+IGES_MATRIX operator*( double scalar, const IGES_MATRIX& m );
+// V1 = MatrixA * V0
+IGES_POINT operator*( const IGES_MATRIX& m, const IGES_POINT& v );
+
+
+struct IGES_TRANSFORM
+{
+    IGES_TRANSFORM();
+    IGES_TRANSFORM( const IGES_TRANSFORM& t );
+    IGES_TRANSFORM( const IGES_MATRIX& m, const IGES_POINT& v );
+
+    IGES_MATRIX R;
+    IGES_POINT  T;
+
+    IGES_TRANSFORM& operator*=(const IGES_TRANSFORM& m);
+    IGES_TRANSFORM& operator*=(const double scalar);
+};
+// scalar * TX
+IGES_TRANSFORM operator*( const double scalar, const IGES_TRANSFORM& m );
+// TX0 * TX1
+IGES_TRANSFORM operator*( const IGES_TRANSFORM& m, const IGES_TRANSFORM& n );
+// TX * V (perform a transform + offset)
+IGES_POINT operator*( const IGES_TRANSFORM& m, const IGES_POINT& v );
 
 class IGES_ENTITY_124 : public IGES_ENTITY
 {
@@ -75,9 +144,14 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
+
 
 public:
+    IGES_TRANSFORM T;
+
+    IGES_ENTITY_124( IGES* aParent );
+    virtual ~IGES_ENTITY_124();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -90,8 +164,25 @@ public:
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // XXX - TO BE IMPLEMENTED
+    // items to be overridden; these items are not supported in this entity
+    // + Line Font Pattern
+    // + Level
+    // + View
+    // + Label Display Association
+    // + Line weight
+    // + Color number
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetLevel( int aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
+    // retrieves the overall transform matrix ()
+    IGES_TRANSFORM GetTransformMatrix( void );
 };
 
 #endif  // ENTITY_124_H

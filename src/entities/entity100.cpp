@@ -195,11 +195,7 @@ bool IGES_ENTITY_100::Unlink( IGES_ENTITY* aChild )
 
 bool IGES_ENTITY_100::IsOrphaned( void )
 {
-    // TRUE when there are no parent references regardless of dependency setting
-    // XXX - DEBUG ONLY
-    return false;
-
-    if( refs.empty() )
+    if( refs.empty() && depends != STAT_INDEPENDENT )
         return true;
 
     return false;

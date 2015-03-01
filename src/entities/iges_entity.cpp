@@ -2663,7 +2663,12 @@ bool IGES_ENTITY::SetEntityUse( IGES_STAT_USE aUseCase )
 
 bool IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    // XXX - require that a hierarchy object be set first?
+    if( aHierarchy == STAT_HIER_USE_PROP
+        || hierarchy == STAT_HIER_USE_PROP )
+    {
+        ERRMSG << "\n + [WARNING] SetHierarchy does not correctly support Option 2\n";
+    }
+
     hierarchy = aHierarchy;
     return true;
 }

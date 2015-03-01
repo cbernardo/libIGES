@@ -667,6 +667,14 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_100( this );
             break;
 
+        case ENT_COMPOSITE_CURVE:
+            ep = new IGES_ENTITY_102( this );
+            break;
+
+        case ENT_LINE:
+            ep = new IGES_ENTITY_110( this );
+            break;
+
         case ENT_TRANSFORMATION_MATRIX:
             ep = new IGES_ENTITY_124( this );
             break;

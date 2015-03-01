@@ -27,6 +27,7 @@
 #include <iges.h>
 #include <iges_io.h>
 #include <entity100.h>
+#include <entity124.h>
 
 using namespace std;
 
@@ -360,4 +361,38 @@ bool IGES_ENTITY_100::rescale( double sf )
     yEnd *= sf;
 
     return true;
+}
+
+
+IGES_POINT IGES_ENTITY_100::GetStartPoint( bool xform )
+{
+    IGES_POINT p( xStart, yStart, zOffset );
+
+    if( xform && pTransform )
+    {
+        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
+        p = pT->GetTransformMatrix() * p;
+    }
+
+    return p;
+}
+
+
+IGES_POINT IGES_ENTITY_100::GetEndPoint( bool xform )
+{
+    IGES_POINT p( xEnd, yEnd, zOffset );
+
+    if( xform && pTransform )
+    {
+        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
+        p = pT->GetTransformMatrix() * p;
+    }
+
+    return p;
+}
+
+
+int IGES_ENTITY_100::GetNSegments( void )
+{
+    return 1;
 }

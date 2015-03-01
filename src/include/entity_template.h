@@ -8,6 +8,25 @@
  *
  */
 
+/*
+ * Notes:
+ * 1. When Status Flag Number components are not supported any call to
+ * change the component is ignored and the method shall return true;
+ * optionally a warning message may be printed.
+ * 2. Any call to change values of unsupported Directory Entry parameters
+ * will fail and the method shall return false; a [BUG] message is
+ * required in these instances.
+ * 3. Curve entities shall have a GetStartPoint() and GetEndPoint()
+ * method which reports the first and last point of the curve; this is
+ * required to check the validity of a Composite Curve.
+ * 4. Curve entities shall implement:
+ *     GetNSegments( void ) : number of segments in a compound item
+ * 4. Curve entities must also support an Interpolation Function:
+ *   bool F( Point&, nSegment, var ) where nSegments = number of segments and
+ *   var = 0..1. 'Point' and 'Connect Point' entities shall report
+ *   nSegment = 0 and users shall not call an interpolator.
+ */
+
 #error This is a template only and not suitable for compilation or inclusion
 
 #ifndef ENTITY_TEMP_H

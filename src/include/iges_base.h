@@ -126,7 +126,7 @@ enum IGES_ENTITY_TYPE
     // curve and surface entities
     ENT_CIRCULAR_ARC = 100,
     ENT_COMPOSITE_CURVE = 102,
-    ENT_CONIC_ARC = 103,
+    ENT_CONIC_ARC = 104,
     ENT_COPIOUS_DATA = 106,
     ENT_PLANE = 108,
     ENT_LINE = 110,

@@ -74,9 +74,14 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
+
+    std::list<int> iCurves;
+    std::list<IGES_ENTITY*> curves;
 
 public:
+    IGES_ENTITY_102( IGES* aParent );
+    virtual ~IGES_ENTITY_102();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -85,9 +90,11 @@ public:
     virtual bool ReadDE(IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar);
     virtual bool ReadPD(std::ifstream& aFile, int& aSequenceVar);
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+
+    // methods required to support interpolation
+    int GetNSegments( void );
+    IGES_ENTITY* GetSegment( int index );
 
     // XXX - TO BE IMPLEMENTED
 

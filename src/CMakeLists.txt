@@ -51,8 +51,11 @@ set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
     "${SRC_ENT}/iges_entity.cpp"
     "${SRC_ENT}/entityNULL.cpp"
     "${SRC_ENT}/entity100.cpp"
+    "${SRC_ENT}/entity102.cpp"
+    "${SRC_ENT}/entity110.cpp"
     "${SRC_ENT}/entity124.cpp"
     "${SRC_IGS}/iges_io.cpp"
     "${SRC_IGS}/iges.cpp"
+    "${SRC_IGS}/iges_elements.cpp"
     "${LIBIGES_SOURCE_DIR}/test.cpp"
     )

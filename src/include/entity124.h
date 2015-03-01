@@ -25,7 +25,8 @@
 #ifndef ENTITY_124_H
 #define ENTITY_124_H
 
-#include "iges_entity.h"
+#include <iges_elements.h>
+#include <iges_entity.h>
 
 // NOTE:
 // The associated parameter data are:
@@ -68,73 +69,6 @@
 //
 
 
-struct IGES_MATRIX;
-struct IGES_POINT
-{
-    double x;
-    double y;
-    double z;
-
-    IGES_POINT();
-    IGES_POINT( const IGES_POINT& p );
-    IGES_POINT( const double x, const double y, const double z );
-    IGES_POINT& operator*=( const double scalar );
-    IGES_POINT& operator+=( const IGES_POINT& v );
-    IGES_POINT  operator+( const IGES_POINT& v );
-    IGES_POINT& operator-=( const IGES_POINT& v );
-    IGES_POINT  operator-( const IGES_POINT& v );
-};
-
-// V1 = V0 * scalar
-IGES_POINT operator*( const IGES_POINT& v, const double scalar );
-// V1 = scalar * V0
-IGES_POINT operator*( const double scalar, const IGES_POINT& v );
-
-struct IGES_MATRIX
-{
-    double v[3][3];
-
-    IGES_MATRIX();
-    IGES_MATRIX( const IGES_MATRIX& m );
-
-    // Matrix *= scalar
-    IGES_MATRIX& operator*=( double scalar );
-    // MatrixA *= MatrixB
-    IGES_MATRIX& operator*=( const IGES_MATRIX& m );
-    IGES_MATRIX& operator+=( const IGES_MATRIX& m );
-    IGES_MATRIX  operator+( const IGES_MATRIX& m );
-    IGES_MATRIX& operator-=( const IGES_MATRIX& m );
-    IGES_MATRIX operator-( const IGES_MATRIX& m );
-};
-
-// C = MatrixA * MatrixB
-IGES_MATRIX operator*( const IGES_MATRIX& m, const IGES_MATRIX& n );
-// C = MatrixA * scalar
-IGES_MATRIX operator*( const IGES_MATRIX& lhs, double rhs );
-// C = scalar * MatrixA
-IGES_MATRIX operator*( double scalar, const IGES_MATRIX& m );
-// V1 = MatrixA * V0
-IGES_POINT operator*( const IGES_MATRIX& m, const IGES_POINT& v );
-
-
-struct IGES_TRANSFORM
-{
-    IGES_TRANSFORM();
-    IGES_TRANSFORM( const IGES_TRANSFORM& t );
-    IGES_TRANSFORM( const IGES_MATRIX& m, const IGES_POINT& v );
-
-    IGES_MATRIX R;
-    IGES_POINT  T;
-
-    IGES_TRANSFORM& operator*=(const IGES_TRANSFORM& m);
-    IGES_TRANSFORM& operator*=(const double scalar);
-};
-// scalar * TX
-IGES_TRANSFORM operator*( const double scalar, const IGES_TRANSFORM& m );
-// TX0 * TX1
-IGES_TRANSFORM operator*( const IGES_TRANSFORM& m, const IGES_TRANSFORM& n );
-// TX * V (perform a transform + offset)
-IGES_POINT operator*( const IGES_TRANSFORM& m, const IGES_POINT& v );
 
 class IGES_ENTITY_124 : public IGES_ENTITY
 {
@@ -160,6 +94,7 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm(int aForm);
+    virtual bool SetVisibility(bool isVisible);
     virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);

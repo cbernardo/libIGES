@@ -211,8 +211,8 @@ public:
     // Depedency: 0 (default, independent) to 3. See p.27/55+
     // EntityUse: 0..6 (Geometry, etc. See p.29/57+)
     // Hierarchy: int (0..99999), 0=default
-    bool SetVisibility( bool isVisible );
-    bool GetVisibility( bool& isVisible );
+    virtual bool SetVisibility( bool isVisible );
+    bool         GetVisibility( bool& isVisible );
 
     virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
     bool         GetDependency( IGES_STAT_DEPENDS& aDependency );

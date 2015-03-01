@@ -25,6 +25,7 @@
 #ifndef ENTITY_100_H
 #define ENTITY_100_H
 
+#include <iges_elements.h>
 #include "iges_entity.h"
 
 // NOTE:
@@ -77,6 +78,12 @@ public:
     double yStart;      // Y2
     double xEnd;        // X3
     double yEnd;        // Y3
+
+    // methods required of parameterized curve entities
+    IGES_POINT GetStartPoint( bool xform = true );
+    IGES_POINT GetEndPoint( bool xform = true );
+    int GetNSegments( void );
+    // XXX - Interpolator: bool F( Point&, nSeg, var, )
 };
 
 #endif  // ENTITY_100_H

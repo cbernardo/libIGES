@@ -25,6 +25,7 @@
 #ifndef ENTITY_110_H
 #define ENTITY_110_H
 
+#include <iges_elements.h>
 #include "iges_entity.h"
 
 // NOTE:
@@ -55,9 +56,11 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
 
 public:
+    IGES_ENTITY_110( IGES* aParent );
+    virtual ~IGES_ENTITY_110();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -66,12 +69,19 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // XXX - TO BE IMPLEMENTED
+    double X1;  // Start point
+    double Y1;
+    double Z1;
+    double X2;  // End point
+    double Y2;
+    double Z2;
 
+    // methods required of parameterized curve entities
+    IGES_POINT GetStartPoint( bool xform = true );
+    IGES_POINT GetEndPoint( bool xform = true );
+    int GetNSegments( void );
 };
 
 #endif  // ENTITY_110_H

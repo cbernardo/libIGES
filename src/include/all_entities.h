@@ -27,6 +27,8 @@
 
 #include <entityNULL.h>
 #include <entity100.h>
+#include <entity102.h>
+#include <entity110.h>
 #include <entity124.h>
 
 #endif  // ALL_ENTITIES_H

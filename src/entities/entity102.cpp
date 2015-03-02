@@ -91,8 +91,11 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 ERRMSG << "\n + [INFO] failed to add reference to child\n";
                 ok = false;
             }
+            else
+            {
+                extras.push_back( (IGES_CURVE*)((*entities)[*bcur]) );
+            }
 
-            extras.push_back( (IGES_CURVE*)((*entities)[*bcur]) );
         }
         else
         {
@@ -240,16 +243,49 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
     if( IGES_ENTITY::Unlink( aChildEntity ) )
         return true;
 
-    // XXX - TO BE IMPLEMENTED
-    // check the list of curves
-#warning + [WARNING] TO BE IMPLEMENTED
-    return false;
+    // check the list of curves; if one is unlinked and it
+    // is not a terminal entity then we must relinquish
+    // links to all entities
+    std::list<IGES_CURVE*>::iterator sp = curves.begin();
+    std::list<IGES_CURVE*>::iterator ep = curves.end();
+
+    bool clear_all = false;
+
+    while( sp != ep )
+    {
+        if( aChildEntity == *sp )
+        {
+            if( sp != curves.begin() && sp != (--(curves.end())) )
+                clear_all = true;
+
+            curves.erase( sp );
+            break;
+        }
+
+        ++sp;
+    }
+
+    if( clear_all )
+    {
+        sp = curves.begin();
+
+        while( sp != ep )
+        {
+            (*sp)->DelReference( this );
+            ++sp;
+        }
+    }
+
+    return true;
 }
 
 
 bool IGES_ENTITY_102::IsOrphaned( void )
 {
-    if( refs.empty() && depends != STAT_INDEPENDENT )
+    // if this entity has no segments then it has no
+    // purpose for existence
+    if( (refs.empty() && depends != STAT_INDEPENDENT)
+        || curves.empty() )
         return true;
 
     return false;
@@ -303,10 +339,87 @@ bool IGES_ENTITY_102::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 
 bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
+    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    {
+        ERRMSG << "\n + [INFO] could not read data for Composite Curve Entity\n";
+        return false;
+    }
 
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    if( !curves.empty() )
+    {
+        ERRMSG << "\n + [INFO] the Composite Curve Entity currently contains data\n";
+        return false;
+    }
+
+    iCurves.clear();
+
+    int idx;
+    bool eor = false;
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    idx = pdout.find( pd );
+
+    if( idx < 1 || idx > 8 )
+    {
+        ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
+        cerr << idx << ")\n";
+        return false;
+    }
+
+    ++idx;
+
+    int nSeg;
+
+    if( !ParseInt( pdout, idx, nSeg, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the number of segments in the Composite Curve\n";
+        return false;
+    }
+
+    if( nSeg < 1 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of entities: " << nSeg << "\n";
+        return false;
+    }
+
+    int i;
+    int ent;
+
+    for( i = 0; i < nSeg; ++i )
+    {
+        if( !ParseInt( pdout, idx, ent, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read the entity DE index\n";
+            return false;
+        }
+
+        if( ent < 1 || (ent & 1) == 0 || ent > 9999997 )
+        {
+            ERRMSG << "\n + [INFO] invalid DE index (" << ent << ")\n";
+            return false;
+        }
+
+        iCurves.push_back( ent );
+    }
+
+    if( !eor && !readExtraParams( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        return false;
+    }
+
+    if( !readComments( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        return false;
+    }
+
+    // note: normally a scale would be performed here (re. globalData.convert)
+    // but this entity does not own scalable data.
+
+    pdout.clear();
+    return true;
 }
 
 

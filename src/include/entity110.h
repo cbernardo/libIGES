@@ -26,7 +26,7 @@
 #define ENTITY_110_H
 
 #include <iges_elements.h>
-#include "iges_entity.h"
+#include "iges_curve.h"
 
 // NOTE:
 // The associated parameter data are:
@@ -48,7 +48,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_110 : public IGES_ENTITY
+class IGES_ENTITY_110 : public IGES_CURVE
 {
 protected:
 

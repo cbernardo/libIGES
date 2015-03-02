@@ -25,7 +25,7 @@
 #ifndef ENTITY_102_H
 #define ENTITY_102_H
 
-#include "iges_entity.h"
+#include "iges_curve.h"
 
 // NOTE:
 //
@@ -76,7 +76,7 @@ protected:
     virtual bool rescale( double sf );
 
     std::list<int> iCurves;
-    std::list<IGES_ENTITY*> curves;
+    std::list<IGES_CURVE*> curves;
 
 public:
     IGES_ENTITY_102( IGES* aParent );
@@ -92,12 +92,14 @@ public:
     virtual bool SetEntityForm(int aForm);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // methods required to support interpolation
+    // methods required to support interpolation:
+    // a user must iterate through the segments and call
+    // segment->GetNSegments() before iterating over the
+    // sub-segments to perform an interpolation; note that
+    // the non-geometric entities Point and Point Association
+    // return 0 when GetNSegments() is invoked.
     int GetNSegments( void );
-    IGES_ENTITY* GetSegment( int index );
-
-    // XXX - TO BE IMPLEMENTED
-
+    IGES_CURVE* GetSegment( int index );
 };
 
 #endif  // ENTITY_102_H

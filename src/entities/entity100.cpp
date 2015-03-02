@@ -31,7 +31,7 @@
 
 using namespace std;
 
-IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_ENTITY( aParent )
+IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_CURVE( aParent )
 {
     entityType = 100;
     form = 0;

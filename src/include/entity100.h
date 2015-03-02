@@ -26,7 +26,7 @@
 #define ENTITY_100_H
 
 #include <iges_elements.h>
-#include "iges_entity.h"
+#include "iges_curve.h"
 
 // NOTE:
 // Arcs must lie in the Xt-Yt plane (constant Z in definition space coordinates).
@@ -48,7 +48,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_100 : public IGES_ENTITY
+class IGES_ENTITY_100 : public IGES_CURVE
 {
 protected:
 
@@ -61,7 +61,12 @@ public:
     IGES_ENTITY_100( IGES* aParent );
     virtual ~IGES_ENTITY_100();
 
-    // Inherited virtual functions
+    // Inherited from IGES_CURVE
+    virtual IGES_POINT GetStartPoint( bool xform = true );
+    virtual IGES_POINT GetEndPoint( bool xform = true );
+    virtual int GetNSegments( void );
+
+    // Inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
     virtual bool AddReference( IGES_ENTITY* aParentEntity );
@@ -78,12 +83,6 @@ public:
     double yStart;      // Y2
     double xEnd;        // X3
     double yEnd;        // Y3
-
-    // methods required of parameterized curve entities
-    IGES_POINT GetStartPoint( bool xform = true );
-    IGES_POINT GetEndPoint( bool xform = true );
-    int GetNSegments( void );
-    // XXX - Interpolator: bool F( Point&, nSeg, var, )
 };
 
 #endif  // ENTITY_100_H

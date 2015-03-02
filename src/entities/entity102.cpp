@@ -48,8 +48,8 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 {
     if( !curves.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator rbeg = curves.begin();
-        std::list<IGES_ENTITY*>::iterator rend = curves.end();
+        std::list<IGES_CURVE*>::iterator rbeg = curves.begin();
+        std::list<IGES_CURVE*>::iterator rend = curves.end();
 
         while( rbeg != rend )
         {
@@ -92,7 +92,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 ok = false;
             }
 
-            extras.push_back( (*entities)[*bcur] );
+            extras.push_back( (IGES_CURVE*)((*entities)[*bcur]) );
         }
         else
         {
@@ -104,7 +104,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         ++bcur;
     }
 
-    // XXX - go through the list and check:
+    // go through the list and check:
     // (a) entities have a Physical Dependency
     // (c) entities have start/end points which coincide as required
     // (d) these rules of the specification are followed:
@@ -120,10 +120,12 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
     //     + May not consist of a single Point or Connect Point entity
     //
 
-    std::list<IGES_ENTITY*>::iterator sp = curves.begin();
-    std::list<IGES_ENTITY*>::iterator ep = curves.end();
+    std::list<IGES_CURVE*>::iterator sp = curves.begin();
+    std::list<IGES_CURVE*>::iterator ep = curves.end();
+    std::list<IGES_CURVE*>::iterator pp;   // iterator to previous item
     int acc = 0;
-    int iEnt;
+    int iEnt = 0;
+    int jEnt = 0;
 
     /*
      * Allowable entities
@@ -140,6 +142,18 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
      *        63
      */
 
+    IGES_POINT p1;
+    IGES_POINT p2;
+    IGES_POINT p3;
+    double dV;
+    double dN;
+
+    if( !parent )
+        dN = 1e-9;
+    else
+        dN = parent->globalData.minResolution * parent->globalData.minResolution
+             * parent->globalData.minResolution;
+
     while( sp != ep )
     {
         iEnt = (*sp)->GetEntityType();
@@ -149,27 +163,59 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         {
             ERRMSG << "\n + [INFO] Unsupported entity (";
             cerr << iEnt << ") in Composite Curve\n";
-            return false;
+            ok = false;
         }
 
+        // note: the specification is not very clear on this issue;
+        // the specification prohibits 2 consecutive Entity 116 and
+        // also 2 consecutive Entity 132, but there is no prohibition
+        // of the interleaved series 116,132,116,132... or similar.
+        // In this interpretation of the standard, the only prohibitions
+        // are 2 consecutive of 116, and 2 consecutive of 132 with the
+        // exception (per spec) if these are the only entities.
         if( acc > 0 )
         {
             if( (iEnt == 116 || iEnt == 132) && acc > 0 )
             {
-                // XXX - check rule about consecutive 116/132
-
+                // check rule about consecutive 116/132
+                if( acc > 0 && jEnt == iEnt && iCurves.size() != 2 )
+                {
+                    ERRMSG << "\n + [INFO] Violation of specification for data of Composite Curve\n";
+                    ok = false;
+                }
             }
 
-            // XXX - check that StartPoint[N] == EndPoint[N-1]
+            // check that StartPoint[N] == EndPoint[N-1]
+            p1 = (*sp)->GetStartPoint();
+            p2 = (*pp)->GetEndPoint();
+            p3 = p1 - p2;
+            dV = p3.x *p3.x + p3.y * p3.y + p3.z * p3.z;
+
+            // TODO: there are situations in which this will always fail
+            // since it it possible that the user-intended resolution
+            // cannot be achieved due to large values of the vertex
+            // coordinates.
+            if( dV > dN )
+            {
+                ERRMSG << "\n + [INFO] sequencing condition not met for Curve Entity\n";
+                cerr << " + EndPoint[N-1]: (" << p2.x << ", " << p2.y << ", " << p2.z << ")\n";
+                cerr << " + StartPoint[N]: (" << p1.x << ", " << p1.y << ", " << p1.z << ")\n";
+                ok = false;
+            }
         }
 
+        jEnt = iEnt;
+        pp = sp;
         ++acc;
         ++sp;
     }
 
-    // XXX - if only 1 entity, ensure it is neither 116 nor 132
+    if( curves.size() == 1 && ( iEnt == 116 || iEnt == 132 ) )
+    {
+        ERRMSG << "\n + [INFO] Violation of specification for data of Composite Curve\n";
+        ok = false;
+    }
 
-#warning + [WARNING] TO BE IMPLEMENTED
     return ok;
 }
 
@@ -287,7 +333,7 @@ int IGES_ENTITY_102::GetNSegments( void )
 }
 
 
-IGES_ENTITY* IGES_ENTITY_102::GetSegment( int index )
+IGES_CURVE* IGES_ENTITY_102::GetSegment( int index )
 {
     if( index < 0 || index >= (int)curves.size() )
     {
@@ -295,7 +341,7 @@ IGES_ENTITY* IGES_ENTITY_102::GetSegment( int index )
         return NULL;
     }
 
-    std::list<IGES_ENTITY*>::iterator sl = curves.begin();
+    std::list<IGES_CURVE*>::iterator sl = curves.begin();
 
     for( int i = 0; i < index; ++i )
         ++sl;

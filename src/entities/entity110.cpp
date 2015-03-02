@@ -32,7 +32,7 @@
 using namespace std;
 
 
-IGES_ENTITY_110::IGES_ENTITY_110( IGES* aParent ) : IGES_ENTITY( aParent )
+IGES_ENTITY_110::IGES_ENTITY_110( IGES* aParent ) : IGES_CURVE( aParent )
 {
     entityType = 110;
     form = 0;

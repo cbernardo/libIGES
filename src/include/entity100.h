@@ -25,8 +25,7 @@
 #ifndef ENTITY_100_H
 #define ENTITY_100_H
 
-#include <iges_elements.h>
-#include "iges_curve.h"
+#include <iges_curve.h>
 
 // NOTE:
 // Arcs must lie in the Xt-Yt plane (constant Z in definition space coordinates).

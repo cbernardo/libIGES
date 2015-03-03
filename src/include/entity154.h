@@ -25,9 +25,10 @@
 #ifndef ENTITY_154_H
 #define ENTITY_154_H
 
-#include "iges_entity.h"
+#include <iges_elements.h>
+#include <iges_entity.h>
 
-// NOTE:
+// Note:
 // The associated parameter data are:
 // + H: Real: Cylinder Height
 // + R: Real: Cylinder Radius
@@ -52,9 +53,11 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
 
 public:
+    IGES_ENTITY_154( IGES* aParent );
+    virtual ~IGES_ENTITY_154();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -63,12 +66,18 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // XXX - TO BE IMPLEMENTED
-
+    // parameters
+    double H;   // cylinder height
+    double R;   // cylinder radius
+    double X1;  // first face center coordinate, default (0,0,0)
+    double Y1;
+    double Z1;
+    double I1;  // unit vector in axis direction, default (0,0,1)
+    double J1;
+    double K1;
 };
 
 #endif  // ENTITY_154_H

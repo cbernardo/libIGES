@@ -338,6 +338,12 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
 
 bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
 {
+    if( NULL == aParentEntity )
+    {
+        ERRMSG << "\n + [BUG] parent entity is a NULL pointer\n";
+        return false;
+    }
+
     std::list<IGES_ENTITY*>::iterator bref = refs.begin();
     std::list<IGES_ENTITY*>::iterator eref = refs.end();
 
@@ -851,6 +857,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
     std::list<int>::iterator bext = iExtras.begin();
     std::list<int>::iterator eext = iExtras.end();
     int sEnt = (int)entities->size();
+    int iEnt;
 
     // Note: the Associativity Instance is a back-pointer so we do not
     // request that the entity add a reference since one must already
@@ -858,22 +865,24 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
     // must be added.
     while( bext != eext )
     {
-        if( *bext >= 0 && *bext < sEnt )
+        iEnt = *bext >> 1;
+
+        if( iEnt >= 0 && iEnt < sEnt )
         {
-            tEnt = (*entities)[*bext]->GetEntityType();
+            tEnt = (*entities)[iEnt]->GetEntityType();
 
             switch( tEnt )
             {
                 case ENT_GENERAL_NOTE:
                 case ENT_TEXT_DISPLAY_TEMPLATE:
-                    if( !(*entities)[*bext]->AddReference( this ) )
+                    if( !(*entities)[iEnt]->AddReference( this ) )
                     {
                         ERRMSG << "\n + [INFO] failed to add reference to child\n";
                         ok = false;
                     }
 
                 case ENT_ASSOCIATIVITY_INSTANCE:
-                    extras.push_back( (*entities)[*bext] );
+                    extras.push_back( (*entities)[iEnt] );
                     break;
 
                 default:
@@ -1723,6 +1732,12 @@ IGES* IGES_ENTITY::GetParentIGES(void)
 size_t IGES_ENTITY::GetNRefs(void)
 {
     return refs.size();
+}
+
+
+int IGES_ENTITY::GetDESequence( void )
+{
+    return sequenceNumber;
 }
 
 

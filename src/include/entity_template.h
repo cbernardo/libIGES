@@ -32,7 +32,8 @@
 #ifndef ENTITY_TEMP_H
 #define ENTITY_TEMP_H
 
-#include "iges_entity.h"
+// include iges_curve rather than iges_entity for curve entities
+#include <iges_entity.h>
 
 // NOTE:
 // The associated parameter data are:

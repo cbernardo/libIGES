@@ -28,10 +28,12 @@
  * + entity100 and entity110 require a GetStartPoint() and GetEndPoint()
  */
 
+#include <sstream>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
 #include <entity102.h>
+#include <entityNULL.h>
 
 using namespace std;
 
@@ -80,22 +82,36 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
     std::list<int>::iterator bcur = iCurves.begin();
     std::list<int>::iterator ecur = iCurves.end();
     int sEnt = (int)entities->size();
+    int iEnt = 0;
     bool ok = true;
 
     while( bcur != ecur )
     {
-        if( *bcur >= 0 && *bcur < sEnt )
+        iEnt = *bcur >> 1;
+
+        if( iEnt >= 0 && iEnt < sEnt )
         {
-            if( !(*entities)[*bcur]->AddReference( this ) )
+
+            if( !(*entities)[iEnt]->AddReference( this ) )
             {
                 ERRMSG << "\n + [INFO] failed to add reference to child\n";
+                cerr << "+ Entity type: ";
+                if ( (*entities)[iEnt]->GetEntityType() == 0 )
+                {
+                    cerr << "NULL/";
+                    cerr << (((IGES_ENTITY_NULL*)(*entities)[iEnt])->GetTrueEntityType());
+                    cerr << "\n";
+                }
+                else
+                {
+                    cerr << ((*entities)[iEnt]->GetEntityType()) << "\n";
+                }
                 ok = false;
             }
             else
             {
-                extras.push_back( (IGES_CURVE*)((*entities)[*bcur]) );
+                extras.push_back( (IGES_CURVE*)((*entities)[iEnt]) );
             }
-
         }
         else
         {
@@ -127,7 +143,6 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
     std::list<IGES_CURVE*>::iterator ep = curves.end();
     std::list<IGES_CURVE*>::iterator pp;   // iterator to previous item
     int acc = 0;
-    int iEnt = 0;
     int jEnt = 0;
 
     /*
@@ -186,6 +201,11 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                     ERRMSG << "\n + [INFO] Violation of specification for data of Composite Curve\n";
                     ok = false;
                 }
+                else
+                {
+                    // the Use Flag must be Type 04 (logical/positional)
+                    use = STAT_USE_LOGICAL;
+                }
             }
 
             // check that StartPoint[N] == EndPoint[N-1]
@@ -225,9 +245,87 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
 bool IGES_ENTITY_102::format( int &index )
 {
-    // XXX - TO BE IMPLEMENTED
-    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
-    return false;
+    pdout.clear();
+    iCurves.clear();
+
+    if( index < 1 || index > 9999999 )
+    {
+        ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
+        return false;
+    }
+
+    parameterData = index;
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [INFO] method invoked with no parent IGES object\n";
+        return false;
+    }
+
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    ostringstream ostr;
+    ostr << entityType << pd;
+    string lstr = ostr.str();
+    string tstr;
+
+    std::list<IGES_CURVE*>::iterator scur = curves.begin();
+    std::list<IGES_CURVE*>::iterator ecur = curves.end();
+
+    while( scur != ecur )
+    {
+        iCurves.push_back( (*scur)->GetDESequence() );
+        ++scur;
+    }
+
+    ostr.str("");
+    ostr << iCurves.size();
+
+    if( iCurves.empty() && extras.empty() )
+        ostr << rd;
+    else
+        ostr << pd;
+
+    lstr += ostr.str();
+
+    std::list<int>::iterator sSec = iCurves.begin();
+    std::list<int>::iterator eSec = iCurves.end();
+
+    while( sSec != eSec )
+    {
+        ostr.str("");
+        ostr << *sSec;
+        ++sSec;
+
+        if( sSec == eSec && extras.empty() )
+            ostr << rd;
+        else
+            ostr << pd;
+
+        tstr = ostr.str();
+
+        AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+    }
+
+    if( !extras.empty() && !formatExtraParams( lstr, index, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] could not format optional parameters\n";
+        pdout.clear();
+        iExtras.clear();
+        return false;
+    }
+
+    if( !formatComments( index ) )
+    {
+        ERRMSG << "\n + [INFO] could not format comments\n";
+        pdout.clear();
+        return false;
+    }
+
+    paramLineCount = index - parameterData;
+
+    return true;
 }
 
 
@@ -303,6 +401,10 @@ bool IGES_ENTITY_102::IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity 
     if( aParentEntity->GetEntityType() == 102 )
     {
         ERRMSG << "\n + [INFO] violation of specification: may not reference Entity 102\n";
+        cerr << " + [INFO] parent entity sequence number (may not be valid): ";
+        cerr << aParentEntity->GetDESequence() << "\n";
+        cerr << " + [INFO] this object's entity sequence number (may not be valid): ";
+        cerr << sequenceNumber << "\n";
         return false;
     }
 

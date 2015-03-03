@@ -42,9 +42,9 @@
 #include <string>
 #include <list>
 
-#include "iges_base.h"
-#include "iges_entity.h"
-#include "iges_elements.h"
+#include <iges_base.h>
+#include <iges_entity.h>
+#include <iges_elements.h>
 
 class IGES;             // Overarching data structure and parent to all entities
 struct IGES_RECORD;     // Partially parsed single line of data from an IGES file

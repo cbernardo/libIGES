@@ -118,8 +118,18 @@ static bool checkDate( const std::string aDate )
     if( errno || cp1 == cp0 || (cp1 - cp0) != 4 )
         ok = false;
 
-    if( iyear < 1970 )
-        ok = false;
+    // note: parts created before the creation of the IGES specification
+    // obviously have a bad date; however there is defective software out
+    // there such as the SolidWorks IGES exporter which do not comply with
+    // the IGES specification are report 2-digit years regardless of the
+    // century. Due to such defective software, any 2-digit year will be
+    // accepted as valid by this implementation; however a message will be
+    // printed to the error stream if a date predates IGES v1.
+    if( iyear < 1978 )
+    {
+        ERRMSG << "\n + [WARNING] the file has a suspicious year in the date tag (";
+        cerr << dyear << ")\n";
+    }
 
     errno = 0;
     cp0 = dmon.c_str();

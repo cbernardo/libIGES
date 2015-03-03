@@ -27,15 +27,49 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
+#include <entity124.h>
 #include <entity_template.h>
 
 using namespace std;
+
+
+bool IGES_ENTITY_TEMP::associate( std::vector<IGES_ENTITY*>* entities )
+{
+    // XXX - TO BE IMPLEMENTED
+    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_TEMP::format( int &index )
+{
+    // XXX - TO BE IMPLEMENTED
+    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_TEMP::rescale( double sf )
+{
+    // XXX - TO BE IMPLEMENTED
+    ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    return false;
+}
 
 
 bool IGES_ENTITY_TEMP::Unlink( IGES_ENTITY* aChildEntity )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_TEMP::IsOrphaned( void )
+{
+    if( refs.empty() && depends != STAT_INDEPENDENT )
+        return true;
+
     return false;
 }
 

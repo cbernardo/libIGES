@@ -25,7 +25,8 @@
 #ifndef ENTITY_164_H
 #define ENTITY_164_H
 
-#include "iges_entity.h"
+#include <iges_elements.h>
+#include <iges_curve.h>
 
 // NOTE:
 // The associated parameter data are:
@@ -49,9 +50,11 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
 
 public:
+    IGES_ENTITY_164( IGES* aParent );
+    ~IGES_ENTITY_164();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -60,12 +63,15 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // XXX - TO BE IMPLEMENTED
-
+    int iPtr;           // DE Sequence of the planar curve
+    IGES_ENTITY* PTR;   // closed curve
+    double L;           // length of extrusion
+    double I1;          // unit vector of direction; default 0,0,1.0
+    double J1;
+    double K1;
 };
 
 #endif  // ENTITY_164_H

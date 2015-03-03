@@ -119,6 +119,7 @@ public:
     virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
     virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
     size_t       GetNRefs( void );
+    int          GetDESequence( void );
 
     // Routines for manipulating extra entity list
     int GetNOptionalEntities( void );

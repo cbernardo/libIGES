@@ -25,7 +25,7 @@
 #ifndef ENTITY_102_H
 #define ENTITY_102_H
 
-#include "iges_curve.h"
+#include <iges_curve.h>
 
 // NOTE:
 //

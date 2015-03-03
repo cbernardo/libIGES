@@ -25,8 +25,7 @@
 #ifndef ENTITY_110_H
 #define ENTITY_110_H
 
-#include <iges_elements.h>
-#include "iges_curve.h"
+#include <iges_curve.h>
 
 // NOTE:
 // The associated parameter data are:

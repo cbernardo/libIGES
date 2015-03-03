@@ -25,7 +25,7 @@
 #ifndef ENTITY_104_H
 #define ENTITY_104_H
 
-#include "iges_entity.h"
+#include <iges_curve.h>
 
 // NOTE:
 //
@@ -59,7 +59,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_104 : public IGES_ENTITY
+class IGES_ENTITY_104 : public IGES_CURVE
 {
 protected:
 

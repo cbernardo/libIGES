@@ -25,7 +25,8 @@
 #ifndef ENTITY_180_H
 #define ENTITY_180_H
 
-#include "iges_entity.h"
+#include <iges_elements.h>
+#include <iges_entity.h>
 
 // NOTE:
 // The boolean operators are in Postfix Notation. Examples:

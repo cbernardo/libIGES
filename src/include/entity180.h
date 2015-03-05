@@ -53,6 +53,21 @@
 // to 1 if necessary.
 //
 
+struct BTREE_NODE
+{
+    bool op;    // true if this is an operation; false if an entity pointer
+    int  val;   // Operation code (1,2,3) or DE Sequence of entity
+    IGES_ENTITY* pEnt;  // pointer to entity (Primitive, Solid Instance, BTree, or manifold solid BREP
+
+    BTREE_NODE()
+    {
+        op = false;
+        val = 0;
+        pEnt = NULL;
+    }
+};
+
+
 class IGES_ENTITY_180 : public IGES_ENTITY
 {
 protected:
@@ -61,9 +76,14 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
+
+    std::list<BTREE_NODE*> nodes;
+    void clearNodes( void );
 
 public:
+    IGES_ENTITY_180( IGES* aParent );
+    virtual ~IGES_ENTITY_180();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
@@ -77,6 +97,9 @@ public:
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // XXX - TO BE IMPLEMENTED
+    // retrieve, add, delete tree entities
+    // XXX - TO BE IMPLEMENTED
+    // ensure that only alowed entities are present in the nodes stack
 
 };
 

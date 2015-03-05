@@ -179,6 +179,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
      *        1, 2, 3
      *        11, 12, 13
      *        63
+     * 130 ENT_OFFSET_CURVE (Due to complexity, postpone this one)
      */
 
     IGES_POINT p1;

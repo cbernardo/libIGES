@@ -32,11 +32,20 @@
 // A Composite Curve is an ordered list of entities including Point,
 // Connect Point, and generic parameterized curves (except for Composite Curve itself).
 // The order of listing of member entities is the order in which they appear in
-// the parameter list. Other acceptable entities include:
-// + Line
-// + Circle
-// + Spline
-// + Conic
+// the parameter list. Acceptable entities include:
+// * 100 ENT_CIRCULAR_ARC
+// * 104 ENT_CONIC_ARC
+// * 110 ENT_LINE
+// * 112 ENT_PARAM_SPLINE_CURVE
+// * 116 *ENT_POINT
+// * 126 ENT_NURBS_CURVE
+// * 132 *ENT_CONNECT_POINT
+// * 106 ENT_COPIOUS_DATA FORMS: (Due to complexity, postpone any implementation of this)
+// *     Note: not necessarily all forms are supported; this needs to be checked carefully
+// *        1, 2, 3
+// *        11, 12, 13
+// *        63
+// * 130 ENT_OFFSET_CURVE (Due to complexity, postpone this one)
 //
 // + Subordinate entities (items in the list) must have a physical dependence
 //   relationship with this entity. The first point of this entity is the first

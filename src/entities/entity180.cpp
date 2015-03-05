@@ -22,6 +22,7 @@
  *
  */
 
+
 #include <sstream>
 #include <error_macros.h>
 #include <iges.h>
@@ -39,12 +40,49 @@ IGES_ENTITY_180::IGES_ENTITY_180( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_180::~IGES_ENTITY_180()
 {
-    clearNodes();
+    ClearNodes();
     return;
 }
 
 
-void IGES_ENTITY_180::clearNodes( void )
+bool IGES_ENTITY_180::typeOK( int aTypeNum )
+{
+    // ALLOWED ENTITIES:
+    // A. Primitives (CSG primitives)
+    //      150 Block
+    //      152 Right Angular Wedge
+    //      154 Right Circular Cylinder
+    //      156 Right Circular Cone Frustum
+    //      158 Sphere
+    //      160 Torus
+    //      162 Solid of Revolution
+    //      164 Solid of Linear Extrusion
+    //      168 Ellipsoid
+    // B. Binary Tree (180)
+    // C. Solid Instance (430)
+    // D. Manifold Solid BREP (186)
+
+    if( aTypeNum == ENT_BLOCK
+        || aTypeNum == ENT_RIGHT_ANGULAR_WEDGE
+        || aTypeNum == ENT_RIGHT_CIRCULAR_CYLINDER
+        || aTypeNum == ENT_RIGHT_CIRCULAR_CONE_FRUSTUM
+        || aTypeNum == ENT_SPHERE
+        || aTypeNum == ENT_TORUS
+        || aTypeNum == ENT_SOLID_OF_REVOLUTION
+        || aTypeNum == ENT_SOLID_OF_LINEAR_EXTRUSION
+        || aTypeNum == ENT_ELLIPSOID
+        || aTypeNum == ENT_BOOLEAN_TREE
+        || aTypeNum == ENT_SOLID_INSTANCE
+        || aTypeNum == ENT_MANIFOLD_SOLID_BREP )
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
+void IGES_ENTITY_180::ClearNodes( void )
 {
     if( !nodes.empty() )
     {
@@ -84,6 +122,7 @@ bool IGES_ENTITY_180::associate( std::vector<IGES_ENTITY*>* entities )
     std::list<BTREE_NODE*>::iterator en = nodes.end();
     int sEnt = (int)entities->size();
     int iEnt;
+    int tEnt;
 
     while( sn != en )
     {
@@ -93,7 +132,15 @@ bool IGES_ENTITY_180::associate( std::vector<IGES_ENTITY*>* entities )
 
             if( iEnt >= 0 && iEnt < sEnt )
             {
-                // XXX - check that the entity type can be accepted in this list
+                // check that the entity type can be accepted in this list
+                tEnt = (*entities)[iEnt]->GetEntityType();
+
+                if( !typeOK( tEnt ) )
+                {
+                    ERRMSG << "\n + [BAD FILE] invalid entity type (" << tEnt << ")\n";
+                    return false;
+                }
+
                 (*sn)->pEnt = (*entities)[iEnt];
 
                 if( !(*entities)[iEnt]->AddReference( this ) )
@@ -469,4 +516,78 @@ bool IGES_ENTITY_180::SetEntityUse( IGES_STAT_USE aUseCase )
 bool IGES_ENTITY_180::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     return IGES_ENTITY::SetHierarchy( aHierarchy );
+}
+
+
+bool IGES_ENTITY_180::AddOp( BTREE_OPERATOR op )
+{
+    if( op < OP_START || op >= OP_END )
+    {
+        ERRMSG << "\n + [BUG] invalid OPERATOR (" << op << ")\n";
+        return false;
+    }
+
+    if( nodes.size() < 2 )
+    {
+        ERRMSG << "\n + [BUG] the first 2 items on the stack may not be operators\n";
+        return false;
+    }
+
+    BTREE_NODE* np = new BTREE_NODE;
+
+    if( !np )
+    {
+        ERRMSG << "\n + [BUG] memory allocation failed\n";
+        return false;
+    }
+
+    np->op = true;
+    np->val = op;
+    nodes.push_back( np );
+
+    return true;
+}
+
+
+bool IGES_ENTITY_180::AddArg( IGES_ENTITY* aOperand )
+{
+    int iEnt = aOperand->GetEntityType();
+
+    if( !typeOK( iEnt ) )
+    {
+        ERRMSG << "\n + [BUG] invalid entity type (" << iEnt << ")\n";
+        return false;
+    }
+
+    if( !aOperand->AddReference( this ) )
+    {
+        ERRMSG << "\n + [ERROR] could not add reference to child entity\n";
+        return false;
+    }
+
+    BTREE_NODE* np = new BTREE_NODE;
+
+    if( !np )
+    {
+        ERRMSG << "\n + [BUG] memory allocation failed\n";
+        aOperand->DelReference( this );
+        return false;
+    }
+
+    np->pEnt = aOperand;
+    nodes.push_back( np );
+
+    return true;
+}
+
+
+int IGES_ENTITY_180::GetNNodes( void )
+{
+    return (int)nodes.size();
+}
+
+
+std::list<BTREE_NODE*>* IGES_ENTITY_180::GetNodes( void )
+{
+    return &nodes;
 }

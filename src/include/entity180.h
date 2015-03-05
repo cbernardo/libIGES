@@ -53,6 +53,15 @@
 // to 1 if necessary.
 //
 
+enum BTREE_OPERATOR
+{
+    OP_START = 1,
+    OP_UNION = 1,
+    OP_INTERSECT,
+    OP_DIFFERENCE,
+    OP_END
+};
+
 struct BTREE_NODE
 {
     bool op;    // true if this is an operation; false if an entity pointer
@@ -78,7 +87,7 @@ protected:
     virtual bool rescale( double sf );
 
     std::list<BTREE_NODE*> nodes;
-    void clearNodes( void );
+    bool typeOK( int aTypeNum );
 
 public:
     IGES_ENTITY_180( IGES* aParent );
@@ -96,11 +105,11 @@ public:
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // XXX - TO BE IMPLEMENTED
-    // retrieve, add, delete tree entities
-    // XXX - TO BE IMPLEMENTED
-    // ensure that only alowed entities are present in the nodes stack
-
+    bool AddOp( BTREE_OPERATOR op );
+    bool AddArg( IGES_ENTITY* aOperand );
+    void ClearNodes( void );
+    int GetNNodes( void );
+    std::list<BTREE_NODE*>* GetNodes( void );
 };
 
 #endif  // ENTITY_180_H

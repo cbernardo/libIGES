@@ -28,6 +28,16 @@
 #include <string>
 #include <iges_base.h>
 
+struct IGES_POINT;
+
+// a single-line data record
+struct IGES_RECORD
+{
+    std::string data;           // data section (columns 1..72)
+    char        section_type;   // column  73
+    int         index;          // columns 74..80
+};
+
 // Extract an item from a Directory Entry record and convert to an integer.
 // Note: these functions assume an input string which is a multiple of 8 chars;
 // fields must be right-aligned.
@@ -83,13 +93,7 @@ bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
 bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
                  int& index, char pd, char rd, char delim );
 
-
-// a single-line data record
-struct IGES_RECORD
-{
-    std::string data;           // data section (columns 1..72)
-    char        section_type;   // column  73
-    int         index;          // columns 74..80
-};
+// return true if the 2 points match to within 'minRes'
+bool PointMatches( IGES_POINT p1, IGES_POINT p2, double minRes );
 
 #endif  // IGES_IO_H

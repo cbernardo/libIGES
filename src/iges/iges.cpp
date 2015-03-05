@@ -689,6 +689,14 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_124( this );
             break;
 
+        case ENT_RIGHT_CIRCULAR_CYLINDER:
+            ep = new IGES_ENTITY_154( this );
+            break;
+
+        case ENT_SOLID_OF_LINEAR_EXTRUSION:
+            ep = new IGES_ENTITY_164( this );
+            break;
+
         default:
             ep = new IGES_ENTITY_NULL( this );
             ((IGES_ENTITY_NULL*)ep)->setEntityType( aEntityType );

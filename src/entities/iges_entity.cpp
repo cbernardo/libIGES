@@ -663,7 +663,14 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
 
         if( idx < (int)entities->size() )
         {
-            pTransform = (*entities)[idx];
+            pTransform = dynamic_cast<IGES_ENTITY_124*>((*entities)[idx]);
+
+            if( !pTransform )
+            {
+                ERRMSG << "\n + [BUG] could not cast IGES_ENTITY* (Type ";
+                cerr << ((*entities)[idx]->GetEntityType()) << ") to IGES_ENTITY_124*\n";
+                return false;
+            }
 
             if( pTransform == this )
             {
@@ -1447,8 +1454,8 @@ bool IGES_ENTITY::WriteDE( std::ofstream& aFile )
     // DE2:  PARAMETER DATA (max. 7 digits)
     if( parameterData + paramLineCount > 10000000 )
     {
-        ERRMSG << "\n + [BUG] cannot write Parameter Data Line to Directory Entry\n";
-        cerr << " + [INFO] capacity of IGES specification has been exceeded\n";
+        ERRMSG << "\n + [ERROR] cannot write Parameter Data Line to Directory Entry\n";
+        cerr << " + [VIOLATION] capacity of IGES specification has been exceeded\n";
         return false;
     }
 
@@ -2017,7 +2024,14 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
         return false;
     }
 
-    pTransform = aTransform;
+    pTransform = dynamic_cast<IGES_ENTITY_124*>(aTransform);
+
+    if( !pTransform )
+    {
+        ERRMSG << "\n + [BUG] could not cast IGES_ENTITY* to IGES_ENTITY_124*\n";
+        return false;
+    }
+
     return true;
 }
 

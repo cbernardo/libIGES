@@ -89,7 +89,23 @@ bool IGES_ENTITY_164::associate( std::vector<IGES_ENTITY*>* entities )
         return false;
     }
 
-    PTR = (*entities)[iEnt];
+    PTR = dynamic_cast<IGES_CURVE*>((*entities)[iEnt]);
+
+    if( NULL == PTR )
+    {
+        ERRMSG << "\n + [INFO] could not establish reference to child entity\n";
+        cerr << " + Child Entity Type " << ((*entities)[iEnt])->GetEntityType() << "\n";
+        return false;
+    }
+
+    // ensure that the curve is a closed curve
+    if( !PTR->IsClosed() )
+    {
+        ERRMSG << "\n + [VIOLATION] Child entity (Type: " << ((*entities)[iEnt])->GetEntityType();
+        cerr << ", DE: " << iPtr << ") is not a closed curve\n";
+        return false;
+    }
+
     return true;
 }
 

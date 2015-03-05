@@ -67,7 +67,7 @@ public:
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     int iPtr;           // DE Sequence of the planar curve
-    IGES_ENTITY* PTR;   // closed curve
+    IGES_CURVE* PTR;    // closed curve
     double L;           // length of extrusion
     double I1;          // unit vector of direction; default 0,0,1.0
     double J1;

@@ -33,6 +33,7 @@
 
 #include <error_macros.h>
 #include <iges_io.h>
+#include <iges_elements.h>
 
 
 using namespace std;
@@ -867,6 +868,45 @@ bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
         fOut += fStr;
         fStr.clear();
     }
+
+    return true;
+}
+
+
+// return true if the 2 points match to within 'minRes'
+// or best effort if the numbers are big
+bool PointMatches( IGES_POINT p1, IGES_POINT p2, double minRes )
+{
+    // determine if we can in fact meet the minRes specification
+    double dN = abs( p1.x*p1.x + p1.y*p1.y + p1.z*p1.z );
+    double dV = abs( p2.x*p2.x + p2.y*p2.y + p2.z*p2.z );
+
+    double rN = dN / minRes;
+    double rV = dV / minRes;
+
+    // if minRes cannot be guaranteed in the calculation
+    // then create a generous new boundary which should
+    // ideally minimize mischaracterizations
+    if( dN > 1e15 || dV > 1e15 )
+    {
+        rN = 1.0 / sqrt(max( dN, dV ));
+        p1 *= rN;
+        p2 *= rN;
+        minRes *= rN;
+    }
+
+    minRes *= 3.0001 * minRes;
+
+    if( minRes < 3.0e-30 )
+        minRes = 3.0e-30;
+
+    dN = p2.x - p1.x;
+    dV = p2.y - p1.y;
+    rN = p2.z - p1.z;
+    rV = dN*dN + dV*dV + rN*rN;
+
+    if( rV > minRes )
+        return false;
 
     return true;
 }

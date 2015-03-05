@@ -31,6 +31,7 @@
 
 using namespace std;
 
+
 IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_CURVE( aParent )
 {
     entityType = 100;
@@ -395,4 +396,45 @@ IGES_POINT IGES_ENTITY_100::GetEndPoint( bool xform )
 int IGES_ENTITY_100::GetNSegments( void )
 {
     return 1;
+}
+
+
+bool IGES_ENTITY_100::IsClosed()
+{
+    IGES_POINT p0( xCenter, yCenter, 0.0 );
+    IGES_POINT p1( xStart, yStart, 0.0 );
+    IGES_POINT p2( xEnd, yEnd, 0.0 );
+
+    double rm = 0.001;
+
+    if( parent )
+        rm = parent->globalData.minResolution;
+
+    // a zero-radius circle is not acceptable so
+    // this function must fail
+    if( PointMatches( p0, p1, rm ) )
+    {
+        return false;
+    }
+
+    return PointMatches( p1, p2, rm );
+}
+
+
+int IGES_ENTITY_100::GetNCurves( void )
+{
+    return 0;
+}
+
+
+IGES_CURVE* IGES_ENTITY_100::GetCurve( int index )
+{
+    return NULL;
+}
+
+
+bool IGES_ENTITY_100::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
 }

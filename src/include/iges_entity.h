@@ -34,6 +34,7 @@
 
 class IGES;             // Overarching data structure and parent to all entities
 struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
+class IGES_ENTITY_124;
 
 // Base class for all IGES entities
 class IGES_ENTITY
@@ -60,13 +61,13 @@ protected:
     int                 entitySubscript;    // #, 1..8 digit unsigned int associated with the label
 
     // pointers to be linked to other entities as necessary
-    IGES_ENTITY* pStructure;
-    IGES_ENTITY* pLineFontPattern;
-    IGES_ENTITY* pLevel;
-    IGES_ENTITY* pView;
-    IGES_ENTITY* pTransform;
-    IGES_ENTITY* pLabelAssoc;
-    IGES_ENTITY* pColor;
+    IGES_ENTITY*     pStructure;
+    IGES_ENTITY*     pLineFontPattern;
+    IGES_ENTITY*     pLevel;
+    IGES_ENTITY*     pView;
+    IGES_ENTITY_124* pTransform;
+    IGES_ENTITY*     pLabelAssoc;
+    IGES_ENTITY*     pColor;
 
     // list of referring (superior) entities
     std::list<IGES_ENTITY*> refs;

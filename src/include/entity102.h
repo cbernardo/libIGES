@@ -66,7 +66,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_102 : public IGES_ENTITY
+class IGES_ENTITY_102 : public IGES_CURVE
 {
 protected:
 
@@ -92,14 +92,13 @@ public:
     virtual bool SetEntityForm(int aForm);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    // methods required to support interpolation:
-    // a user must iterate through the segments and call
-    // segment->GetNSegments() before iterating over the
-    // sub-segments to perform an interpolation; note that
-    // the non-geometric entities Point and Point Association
-    // return 0 when GetNSegments() is invoked.
-    int GetNSegments( void );
-    IGES_CURVE* GetSegment( int index );
+    virtual bool IsClosed();
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual IGES_POINT GetStartPoint( bool xform = true );
+    virtual IGES_POINT GetEndPoint( bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_102_H

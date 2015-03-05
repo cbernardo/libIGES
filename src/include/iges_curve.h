@@ -65,11 +65,37 @@ public:
 
     // specialized members of this class
     // methods required of parameterized curve entities
-    virtual IGES_POINT GetStartPoint( bool xform = true ) = 0;
-    virtual IGES_POINT GetEndPoint( bool xform = true ) = 0;
-    virtual int GetNSegments( void ) = 0;
-    // XXX - Interpolator: bool F( Point&, nSeg, var, )
 
+    // return true if this entity represents a closed curve
+    virtual bool IsClosed() = 0;
+    // return the number of curves in this object;
+    // -2 = Point or Point Association entity
+    // -1 = no valid curve entities
+    // 0 = simple curve entity
+    // 1+ = # of internal curve entities (may also be composite)
+    virtual int GetNCurves( void ) = 0;
+    // return the specified curve object by index
+    virtual IGES_CURVE* GetCurve( int index ) = 0;
+    // return the start point of this curve object (normally transformed)
+    virtual IGES_POINT GetStartPoint( bool xform = true ) = 0;
+    // return the end point of this curve object (normally transformed)
+    virtual IGES_POINT GetEndPoint( bool xform = true ) = 0;
+    // return the number of segments within the curve; for
+    // composite curves this may be the same as GetNCurves
+    // but in the case of piece-wise linear collections this would
+    // be the number of segments to iterate over
+    virtual int GetNSegments( void ) = 0;
+    // Interpolate on Segment #nSeg of the curve
+    // pt: point which will hold the interpolated value
+    // nSeg: Segment number to interpolate along (1 .. GetNSegments())
+    // var: point along the segment, 0 .. 1
+    // xform: true if the point is to be transformed; false if raw point data
+    //        is to be retrieved.
+    // Only simple curves (linear piecewise curve included) return an
+    // interpolated value; composite curves shall return false; a
+    // composite curve can be identified by a non-zero return
+    // from GetNCurves()
+    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
 
     // members inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
@@ -79,6 +105,8 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;
     virtual bool SetEntityForm( int aForm ) = 0;
+    // XXX - consider adding a method to retrieve the LENGTH of Segment N;
+    // this could be useful to aid in calculations for rendering entities.
 };
 
 #endif  // IGES_CURVE_H

@@ -64,6 +64,10 @@ public:
     virtual IGES_POINT GetStartPoint( bool xform = true );
     virtual IGES_POINT GetEndPoint( bool xform = true );
     virtual int GetNSegments( void );
+    virtual bool IsClosed();
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );

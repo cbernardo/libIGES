@@ -330,3 +330,28 @@ int IGES_ENTITY_110::GetNSegments( void )
 {
     return 1;
 }
+
+
+bool IGES_ENTITY_110::IsClosed()
+{
+    return false;
+}
+
+
+int IGES_ENTITY_110::GetNCurves( void )
+{
+    return 0;
+}
+
+
+IGES_CURVE* IGES_ENTITY_110::GetCurve( int index )
+{
+    return NULL;
+}
+
+
+bool IGES_ENTITY_110::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}

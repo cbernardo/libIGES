@@ -32,13 +32,12 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <entity102.h>
-#include <entityNULL.h>
+#include <all_entities.h>
 
 using namespace std;
 
 
-IGES_ENTITY_102::IGES_ENTITY_102( IGES* aParent ) : IGES_ENTITY( aParent )
+IGES_ENTITY_102::IGES_ENTITY_102( IGES* aParent ) : IGES_CURVE( aParent )
 {
     entityType = 102;
     form = 0;
@@ -83,7 +82,10 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
     std::list<int>::iterator ecur = iCurves.end();
     int sEnt = (int)entities->size();
     int iEnt = 0;
+    int tEnt;
     bool ok = true;
+
+    IGES_CURVE* cp;
 
     while( bcur != ecur )
     {
@@ -91,33 +93,52 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
         if( iEnt >= 0 && iEnt < sEnt )
         {
-
-            if( !(*entities)[iEnt]->AddReference( this ) )
-            {
-                ERRMSG << "\n + [INFO] failed to add reference to child\n";
-                cerr << "+ Entity type: ";
-                if ( (*entities)[iEnt]->GetEntityType() == 0 )
-                {
-                    cerr << "NULL/";
-                    cerr << (((IGES_ENTITY_NULL*)(*entities)[iEnt])->GetTrueEntityType());
-                    cerr << "\n";
-                }
-                else
-                {
-                    cerr << ((*entities)[iEnt]->GetEntityType()) << "\n";
-                }
-                ok = false;
-            }
-            else
-            {
-                extras.push_back( (IGES_CURVE*)((*entities)[iEnt]) );
-            }
-        }
-        else
-        {
             ERRMSG << "\n + [CORRUPT FILE] referenced curve entity (";
             cerr << *bcur << ") does not exist\n";
             ok = false;
+            ++bcur;
+            continue;
+        }
+
+        tEnt = ((*entities)[iEnt])->GetEntityType();
+        cp = dynamic_cast<IGES_CURVE*>((*entities)[iEnt]);
+
+        if( !cp )
+        {
+            ERRMSG << "\n + [ERROR] referenced entity is not a curve (Type: ";
+            cerr << tEnt << ", DE: " << *bcur << ")\n";
+            ok = false;
+            ++bcur;
+            continue;
+        }
+
+        if( tEnt == 102 )
+        {
+            ERRMSG << "\n + [VIOLATION] referenced entity is Type 102\n";
+            ok = false;
+            ++bcur;
+            continue;
+        }
+
+        if( !(*entities)[iEnt]->AddReference( this ) )
+        {
+            ERRMSG << "\n + [INFO] failed to add reference to child\n";
+            cerr << "+ Entity type: ";
+            if ( (*entities)[iEnt]->GetEntityType() == 0 )
+            {
+                cerr << "NULL/";
+                cerr << (((IGES_ENTITY_NULL*)(*entities)[iEnt])->GetTrueEntityType());
+                cerr << "\n";
+            }
+            else
+            {
+                cerr << ((*entities)[iEnt]->GetEntityType()) << "\n";
+            }
+            ok = false;
+        }
+        else
+        {
+            curves.push_back( cp );
         }
 
         ++bcur;
@@ -198,7 +219,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 // check rule about consecutive 116/132
                 if( acc > 0 && jEnt == iEnt && iCurves.size() != 2 )
                 {
-                    ERRMSG << "\n + [INFO] Violation of specification for data of Composite Curve\n";
+                    ERRMSG << "\n + [VIOLATION] Consecutive Type 116/132 in Composite Curve\n";
                     ok = false;
                 }
                 else
@@ -235,7 +256,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
     if( curves.size() == 1 && ( iEnt == 116 || iEnt == 132 ) )
     {
-        ERRMSG << "\n + [INFO] Violation of specification for data of Composite Curve\n";
+        ERRMSG << "\n + [VIOLATION] single entity of type 116/132 in Composite Curve\n";
         ok = false;
     }
 
@@ -400,7 +421,7 @@ bool IGES_ENTITY_102::IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity 
 
     if( aParentEntity->GetEntityType() == 102 )
     {
-        ERRMSG << "\n + [INFO] violation of specification: may not reference Entity 102\n";
+        ERRMSG << "\n + [VIOLATION] may not reference Entity 102\n";
         cerr << " + [INFO] parent entity sequence number (may not be valid): ";
         cerr << aParentEntity->GetDESequence() << "\n";
         cerr << " + [INFO] this object's entity sequence number (may not be valid): ";
@@ -542,13 +563,13 @@ bool IGES_ENTITY_102::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-int IGES_ENTITY_102::GetNSegments( void )
+int IGES_ENTITY_102::GetNCurves( void )
 {
     return (int)curves.size();
 }
 
 
-IGES_CURVE* IGES_ENTITY_102::GetSegment( int index )
+IGES_CURVE* IGES_ENTITY_102::GetCurve( int index )
 {
     if( index < 0 || index >= (int)curves.size() )
     {
@@ -562,4 +583,90 @@ IGES_CURVE* IGES_ENTITY_102::GetSegment( int index )
         ++sl;
 
     return *sl;
+}
+
+
+IGES_POINT IGES_ENTITY_102::GetStartPoint( bool xform )
+{
+    if( curves.empty() )
+        return IGES_POINT( 0.0, 0.0, 0.0 );
+
+    std::list<IGES_CURVE*>::iterator sc = curves.begin();
+
+    IGES_POINT pt = (*sc)->GetStartPoint( xform );
+
+    if( xform && pTransform )
+        pt = pTransform->T * pt;
+
+    return pt;
+}
+
+
+IGES_POINT IGES_ENTITY_102::GetEndPoint( bool xform )
+{
+    if( curves.empty() )
+        return IGES_POINT( 0.0, 0.0, 0.0 );
+
+    std::list<IGES_CURVE*>::reverse_iterator sc = curves.rbegin();
+
+    IGES_POINT pt = (*sc)->GetEndPoint( xform );
+
+    if( xform && pTransform )
+        pt = pTransform->T * pt;
+
+    return pt;
+}
+
+
+int IGES_ENTITY_102::GetNSegments( void )
+{
+    return GetNCurves();
+}
+
+
+bool IGES_ENTITY_102::IsClosed()
+{
+    if( curves.empty() )
+        return false;
+
+    std::list<IGES_CURVE*>::iterator sc = curves.begin();
+    std::list<IGES_CURVE*>::iterator ec = curves.end();
+    std::list<IGES_CURVE*>::reverse_iterator lc = curves.rbegin();
+
+    // if we require at least 1 item which reports segments > 0
+    if( curves.size() == 1 && (*sc)->GetEntityType() != ENT_CIRCULAR_ARC )
+        return false;
+
+    IGES_POINT p1 = (*sc)->GetStartPoint( true );
+    IGES_POINT p2 = (*lc)->GetEndPoint( true );
+
+    bool has_segments = false;
+
+    while( sc != ec )
+    {
+        if( (*sc)->GetNSegments() > 0 )
+        {
+            has_segments = true;
+            break;
+        }
+
+        ++sc;
+    }
+
+    if( !has_segments )
+        return false;
+
+    double rm = 0.001;
+
+    if( parent )
+        rm = parent->globalData.minResolution;
+
+    return PointMatches( p1, p2, rm );
+}
+
+
+bool IGES_ENTITY_102::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+{
+    ERRMSG << "\n + [WARNING] method invoked on composite curve\n";
+    return false;
 }

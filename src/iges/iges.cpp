@@ -1965,7 +1965,7 @@ bool IGES::writeGlobals( std::ofstream& file )
 
     // Item 18: (HStr) Creation Date (15HYYYYMMDD.hhmmss OR 13HYYYYMMDD.hhmmss)
     // only generate a date if none currently exist
-    if( globalData.creationDate.empty() )
+    if( !checkDate(globalData.creationDate) )
     {
         time_t tt = time( NULL );
         struct tm tmt;
@@ -1975,9 +1975,14 @@ bool IGES::writeGlobals( std::ofstream& file )
         ostr << setw(2) << (tmt.tm_mon + 1) << setw(2) << tmt.tm_mday << ".";
         ostr << setw(2) << tmt.tm_hour << setw(2) << tmt.tm_min;
         ostr << setw(2) << tmt.tm_sec << setw(0) << setfill(' ');
+        tstr = ostr.str();
+    }
+    else
+    {
+        tstr = globalData.creationDate;
     }
 
-    if( !AddSecHStr( globalData.creationDate, lstr, gstr, idx, pd, rd, pd ) )
+    if( !AddSecHStr( tstr, lstr, gstr, idx, pd, rd, pd ) )
     {
         ERRMSG << "\n + [INFO] failed to add Creation Date\n";
         return false;

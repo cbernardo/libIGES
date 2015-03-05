@@ -39,15 +39,7 @@ set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
 
-#add_library( iges SHARED
-#    "${SRC_ENT}/iges_entity.cpp"
-#    "${SRC_ENT}/entityNULL.cpp"
-#    "${SRC_ENT}/entity100.cpp"
-#    "${SRC_IGS}/iges_io.cpp"
-#    "${SRC_IGS}/iges.cpp"
-#    )
-
- add_executable( testiges
+add_library( iges STATIC
     "${SRC_ENT}/iges_entity.cpp"
     "${SRC_ENT}/iges_curve.cpp"
     "${SRC_ENT}/entityNULL.cpp"
@@ -61,5 +53,15 @@ set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
     "${SRC_IGS}/iges_io.cpp"
     "${SRC_IGS}/iges.cpp"
     "${SRC_IGS}/iges_elements.cpp"
-    "${LIBIGES_SOURCE_DIR}/test.cpp"
     )
+
+add_executable( readtest
+    "${LIBIGES_SOURCE_DIR}/test_read.cpp"
+    )
+
+add_executable( csgtest
+    "${LIBIGES_SOURCE_DIR}/test_csg.cpp"
+    )
+
+target_link_libraries( readtest iges )
+target_link_libraries( csgtest iges )

@@ -64,7 +64,62 @@ IGES_ENTITY_124::~IGES_ENTITY_124()
 
 bool IGES_ENTITY_124::associate( std::vector<IGES_ENTITY*>* entities )
 {
-    return IGES_ENTITY::associate( entities );
+    if( !IGES_ENTITY::associate( entities ) )
+    {
+        ERRMSG << "\n + [INFO] failed to establish associations\n";
+        return false;
+    }
+
+    structure = 0;
+    lineFontPattern = 0;
+    level = 0;
+    view = 0;
+    labelAssoc = 0;
+    colorNum = 0;
+
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+
+    if( pLineFontPattern )
+    {
+        ERRMSG << "\n + [VIOLATION] Line Font Pattern entity is set\n";
+        pLineFontPattern->DelReference( this );
+        pLineFontPattern = NULL;
+    }
+
+    if( pLevel )
+    {
+        ERRMSG << "\n + [VIOLATION] Level entity is set\n";
+        pLevel->DelReference( this );
+        pLevel = NULL;
+    }
+
+    if( pView )
+    {
+        ERRMSG << "\n + [VIOLATION] View entity is set\n";
+        pView->DelReference( this );
+        pView = NULL;
+    }
+
+    if( pLabelAssoc )
+    {
+        ERRMSG << "\n + [VIOLATION] Label Associativity is set\n";
+        pLabelAssoc->DelReference( this );
+        pLabelAssoc = NULL;
+    }
+
+    if( pColor )
+    {
+        ERRMSG << "\n + [VIOLATION] Color entity is set\n";
+        pColor->DelReference( this );
+        pColor = NULL;
+    }
+
+    return true;
 }
 
 

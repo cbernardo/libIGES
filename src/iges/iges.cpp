@@ -701,6 +701,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_180( this );
             break;
 
+        case ENT_COLOR_DEFINITION:
+            ep = new IGES_ENTITY_314( this );
+            break;
+
         default:
             ep = new IGES_ENTITY_NULL( this );
             ((IGES_ENTITY_NULL*)ep)->setEntityType( aEntityType );

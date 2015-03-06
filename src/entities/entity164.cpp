@@ -67,6 +67,15 @@ bool IGES_ENTITY_164::associate( std::vector<IGES_ENTITY*>* entities )
         return false;
     }
 
+    structure = 0;
+
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+
     if( iPtr < 1 )
     {
         ERRMSG << "\n + [INFO] invalid pointer to closed curve\n";
@@ -145,6 +154,9 @@ bool IGES_ENTITY_164::format( int &index )
 
     ostr.str("");
     ostr << PTR->GetDESequence() << pd;
+    tstr = ostr.str();
+
+    AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
     double* pt[4] = { &L, &I1, &J1, &K1 };
 
@@ -420,5 +432,49 @@ bool IGES_ENTITY_164::SetEntityUse( IGES_STAT_USE aUseCase )
 bool IGES_ENTITY_164::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // the hierarchy is ignored by a Solid of Linear Extrusion so this function always succeeds
+    return true;
+}
+
+
+bool IGES_ENTITY_164::GetClosedCurve( IGES_CURVE** aCurve )
+{
+    if( !PTR )
+    {
+        *aCurve = NULL;
+        return false;
+    }
+
+    *aCurve = PTR;
+    return true;
+}
+
+bool IGES_ENTITY_164::SetClosedCurve( IGES_CURVE* aCurve )
+{
+    if( !aCurve )
+    {
+        ERRMSG << "\n + [ERROR] NULL passed as curve entity pointer\n";
+        return false;
+    }
+
+    if( !aCurve->IsClosed() )
+    {
+        ERRMSG << "\n + [ERROR] closed curve is required; supplied curve is not closed\n";
+        return false;
+    }
+
+    if( PTR )
+    {
+        PTR->DelReference( this );
+    }
+
+    PTR = aCurve;
+
+    if( !PTR->AddReference( this ) )
+    {
+        ERRMSG << "\n + [ERROR] could not register association with closed curve\n";
+        PTR = NULL; // necessary to prevent segfaults
+        return false;
+    }
+
     return true;
 }

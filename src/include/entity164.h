@@ -51,6 +51,8 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
+    IGES_CURVE* PTR;    // closed curve
+
 public:
     IGES_ENTITY_164( IGES* aParent );
     ~IGES_ENTITY_164();
@@ -66,8 +68,10 @@ public:
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
+    bool GetClosedCurve( IGES_CURVE** aCurve );
+    bool SetClosedCurve( IGES_CURVE* aCurve );
+
     int iPtr;           // DE Sequence of the planar curve
-    IGES_CURVE* PTR;    // closed curve
     double L;           // length of extrusion
     double I1;          // unit vector of direction; default 0,0,1.0
     double J1;

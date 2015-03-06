@@ -34,6 +34,8 @@ using namespace std;
 
 IGES_ENTITY_180::IGES_ENTITY_180( IGES* aParent ) : IGES_ENTITY( aParent )
 {
+    entityType = 180;
+    form = 0;
     return;
 }
 
@@ -116,6 +118,15 @@ bool IGES_ENTITY_180::associate( std::vector<IGES_ENTITY*>* entities )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         return false;
+    }
+
+    structure = 0;
+
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
     }
 
     std::list<BTREE_NODE*>::iterator sn = nodes.begin();

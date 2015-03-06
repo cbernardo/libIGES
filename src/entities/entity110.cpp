@@ -48,7 +48,20 @@ IGES_ENTITY_110::~IGES_ENTITY_110()
 
 bool IGES_ENTITY_110::associate( std::vector<IGES_ENTITY*>* entities )
 {
-    return IGES_ENTITY::associate( entities );
+    if( !IGES_ENTITY::associate( entities ) )
+    {
+        ERRMSG << "\n + [INFO] failed to establish associations\n";
+        return false;
+    }
+
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+    
+    return true;
 }
 
 

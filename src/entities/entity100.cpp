@@ -63,6 +63,13 @@ bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
         return false;
     }
 
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+    
     return true;
 }
 

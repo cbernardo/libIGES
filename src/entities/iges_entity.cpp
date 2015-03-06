@@ -887,6 +887,12 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
                         ERRMSG << "\n + [INFO] failed to add reference to child\n";
                         ok = false;
                     }
+                    else
+                    {
+                        extras.push_back( (*entities)[iEnt] );
+                    }
+
+                    break;
 
                 case ENT_ASSOCIATIVITY_INSTANCE:
                     extras.push_back( (*entities)[iEnt] );

@@ -77,6 +77,13 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         return false;
     }
 
+    if( pStructure )
+    {
+        ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
+        pStructure->DelReference( this );
+        pStructure = NULL;
+    }
+    
     // Associate pointers
     std::list<int>::iterator bcur = iCurves.begin();
     std::list<int>::iterator ecur = iCurves.end();

@@ -60,7 +60,7 @@ bool IGES_ENTITY_110::associate( std::vector<IGES_ENTITY*>* entities )
         pStructure->DelReference( this );
         pStructure = NULL;
     }
-    
+
     return true;
 }
 
@@ -306,7 +306,7 @@ bool IGES_ENTITY_110::SetEntityForm( int aForm )
 
 bool IGES_ENTITY_110::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    ERRMSG << "\n + [WARNING] hierarchy is not supported by the Line Entity\n";
+    ERRMSG << "\n + [WARNING] [BUG] hierarchy is not supported by the Line Entity\n";
     return true;
 }
 

@@ -79,13 +79,47 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    double zOffset;     // ZT in the IGES spec
-    double xCenter;     // X1
-    double yCenter;     // Y1
-    double xStart;      // X2
-    double yStart;      // Y2
-    double xEnd;        // X3
-    double yEnd;        // Y3
+    union
+    {
+        double zOffset;     // ZT in the IGES spec
+        double ZT;
+    };
+
+    union
+    {
+        double xCenter;     // X1
+        double X1;
+    };
+
+    union
+    {
+        double yCenter;     // Y1
+        double Y1;
+    };
+
+    union
+    {
+        double xStart;      // X2
+        double X2;
+    };
+
+    union
+    {
+        double yStart;      // Y2
+        double Y2;
+    };
+
+    union
+    {
+        double xEnd;        // X3
+        double X3;
+    };
+
+    union
+    {
+        double yEnd;        // Y3
+        double Y3;
+    };
 };
 
 #endif  // ENTITY_100_H

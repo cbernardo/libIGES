@@ -83,14 +83,30 @@ public:
     virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
     virtual bool SetColor( IGES_COLOR aColor );
     virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetVisibility(bool isVisible);
     virtual bool SetLineWeightNum( int aLineWeight );
 
     // parameters
-    double red;
-    double green;
-    double blue;
-    std::string cname;
+    union
+    {
+        double red;
+        double CC1;
+    };
 
+    union
+    {
+        double green;
+        double CC2;
+    };
+
+    union
+    {
+        double blue;
+        double CC3;
+    };
+
+    std::string cname;
+    std::string& CNAME;
 };
 
 #endif  // ENTITY314_H

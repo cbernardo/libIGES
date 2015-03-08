@@ -26,12 +26,8 @@
 #ifndef IGES_BASE_H
 #define IGES_BASE_H
 
-// NOTE: Implement an ENTITY_NOTSUP which will read in unsupported entities.
-// Ideally we would somehow track any relationships but that will not
-// be possible if we alter file contents in any way since the internal
-// data of the unsupported entity may contain pointers to other entities.
-// Ultimately any unsupported entities would have to be dropped when
-// re-exporting data to a file
+// precision used to represent angles
+#define IGES_ANGLE_RES (1.0e-12)
 
 enum IGES_COLOR
 {

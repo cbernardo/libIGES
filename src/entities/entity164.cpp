@@ -432,6 +432,7 @@ bool IGES_ENTITY_164::SetEntityUse( IGES_STAT_USE aUseCase )
 bool IGES_ENTITY_164::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // the hierarchy is ignored by a Solid of Linear Extrusion so this function always succeeds
+    ERRMSG << "\n + [WARNING] [BUG] Solid of Linear Extrusion does not support hierarchy\n";
     return true;
 }
 

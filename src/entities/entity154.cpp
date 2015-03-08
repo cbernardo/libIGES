@@ -430,5 +430,6 @@ bool IGES_ENTITY_154::SetEntityUse( IGES_STAT_USE aUseCase )
 bool IGES_ENTITY_154::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // the hierarchy is ignored by a Right Circular Cylinder so this function always succeeds
+    ERRMSG << "\n + [WARNING] [BUG] Right Circular Cylinder does not support hierarchy\n";
     return true;
 }

@@ -69,7 +69,7 @@ bool IGES_ENTITY_100::associate( std::vector<IGES_ENTITY*>* entities )
         pStructure->DelReference( this );
         pStructure = NULL;
     }
-    
+
     return true;
 }
 
@@ -354,6 +354,7 @@ bool IGES_ENTITY_100::SetEntityForm( int aForm )
 bool IGES_ENTITY_100::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // the hierarchy is ignored by a Circle Entity so this function always succeeds
+    ERRMSG << "\n + [WARNING] [BUG] Circle Entity does not support hierarchy\n";
     return true;
 }
 

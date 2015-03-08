@@ -1,9 +1,9 @@
 /*
- * file: entity184.h
+ * file: entity110.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 184: Solid Assembly, Section 4.48 p.214/242
+ * Description: IGES Entity 120: Surface of Revolution, Section 4.18, p.116+ (144+)
  *
  * This file is part of libIGES.
  *
@@ -22,32 +22,27 @@
  *
  */
 
-#ifndef ENTITY_184_H
-#define ENTITY_184_H
+#ifndef ENTITY_120_H
+#define ENTITY_120_H
 
-#include <iges_elements.h>
 #include <iges_entity.h>
 
 // NOTE:
-// Allowed entities:
-//      + Primitive
-//      + Boolean Tree
-//      + Solid Assembly
-//      + Solid Instance
-//      + Manifold Solid B-Rep Object
-//
 // The associated parameter data are:
-// + PTR: Index: DE of the entity to be instantiated
+// + L: Pointer: Line entity, the axis of revolution
+// + C: Pointer: Curve entity (generatrix)
+// + SA: Real: Start Angle, Radians
+// + TA: Real: Terminate Angle, Radians
 //
-// Forms:
-//  0: All items are one of Primitive, Solid Instance, Boolean Tree, or Solid Assembly
-//  1: At least one item is a Manifold BREP Object
+// Forms: 0 only
 //
 // Unused DE items:
 // + Structure
 //
 
-class IGES_ENTITY_184 : public IGES_ENTITY
+class IGES_CURVE;
+
+class IGES_ENTITY_120 : public IGES_ENTITY
 {
 protected:
 
@@ -55,23 +50,47 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
 
 public:
+    IGES_ENTITY_120( IGES* aParent );
+    virtual ~IGES_ENTITY_120();
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
-    virtual bool AddReference(IGES_ENTITY* aParentEntity);
-    virtual bool DelReference(IGES_ENTITY* aParentEntity);
+    virtual bool AddReference( IGES_ENTITY* aParentEntity );
+    virtual bool DelReference( IGES_ENTITY* aParentEntity );
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
-    virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    // XXX - TO BE IMPLEMENTED
+    int iL;         // DE pointer to line entity
+    int iC;         // DE pointer to curve entity
 
+    union
+    {
+        IGES_CURVE* L;
+        IGES_CURVE* axis;
+    };
+
+    union
+    {
+        IGES_CURVE* C;
+        IGES_CURVE* generatrix;
+    };
+
+    union
+    {
+        double SA;
+        double startAngle;
+    };
+
+    union
+    {
+        double TA;
+        double endAngle;
+    };
 };
 
-#endif  // ENTITY_430_H
+#endif  // ENTITY_TEMP_H

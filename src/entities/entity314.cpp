@@ -22,6 +22,7 @@
  *
  */
 
+#include <sstream>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -30,13 +31,14 @@
 
 using namespace std;
 
-IGES_ENTITY_314::IGES_ENTITY_314( IGES* aParent ) : IGES_ENTITY( aParent )
+IGES_ENTITY_314::IGES_ENTITY_314( IGES* aParent ) : IGES_ENTITY( aParent ),
+CNAME( cname )
 {
     entityType = 314;
     form = 0;
-    red = 50.0;
-    green = 0.0;
-    blue = 0.0;
+    red = 85.0;
+    green = 20.0;
+    blue = 20.0;
     colorNum = COLOR_RED;
 }
 
@@ -118,153 +120,379 @@ bool IGES_ENTITY_314::associate( std::vector<IGES_ENTITY*>* entities )
 
 bool IGES_ENTITY_314::format( int &index )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    pdout.clear();
+    iExtras.clear();
+
+    if( red < 0.0 || red > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for RED (" << red << ")\n";
+        red = 85.0;
+    }
+
+    if( green < 0.0 || green > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for GREEN (" << green << ")\n";
+        green = 20.0;
+    }
+
+    if( blue < 0.0 || blue > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for BLUE (" << blue << ")\n";
+        blue = 20.0;
+    }
+
+    if( cname.empty() )
+        cname = "none";
+
+    if( index < 1 || index > 9999999 )
+    {
+        ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
+        return false;
+    }
+
+    parameterData = index;
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [INFO] method invoked with no parent IGES object\n";
+        return false;
+    }
+
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    ostringstream ostr;
+    ostr << entityType << pd;
+    string fStr = ostr.str();
+    string tStr;
+
+    if( !FormatPDREal( tStr, red, pd, 0.1 ) )
+    {
+        ERRMSG << "\n + [INFO] could not format RED\n";
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !FormatPDREal( tStr, green, pd, 0.1 ) )
+    {
+        ERRMSG << "\n + [INFO] could not format GREEN\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    char idelim;
+
+    if( extras.empty() )
+        idelim = rd;
+    else
+        idelim = pd;
+
+    if( !FormatPDREal( tStr, blue, idelim, 0.1 ) )
+    {
+        ERRMSG << "\n + [INFO] could not format yEnd\n";
+        pdout.clear();
+        return false;
+    }
+
+    AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !extras.empty() && !formatExtraParams( fStr, index, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] could not format optional parameters\n";
+        pdout.clear();
+        iExtras.clear();
+        return false;
+    }
+
+    if( !formatComments( index ) )
+    {
+        ERRMSG << "\n + [INFO] could not format comments\n";
+        pdout.clear();
+        return false;
+    }
+
+    paramLineCount = index - parameterData;
+
+    return true;
 }
 
 
 bool IGES_ENTITY_314::rescale( double sf )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    // there is nothing to scale
+    return true;
 }
 
 
 bool IGES_ENTITY_314::Unlink( IGES_ENTITY* aChild )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    // check if there are any extra entities to unlink
+    return IGES_ENTITY::Unlink( aChild );
 }
 
 
 bool IGES_ENTITY_314::IsOrphaned( void )
 {
-    // XXX - TO BE IMPLEMENTES
+    if( refs.empty() )
+        return true;
+
     return false;
 }
 
 
 bool IGES_ENTITY_314::AddReference( IGES_ENTITY* aParentEntity )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    return IGES_ENTITY::AddReference( aParentEntity );
 }
 
 
 bool IGES_ENTITY_314::DelReference( IGES_ENTITY* aParentEntity )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    return IGES_ENTITY::DelReference( aParentEntity );
 }
 
 
 bool IGES_ENTITY_314::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    {
+        ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
+        return false;
+    }
+
+    depends = STAT_INDEPENDENT;     // fixed value
+    use = STAT_USE_DEFINITION;      // fixed value
+    visible = true;                 // field ignored
+    hierarchy = STAT_HIER_ALL_SUB;  // field ignored
+
+    structure = 0;                  // N.A.
+    lineFontPattern = 0;            // N.A.
+    level = 0;                      // N.A.
+    view = 0;                       // N.A.
+    transform = 0;                  // N.A.
+    labelAssoc = 0;                 // N.A.
+    lineWeightNum = 0;              // N.A.
+
+    if( form != 0 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] non-zero Form Number in Color Def.\n";
+        cerr << " + DE: " << aRecord->index << "\n";
+        return false;
+    }
+
+    return true;
 }
 
 
 bool IGES_ENTITY_314::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    {
+        ERRMSG << "\n + [INFO] could not read data for Color Definition\n";
+        return false;
+    }
+
+    int idx;
+    bool eor = false;
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    idx = pdout.find( pd );
+
+    if( idx < 1 || idx > 8 )
+    {
+        ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
+        cerr << idx << ")\n";
+        return false;
+    }
+
+    ++idx;
+
+    if( !ParseReal( pdout, idx, red, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, green, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        return false;
+    }
+
+    if( !ParseReal( pdout, idx, blue, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        return false;
+    }
+
+    if( !eor && !ParseHString( pdout, idx, cname, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [BAD FILE] problems encountered while parsing color name\n";
+        return false;
+    }
+
+    if( red < 0.0 || red > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for RED (" << red << ")\n";
+        red = 85.0;
+    }
+
+    if( green < 0.0 || green > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for GREEN (" << green << ")\n";
+        green = 20.0;
+    }
+
+    if( blue < 0.0 || blue > 100.0 )
+    {
+        ERRMSG << "\n + [INFO] invalid value for BLUE (" << blue << ")\n";
+        blue = 20.0;
+    }
+
+    if( cname.empty() )
+        cname = "none";
+
+    if( !eor && !readExtraParams( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        return false;
+    }
+
+    if( !readComments( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        return false;
+    }
+
+    pdout.clear();
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetEntityForm( int aForm )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    if( aForm != 0 )
+    {
+        ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity only supports Form 0 (requested form: ";
+        cerr << aForm << ")\n";
+    }
+
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetDependency( IGES_STAT_DEPENDS aDependency )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    if( aDependency != 0 )
+    {
+        ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity only supports STAT_INDEPENDENT\n";
+    }
+
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetEntityUse( IGES_STAT_USE aUseCase )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    if( aUseCase != 2 )
+    {
+        ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity only supports STAT_USE_DEFINITION\n";
+    }
+
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    // value ignored
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support hierarchy\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Line Font Pattern\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLineFontPattern( IGES_ENTITY* aPattern )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Line Font Pattern\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLevel( int aLevel )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Level\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLevel( IGES_ENTITY* aLevel )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Level\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetView( IGES_ENTITY* aView )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support View\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetTransform( IGES_ENTITY* aTransform )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Transform\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Label Associativity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetColor( IGES_COLOR aColor )
 {
-    // XXX - TO BE IMPLEMENTES
+    if( aColor > COLOR_NONE && aColor < COLOR_END )
+    {
+        colorNum = aColor;
+        return true;
+    }
+
+    ERRMSG << "\n + [WARNING] [BUG] Color Number must be one of 1 .. 8\n";
     return false;
 }
 
 
 bool IGES_ENTITY_314::SetColor( IGES_ENTITY* aColor )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support child Color Definition Entity\n";
+    return true;
+}
+
+
+bool IGES_ENTITY_314::SetVisibility(bool isVisible)
+{
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Blank Status (visibility)\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_314::SetLineWeightNum( int aLineWeight )
 {
-    // XXX - TO BE IMPLEMENTES
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Line Weight\n";
+    return true;
 }

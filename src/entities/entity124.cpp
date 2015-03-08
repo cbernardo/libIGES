@@ -376,13 +376,13 @@ bool IGES_ENTITY_124::SetEntityForm( int aForm )
 
 bool IGES_ENTITY_124::SetVisibility(bool isVisible)
 {
-    ERRMSG << "\n + [WARNING] Blank Status (visibility) not supported by Transform Entity\n";
+    ERRMSG << "\n + [WARNING] [BUG] Blank Status (visibility) not supported by Transform Entity\n";
     return true;
 }
 
 bool IGES_ENTITY_124::SetDependency( IGES_STAT_DEPENDS aDependency )
 {
-    ERRMSG << "\n + [WARNING] Subordinate Entity Switch (dependency) not supported by Transform Entity\n";
+    ERRMSG << "\n + [WARNING] [BUG] Subordinate Entity Switch (dependency) not supported by Transform Entity\n";
     return true;
 }
 
@@ -395,71 +395,71 @@ bool IGES_ENTITY_124::SetEntityUse( IGES_STAT_USE aUseCase )
 
 bool IGES_ENTITY_124::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    ERRMSG << "\n + [WARNING] hierarchy not supported by Transform Entity\n";
+    ERRMSG << "\n + [WARNING] [BUG] hierarchy not supported by Transform Entity\n";
     return true;
 }
 
 
 bool IGES_ENTITY_124::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetLineFontPattern( IGES_ENTITY* aPattern )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetLevel( int aLevel )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetLevel( IGES_ENTITY* aLevel )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetView( IGES_ENTITY* aView )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetColor( IGES_COLOR aColor )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetColor( IGES_ENTITY* aColor )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 
 bool IGES_ENTITY_124::SetLineWeightNum( int aLineWeight )
 {
-    ERRMSG << "\n + [WARNING] method not supported by Transform Entity\n";
-    return false;
+    ERRMSG << "\n + [WARNING] [BUG] method not supported by Transform Entity\n";
+    return true;
 }
 
 

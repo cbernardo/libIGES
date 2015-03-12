@@ -28,8 +28,6 @@
 #include <string>
 #include <iges_base.h>
 
-struct IGES_POINT;
-
 // a single-line data record
 struct IGES_RECORD
 {
@@ -92,8 +90,5 @@ bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
 // convert the string in tStr to a Hollerith string and append to the Global Section fOut
 bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
                  int& index, char pd, char rd, char delim );
-
-// return true if the 2 points match to within 'minRes'
-bool PointMatches( IGES_POINT p1, IGES_POINT p2, double minRes );
 
 #endif  // IGES_IO_H

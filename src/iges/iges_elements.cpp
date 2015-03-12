@@ -71,10 +71,11 @@ IGES_POINT& IGES_POINT::operator+=( const IGES_POINT& v )
 
 IGES_POINT  IGES_POINT::operator+( const IGES_POINT& v )
 {
-    IGES_POINT p;
+    IGES_POINT p( *this );
     p.x += v.x;
     p.y += v.y;
     p.z += v.z;
+
     return p;
 }
 
@@ -323,6 +324,7 @@ IGES_TRANSFORM operator*( const IGES_TRANSFORM& m, const IGES_TRANSFORM& n )
 // TX * V (perform a transform + offset)
 IGES_POINT operator*( const IGES_TRANSFORM& m, const IGES_POINT& v  )
 {
-    IGES_POINT p = m.R * v + m.T;
+    IGES_POINT p = (m.R * v) + m.T;
+
     return p;
 }

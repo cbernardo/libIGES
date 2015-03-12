@@ -26,6 +26,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
+#include <iges_helpers.h>
 #include <entity100.h>
 #include <entity124.h>
 
@@ -376,6 +377,7 @@ bool IGES_ENTITY_100::rescale( double sf )
 IGES_POINT IGES_ENTITY_100::GetStartPoint( bool xform )
 {
     IGES_POINT p( xStart, yStart, zOffset );
+    IGES_POINT q( 0.0, 0.0, 0.0 );
 
     if( xform && pTransform )
     {

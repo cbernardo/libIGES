@@ -48,6 +48,7 @@ add_library( iges STATIC
     "${SRC_ENT}/entity110.cpp"
     "${SRC_ENT}/entity120.cpp"
     "${SRC_ENT}/entity124.cpp"
+    "${SRC_ENT}/entity126.cpp"
     "${SRC_ENT}/entity154.cpp"
     "${SRC_ENT}/entity164.cpp"
     "${SRC_ENT}/entity180.cpp"
@@ -55,6 +56,7 @@ add_library( iges STATIC
     "${SRC_IGS}/iges_io.cpp"
     "${SRC_IGS}/iges.cpp"
     "${SRC_IGS}/iges_elements.cpp"
+    "${SRC_IGS}/iges_helpers.cpp"
     )
 
 add_executable( readtest

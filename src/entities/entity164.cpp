@@ -27,6 +27,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
+#include <iges_helpers.h>
 #include <entity164.h>
 
 using namespace std;
@@ -372,17 +373,11 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         K1 = 0.0;
     }
 
-    // ensure (I,J,K) is a unit vector
-    double dN = I1*I1 + J1*J1 + K1*K1;
-    double dV = dN - 1.0;
-
-    if( dV < -1e-6 || dV > 1e-6 )
+    // ensure (I1,J1,K1) is a unit vector
+    if( !CheckNormal( I1, J1, K1 ) )
     {
-        ERRMSG << "\n + [INFO] renormalizing unit vector\n";
-        dV = sqrt(dN);
-        I1 /= dV;
-        J1 /= dV;
-        K1 /= dV;
+        ERRMSG << "\n + [BAD FILE] invalid normal vector (cannot be normalized)\n";
+        return false;
     }
 
     if( parent->globalData.convert )

@@ -32,6 +32,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
+#include <iges_helpers.h>
 #include <all_entities.h>
 
 using namespace std;
@@ -83,7 +84,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         pStructure->DelReference( this );
         pStructure = NULL;
     }
-    
+
     // Associate pointers
     std::list<int>::iterator bcur = iCurves.begin();
     std::list<int>::iterator ecur = iCurves.end();
@@ -98,7 +99,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
     {
         iEnt = *bcur >> 1;
 
-        if( iEnt >= 0 && iEnt < sEnt )
+        if( iEnt < 0 || iEnt >= sEnt )
         {
             ERRMSG << "\n + [CORRUPT FILE] referenced curve entity (";
             cerr << *bcur << ") does not exist\n";
@@ -191,15 +192,12 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
     IGES_POINT p1;
     IGES_POINT p2;
-    IGES_POINT p3;
-    double dV;
     double dN;
 
     if( !parent )
         dN = 1e-9;
     else
-        dN = parent->globalData.minResolution * parent->globalData.minResolution
-             * parent->globalData.minResolution;
+        dN = parent->globalData.minResolution;
 
     while( sp != ep )
     {
@@ -238,20 +236,29 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
             }
 
             // check that StartPoint[N] == EndPoint[N-1]
-            p1 = (*sp)->GetStartPoint();
-            p2 = (*pp)->GetEndPoint();
-            p3 = p1 - p2;
-            dV = p3.x *p3.x + p3.y * p3.y + p3.z * p3.z;
+            // we must execute the transform since 2D curves may be tested
+            // against 3D curves
+            p1 = (*sp)->GetStartPoint( true );
+            p2 = (*pp)->GetEndPoint( true );
 
-            // TODO: there are situations in which this will always fail
-            // since it it possible that the user-intended resolution
-            // cannot be achieved due to large values of the vertex
-            // coordinates.
-            if( dV > dN )
+            if( !PointMatches(p1, p2, dN) )
             {
                 ERRMSG << "\n + [INFO] sequencing condition not met for Curve Entity\n";
                 cerr << " + EndPoint[N-1]: (" << p2.x << ", " << p2.y << ", " << p2.z << ")\n";
                 cerr << " + StartPoint[N]: (" << p1.x << ", " << p1.y << ", " << p1.z << ")\n";
+                cerr << " + DE of Curve Entity: " << sequenceNumber << "\n";
+                cerr << " + N: " << acc << "\n";
+                IGES_ENTITY* tt;
+
+                if( (*sp)->GetTransform( &tt ))
+                {
+                    if( tt != NULL )
+                    {
+                        cerr << " + [INFO] DE: " << tt->GetDESequence() << "\n";
+                        print_transform( &((IGES_ENTITY_124*)tt)->T );
+                    }
+                }
+
                 ok = false;
             }
         }

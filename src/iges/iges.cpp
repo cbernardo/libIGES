@@ -693,6 +693,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_124( this );
             break;
 
+        case ENT_NURBS_CURVE:
+            ep = new IGES_ENTITY_126( this );
+            break;
+
         case ENT_RIGHT_CIRCULAR_CYLINDER:
             ep = new IGES_ENTITY_154( this );
             break;

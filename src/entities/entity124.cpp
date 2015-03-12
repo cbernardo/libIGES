@@ -299,7 +299,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
-        ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
+        ERRMSG << "\n + [INFO] could not read data for Transform Entity\n";
         return false;
     }
 

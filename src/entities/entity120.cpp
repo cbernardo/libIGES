@@ -71,6 +71,13 @@ bool IGES_ENTITY_120::associate( std::vector<IGES_ENTITY*>* entities )
     if( iL )
     {
         iEnt = iL >> 1;
+
+        if( iEnt < 0 || iEnt >= (int)(*entities).size() )
+        {
+            ERRMSG << "\n + [INFO] invalid entity (DE:" << iL << ")\n";
+            return false;
+        }
+
         L = dynamic_cast<IGES_CURVE*>((*entities)[iEnt]);
 
         if( !L )
@@ -98,6 +105,13 @@ bool IGES_ENTITY_120::associate( std::vector<IGES_ENTITY*>* entities )
     if( iC )
     {
         iEnt = iC >> 1;
+
+        if( iEnt < 0 || iEnt >= (int)(*entities).size() )
+        {
+            ERRMSG << "\n + [INFO] invalid entity (DE:" << iC << ")\n";
+            return false;
+        }
+
         C = dynamic_cast<IGES_CURVE*>((*entities)[iEnt]);
 
         if( !C )

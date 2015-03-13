@@ -213,10 +213,13 @@ bool IGES_ENTITY_124::format( int &index )
 
 bool IGES_ENTITY_124::rescale( double sf )
 {
-    // to maintain relationships between the model and real space
-    // all transforms must scale with a change in model scale or
-    // a change in length unit
-    T *= sf;
+    // CAVEAT: we can safely assume that the offset must
+    // be scaled; however we cannot in general reliably
+    // scale the matrix component. This scaling of the
+    // offset should work as long as the model scale
+    // is 1.0; for any non-unity model scale there is no
+    // guarantee that things will work.
+    T.T *= sf;
     return true;
 }
 

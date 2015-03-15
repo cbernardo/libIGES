@@ -329,17 +329,18 @@ bool ParseLString( const std::string& data, int& idx, std::string& param, bool& 
     }
 
     size_t strEnd = data.find_first_of( pd, idx );
+    size_t strEnd2 = data.find_first_of( rd, idx );
 
-    if( strEnd == string::npos )
+    if( strEnd == string::npos || (strEnd2 != string::npos && strEnd > strEnd2) )
     {
-        strEnd = data.find_first_of( rd, idx );
-
-        if( strEnd == string::npos )
+        if( strEnd2 == string::npos )
         {
             ERRMSG << "\n + [BAD DATA] no Parameter or Record delimeter found in data\n";
             cerr << "Data: " << data.substr( idx ) << "\n";
             return false;
         }
+
+        strEnd = strEnd2;
     }
 
     param = data.substr( idx, strEnd - idx );

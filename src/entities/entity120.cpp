@@ -177,6 +177,8 @@ bool IGES_ENTITY_120::format( int &index )
         return false;
     }
 
+    AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+    
     if( extras.empty() )
     {
         if( !FormatPDREal( tstr, TA, rd, IGES_ANGLE_RES ) )

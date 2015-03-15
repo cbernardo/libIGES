@@ -286,6 +286,8 @@ bool IGES_ENTITY_128::format( int &index )
         return false;
     }
 
+    AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+
     if( !FormatPDREal( tstr, V0, pd, uir ) )
     {
         ERRMSG << "\n + [INFO] could not format V0\n";

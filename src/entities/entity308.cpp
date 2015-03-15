@@ -162,30 +162,28 @@ bool IGES_ENTITY_308::format( int &index )
 
     ostr.str("");
     ostr << N << pd;
+    tstr = ostr.str();
     AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
     int tEnt;
 
-    for( int i = 0; i < N; ++i )
+    std::list<IGES_ENTITY*>::iterator sDE = DE.begin();
+    std::list<IGES_ENTITY*>::iterator eDE = DE.end();
+
+    while( sDE != eDE )
     {
-        std::list<IGES_ENTITY*>::iterator sDE = DE.begin();
-        std::list<IGES_ENTITY*>::iterator eDE = DE.end();
+        tEnt = (*sDE)->GetDESequence();
 
-        while( sDE != eDE )
-        {
-            tEnt = (*sDE)->GetDESequence();
+        ++sDE;
+        ostr.str("");
 
-            ++sDE;
-            ostr.str("");
+        if( sDE == eDE && extras.empty() )
+            ostr << tEnt << rd;
+        else
+            ostr << tEnt << pd;
 
-            if( sDE == eDE && extras.empty() )
-                ostr << tEnt << rd;
-            else
-                ostr << tEnt << pd;
-
-            tstr = ostr.str();
-            AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
-        }
+        tstr = ostr.str();
+        AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
     if( !extras.empty() && !formatExtraParams( lstr, index, pd, rd ) )
@@ -566,6 +564,11 @@ int IGES_ENTITY_308::GetDepthLevel( void )
 
             if( tm >= nd )
                 nd = tm + 1;
+        }
+        else if( (*bref)->GetEntityType() == ENT_NETWORK_SUBFIGURE_DEFINITION )
+        {
+            ERRMSG << "\n + [INFO] TO BE IMPLEMENTED: respond to ENT_NETWORK_SUBFIGURE_DEFINITION\n";
+            return -100;
         }
 
         ++bref;

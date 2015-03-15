@@ -689,6 +689,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_120( this );
             break;
 
+        case ENT_TABULATED_CYLINDER:
+            ep = new IGES_ENTITY_122( this );
+            break;
+
         case ENT_TRANSFORMATION_MATRIX:
             ep = new IGES_ENTITY_124( this );
             break;

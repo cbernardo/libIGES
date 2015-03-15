@@ -30,6 +30,7 @@
 #include <entity102.h>
 #include <entity110.h>
 #include <entity120.h>
+#include <entity122.h>
 #include <entity124.h>
 #include <entity126.h>
 #include <entity128.h>

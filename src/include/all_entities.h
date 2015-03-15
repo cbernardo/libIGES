@@ -39,6 +39,7 @@
 #include <entity154.h>
 #include <entity164.h>
 #include <entity180.h>
+#include <entity308.h>
 #include <entity314.h>
 
 #endif  // ALL_ENTITIES_H

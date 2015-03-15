@@ -320,7 +320,8 @@ bool IGES_ENTITY_144::Unlink( IGES_ENTITY* aChild )
         {
             if( aChild == *sPTI )
             {
-                sPTI = PTI.erase( sPTI );
+                PTI.erase( sPTI );
+                N2 = (int)PTI.size();
                 return true;
             }
 
@@ -432,7 +433,7 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 
     if( !ParseInt( pdout, idx, iPTS, eor, pd, rd ) )
     {
-        ERRMSG << "\n + [INFO] couldn't read surface entity DE \n";
+        ERRMSG << "\n + [INFO] couldn't read surface entity DE\n";
         return false;
     }
 
@@ -666,7 +667,7 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY* aPtr )
 
     while( bref != eref )
     {
-        // while this is a bug, we can di the right thing and simply ignore the
+        // while this is a bug, we can do the right thing and simply ignore the
         // additional reference
         if( aPtr == *bref )
             return true;
@@ -681,6 +682,7 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY* aPtr )
     }
 
     PTI.push_back( aPtr );
+    N2 = (int)PTI.size();
 
     return true;
 }
@@ -696,6 +698,7 @@ bool IGES_ENTITY_144::DelPTI( IGES_ENTITY* aPtr )
         if( aPtr == *bref )
         {
             PTI.erase( bref );
+            N2 = (int)PTI.size();
             return true;
         }
 

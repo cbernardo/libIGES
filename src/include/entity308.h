@@ -1,9 +1,9 @@
 /*
- * file: entity144.h
+ * file: entity308.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 144: Trimmed Parametric Surface, Section 4.34, p.181 (209+)
+ * Description: IGES Entity 308: Subfigure Definition Entity, Section 4.74, p.377(405+)
  *
  * This file is part of libIGES.
  *
@@ -22,34 +22,31 @@
  *
  */
 
-#ifndef ENTITY_144_H
-#define ENTITY_144_H
+#ifndef ENTITY_308_H
+#define ENTITY_308_H
 
 #include <iges_entity.h>
 
 // NOTE:
 // The associated parameter data are:
-// + PTS: Pointer: surface to be trimmed
-// + N1: Int: 0 = self-bounded PTS, 1 = boundary of PTS differs from PTO
-// + N2: Number of internal boundaries (cutouts)
-// + PTO: Pointer: outer boundary of the surface
-// + PTI: Pointer: list of inner boundaries (cutouts)
+// + DEPTH: Int: depth of subfigure nesting; top level subfigures have the higher number
+//               and no subfigure may contain a subfigure of equal or higher depth level.
+// + NAME: HString: name of the subfigure
+// + N: Int: number of entities in the subfigure
+// + DE(N): Integer: list of associated entities
+//
 // Forms: 0 only
 //
 // Unused DE items:
 // + Structure
 //
 
-class IGES_ENTITY_144 : public IGES_ENTITY
+class IGES_ENTITY_308: public IGES_ENTITY
 {
 protected:
 
-    int iPTS;
-    int iPTO;
-    std::list<int>iPTI;
-    IGES_ENTITY* PTS;   // surface entity
-    IGES_ENTITY* PTO;   // outer curve
-    std::list<IGES_ENTITY*>PTI; // inner cutouts
+    std::list<int>iDE;
+    std::list<IGES_ENTITY*>DE;  // associated entities
 
     friend class IGES;
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
@@ -57,8 +54,8 @@ protected:
     virtual bool rescale( double sf );
 
 public:
-    IGES_ENTITY_144( IGES* aParent );
-    ~IGES_ENTITY_144();
+    IGES_ENTITY_308( IGES* aParent );
+    ~IGES_ENTITY_308();
 
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
@@ -68,19 +65,21 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm( int aForm );
+    virtual bool SetVisibility( bool isVisible );
     virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    int N1;
-    int N2;
+    // class-specific functions
+    int GetDepthLevel( void );
 
-    bool GetPTS( IGES_ENTITY** aPtr );
-    bool SetPTS( IGES_ENTITY* aPtr );
-    bool GetPTO( IGES_ENTITY** aPtr );
-    bool SetPTO( IGES_ENTITY* aPtr );
-    bool GetPTIList( std::list<IGES_ENTITY*>& aList );
-    bool AddPTI( IGES_ENTITY* aPtr );
-    bool DelPTI( IGES_ENTITY* aPtr );
+    // parameters
+    int DEPTH;
+    std::string NAME;
+    int N;
+
+    bool GetDEList( std::list<IGES_ENTITY*>& aList );
+    bool AddDE( IGES_ENTITY* aPtr );
+    bool DelDE( IGES_ENTITY* aPtr );
 };
 
-#endif  // ENTITY_144_H
+#endif  // ENTITY_308_H

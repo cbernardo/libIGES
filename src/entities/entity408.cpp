@@ -1,9 +1,9 @@
 /*
- * file: entity122.cpp
+ * file: entity408.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 122: Tabulated Cylinder, Section 4.19, p.119(147+)
+ * Description: IGES Entity 4-8: Subfigure Instance, Section 4.137, p.557(585+)
  *
  * This file is part of libIGES.
  *
@@ -29,27 +29,27 @@
 #include <iges_io.h>
 #include <iges_helpers.h>
 #include <entity124.h>
-#include <entity122.h>
+#include <entity408.h>
 
 using namespace std;
 
 
-IGES_ENTITY_122::IGES_ENTITY_122( IGES* aParent ) : IGES_ENTITY( aParent )
+IGES_ENTITY_408::IGES_ENTITY_408( IGES* aParent ) : IGES_ENTITY( aParent )
 {
-    entityType = 122;
+    entityType = 408;
     form = 0;
 
     DE = NULL;
-    iDE = 0;
-    LX = 0.0;
-    LY = 0.0;
-    LZ = 0.0;
+    X = 0.0;
+    Y = 0.0;
+    Z = 0.0;
+    S = 1.0;
 
     return;
 }
 
 
-IGES_ENTITY_122::~IGES_ENTITY_122()
+IGES_ENTITY_408::~IGES_ENTITY_408()
 {
     if( DE )
         DE->DelReference( this );
@@ -58,7 +58,7 @@ IGES_ENTITY_122::~IGES_ENTITY_122()
 }
 
 
-bool IGES_ENTITY_122::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_408::associate( std::vector<IGES_ENTITY*>* entities )
 {
     if( !IGES_ENTITY::associate( entities ) )
     {
@@ -79,7 +79,7 @@ bool IGES_ENTITY_122::associate( std::vector<IGES_ENTITY*>* entities )
     {
         if( (iDE & 1) == 0 || iDE < 0 || iDE > 9999997 )
         {
-            ERRMSG << "\n + [INFO] invalid DE sequence for directrix curve (" << iDE << ")\n";
+            ERRMSG << "\n + [INFO] invalid DE sequence for Subfigure Definition (" << iDE << ")\n";
             return false;
         }
 
@@ -91,18 +91,18 @@ bool IGES_ENTITY_122::associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        DE = dynamic_cast<IGES_CURVE*>((*entities)[iEnt]);
+        DE = dynamic_cast<IGES_ENTITY_308*>((*entities)[iEnt]);
 
         if( NULL == DE )
         {
-            ERRMSG << "\n + [CORRUPT FILE] DE sequence is not a curve entity (" << iDE << ")\n";
+            ERRMSG << "\n + [CORRUPT FILE] DE sequence is not a Subfigure Definition (" << iDE << ")\n";
             return false;
         }
 
         if( !DE->AddReference( this ) )
         {
             DE = NULL;
-            ERRMSG << "\n + [INFO] could not add reference to directrix curve entity (" << iDE << ")\n";
+            ERRMSG << "\n + [INFO] could not add reference to Subfigure Definition (" << iDE << ")\n";
             return false;
         }
     }
@@ -111,7 +111,7 @@ bool IGES_ENTITY_122::associate( std::vector<IGES_ENTITY*>* entities )
 }
 
 
-bool IGES_ENTITY_122::format( int &index )
+bool IGES_ENTITY_408::format( int &index )
 {
     pdout.clear();
     iExtras.clear();
@@ -124,7 +124,7 @@ bool IGES_ENTITY_122::format( int &index )
 
     if( NULL == DE )
     {
-        ERRMSG << "\n + [INFO] unassigned directrix\n";
+        ERRMSG << "\n + [INFO] unassigned Subfigure Definition\n";
         return false;
     }
 
@@ -146,11 +146,11 @@ bool IGES_ENTITY_122::format( int &index )
     string lstr = ostr.str();
     string tstr;
 
-    double* pt[3] = { &LX, &LY,&LZ };
+    double* pt[4] = { &X, &Y, &Z, &S };
 
-    for( int i = 0; i < 3; ++i )
+    for( int i = 0; i < 4; ++i )
     {
-        if( i == 2 && extras.empty() )
+        if( i == 3 && extras.empty() )
         {
             if( !FormatPDREal( tstr, *pt[i], rd, uir ) )
             {
@@ -170,7 +170,6 @@ bool IGES_ENTITY_122::format( int &index )
         }
 
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
-
     }
 
     if( !extras.empty() && !formatExtraParams( lstr, index, pd, rd ) )
@@ -194,17 +193,17 @@ bool IGES_ENTITY_122::format( int &index )
 }
 
 
-bool IGES_ENTITY_122::rescale( double sf )
+bool IGES_ENTITY_408::rescale( double sf )
 {
-    LX *= sf;
-    LY *= sf;
-    LZ *= sf;
+    X *= sf;
+    Y *= sf;
+    Z *= sf;
 
     return true;
 }
 
 
-bool IGES_ENTITY_122::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_408::Unlink( IGES_ENTITY* aChildEntity )
 {
     if( !aChildEntity )
     {
@@ -225,7 +224,7 @@ bool IGES_ENTITY_122::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_122::IsOrphaned( void )
+bool IGES_ENTITY_408::IsOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT) || NULL == DE )
         return true;
@@ -234,7 +233,7 @@ bool IGES_ENTITY_122::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_122::IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_408::IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity )
 {
     if( !aParentEntity )
     {
@@ -252,13 +251,13 @@ bool IGES_ENTITY_122::IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity 
 }
 
 
-bool IGES_ENTITY_122::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_408::DelReference( IGES_ENTITY* aParentEntity )
 {
     return IGES_ENTITY::DelReference( aParentEntity );
 }
 
 
-bool IGES_ENTITY_122::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_408::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
 {
     if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
     {
@@ -267,11 +266,10 @@ bool IGES_ENTITY_122::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
     }
 
     structure = 0;                  // N.A.
-    hierarchy = STAT_HIER_ALL_SUB;  // field ignored
 
     if( form != 0 )
     {
-        ERRMSG << "\n + [CORRUPT FILE] non-zero Form Number in Tabulated Cylinder\n";
+        ERRMSG << "\n + [CORRUPT FILE] non-zero Form Number in Subfigure Instance\n";
         cerr << " + DE: " << aRecord->index << "\n";
         return false;
     }
@@ -280,7 +278,7 @@ bool IGES_ENTITY_122::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_408::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
@@ -316,30 +314,45 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( !ParseReal( pdout, idx, LX, eor, pd, rd ) )
+    if( !ParseReal( pdout, idx, X, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LX value for Tabulated Cylinder\n";
         return false;
     }
 
-    if( !ParseReal( pdout, idx, LY, eor, pd, rd ) )
+    if( !ParseReal( pdout, idx, Y, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LY value for Tabulated Cylinder\n";
         return false;
     }
 
-    if( !ParseReal( pdout, idx, LZ, eor, pd, rd ) )
+    if( !ParseReal( pdout, idx, Z, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LZ value for Tabulated Cylinder\n";
         return false;
     }
 
+    double rdef = 1.0;
+
+    if( eor )
+    {
+        S = 1.0;
+    }
+    else
+    {
+        if( !ParseReal( pdout, idx, S, eor, pd, rd, &rdef ) )
+        {
+            ERRMSG << "\n + [BAD FILE] no value for S\n";
+            return false;
+        }
+    }
+
     if( parent->globalData.convert )
     {
         double cf = parent->globalData.cf;
-        LX *= cf;
-        LY *= cf;
-        LZ *= cf;
+        X *= cf;
+        Y *= cf;
+        Z *= cf;
     }
 
     if( !eor && !readExtraParams( idx ) )
@@ -359,7 +372,7 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 }
 
 
-bool IGES_ENTITY_122::SetEntityForm( int aForm )
+bool IGES_ENTITY_408::SetEntityForm( int aForm )
 {
     if( aForm != 0 )
     {
@@ -371,9 +384,49 @@ bool IGES_ENTITY_122::SetEntityForm( int aForm )
 }
 
 
-bool IGES_ENTITY_122::SetHierarchy( IGES_STAT_HIER aHierarchy )
+bool IGES_ENTITY_408::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-    // the hierarchy is ignored by a Right Circular Cylinder so this function always succeeds
-    ERRMSG << "\n + [WARNING] [BUG] entity does not support hierarchy\n";
+    hierarchy = aHierarchy;
+    return true;
+}
+
+
+bool IGES_ENTITY_408::GetDE( IGES_ENTITY_308** aPtr )
+{
+    *aPtr = DE;
+
+    if( !DE )
+        return false;
+
+    return true;
+}
+
+
+bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
+{
+    if( DE )
+        DE->DelReference( this );
+
+    DE = aPtr;
+
+    if( NULL == aPtr )
+        return true;
+
+    int eT = aPtr->GetEntityType();
+
+    if( eT != ENT_SUBFIGURE_DEFINITION )
+    {
+        ERRMSG << "\n + [ERROR] invalid entity type (";
+        cerr << eT << "); only type 308 is allowed\n";
+        return false;
+    }
+
+    if( !DE->AddReference( this ) )
+    {
+        DE = NULL;
+        ERRMSG << "\n + [INFO] could not add child entity reference\n";
+        return false;
+    }
+
     return true;
 }

@@ -1,9 +1,9 @@
 /*
- * file: entity122.h
+ * file: entity408.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 122: Tabulated Cylinder, Section 4.19, p.119(147+)
+ * Description: IGES Entity 4-8: Subfigure Instance, Section 4.137, p.557(585+)
  *
  * This file is part of libIGES.
  *
@@ -22,18 +22,19 @@
  *
  */
 
-#ifndef ENTITY_122_H
-#define ENTITY_122_H
+#ifndef ENTITY_408_H
+#define ENTITY_408_H
 
 #include <iges_elements.h>
-#include <iges_curve.h>
+#include <entity308.h>
 
 // Note:
 // The associated parameter data are:
-// + DE: Int: pointer to DE entry of directrix
-// + LX: Real: coordinates of terminate point of generatrix
-// + LY: Real
-// + LZ: Real
+// + DE: Int: pointer to Entity308 (Subfigure Definition)
+// + X: Real: offset
+// + Y: Real
+// + Z: Real
+// + S: Real: scale factor, DEFAULT = 1.0
 //
 // Forms: 0
 //
@@ -41,7 +42,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_122 : public IGES_ENTITY
+class IGES_ENTITY_408 : public IGES_ENTITY
 {
 protected:
 
@@ -50,12 +51,12 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    IGES_CURVE* DE;
+    IGES_ENTITY_308* DE;
     int iDE;
 
 public:
-    IGES_ENTITY_122( IGES* aParent );
-    virtual ~IGES_ENTITY_122();
+    IGES_ENTITY_408( IGES* aParent );
+    virtual ~IGES_ENTITY_408();
 
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
@@ -68,12 +69,13 @@ public:
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // parameters
-    double LX;
-    double LY;
-    double LZ;
+    double X;
+    double Y;
+    double Z;
+    double S;
 
-    bool GetDE( IGES_CURVE** aPtr );
-    bool SetDE( IGES_CURVE* aPtr );
+    bool GetDE( IGES_ENTITY_308** aPtr );
+    bool SetDE( IGES_ENTITY_308* aPtr );
 };
 
-#endif  // ENTITY_122_H
+#endif  // ENTITY_408_H

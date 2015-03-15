@@ -50,6 +50,8 @@ add_library( iges STATIC
     "${SRC_ENT}/entity124.cpp"
     "${SRC_ENT}/entity126.cpp"
     "${SRC_ENT}/entity128.cpp"
+    "${SRC_ENT}/entity142.cpp"
+    "${SRC_ENT}/entity144.cpp"
     "${SRC_ENT}/entity154.cpp"
     "${SRC_ENT}/entity164.cpp"
     "${SRC_ENT}/entity180.cpp"

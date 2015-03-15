@@ -701,6 +701,14 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_128( this );
             break;
 
+        case ENT_CURVE_ON_PARAMETRIC_SURFACE:
+            ep = new IGES_ENTITY_142( this );
+            break;
+
+        case ENT_TRIMMED_PARAMETRIC_SURFACE:
+            ep = new IGES_ENTITY_144( this );
+            break;
+
         case ENT_RIGHT_CIRCULAR_CYLINDER:
             ep = new IGES_ENTITY_154( this );
             break;

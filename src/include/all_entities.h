@@ -33,6 +33,8 @@
 #include <entity124.h>
 #include <entity126.h>
 #include <entity128.h>
+#include <entity142.h>
+#include <entity144.h>
 #include <entity154.h>
 #include <entity164.h>
 #include <entity180.h>

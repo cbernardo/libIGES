@@ -27,6 +27,8 @@
 
 #include <iges_entity.h>
 
+class IGES_ENTITY_142;
+
 // NOTE:
 // The associated parameter data are:
 // + PTS: Pointer: surface to be trimmed
@@ -47,9 +49,23 @@ protected:
     int iPTS;
     int iPTO;
     std::list<int>iPTI;
-    IGES_ENTITY* PTS;   // surface entity
-    IGES_ENTITY* PTO;   // outer curve
-    std::list<IGES_ENTITY*>PTI; // inner cutouts
+    // E106-63 (copious data)
+    // E108 (plane)
+    // E114 (parametric spline surface)
+    // E118 (ruled surface)
+    // E120 (surface of revolution)
+    // E122 (tabulated cylinder)
+    // E128 (NURBS surface)
+    // E140 (offset surface)
+    // E143 (bounded surface)
+    // E190 (plane surface)
+    // E192 (right circular cylindrical surface)
+    // E194 (right circular conical surface)
+    // E196 (spherical surface)
+    // E198 (toroidal surface)
+    IGES_ENTITY* PTS;               // surface entity
+    IGES_ENTITY_142* PTO;           // outer curve
+    std::list<IGES_ENTITY_142*>PTI; // inner cutouts
 
     friend class IGES;
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
@@ -76,11 +92,11 @@ public:
 
     bool GetPTS( IGES_ENTITY** aPtr );
     bool SetPTS( IGES_ENTITY* aPtr );
-    bool GetPTO( IGES_ENTITY** aPtr );
-    bool SetPTO( IGES_ENTITY* aPtr );
-    bool GetPTIList( std::list<IGES_ENTITY*>& aList );
-    bool AddPTI( IGES_ENTITY* aPtr );
-    bool DelPTI( IGES_ENTITY* aPtr );
+    bool GetPTO( IGES_ENTITY_142** aPtr );
+    bool SetPTO( IGES_ENTITY_142* aPtr );
+    bool GetPTIList( std::list<IGES_ENTITY_142*>& aList );
+    bool AddPTI( IGES_ENTITY_142* aPtr );
+    bool DelPTI( IGES_ENTITY_142* aPtr );
 };
 
 #endif  // ENTITY_144_H

@@ -36,6 +36,8 @@
 #include "iges_base.h"
 #include "iges_entity.h"
 
+class IGES_ENTITY_308;
+
 struct IGES_GLOBAL
 {
     char        pdelim;                     // parameter delimeter; RD ','
@@ -113,7 +115,8 @@ public:
     /// open a file with the given name and write out all data
     bool Write( const char* aFileName, bool fOverwrite = false );
 
-    // bool export( IGES* ): Export all entities to the given IGES* (to be used for creating Assemblies)
+    // export all entities to the given IGES* (to be used for creating Assemblies)
+    bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
 
     /// create an entity of the given type
     bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );

@@ -27,6 +27,7 @@
 #include <iges.h>
 #include <iges_io.h>
 #include <entity124.h>
+#include <entity142.h>
 #include <entity144.h>
 
 using namespace std;
@@ -56,8 +57,8 @@ IGES_ENTITY_144::~IGES_ENTITY_144()
     if( PTO )
         PTO->DelReference( this );
 
-    std::list<IGES_ENTITY*>::iterator sPTI = PTI.begin();
-    std::list<IGES_ENTITY*>::iterator ePTI = PTI.end();
+    std::list<IGES_ENTITY_142*>::iterator sPTI = PTI.begin();
+    std::list<IGES_ENTITY_142*>::iterator ePTI = PTI.end();
 
     while( sPTI != ePTI )
     {
@@ -120,7 +121,14 @@ bool IGES_ENTITY_144::associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        PTO = (*entities)[iEnt];
+        PTO = dynamic_cast<IGES_ENTITY_142*>((*entities)[iEnt]);
+
+        if( NULL == PTO )
+        {
+            ERRMSG << "\n + [INFO] invalid outline entity (DE:" << iPTO << ") - not type 142\n";
+            iPTI.clear();
+            return false;
+        }
 
         if( !PTO->AddReference( this ) )
         {
@@ -139,7 +147,7 @@ bool IGES_ENTITY_144::associate( std::vector<IGES_ENTITY*>* entities )
     }
 
     int iDE;
-    IGES_ENTITY* ep;
+    IGES_ENTITY_142* ep;
     std::list<int>::iterator sPTI = iPTI.begin();
     std::list<int>::iterator ePTI = iPTI.end();
 
@@ -163,7 +171,14 @@ bool IGES_ENTITY_144::associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        ep = (*entities)[iEnt];
+        ep = dynamic_cast<IGES_ENTITY_142*>((*entities)[iEnt]);
+
+        if( NULL == ep )
+        {
+            ERRMSG << "\n + [INFO] invalid cutout entity (DE:" << iDE << ") - not type 142\n";
+            iPTI.clear();
+            return false;
+        }
 
         if( !ep->AddReference( this ) )
         {
@@ -246,8 +261,8 @@ bool IGES_ENTITY_144::format( int &index )
 
     if( !PTI.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator sPTI = PTI.begin();
-        std::list<IGES_ENTITY*>::iterator ePTI = PTI.end();
+        std::list<IGES_ENTITY_142*>::iterator sPTI = PTI.begin();
+        std::list<IGES_ENTITY_142*>::iterator ePTI = PTI.end();
 
         while( sPTI != ePTI )
         {
@@ -313,8 +328,8 @@ bool IGES_ENTITY_144::Unlink( IGES_ENTITY* aChild )
 
     if( !PTI.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator sPTI = PTI.begin();
-        std::list<IGES_ENTITY*>::iterator ePTI = PTI.end();
+        std::list<IGES_ENTITY_142*>::iterator sPTI = PTI.begin();
+        std::list<IGES_ENTITY_142*>::iterator ePTI = PTI.end();
 
         while( sPTI != ePTI )
         {
@@ -359,8 +374,8 @@ bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity )
 
     if( !PTI.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator sPTI = PTI.begin();
-        std::list<IGES_ENTITY*>::iterator ePTI = PTI.end();
+        std::list<IGES_ENTITY_142*>::iterator sPTI = PTI.begin();
+        std::list<IGES_ENTITY_142*>::iterator ePTI = PTI.end();
 
         while( sPTI != ePTI )
         {
@@ -567,6 +582,23 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
     if( NULL == aPtr )
         return true;
 
+#warning TO BE IMPLEMENTED
+    // XXX - Check that the entity is one of the following
+    // E106-63 (copious data)
+    // E108 (plane)
+    // E114 (parametric spline surface)
+    // E118 (ruled surface)
+    // E120 (surface of revolution)
+    // E122 (tabulated cylinder)
+    // E128 (NURBS surface)
+    // E140 (offset surface)
+    // E143 (bounded surface)
+    // E190 (plane surface)
+    // E192 (right circular cylindrical surface)
+    // E194 (right circular conical surface)
+    // E196 (spherical surface)
+    // E198 (toroidal surface)
+
     if( !PTS->AddReference( this ) )
     {
         PTS = NULL;
@@ -577,7 +609,7 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
 }
 
 
-bool IGES_ENTITY_144::GetPTO( IGES_ENTITY** aPtr )
+bool IGES_ENTITY_144::GetPTO( IGES_ENTITY_142** aPtr )
 {
     *aPtr = PTO;
 
@@ -588,7 +620,7 @@ bool IGES_ENTITY_144::GetPTO( IGES_ENTITY** aPtr )
 }
 
 
-bool IGES_ENTITY_144::SetPTO( IGES_ENTITY* aPtr )
+bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
 {
     if( PTO )
         PTO->DelReference( this );
@@ -608,14 +640,14 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY* aPtr )
 }
 
 
-bool IGES_ENTITY_144::GetPTIList( std::list<IGES_ENTITY*>& aList )
+bool IGES_ENTITY_144::GetPTIList( std::list<IGES_ENTITY_142*>& aList )
 {
     aList = PTI;
     return true;
 }
 
 
-bool IGES_ENTITY_144::AddPTI( IGES_ENTITY* aPtr )
+bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
 {
     if( NULL == aPtr )
     {
@@ -623,47 +655,8 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY* aPtr )
         return false;
     }
 
-    // ensure we have no references to this object
-    if( aPtr == pStructure || aPtr == pLineFontPattern
-        || aPtr == pLevel || aPtr == pView
-        || aPtr == pTransform || aPtr == pLabelAssoc
-        || aPtr == pColor )
-    {
-        ERRMSG << "\n + [BUG] invalid reference requested for PTI list\n";
-        return false;
-    }
-
-    std::list<IGES_ENTITY*>::iterator bref = refs.begin();
-    std::list<IGES_ENTITY*>::iterator eref = refs.end();
-
-    while( bref != eref )
-    {
-        if( aPtr == *bref )
-        {
-            ERRMSG << "\n + [BUG] circular reference requested for PTI list\n";
-            return false;
-        }
-
-        ++bref;
-    }
-
-    // check if the entity is a child in extras<>
-    bref = extras.begin();
-    eref = extras.end();
-
-    while( bref != eref )
-    {
-        if( aPtr == *bref )
-        {
-            ERRMSG << "\n + [BUG] invalid reference requested for PTI list\n";
-            return false;
-        }
-
-        ++bref;
-    }
-
-    bref = PTI.begin();
-    eref = PTI.end();
+    std::list<IGES_ENTITY_142*>::iterator bref = PTI.begin();
+    std::list<IGES_ENTITY_142*>::iterator eref = PTI.end();
 
     while( bref != eref )
     {
@@ -688,10 +681,10 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY* aPtr )
 }
 
 
-bool IGES_ENTITY_144::DelPTI( IGES_ENTITY* aPtr )
+bool IGES_ENTITY_144::DelPTI( IGES_ENTITY_142* aPtr )
 {
-    std::list<IGES_ENTITY*>::iterator bref = PTI.begin();
-    std::list<IGES_ENTITY*>::iterator eref = PTI.end();
+    std::list<IGES_ENTITY_142*>::iterator bref = PTI.begin();
+    std::list<IGES_ENTITY_142*>::iterator eref = PTI.end();
 
     while( bref != eref )
     {

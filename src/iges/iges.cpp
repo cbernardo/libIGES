@@ -121,7 +121,7 @@ static bool checkDate( const std::string aDate )
     // note: parts created before the creation of the IGES specification
     // obviously have a bad date; however there is defective software out
     // there such as the SolidWorks IGES exporter which do not comply with
-    // the IGES specification are report 2-digit years regardless of the
+    // the IGES specification and report 2-digit years regardless of the
     // century. Due to such defective software, any 2-digit year will be
     // accepted as valid by this implementation; however a message will be
     // printed to the error stream if a date predates IGES v1.
@@ -2135,4 +2135,49 @@ bool IGES::writeGlobals( std::ofstream& file )
     }
 
     return true;
+}
+
+// export all entities to the given IGES* (to be used for creating Assemblies)
+bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
+{
+    *packagedEntity = NULL;
+
+    if( NULL == newParent )
+    {
+        ERRMSG << "\n + [BUG] Export() invoked without a valid IGES pointer\n";
+        return false;
+    }
+
+    if( NULL == packagedEntity )
+    {
+        ERRMSG << "\n + [BUG] Export() invoked without a valid Entity 308 handle\n";
+        return false;
+    }
+
+    if( entities.empty() )
+        return true;
+
+    // XXX - extract information from parent IGES
+    // + int maxLinewidthGrad
+    // + double maxLinewidth
+    // + double modelScale
+    // + IGES_UNIT   unitsFlag
+
+    // XXX - calculate a scale factor which yields the desired
+    // final modelScale with the given Units. If this factor is
+    // not 1.0 then trawl the list of entities and convert
+
+    // XXX - iterate through the list of entities and store lists of
+    // + (a) top level Entity 144 (Trimmed Parametric Surfaces)
+    // + (b) top level Entity 408 (Singular Subfigure Instance)
+    // If (b) is present then items in the list are to be stuffed
+    // into an Entity 308 (Subfigure Definition), otherwise if (a)
+    // exists then all entities within must be placed in an
+    // Entity 308. If neither (a) nor (b) exist then the export
+    // operation must fail.
+    //
+    // Set *packagedEntity to equal our new subassembly (Entity 308)
+    //
+
+    return false;
 }

@@ -381,7 +381,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     }
 
     if( parent->globalData.convert )
-        L *= parent->globalData.cf;
+        rescale( parent->globalData.cf );
 
     if( !eor && !readExtraParams( idx ) )
     {

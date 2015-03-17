@@ -26,7 +26,9 @@
 #define ENTITY_408_H
 
 #include <iges_elements.h>
-#include <entity308.h>
+#include <iges_entity.h>
+
+class IGES_ENTITY_308;
 
 // Note:
 // The associated parameter data are:
@@ -76,6 +78,7 @@ public:
 
     bool GetDE( IGES_ENTITY_308** aPtr );
     bool SetDE( IGES_ENTITY_308* aPtr );
+    int GetDepthLevel( void );
 };
 
 #endif  // ENTITY_408_H

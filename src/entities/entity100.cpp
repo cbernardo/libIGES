@@ -325,16 +325,7 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     }
 
     if( parent->globalData.convert )
-    {
-        double cf = parent->globalData.cf;
-        zOffset *= cf;
-        xCenter *= cf;
-        yCenter *= cf;
-        xStart *= cf;
-        yStart *= cf;
-        xEnd *= cf;
-        yEnd *= cf;
-    }
+        rescale( parent->globalData.cf );
 
     pdout.clear();
     return true;

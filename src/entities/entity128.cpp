@@ -332,7 +332,15 @@ bool IGES_ENTITY_128::format( int &index )
 
 bool IGES_ENTITY_128::rescale( double sf )
 {
-    // NURBS don't scale so this function always succeeds
+    list<IGES_POINT>::iterator sPt = controls.begin();
+    list<IGES_POINT>::iterator ePt = controls.end();
+
+    while( sPt != ePt )
+    {
+        *sPt = *sPt * sf;
+        ++sPt;
+    }
+
     return true;
 }
 
@@ -632,8 +640,8 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    // note: normally a scale would be performed here (re. globalData.convert)
-    // but this entity does not own scalable data.
+    if( parent->globalData.convert )
+        rescale( parent->globalData.cf );
 
     pdout.clear();
     return true;

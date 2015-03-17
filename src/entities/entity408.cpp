@@ -22,6 +22,7 @@
  *
  */
 
+
 #include <sstream>
 #include <cmath>
 #include <error_macros.h>
@@ -29,6 +30,7 @@
 #include <iges_io.h>
 #include <iges_helpers.h>
 #include <entity124.h>
+#include <entity308.h>
 #include <entity408.h>
 
 using namespace std;
@@ -429,4 +431,20 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
     }
 
     return true;
+}
+
+
+int IGES_ENTITY_408::GetDepthLevel( void )
+{
+    // note: the specification is not clear about whether Type IGES_ENTITY_308
+    // (Subfigure Definition) may indirectly reference a Type 308 of the same
+    // DEPTH via inclusion within Type 408. To be absolutely safe, it is best
+    // to implement a GetDepthLevel() in Type 408 to ensure that processors
+    // which expect strict ordering of indirect references will be able to
+    // process the files which we create.
+
+    if( DE )
+        return DE->GetDepthLevel();
+
+    return 0;
 }

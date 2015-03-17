@@ -357,7 +357,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     }
 
     if( parent->globalData.convert )
-        T *= parent->globalData.cf;
+        rescale( parent->globalData.cf );
 
     pdout.clear();
     return true;

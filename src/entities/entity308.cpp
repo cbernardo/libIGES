@@ -27,6 +27,7 @@
 #include <iges.h>
 #include <iges_io.h>
 #include <entity124.h>
+#include <entity408.h>
 #include <entity308.h>
 
 using namespace std;
@@ -553,14 +554,22 @@ int IGES_ENTITY_308::GetDepthLevel( void )
     std::list<IGES_ENTITY*>::iterator bref = DE.begin();
     std::list<IGES_ENTITY*>::iterator eref = DE.end();
 
-    IGES_ENTITY_308* ep;
-
     while( bref != eref )
     {
         if( (*bref)->GetEntityType() == ENT_SUBFIGURE_DEFINITION )
         {
-            ep = (IGES_ENTITY_308*)(*bref);
-            tm = ep->GetDepthLevel();
+            IGES_ENTITY_308* ep308;
+            ep308 = (IGES_ENTITY_308*)(*bref);
+            tm = ep308->GetDepthLevel();
+
+            if( tm >= nd )
+                nd = tm + 1;
+        }
+        else if( (*bref)->GetEntityType() == ENT_SINGULAR_SUBFIGURE_INSTANCE )
+        {
+            IGES_ENTITY_408* ep408;
+            ep408 = (IGES_ENTITY_408*)(*bref);
+            tm = ep408->GetDepthLevel();
 
             if( tm >= nd )
                 nd = tm + 1;

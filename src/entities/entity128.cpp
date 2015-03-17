@@ -560,6 +560,12 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
             return false;
         }
 
+        if( tR <= 0 )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+            return false;
+        }
+
         weights.push_back( tR );
     }
 
@@ -586,21 +592,9 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( U0 < 0.0 || U0 > 1.0 )
-    {
-        ERRMSG << "\n + [INFO] invalid U0 value (" << V0 << ")\n";
-        return false;
-    }
-
     if( !ParseReal( pdout, idx, U1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value U1\n";
-        return false;
-    }
-
-    if( U1 < 0.0 || U1 > 1.0 )
-    {
-        ERRMSG << "\n + [INFO] invalid U1 value (" << U1 << ")\n";
         return false;
     }
 
@@ -610,21 +604,9 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( V0 < 0.0 || V0 > 1.0 )
-    {
-        ERRMSG << "\n + [INFO] invalid V0 value (" << V0 << ")\n";
-        return false;
-    }
-
     if( !ParseReal( pdout, idx, V1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value V1\n";
-        return false;
-    }
-
-    if( V1 < 0.0 || V1 > 1.0 )
-    {
-        ERRMSG << "\n + [INFO] invalid V1 value (" << V1 << ")\n";
         return false;
     }
 

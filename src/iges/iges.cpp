@@ -57,6 +57,23 @@ static std::string UNIT_NAMES[UNIT_END] =
     "UIN"
 };
 
+
+static double UNIT_TO_MM[UNIT_END] =
+{
+    25.4,       // mm/inch
+    1.0,        // mm/mm
+    1.0,        // UNIT_EXTERN - this is only here as a filler
+    304.8,      // mm/foot
+    1609344.0,  // mm/mile
+    1000.0,     // mm/m
+    1000000.0,  // mm/km
+    0.0254,     // mm/mil
+    0.001,      // mm/micron
+    10.0,       // mm/cm
+    2.54e-5     // mm/microinch
+};
+
+
 static int mdays[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 
@@ -1317,6 +1334,14 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
         globalData.convert = true;
     }
 
+    if( globalData.unitsFlag != UNIT_MILLIMETER )
+    {
+        globalData.minResolution *= UNIT_TO_MM[globalData.unitsFlag];
+        globalData.cf *= UNIT_TO_MM[globalData.unitsFlag];
+        globalData.unitsFlag = UNIT_MILLIMETER;
+        globalData.convert = true;
+    }
+
     return true;
 }
 
@@ -1567,26 +1592,11 @@ bool IGES::ConvertUnits( IGES_UNIT newUnit )
         return false;
     }
 
-    double factors[UNIT_END] =
-    {
-        25.4,       // mm/inch
-        1.0,        // mm/mm
-        1.0,        // UNIT_EXTERN - this is only here as a filler
-        304.8,      // mm/foot
-        1609344.0,  // mm/mile
-        1000.0,     // mm/m
-        1000000.0,  // mm/km
-        0.0254,     // mm/mil
-        0.001,      // mm/micron
-        10.0,       // mm/cm
-        2.54e-5     // mm/microinch
-    };
-
     double cf;
 
     // + Calculate a scale factor to convert units.
     // + adjust the User Intended Minimum to represent the mm equivalent (if possible)
-    cf = factors[globalData.unitsFlag] / factors[newUnit];
+    cf = UNIT_TO_MM[globalData.unitsFlag] / UNIT_TO_MM[newUnit];
 
     if( cf > 0.9999998 && cf < 1.000001 )
         return true;
@@ -2157,27 +2167,180 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     if( entities.empty() )
         return true;
 
-    // XXX - extract information from parent IGES
+    // sextract information from parent IGES
     // + int maxLinewidthGrad
-    // + double maxLinewidth
     // + double modelScale
     // + IGES_UNIT   unitsFlag
+    int maxLWG = newParent->globalData.maxLinewidthGrad;
+    double pms = newParent->globalData.modelScale;
+    IGES_UNIT pUF = newParent->globalData.unitsFlag;
 
-    // XXX - calculate a scale factor which yields the desired
+    // calculate a scale factor which yields the desired
     // final modelScale with the given Units. If this factor is
     // not 1.0 then trawl the list of entities and convert
+    double cf = 1.0;
+    bool adjScale = false;
 
-    // XXX - iterate through the list of entities and store lists of
+    if( globalData.modelScale != pms )
+    {
+        cf = pms / globalData.modelScale;
+        adjScale = true;
+    }
+
+    if( globalData.unitsFlag != pUF )
+    {
+        cf *= UNIT_TO_MM[globalData.unitsFlag] / UNIT_TO_MM[pUF];
+        adjScale = true;
+    }
+
+    size_t nEnt = entities.size();
+
+    if( adjScale )
+    {
+        // scale all existing entities
+        for( size_t i = 0; i < nEnt; ++ i )
+        {
+            if( !entities[i]->rescale(cf) )
+            {
+                ERRMSG << "\n + [BUG] cannot convert units\n";
+                return false;
+            }
+        }
+    }
+
+    // determine crude linewidth adjustment; the new linewidths are guaranteed to
+    // be incorrect unless (a) they are 0 or (b) maxLWG and maxLW are the same
+    // for the new parent IGES and the IGES being merged.
+    double lws = maxLWG / globalData.maxLinewidthGrad;
+    int llw;
+
+    for( size_t i = 0; i < nEnt; ++ i )
+    {
+        llw = entities[i]->lineWeightNum;
+
+        if( llw > 0 )
+        {
+            llw = (int)(double(llw) * lws);
+
+            if( llw == 0 )
+                llw = 1;
+        }
+
+        entities[i]->lineWeightNum = llw;
+    }
+
+    // iterate through the list of entities and store lists of
     // + (a) top level Entity 144 (Trimmed Parametric Surfaces)
     // + (b) top level Entity 408 (Singular Subfigure Instance)
     // If (b) is present then items in the list are to be stuffed
     // into an Entity 308 (Subfigure Definition), otherwise if (a)
     // exists then all entities within must be placed in an
     // Entity 308. If neither (a) nor (b) exist then the export
-    // operation must fail.
+    // operation must return TRUE but the Entity308 handle must be NULL.
     //
     // Set *packagedEntity to equal our new subassembly (Entity 308)
     //
 
-    return false;
+    list<IGES_ENTITY*> tplist;
+    list<IGES_ENTITY*> sslist;
+    int tEnt;
+    size_t nRefs;
+
+    for( size_t i = 0; i < nEnt; ++ i )
+    {
+        tEnt = entities[i]->GetEntityType();
+        nRefs = entities[i]->GetNRefs();
+
+        if( tEnt == ENT_PARAM_SPLINE_SURFACE && nRefs == 0 )
+            tplist.push_back( entities[i] );
+        else if( tEnt == ENT_SINGULAR_SUBFIGURE_INSTANCE && nRefs == 0 )
+            sslist.push_back( entities[i] );
+    }
+
+    if( tplist.empty() && sslist.empty() )
+        return true;
+
+    IGES_ENTITY* ep;
+    IGES_ENTITY_308* p308;
+
+    if( !newParent->NewEntity( ENT_SUBFIGURE_DEFINITION, &ep ) )
+    {
+        ERRMSG << "\n + [BUG] could not create Subfigure Definition Entity\n";
+        return false;
+    }
+
+    p308 = dynamic_cast<IGES_ENTITY_308*>(ep);
+
+    if( NULL == p308 )
+    {
+        ERRMSG << "\n + [BUG] could not cast pointer to Subfigure Definition Entity pointer\n";
+        return false;
+    }
+
+    list<IGES_ENTITY*>::iterator sEnt;
+    list<IGES_ENTITY*>::iterator eEnt;
+
+    if( !sslist.empty() )
+    {
+        sEnt = sslist.begin();
+        eEnt = sslist.end();
+
+        while( sEnt != eEnt )
+        {
+            if( !p308->AddDE( *sEnt ) )
+            {
+                ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
+                sEnt = sslist.begin();
+
+                while( p308->DelDE( *sEnt ) && sEnt != eEnt );
+
+                newParent->DelEntity( ep );
+                return false;
+            }
+
+            ++sEnt;
+        }
+    }
+    else
+    {
+        sEnt = tplist.begin();
+        eEnt = tplist.end();
+
+        while( sEnt != eEnt )
+        {
+            if( !p308->AddDE( *sEnt ) )
+            {
+                ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
+                sEnt = tplist.begin();
+
+                while( p308->DelDE( *sEnt ) && sEnt != eEnt );
+
+                newParent->DelEntity( ep );
+                return false;
+            }
+
+            ++sEnt;
+        }
+    }
+
+    for( size_t i = 0; i < nEnt; ++ i )
+    {
+        if( !newParent->AddEntity( entities[i] ) )
+        {
+            ERRMSG << "\n + [INFO] could not transfer entity to parent; both parent and child are now corrupted\n";
+
+            for( size_t j = nEnt -1; j >= i; --j )
+            {
+                delete entities[j];
+                entities.pop_back();
+            }
+
+            return false;
+        }
+    }
+
+    *packagedEntity = p308;
+    entities.clear();
+
+    return true;
 }

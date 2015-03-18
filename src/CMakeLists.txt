@@ -73,5 +73,10 @@ add_executable( csgtest
     "${LIBIGES_SOURCE_DIR}/test_csg.cpp"
     )
 
+add_executable( mergetest
+    "${LIBIGES_SOURCE_DIR}/test_merge.cpp"
+    )
+
 target_link_libraries( readtest iges )
 target_link_libraries( csgtest iges )
+target_link_libraries( mergetest iges )

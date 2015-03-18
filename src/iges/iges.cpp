@@ -2167,7 +2167,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     if( entities.empty() )
         return true;
 
-    // sextract information from parent IGES
+    // extract information from parent IGES
     // + int maxLinewidthGrad
     // + double modelScale
     // + IGES_UNIT   unitsFlag
@@ -2251,10 +2251,18 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
         tEnt = entities[i]->GetEntityType();
         nRefs = entities[i]->GetNRefs();
 
-        if( tEnt == ENT_PARAM_SPLINE_SURFACE && nRefs == 0 )
+        if( tEnt == ENT_TRIMMED_PARAMETRIC_SURFACE && 0 == nRefs )
+        {
             tplist.push_back( entities[i] );
-        else if( tEnt == ENT_SINGULAR_SUBFIGURE_INSTANCE && nRefs == 0 )
+            cout << "TP" << tplist.size() << ": refs " << nRefs << "\n";
+        }
+        else if( tEnt == ENT_SINGULAR_SUBFIGURE_INSTANCE && 1 >= nRefs )
+        {
+#warning TO BE IMPLEMENTED
+            // XXX - need to check owning entity - if only 1 and an independent Type 308 then we're a candidate
             sslist.push_back( entities[i] );
+            cout << "SS" << sslist.size() << ": refs " << nRefs << "\n";
+        }
     }
 
     if( tplist.empty() && sslist.empty() )

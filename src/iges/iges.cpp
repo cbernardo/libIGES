@@ -32,6 +32,9 @@
 // list but if the file is written and loaded again then the suffixed
 // names shall be valid base names and it is possible that we wind up
 // with names which have multiple suffixes.
+//
+// 2. Allow vicious culling in the Read/Write operations; there is no
+// need to directly expose the routine to the user.
 
 #include <libigesconf.h>
 #include <locale.h>
@@ -2406,7 +2409,10 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
             newParent->UnlinkEntity( ep );
 
             for( size_t j = 0; j < i; ++j )
+            {
                 newParent->UnlinkEntity( entities[j] );
+                entities[j]->parent = this;
+            }
 
             delete ep;
             return false;

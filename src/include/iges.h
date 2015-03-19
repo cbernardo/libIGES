@@ -76,6 +76,9 @@ struct IGES_GLOBAL
 class IGES
 {
 private:
+    static int idxPartNum;                  // index used to create Part Name
+    static int idxAssyNum;                  // index used to create Assembly Name
+
     std::list<std::string> startSection;    // text from the Start section
     int                    nGlobSecLines;   // number of lines in the Global section
     int                    nDESecLines;     // number of lines in the Directory Entry section
@@ -93,7 +96,7 @@ private:
     // Read the TERMINATE section and verifies data
     bool readTS( IGES_RECORD& rec, std::ifstream& file );
     // cull orphaned entities
-    void cull( void );
+    void cull( bool vicious = false );
 
     // write out the START SECTION
     bool writeStart( std::ofstream& file );
@@ -106,6 +109,11 @@ public:
 
     struct IGES_GLOBAL     globalData;      // Global Section data
 
+    /// cull orphaned entities in preparation for Assembly output;
+    /// all entities without references shall be culled unless
+    /// they are of type 408
+    void Cull( void );
+
     /// delete all entities and reinitialize global data
     bool Clear( void );
 
@@ -115,8 +123,16 @@ public:
     /// open a file with the given name and write out all data
     bool Write( const char* aFileName, bool fOverwrite = false );
 
-    // export all entities to the given IGES* (to be used for creating Assemblies)
+    /// export all entities to the given IGES* (to be used for creating Assemblies)
     bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
+
+    // create a new (hopefully unique) part name; the name may not be unique
+    // if a sub-assembly happens to have the same part name
+    void GetNewPartName( std::string& name );
+
+    // create a new (hopefully unique) assembly name; the name may not be unique
+    // if a sub-assembly happens to have the same name
+    void GetNewAssemblyName( std::string& name );
 
     /// create an entity of the given type
     bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
@@ -126,6 +142,9 @@ public:
 
     /// delete an entity
     bool DelEntity( IGES_ENTITY* aEntity );
+
+    /// delete an entity's pointer but leave the entity untouched
+    bool UnlinkEntity( IGES_ENTITY* aEntity );
 
     /// convert to a different type of units; this method may fail
     /// if either the internal units or newUnit are == UNIT_EXTERN

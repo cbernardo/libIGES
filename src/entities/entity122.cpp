@@ -372,3 +372,30 @@ bool IGES_ENTITY_122::SetHierarchy( IGES_STAT_HIER aHierarchy )
     ERRMSG << "\n + [WARNING] [BUG] entity does not support hierarchy\n";
     return true;
 }
+
+
+bool IGES_ENTITY_122::GetDE( IGES_CURVE** aPtr )
+{
+    *aPtr = DE;
+
+    if( DE )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_122::SetDE( IGES_CURVE* aPtr )
+{
+    if( DE )
+    {
+        DE->DelReference( this );
+        DE = NULL;
+    }
+
+    if( !aPtr->AddReference( this ) )
+        return false;
+
+    DE = aPtr;
+    return true;
+}

@@ -51,6 +51,9 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
+    IGES_CURVE* L;
+    IGES_CURVE* C;
+
 public:
     IGES_ENTITY_120( IGES* aParent );
     virtual ~IGES_ENTITY_120();
@@ -68,17 +71,15 @@ public:
     int iL;         // DE pointer to line entity
     int iC;         // DE pointer to curve entity
 
-    union
-    {
-        IGES_CURVE* L;
-        IGES_CURVE* axis;
-    };
+    bool GetL( IGES_CURVE** aCurve );
+    bool GetAxis( IGES_CURVE** aCurve );
+    bool SetL( IGES_CURVE* aCurve );
+    bool SetAxis( IGES_CURVE* aCurve );
 
-    union
-    {
-        IGES_CURVE* C;
-        IGES_CURVE* generatrix;
-    };
+    bool GetC( IGES_CURVE** aCurve );
+    bool GetGeneratrix( IGES_CURVE** aCurve );
+    bool SetC( IGES_CURVE* aCurve );
+    bool SetGeneratrix( IGES_CURVE* aCurve );
 
     union
     {

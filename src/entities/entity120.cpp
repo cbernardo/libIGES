@@ -178,7 +178,7 @@ bool IGES_ENTITY_120::format( int &index )
     }
 
     AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
-    
+
     if( extras.empty() )
     {
         if( !FormatPDREal( tstr, TA, rd, IGES_ANGLE_RES ) )
@@ -391,4 +391,84 @@ bool IGES_ENTITY_120::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // hierarchy is ignored so always return true
     return true;
+}
+
+
+bool IGES_ENTITY_120::GetL( IGES_CURVE** aCurve )
+{
+    *aCurve = L;
+
+    if( L )
+        return true;
+
+    return false;
+}
+
+bool IGES_ENTITY_120::GetAxis( IGES_CURVE** aCurve )
+{
+    return GetL( aCurve );
+}
+
+
+bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
+{
+    if( L )
+    {
+        L->DelReference( this );
+        L = NULL;
+    }
+
+    if( !aCurve->AddReference( this ) )
+        return false;
+
+    L = aCurve;
+
+    return true;
+}
+
+
+bool IGES_ENTITY_120::SetAxis( IGES_CURVE* aCurve )
+{
+    return SetL( aCurve );
+}
+
+
+
+bool IGES_ENTITY_120::GetC( IGES_CURVE** aCurve )
+{
+    *aCurve = C;
+
+    if( C )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_120::GetGeneratrix( IGES_CURVE** aCurve )
+{
+    return GetC( aCurve );
+}
+
+
+bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
+{
+    if( C )
+    {
+        C->DelReference( this );
+        C = NULL;
+    }
+
+    if( !aCurve->AddReference( this ) )
+        return false;
+
+    C = aCurve;
+
+    return true;
+}
+
+
+bool IGES_ENTITY_120::SetGeneratrix( IGES_CURVE* aCurve )
+{
+    return SetC( aCurve );
 }

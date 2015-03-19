@@ -1853,15 +1853,23 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
 
     int tEnt = aPattern->GetEntityType();
 
-    if( tEnt != 304 )
+    if( tEnt != ENT_LINE_FONT_DEFINITION )
     {
         ERRMSG << "\n + [BUG] invalid entity (#" << tEnt;
-        cerr << ") assigned to LineFontPattern (expecting 304) ";
+        cerr << ") assigned to LineFontPattern (expecting ";
+        cerr << ENT_LINE_FONT_DEFINITION << ") ";
         cerr << "in entity type #" << entityType << "\n";
         return false;
     }
 
+    if( !aPattern->AddReference( this ) )
+    {
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
     pLineFontPattern = aPattern;
+
     return true;
 }
 
@@ -1936,11 +1944,18 @@ bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
     int tEnt = aLevel->GetEntityType();
     int tFrm = aLevel->GetEntityForm();
 
-    if( tEnt != 406 || tFrm != 1 )
+    if( tEnt != ENT_PROPERTY || tFrm != 1 )
     {
         ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
-        cerr << ") assigned to level (expecting 406-1) in entity type #";
+        cerr << ") assigned to level (expecting ";
+        cerr << ENT_PROPERTY << "-1) in entity type #";
         cerr << entityType << "\n";
+        return false;
+    }
+
+    if( !aLevel->AddReference( this ) )
+    {
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
     }
 
@@ -1979,12 +1994,18 @@ bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
     int tEnt = aView->GetEntityType();
     int tFrm = aView->GetEntityForm();
 
-    if( tEnt != 410 || tEnt != 402
-        || (tEnt == 402 && tFrm != 3 && tFrm != 4 && tFrm != 19) )
+    if( tEnt != ENT_VIEW || tEnt != ENT_ASSOCIATIVITY_INSTANCE
+        || (tEnt == ENT_ASSOCIATIVITY_INSTANCE && tFrm != 3 && tFrm != 4 && tFrm != 19) )
     {
         ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
         cerr << ") assigned to level (expecting 410 or 402-3/4/19) in entity type #";
         cerr << entityType << "\n";
+        return false;
+    }
+
+    if( !aView->AddReference( this ) )
+    {
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
     }
 
@@ -2022,10 +2043,11 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
 
     int tEnt = aTransform->GetEntityType();
 
-    if( tEnt != 124 )
+    if( tEnt != ENT_TRANSFORMATION_MATRIX )
     {
         ERRMSG << "\n + [BUG] invalid entity (" << tEnt;
-        cerr << ") assigned to transform (expecting 124) in entity type #";
+        cerr << ") assigned to transform (expecting ";
+        cerr << ENT_TRANSFORMATION_MATRIX << ") in entity type #";
         cerr << entityType << "\n";
         return false;
     }
@@ -2035,6 +2057,13 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
     if( !pTransform )
     {
         ERRMSG << "\n + [BUG] could not cast IGES_ENTITY* to IGES_ENTITY_124*\n";
+        return false;
+    }
+
+    if( !pTransform->AddReference( this ) )
+    {
+        pTransform = NULL;
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
     }
 
@@ -2077,11 +2106,18 @@ bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
     int tEnt = aLabelAssoc->GetEntityType();
     int tFrm = aLabelAssoc->GetEntityForm();
 
-    if( tEnt != 402 || tFrm != 5 )
+    if( tEnt != ENT_ASSOCIATIVITY_INSTANCE || tFrm != 5 )
     {
         ERRMSG << "\n + [BUG] invalid entity (" << tEnt << "-" << tFrm;
-        cerr << ") assigned to Label Display Associativity (expecting 402-5) in entity type #";
+        cerr << ") assigned to Label Display Associativity (expecting ";
+        cerr << ENT_ASSOCIATIVITY_INSTANCE << "-5) in entity type #";
         cerr << entityType << "\n";
+        return false;
+    }
+
+    if( !aLabelAssoc->AddReference( this ) )
+    {
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
     }
 
@@ -2163,11 +2199,18 @@ bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
 
     int tEnt = aColor->GetEntityType();
 
-    if( tEnt != 314 )
+    if( tEnt != ENT_COLOR_DEFINITION )
     {
         ERRMSG << "\n + [BUG] invalid entity (#" << tEnt;
-        cerr << ") assigned to Color Definition (expecting 314) in entity type #";
+        cerr << ") assigned to Color Definition (expecting ";
+        cerr << ENT_COLOR_DEFINITION << ") in entity type #";
         cerr << entityType << "\n";
+        return false;
+    }
+
+    if( !aColor->AddReference( this ) )
+    {
+        ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
     }
 

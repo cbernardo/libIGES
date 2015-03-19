@@ -23,6 +23,16 @@
  *
  */
 
+// NOTE: Wishlist:
+// 1. To really ensure uniquely named parts and assemblies, all names
+// parsed from files must be checked against a partsName and assyName
+// register; if the desired name already exists then a '-n' must be
+// applied to the name where n = 1.. and is unique to each part name.
+// Note that the newly suffixed names shall not be added to the name
+// list but if the file is written and loaded again then the suffixed
+// names shall be valid base names and it is possible that we wind up
+// with names which have multiple suffixes.
+
 #include <libigesconf.h>
 #include <locale.h>
 #include <cstdlib>
@@ -30,6 +40,7 @@
 #include <sstream>
 #include <limits>
 #include <iomanip>
+#include <ctime>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -40,6 +51,10 @@ using namespace std;
 
 // Note: a default of 11 = IGES5.3
 #define DEFAULT_IGES_VERSION (11)
+
+
+int IGES::idxPartNum = 1;
+int IGES::idxAssyNum = 1;
 
 
 static std::string UNIT_NAMES[UNIT_END] =
@@ -794,6 +809,7 @@ bool IGES::AddEntity( IGES_ENTITY* aEntity )
     }
 
     entities.push_back( aEntity );
+    aEntity->parent = this;
 
     return true;
 }
@@ -816,6 +832,33 @@ bool IGES::DelEntity( IGES_ENTITY* aEntity )
         if( *sEnt == aEntity )
         {
             delete *sEnt;
+            entities.erase( sEnt );
+            return true;
+        }
+
+        ++sEnt;
+    }
+
+    return false;
+}
+
+
+// delete an entity's pointer but leave the entity untouched
+bool IGES::UnlinkEntity( IGES_ENTITY* aEntity )
+{
+    if( !aEntity )
+    {
+        ERRMSG << "\n + [BUG] DelEntity() invoked with NULL argument\n";
+        return false;
+    }
+
+    std::vector<IGES_ENTITY*>::iterator sEnt = entities.begin();
+    std::vector<IGES_ENTITY*>::iterator eEnt = entities.end();
+
+    while( sEnt != eEnt )
+    {
+        if( *sEnt == aEntity )
+        {
             entities.erase( sEnt );
             return true;
         }
@@ -1544,7 +1587,7 @@ bool IGES::readTS( IGES_RECORD& rec, std::ifstream& file )
 
 
 // cull unsupported and orphaned entities
-void IGES::cull( void )
+void IGES::cull( bool vicious )
 {
     size_t nEnt = entities.size();
     size_t iEnt;
@@ -1553,8 +1596,14 @@ void IGES::cull( void )
 
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( entities[iEnt]->IsOrphaned() )
+        if( entities[iEnt]->IsOrphaned() ||
+            ( vicious && entities[iEnt]->GetNRefs() == 0
+            && entities[iEnt]->GetEntityType() != ENT_SINGULAR_SUBFIGURE_INSTANCE ) )
         {
+#ifdef DEBUG
+            cout << " + [INFO] deleting Entity " << entities[iEnt]->GetEntityType() << "\n";
+#endif
+
             ++nCulled;
             delete entities[iEnt];
         }
@@ -1564,6 +1613,7 @@ void IGES::cull( void )
         }
     }
 
+    entities.clear();
     entities = tmpEnts;
 
 #ifdef DEBUG
@@ -1572,6 +1622,12 @@ void IGES::cull( void )
 #endif
 
     return;
+}
+
+
+void IGES::Cull( void )
+{
+    cull( true );
 }
 
 
@@ -2254,14 +2310,18 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
         if( tEnt == ENT_TRIMMED_PARAMETRIC_SURFACE && 0 == nRefs )
         {
             tplist.push_back( entities[i] );
-            cout << "TP" << tplist.size() << ": refs " << nRefs << "\n";
         }
         else if( tEnt == ENT_SINGULAR_SUBFIGURE_INSTANCE && 1 >= nRefs )
         {
-#warning TO BE IMPLEMENTED
-            // XXX - need to check owning entity - if only 1 and an independent Type 308 then we're a candidate
+            if( nRefs == 1 )
+            {
+                IGES_ENTITY* pref = entities[i]->refs.front();
+
+                if( pref->GetNRefs() > 0 || pref->GetEntityType() != ENT_SUBFIGURE_DEFINITION )
+                    continue;
+            }
+
             sslist.push_back( entities[i] );
-            cout << "SS" << sslist.size() << ": refs " << nRefs << "\n";
         }
     }
 
@@ -2285,11 +2345,15 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
         return false;
     }
 
+    bool isAssy = false;
     list<IGES_ENTITY*>::iterator sEnt;
     list<IGES_ENTITY*>::iterator eEnt;
 
     if( !sslist.empty() )
     {
+        if( sslist.size() > 1 )
+            isAssy = true;
+
         sEnt = sslist.begin();
         eEnt = sslist.end();
 
@@ -2298,6 +2362,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
             if( !p308->AddDE( *sEnt ) )
             {
                 ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
+                ep = p308;
                 sEnt = sslist.begin();
 
                 while( p308->DelDE( *sEnt ) && sEnt != eEnt );
@@ -2335,20 +2400,81 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     {
         if( !newParent->AddEntity( entities[i] ) )
         {
-            ERRMSG << "\n + [INFO] could not transfer entity to parent; both parent and child are now corrupted\n";
+            ERRMSG << "\n + [INFO] could not transfer entity to parent\n";
 
-            for( size_t j = nEnt -1; j >= i; --j )
-            {
-                delete entities[j];
-                entities.pop_back();
-            }
+            ep = (IGES_ENTITY*)p308;
+            newParent->UnlinkEntity( ep );
 
+            for( size_t j = 0; j < i; ++j )
+                newParent->UnlinkEntity( entities[j] );
+
+            delete ep;
             return false;
         }
     }
 
     *packagedEntity = p308;
+
+    if( globalData.fileName.empty() )
+    {
+        if( isAssy )
+            newParent->GetNewAssemblyName( p308->NAME );
+        else
+            newParent->GetNewPartName( p308->NAME );
+    }
+    else
+    {
+        string tname = globalData.fileName;
+        size_t pos = tname.find_last_of( '.' );
+
+        if( string::npos != pos && pos > 0 )
+            tname = tname.substr( 0, pos );
+
+        p308->NAME = tname;
+    }
+
     entities.clear();
 
     return true;
+}
+
+
+void IGES::GetNewPartName( std::string& name )
+{
+    name.clear();
+    time_t now;
+    time( &now );
+    struct tm date;
+    gmtime_r( &now, &date );
+
+    // to reduce likelihood of name clashes, use partYYYYDDDHHMMSSnnnn
+    ostringstream ostr;
+    ostr << "part" << setw(4) << setfill('0') << (date.tm_year + 1900);
+    ostr << setw(3) << (date.tm_yday + 1) << setw(2) << date.tm_hour;
+    ostr << setw(2) << date.tm_min << setw(2) << date.tm_sec;
+    ostr << setw(4) << idxPartNum;
+
+    name = ostr.str();
+
+    return;
+}
+
+void IGES::GetNewAssemblyName( std::string& name )
+{
+    name.clear();
+    time_t now;
+    time( &now );
+    struct tm date;
+    gmtime_r( &now, &date );
+
+    // to reduce likelihood of name clashes, use assyYYYYDDDHHMMSSnnnn
+    ostringstream ostr;
+    ostr << "assy" << setw(4) << setfill('0') << (date.tm_year + 1900);
+    ostr << setw(3) << (date.tm_yday + 1) << setw(2) << date.tm_hour;
+    ostr << setw(2) << date.tm_min << setw(2) << date.tm_sec;
+    ostr << setw(4) << idxPartNum;
+
+    name = ostr.str();
+
+    return;
 }

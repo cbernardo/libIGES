@@ -50,6 +50,7 @@ enum IGES_UNIT
     UNIT_START = 1,
     UNIT_INCH = UNIT_START,
     UNIT_MILLIMETER,
+    UNIT_MM = UNIT_MILLIMETER,
     UNIT_EXTERN,        // unit specified in Global Section Part 15;
                         // must conform to IEEE-260-1978 or MIL-STD-12D(1981)
     UNIT_FOOT,

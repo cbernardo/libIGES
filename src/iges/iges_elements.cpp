@@ -118,6 +118,11 @@ IGES_POINT operator*( const double scalar, const IGES_POINT& v )
 IGES_MATRIX::IGES_MATRIX()
 {
     memset( v, 0, sizeof(v) );
+
+    // the identity transform
+    for( int i = 0; i < 3; ++i )
+            v[i][i] = 1.0;
+
     return;
 }
 

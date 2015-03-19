@@ -529,6 +529,7 @@ bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
 
     if( !SPTR->AddReference( this ) )
     {
+        SPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
         return false;
     }
@@ -560,6 +561,7 @@ bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
 
     if( !BPTR->AddReference( this ) )
     {
+        BPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
         return false;
     }
@@ -591,6 +593,7 @@ bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
 
     if( !CPTR->AddReference( this ) )
     {
+        CPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
         return false;
     }

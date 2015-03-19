@@ -30,7 +30,8 @@ include_directories(
     "${LIBIGES_SOURCE_DIR}/include"
     )
 
-set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
+#set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
+set( CMAKE_CXX_FLAGS "-g -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
 
 # pull in the sources
 #add_subdirectory ( entities )
@@ -69,14 +70,14 @@ add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/test_read.cpp"
     )
 
-add_executable( csgtest
-    "${LIBIGES_SOURCE_DIR}/test_csg.cpp"
-    )
+#add_executable( csgtest
+#    "${LIBIGES_SOURCE_DIR}/test_csg.cpp"
+#    )
 
 add_executable( mergetest
     "${LIBIGES_SOURCE_DIR}/test_merge.cpp"
     )
 
 target_link_libraries( readtest iges )
-target_link_libraries( csgtest iges )
+#target_link_libraries( csgtest iges )
 target_link_libraries( mergetest iges )

@@ -418,6 +418,7 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
 
     if( eT != ENT_SUBFIGURE_DEFINITION )
     {
+        DE = NULL;
         ERRMSG << "\n + [ERROR] invalid entity type (";
         cerr << eT << "); only type 308 is allowed\n";
         return false;

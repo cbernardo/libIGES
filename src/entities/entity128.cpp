@@ -399,6 +399,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -413,6 +414,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -421,108 +423,126 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, K1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read K1 (upper index sum)\n";
+        pdout.clear();
         return false;
     }
 
     if( K1 < 1 )
     {
         ERRMSG << "\n + [INFO] invalid K1 value (" << K1 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, K2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read K2 (upper index sum)\n";
+        pdout.clear();
         return false;
     }
 
     if( K2 < 1 )
     {
         ERRMSG << "\n + [INFO] invalid K2 value (" << K2 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, M1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read M1 (degree of basis functions)\n";
+        pdout.clear();
         return false;
     }
 
     if( M1 < 1 )
     {
         ERRMSG << "\n + [INFO] invalid M1 value (" << M1 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, M2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read M2 (degree of basis functions)\n";
+        pdout.clear();
         return false;
     }
 
     if( M2 < 1 )
     {
         ERRMSG << "\n + [INFO] invalid M2 value (" << M2 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP1 (0/1:open/closed for all U)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP1 != 0 && PROP1 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP1 value (" << PROP1 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP2 (0/1:open/closed for all V)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP2 != 0 && PROP2 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP2 value (" << PROP2 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP3, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP3 (0/1:rational/polynomial)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP3 != 0 && PROP3 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP3 value (" << PROP3 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP4, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP4 (0/1:nonperiodic/periodic in U)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP4 != 0 && PROP4 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP4 value (" << PROP4 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP5, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP5 (0/1:nonperiodic/periodic in V)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP5 != 0 && PROP5 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP5 value (" << PROP5 << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -533,6 +553,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots1.size() + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -544,6 +565,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots2.size() + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -557,12 +579,14 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
         if( tR <= 0 )
         {
             ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -580,6 +604,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
             || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read control point #" << (i + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -589,36 +614,42 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, U0, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read starting parameter value U0\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, U1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value U1\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, V0, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read starting parameter value V0\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, V1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value V1\n";
+        pdout.clear();
         return false;
     }
 
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

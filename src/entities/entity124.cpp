@@ -303,6 +303,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Transform Entity\n";
+        pdout.clear();
         return false;
     }
 
@@ -317,6 +318,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -332,6 +334,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
             {
                 ERRMSG << "\n + [BAD FILE] no entry for Transform::R[";
                 cerr << i << "][" << j << "]\n";
+                pdout.clear();
                 return false;
             }
         }
@@ -340,6 +343,7 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         {
             ERRMSG << "\n + [BAD FILE] no entry for Transform::T[";
             cerr << i << "]\n";
+            pdout.clear();
             return false;
         }
     }
@@ -347,12 +351,14 @@ bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

@@ -285,6 +285,7 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
+        pdout.clear();
         return false;
     }
 
@@ -299,6 +300,7 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -307,30 +309,35 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, iDE, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no pointer to directrix DE\n";
+        pdout.clear();
         return false;
     }
 
     if( iDE < 0 || (iDE & 1) == 0 || iDE > 9999997 )
     {
         ERRMSG << "\n + [BAD FILE] invalid value for directrix DE (" << iDE << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, LX, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LX value for Tabulated Cylinder\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, LY, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LY value for Tabulated Cylinder\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, LZ, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no LZ value for Tabulated Cylinder\n";
+        pdout.clear();
         return false;
     }
 
@@ -340,12 +347,14 @@ bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

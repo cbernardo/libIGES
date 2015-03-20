@@ -290,6 +290,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for SOlid of Linear Extrusion\n";
+        pdout.clear();
         return false;
     }
 
@@ -307,6 +308,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -315,18 +317,21 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, iPtr, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the number of segments in the Composite Curve\n";
+        pdout.clear();
         return false;
     }
 
     if( iPtr < 1 )
     {
         ERRMSG << "\n + [INFO] invalid DE sequence for closed curve entity: " << iPtr << "\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, L, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no length value for Solid of LInear Extrusion\n";
+        pdout.clear();
         return false;
     }
 
@@ -337,6 +342,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, I1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no I1 value for Solid of LInear Extrusion\n";
+            pdout.clear();
             return false;
         }
     }
@@ -350,6 +356,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, J1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no J1 value for Solid of LInear Extrusion\n";
+            pdout.clear();
             return false;
         }
     }
@@ -365,6 +372,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, K1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no K1 value for Solid of LInear Extrusion\n";
+            pdout.clear();
             return false;
         }
     }
@@ -377,6 +385,7 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !CheckNormal( I1, J1, K1 ) )
     {
         ERRMSG << "\n + [BAD FILE] invalid normal vector (cannot be normalized)\n";
+        pdout.clear();
         return false;
     }
 
@@ -386,12 +395,14 @@ bool IGES_ENTITY_164::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

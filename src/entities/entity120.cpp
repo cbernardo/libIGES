@@ -295,6 +295,7 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -309,6 +310,7 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -319,12 +321,14 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, iPtr, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the pointer to the line entity\n";
+        pdout.clear();
         return false;
     }
 
     if( iPtr < 1 || iPtr > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid entity pointer: " << iPtr << "\n";
+        pdout.clear();
         return false;
     }
 
@@ -333,12 +337,14 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, iPtr, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the pointer to the curve entity\n";
+        pdout.clear();
         return false;
     }
 
     if( iPtr < 1 || iPtr > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid entity pointer: " << iPtr << "\n";
+        pdout.clear();
         return false;
     }
 
@@ -347,24 +353,28 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, SA, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the Start Angle\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, TA, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the Terminate Angle\n";
+        pdout.clear();
         return false;
     }
 
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

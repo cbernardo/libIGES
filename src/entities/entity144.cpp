@@ -478,6 +478,7 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -492,6 +493,7 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -500,48 +502,56 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, iPTS, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read surface entity DE\n";
+        pdout.clear();
         return false;
     }
 
     if( iPTS < 0 || iPTS > 9999997 || (iPTS & 1) == 0 )
     {
         ERRMSG << "\n + [INFO] invalid surface entity DE (" << iPTS << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, N1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read N1 parameter\n";
+        pdout.clear();
         return false;
     }
 
     if( N1 < 0 || N1 > 1 )
     {
         ERRMSG << "\n + [INFO] invalid value for N1 (" << N1 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, N2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read N2 parameter\n";
+        pdout.clear();
         return false;
     }
 
     if( N2 < 0 )
     {
         ERRMSG << "\n + [INFO] invalid N2 parameter (" << N2 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, iPTO, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read outline DE pointer\n";
+        pdout.clear();
         return false;
     }
 
     if( iPTO < 0 || (iPTO & 1) == 0 || iPTO > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid outline DE pointer (" << iPTO << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -552,6 +562,7 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseInt( pdout, idx, tIdx, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read cutout #" << (iPTI.size() + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -559,6 +570,7 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         {
             ERRMSG << "\n + [INFO] invalid DE pointer for cutout #";
             cerr << (iPTI.size() + 1) << " (" << tIdx << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -568,12 +580,14 @@ bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

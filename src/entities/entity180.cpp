@@ -365,12 +365,14 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Binary Trees Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !nodes.empty() )
     {
         ERRMSG << "\n + [INFO] the Binary Tree Entity currently contains data\n";
+        pdout.clear();
         return false;
     }
 
@@ -385,6 +387,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -395,6 +398,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, nNodes, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the number of nodes in the Binary Tree\n";
+        pdout.clear();
         return false;
     }
 
@@ -402,6 +406,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [VIOLATION] number of nodes on the stack (";
         cerr << nNodes << ") is < 3)\n";
+        pdout.clear();
         return false;
     }
 
@@ -409,6 +414,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] invalid (even) number of nodes on the stack (";
         cerr << nNodes << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -422,6 +428,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseInt( pdout, idx, ent, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read the entity DE index or operation code\n";
+            pdout.clear();
             return false;
         }
 
@@ -429,6 +436,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
             || ( ent < 0 && (ent & 1) ) )
         {
             ERRMSG << "\n + [INFO] invalid value (" << ent << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -437,6 +445,7 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !node )
         {
             ERRMSG << "\n + [INFO] memory allocation failed\n";
+            pdout.clear();
             return false;
         }
 
@@ -459,18 +468,21 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] #arguments -1 != #operations (";
         cerr << nArg << " vs " << nOp << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

@@ -485,12 +485,14 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Composite Curve Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !curves.empty() )
     {
         ERRMSG << "\n + [INFO] the Composite Curve Entity currently contains data\n";
+        pdout.clear();
         return false;
     }
 
@@ -507,6 +509,7 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -517,12 +520,14 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, nSeg, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read the number of segments in the Composite Curve\n";
+        pdout.clear();
         return false;
     }
 
     if( nSeg < 1 )
     {
         ERRMSG << "\n + [INFO] invalid number of entities: " << nSeg << "\n";
+        pdout.clear();
         return false;
     }
 
@@ -534,12 +539,14 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseInt( pdout, idx, ent, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read the entity DE index\n";
+            pdout.clear();
             return false;
         }
 
         if( ent < 1 || (ent & 1) == 0 || ent > 9999997 )
         {
             ERRMSG << "\n + [INFO] invalid DE index (" << ent << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -549,12 +556,14 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

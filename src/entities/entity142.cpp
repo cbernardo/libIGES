@@ -359,6 +359,7 @@ bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -373,6 +374,7 @@ bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -381,60 +383,70 @@ bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, CRTN, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read construction method (CRTN)\n";
+        pdout.clear();
         return false;
     }
 
     if( CRTN < 0 || CRTN > 3 )
     {
         ERRMSG << "\n + [INFO] invalid construction method (CRTN = " << CRTN << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, iSPTR, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read surface DE pointer\n";
+        pdout.clear();
         return false;
     }
 
     if( iSPTR < 0 || (iSPTR & 1) == 0 || iSPTR > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid surface DE pointer (" << iSPTR << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, iBPTR, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read boundary DE pointer\n";
+        pdout.clear();
         return false;
     }
 
     if( iBPTR < 0 || ( iBPTR && (iBPTR & 1) == 0 ) || iBPTR > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid boundary DE pointer (" << iBPTR << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, iCPTR, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read bounding curve DE pointer\n";
+        pdout.clear();
         return false;
     }
 
     if( iCPTR < 0 || ( iCPTR && (iCPTR & 1) == 0 ) || iCPTR > 9999997 )
     {
         ERRMSG << "\n + [INFO] invalid bounding curve DE pointer (" << iCPTR << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PREF, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read curve representation preference\n";
+        pdout.clear();
         return false;
     }
 
     if( PREF < 0 || PREF > 3 )
     {
         ERRMSG << "\n + [INFO] invalid curve representation preference (" << PREF << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -442,6 +454,7 @@ bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !iBPTR && !iCPTR )
     {
         ERRMSG << "\n + [INFO] both BPTR and CPTR are NULL\n";
+        pdout.clear();
         return false;
     }
 
@@ -462,12 +475,14 @@ bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

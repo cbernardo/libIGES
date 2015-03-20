@@ -292,6 +292,7 @@ bool IGES_ENTITY_314::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Color Definition\n";
+        pdout.clear();
         return false;
     }
 
@@ -306,6 +307,7 @@ bool IGES_ENTITY_314::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -314,24 +316,28 @@ bool IGES_ENTITY_314::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, red, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, green, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, blue, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no value for RED\n";
+        pdout.clear();
         return false;
     }
 
     if( !eor && !ParseHString( pdout, idx, cname, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] problems encountered while parsing color name\n";
+        pdout.clear();
         return false;
     }
 
@@ -359,12 +365,14 @@ bool IGES_ENTITY_314::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

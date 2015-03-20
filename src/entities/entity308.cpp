@@ -314,6 +314,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -328,6 +329,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -336,6 +338,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, DEPTH, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read DEPTH\n";
+        pdout.clear();
         return false;
     }
 
@@ -343,6 +346,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [INFO] invalid DEPTH (" << DEPTH;
         cerr << ") in entity DE (" << sequenceNumber << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -350,6 +354,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [INFO] no name in entity DE (";
         cerr << sequenceNumber << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -357,6 +362,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [INFO] couldn't read N parameter in DE ";
         cerr << sequenceNumber << "\n";
+        pdout.clear();
         return false;
     }
 
@@ -365,6 +371,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [INFO] invalid value for N (" << N;
         cerr << ") in DE " << sequenceNumber << "\n";
+        pdout.clear();
         return false;
     }
 
@@ -376,6 +383,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseInt( pdout, idx, tIdx, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read associated entity #" << (iDE.size() + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -383,6 +391,7 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         {
             ERRMSG << "\n + [INFO] invalid DE pointer for associated entity #";
             cerr << (iDE.size() + 1) << " (" << tIdx << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -392,12 +401,14 @@ bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

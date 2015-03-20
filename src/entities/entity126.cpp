@@ -357,6 +357,7 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        pdout.clear();
         return false;
     }
 
@@ -371,6 +372,7 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -379,72 +381,84 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseInt( pdout, idx, K, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read K (upper index sum)\n";
+        pdout.clear();
         return false;
     }
 
     if( K < 1 )
     {
         ERRMSG << "\n + [INFO] invalid K value (" << K << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, M, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read M (degree of basis functions)\n";
+        pdout.clear();
         return false;
     }
 
     if( M < 1 )
     {
         ERRMSG << "\n + [INFO] invalid M value (" << M << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP1 (0/1:planar/nonplanar)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP1 != 0 && PROP1 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP1 value (" << PROP1 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP2 (0/1:open/closed curve)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP2 != 0 && PROP2 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP2 value (" << PROP2 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP3, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP3 (0/1:rational/polynomial)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP3 != 0 && PROP3 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP3 value (" << PROP3 << ")\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseInt( pdout, idx, PROP4, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read PROP4 (0/1:nonperiodic/periodic)\n";
+        pdout.clear();
         return false;
     }
 
     if( PROP4 != 0 && PROP4 != 1 )
     {
         ERRMSG << "\n + [INFO] invalid PROP4 value (" << PROP4 << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -455,6 +469,7 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots.size() + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -466,12 +481,14 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
         if( tR <= 0 )
         {
             ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+            pdout.clear();
             return false;
         }
 
@@ -489,6 +506,7 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
             || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read control point #" << (i + 1) << "\n";
+            pdout.clear();
             return false;
         }
 
@@ -498,12 +516,14 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, V0, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read starting parameter value\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, V1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value\n";
+        pdout.clear();
         return false;
     }
 
@@ -513,6 +533,7 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read unit normal vector\n";
+        pdout.clear();
         return false;
     }
 
@@ -537,12 +558,14 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

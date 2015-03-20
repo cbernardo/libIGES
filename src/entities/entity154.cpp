@@ -222,6 +222,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
+        pdout.clear();
         return false;
     }
 
@@ -237,6 +238,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -245,6 +247,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, H, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no height for Right Circular Cylinder\n";
+        pdout.clear();
         return false;
     }
 
@@ -258,6 +261,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         else
         {
             ERRMSG << "\n + [BAD FILE] invalid height for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -265,6 +269,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, R, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no radius for Right Circular Cylinder\n";
+        pdout.clear();
         return false;
     }
 
@@ -278,6 +283,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         else
         {
             ERRMSG << "\n + [BAD FILE] invalid radius for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -289,6 +295,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, X1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no X1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -302,6 +309,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, Y1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no Y1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -315,6 +323,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, Z1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no Z1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -328,6 +337,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, I1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no I1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -341,6 +351,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, J1, eor, pd, rd, &ddef ) )
         {
             ERRMSG << "\n + [BAD FILE] no J1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -356,6 +367,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( !ParseReal( pdout, idx, K1, eor, pd, rd ) )
         {
             ERRMSG << "\n + [BAD FILE] no K1 value for Right Circular Cylinder\n";
+            pdout.clear();
             return false;
         }
     }
@@ -368,6 +380,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !CheckNormal( I1, J1, K1 ) )
     {
         ERRMSG << "\n + [BAD FILE] invalid normal vector (cannot be normalized)\n";
+        pdout.clear();
         return false;
     }
 
@@ -377,12 +390,14 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

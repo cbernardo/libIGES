@@ -208,6 +208,7 @@ bool IGES_ENTITY_110::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
         ERRMSG << "\n + [INFO] could not read data for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
@@ -222,6 +223,7 @@ bool IGES_ENTITY_110::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
         cerr << idx << ")\n";
+        pdout.clear();
         return false;
     }
 
@@ -230,48 +232,56 @@ bool IGES_ENTITY_110::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, X1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no X1 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, Y1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no Y1 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, Z1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no Z1 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, X2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no X2 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, Y2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no Y2 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !ParseReal( pdout, idx, Z2, eor, pd, rd ) )
     {
         ERRMSG << "\n + [BAD FILE] no Z2 value for Line Entity\n";
+        pdout.clear();
         return false;
     }
 
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
         return false;
     }
 
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
         return false;
     }
 

@@ -83,6 +83,12 @@ void parseLine( vector<pair<string, list<TPARAMS>* > >& models, const std::strin
 void parseFile( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
 // parse a position line and add the result to the list
 void parsePos( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
+// create a rotation matrix around X
+void rotateX( IGES_MATRIX& mat, double angle );
+// create a rotation matrix around Y
+void rotateY( IGES_MATRIX& mat, double angle );
+// create a rotation matrix around Z
+void rotateZ( IGES_MATRIX& mat, double angle );
 
 int main( int argc, char** argv )
 {
@@ -207,45 +213,22 @@ void TPARAMS::GetTransform( IGES_TRANSFORM& T )
      * When flipped, axis rotation is the horizontal axis (X axis)
      */
     double rotx = 0.0;
-    double roty = 0.0;
     double rotz = zRot * M_PI / 180.0;
 
     if( flip )
     {
         rotx += M_PI;
-        roty = -roty;
-        rotz = -rotz;
+        rotz += M_PI;
     }
 
+
     IGES_MATRIX mx;
-    IGES_MATRIX my;
     IGES_MATRIX mz;
 
-    // rotation about x:
-    double cosN = cos( rotx );
-    double sinN = sin( rotx );
-    mx.v[1][1] = cosN;
-    mx.v[1][2] = -sinN;
-    mx.v[2][1] = sinN;
-    mx.v[2][2] = cosN;
+    rotateX( mx, rotx );
+    rotateZ( mz, rotz );
 
-    // rotation about y:
-    cosN = cos( roty );
-    sinN = sin( roty );
-    my.v[0][0] = cosN;
-    my.v[0][2] = sinN;
-    my.v[2][0] = -sinN;
-    my.v[2][2] = cosN;
-
-    // rotation about z:
-    cosN = cos( rotz );
-    sinN = sin( rotz );
-    mz.v[0][0] = cosN;
-    mz.v[0][1] = -sinN;
-    mz.v[1][0] = sinN;
-    mz.v[1][1] = cosN;
-
-    T.R = mx * my * mz;
+    T.R = mx * mz;
 
     if( flip )
         T.T = IGES_POINT( xOff, yOff, -zOff );
@@ -341,4 +324,41 @@ void parsePos( vector<pair<string, list<TPARAMS>* > >& models, const std::string
     models.back().second->push_back( arg );
 
     return;
+}
+
+// create a rotation matrix around X
+void rotateX( IGES_MATRIX& mat, double angle )
+{
+    double cosN = cos( angle );
+    double sinN = sin( angle );
+    mat.v[1][1] = cosN;
+    mat.v[1][2] = -sinN;
+    mat.v[2][1] = sinN;
+    mat.v[2][2] = cosN;
+
+    return;
+}
+
+// create a rotation matrix around Y
+void rotateY( IGES_MATRIX& mat, double angle )
+{
+    double cosN = cos( angle );
+    double sinN = sin( angle );
+    mat.v[0][0] = cosN;
+    mat.v[0][2] = sinN;
+    mat.v[2][0] = -sinN;
+    mat.v[2][2] = cosN;
+
+    return;
+}
+
+// create a rotation matrix around Z
+void rotateZ( IGES_MATRIX& mat, double angle )
+{
+    double cosN = cos( angle );
+    double sinN = sin( angle );
+    mat.v[0][0] = cosN;
+    mat.v[0][1] = -sinN;
+    mat.v[1][0] = sinN;
+    mat.v[1][1] = cosN;
 }

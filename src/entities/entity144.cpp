@@ -32,6 +32,50 @@
 
 using namespace std;
 
+static bool checkInclusion144( int aEnt )
+{
+    // ensure the entity is one of:
+    // E106-63 (copious data)
+    // E108 (plane)
+    // E114 (parametric spline surface)
+    // E118 (ruled surface)
+    // E120 (surface of revolution)
+    // E122 (tabulated cylinder)
+    // E128 (NURBS surface)
+    // E140 (offset surface)
+    // E143 (bounded surface)
+    // E190 (plane surface)
+    // E192 (right circular cylindrical surface)
+    // E194 (right circular conical surface)
+    // E196 (spherical surface)
+    // E198 (toroidal surface)
+
+    switch( aEnt )
+    {
+        case ENT_COPIOUS_DATA:
+        case ENT_PLANE:
+        case ENT_PARAM_SPLINE_SURFACE:
+        case ENT_RULED_SURFACE:
+        case ENT_SURFACE_OF_REVOLUTION:
+        case ENT_TABULATED_CYLINDER:
+        case ENT_NURBS_SURFACE:
+        case ENT_OFFSET_SURFACE:
+        case ENT_BOUNDED_SURFACE:
+        case ENT_PLANE_SURFACE:
+        case ENT_RIGHT_CIRCULAR_CYLINDRICAL_SURFACE:
+        case ENT_RIGHT_CIRCULAR_CONICAL_SURFACE:
+        case ENT_SPHERICAL_SURFACE:
+        case ENT_TOROIDAL_SURFACE:
+            break;
+
+        default:
+            return false;
+            break;
+    }
+
+    return true;
+}
+
 
 IGES_ENTITY_144::IGES_ENTITY_144( IGES* aParent ) : IGES_ENTITY( aParent )
 {
@@ -93,6 +137,13 @@ bool IGES_ENTITY_144::associate( std::vector<IGES_ENTITY*>* entities )
         }
 
         PTS = (*entities)[iEnt];
+
+        if( !checkInclusion144( PTS->GetEntityType()) )
+        {
+            ERRMSG << "\n + [INFO] invalid entity type (" << PTS->GetEntityType() << ") for PTS\n";
+            PTS = NULL;
+            return false;
+        }
 
         if( !PTS->AddReference( this ) )
         {
@@ -582,22 +633,12 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
     if( NULL == aPtr )
         return true;
 
-#warning TO BE IMPLEMENTED
-    // XXX - Check that the entity is one of the following
-    // E106-63 (copious data)
-    // E108 (plane)
-    // E114 (parametric spline surface)
-    // E118 (ruled surface)
-    // E120 (surface of revolution)
-    // E122 (tabulated cylinder)
-    // E128 (NURBS surface)
-    // E140 (offset surface)
-    // E143 (bounded surface)
-    // E190 (plane surface)
-    // E192 (right circular cylindrical surface)
-    // E194 (right circular conical surface)
-    // E196 (spherical surface)
-    // E198 (toroidal surface)
+    if( !checkInclusion144( aPtr->GetEntityType()) )
+    {
+        ERRMSG << "\n + [INFO] invalid entity type (" << PTS->GetEntityType() << ") for PTS\n";
+        PTS = NULL;
+        return false;
+    }
 
     if( !PTS->AddReference( this ) )
     {

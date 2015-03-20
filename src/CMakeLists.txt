@@ -9,6 +9,8 @@ set( LIBIGES_VERSION_MAJOR 0 )
 
 set( LIBIGES_VERSION_MINOR 1 )
 
+option( USE_SISL "Use the SINTEF SISL library; note license restrictions on cloud services" OFF )
+
 set( LIBIGES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
 set( LIBIGES_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
 

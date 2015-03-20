@@ -27,6 +27,8 @@
  *
  */
 
+// NOTE: Rotation appears to be incorrect; +Angle = Clockwise rather than CCW
+
 // Format:
 // file: "quoted filename"
 // pos: zrot, flip (0,1), Xoffset, Yoffset, Zoffset;
@@ -230,18 +232,18 @@ void TPARAMS::GetTransform( IGES_TRANSFORM& T )
     // rotation about y:
     cosN = cos( roty );
     sinN = sin( roty );
-    mx.v[0][0] = cosN;
-    mx.v[0][2] = sinN;
-    mx.v[2][0] = -sinN;
-    mx.v[2][2] = cosN;
+    my.v[0][0] = cosN;
+    my.v[0][2] = sinN;
+    my.v[2][0] = -sinN;
+    my.v[2][2] = cosN;
 
     // rotation about z:
     cosN = cos( rotz );
     sinN = sin( rotz );
-    mx.v[0][0] = cosN;
-    mx.v[0][1] = -sinN;
-    mx.v[1][0] = sinN;
-    mx.v[1][1] = cosN;
+    mz.v[0][0] = cosN;
+    mz.v[0][1] = -sinN;
+    mz.v[1][0] = sinN;
+    mz.v[1][1] = cosN;
 
     T.R = mx * my * mz;
 
@@ -307,7 +309,7 @@ void parsePos( vector<pair<string, list<TPARAMS>* > >& models, const std::string
         return;
     }
 
-    if( !tI )
+    if( 0 == tI )
         arg.flip = false;
     else
         arg.flip = true;

@@ -80,6 +80,9 @@ IGES_POINT  IGES_POINT::operator+( const IGES_POINT& v )
 }
 
 
+// NOTE: p1 -= p2 seems to produce a different rounding
+// error than p1 = p1 - p2 and the error is large
+// enough to cause nearness tests to fail.
 IGES_POINT& IGES_POINT::operator-=( const IGES_POINT& v )
 {
     x -= v.x;

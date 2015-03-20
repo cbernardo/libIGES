@@ -29,6 +29,8 @@
  */
 
 #include <sstream>
+
+#include <libigesconf.h>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -235,13 +237,11 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 }
             }
 
+#ifdef USE_SISL
             // check that StartPoint[N] == EndPoint[N-1]
             // we must execute the transform since 2D curves may be tested
             // against 3D curves
-#ifdef RESTORE  // XXX - this test will currently reject good entities due to
-                // incomplete implementation of various curve entities; although
-                // it will be good to have this test in the future it must be
-                // disabled for now
+
             p1 = (*sp)->GetStartPoint( true );
             p2 = (*pp)->GetEndPoint( true );
 
@@ -265,7 +265,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
                 ok = false;
             }
-#endif
+#endif  // USE_SISL
         }
 
         jEnt = iEnt;

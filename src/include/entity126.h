@@ -64,6 +64,15 @@ protected:
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
+    // note: IGES specifies knots, weights, and control points
+    // while SISL merges control points and weights (x, y, z, w)
+    // for rational B-splines and omits weights in the case of
+    // polynomial B-splines. The internal representation here
+    // has been devised to integrate easily with SISL.
+    int nKnots;         // number of knots
+    int nCoeffs;        // number of weights and control points
+    double *knots;
+    double *coeffs;
 
 public:
     IGES_ENTITY_126( IGES* aParent );
@@ -88,18 +97,30 @@ public:
     virtual int GetNSegments( void );
     virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
 
+    // nCoeff: number of coontrol points and weights
+    // knot: pointer to hold pointer to knots
+    // coeffs: pointer to hold pointer to control points and weights
+    bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff, bool& isRational,
+                       bool& isClosed, bool& isPeriodic );
+
+    bool SetNURBSData( int& nCoeff, int& order, double* knot, double* coeff, bool& isRational,
+                       bool& isClosed, bool& isPeriodic );
+
     int K;
     int M;
-    int PROP1;
-    int PROP2;
-    int PROP3;
-    int PROP4;
-    std::list<double>knots;
-    std::list<double>weights;
-    std::list<IGES_POINT>controls;
+    int PROP1;  // 0,1: Nonplanar, Planar
+    int PROP2;  // 0,1: Open, Closed curve
+    int PROP3;  // 0,1: Rational, Polynomial
+    int PROP4;  // 0,1: Nonperiodic, Periodic
     double V0;
     double V1;
     IGES_POINT vnorm;
+
+    // XXX: TO IMPLEMENT:
+    // Test for planarity: since SISL does not do the work
+    // we must test for planarity by taking the normal vector of every
+    // 3 control points; if all normals are equal then we have a plane;
+    // we also have a plane if we have only 2 or 3 control points.
 };
 
 #endif  // ENTITY_126_H

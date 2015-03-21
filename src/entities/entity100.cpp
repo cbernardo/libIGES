@@ -23,6 +23,7 @@
  */
 
 #include <sstream>
+#include <cmath>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -45,6 +46,10 @@ IGES_ENTITY_100::IGES_ENTITY_100( IGES* aParent ) : IGES_CURVE( aParent )
     yStart = 0.0;
     xEnd = 1.0;
     yEnd = 0.0;
+
+    radius = 0.0;
+    startAng = 0.0;
+    endAng = 0.0;
 
     return;
 }   // IGES_ENTITY_100( IGES* aParent )
@@ -500,8 +505,52 @@ bool IGES_ENTITY_100::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
         return false;
     }
 
-    // XXX - TO BE IMPLEMENTED
-    // XXX - determine the included angle
-#warning TO BE IMPLEMENTED
-    return false;
+    // if one of the endpoints is requested then re-establish the parameters
+    double uir = 1e-6;
+
+    if( parent )
+        uir = parent->globalData.minResolution;
+
+    if( var < uir || (1.0 - var) < uir )
+    {
+        bool fullCircle = false;
+        IGES_POINT p0( xStart, yStart, 0.0 );
+        IGES_POINT p1( xEnd, yEnd, 0.0 );
+
+        if( PointMatches( p0, p1, uir ) )
+            fullCircle = true;
+
+        double dx = xStart - xCenter;
+        double dy = yStart - yCenter;
+
+        startAng = atan2( dy, dx );
+
+        if( fullCircle )
+        {
+            endAng = startAng;
+        }
+        else
+        {
+            endAng = atan2( yEnd - yCenter, xEnd - xCenter );
+
+            if( endAng < startAng )
+                endAng += 2.0 * M_PI;
+
+        }
+
+        radius = sqrt( dx*dx + dy*dy );
+    }
+
+    double ang = (endAng - startAng) * var + startAng;
+    double dx = xCenter + cos(ang) * radius;
+    double dy = yCenter + sin(ang) * radius;
+
+    IGES_POINT pt0( dx, dy, zOffset );
+
+    if( xform && pTransform )
+        pt = pTransform->GetTransformMatrix() * pt0;
+    else
+        pt = pt0;
+
+    return true;
 }

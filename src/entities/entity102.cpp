@@ -192,15 +192,6 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
      * 130 ENT_OFFSET_CURVE (Due to complexity, postpone this one)
      */
 
-    IGES_POINT p1;
-    IGES_POINT p2;
-    double dN;
-
-    if( !parent )
-        dN = 1e-9;
-    else
-        dN = parent->globalData.minResolution;
-
     while( sp != ep )
     {
         iEnt = (*sp)->GetEntityType();
@@ -241,7 +232,15 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
             // check that StartPoint[N] == EndPoint[N-1]
             // we must execute the transform since 2D curves may be tested
             // against 3D curves
+            IGES_POINT p1;
+            IGES_POINT p2;
+            double dN;
 
+            if( !parent )
+                dN = 1e-9;
+            else
+                dN = parent->globalData.minResolution;
+            
             p1 = (*sp)->GetStartPoint( true );
             p2 = (*pp)->GetEndPoint( true );
 

@@ -45,12 +45,23 @@ IGES_ENTITY_126::IGES_ENTITY_126( IGES* aParent ) : IGES_CURVE( aParent )
     V0 = 0.0;
     V1 = 0.0;
 
+    nKnots = 0;
+    nCoeffs = 0;
+    knots = NULL;
+    coeffs = NULL;
+
     return;
 }
 
 
 IGES_ENTITY_126::~IGES_ENTITY_126()
 {
+    if( knots )
+        delete [] knots;
+
+    if( coeffs )
+        delete [] coeffs;
+
     return;
 }
 
@@ -126,25 +137,17 @@ bool IGES_ENTITY_126::format( int &index )
     }
 
     // # of knots = 2 + K + M
-    if( (2 + K + M) != (int)knots.size() )
+    if( (2 + K + M) != nKnots )
     {
-        ERRMSG << "\n + [INFO] invalid number of knots (" << knots.size();
+        ERRMSG << "\n + [INFO] invalid number of knots (" << nKnots;
         cerr << ") expecting " << (2 + K + M) << "\n";
         return false;
     }
 
-    // # of weights = K + 1
-    if( (1 + K) != (int)weights.size() )
+    // # of coefficients = K + 1
+    if( (1 + K) != nCoeffs )
     {
-        ERRMSG << "\n + [INFO] invalid number of weights (" << weights.size();
-        cerr << ") expecting " << (1 + K) << "\n";
-        return false;
-    }
-
-    // # of control points = K + 1
-    if( (1 + K) != (int)controls.size() )
-    {
-        ERRMSG << "\n + [INFO] invalid number of control points (" << controls.size();
+        ERRMSG << "\n + [INFO] invalid number of coefficients (" << nCoeffs;
         cerr << ") expecting " << (1 + K) << "\n";
         return false;
     }
@@ -160,42 +163,37 @@ bool IGES_ENTITY_126::format( int &index )
     string lstr = ostr.str();
     string tstr;
 
-    std::list<double>::iterator sD = knots.begin();
-    std::list<double>::iterator eD = knots.end();
-
-    while( sD != eD )
+    for( int i = 0; i < nKnots; ++i )
     {
-        if( !FormatPDREal( tstr, *sD, pd, uir ) )
+        if( !FormatPDREal( tstr, knots[i], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format knots\n";
             return false;
         }
 
-        ++sD;
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
-    sD = weights.begin();
-    eD = weights.end();
+    double tD = 1.0;
 
-    while( sD != eD )
+    for( int i = 0, j = 3; i < nCoeffs; ++i )
     {
-        if( !FormatPDREal( tstr, *sD, pd, uir ) )
+        if( 0 == PROP3 )
+            tD = coeffs[j];
+
+        if( !FormatPDREal( tstr, tD, pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format weights\n";
             return false;
         }
 
-        ++sD;
+        j += 3;
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
-    std::list<IGES_POINT>::iterator sP = controls.begin();
-    std::list<IGES_POINT>::iterator eP = controls.end();
-
-    while( sP != eP )
+    for( int i = 0, j = 0; i < nCoeffs; ++i )
     {
-        if( !FormatPDREal( tstr, (*sP).x, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
@@ -203,7 +201,7 @@ bool IGES_ENTITY_126::format( int &index )
 
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
-        if( !FormatPDREal( tstr, (*sP).y, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
@@ -211,13 +209,15 @@ bool IGES_ENTITY_126::format( int &index )
 
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
-        if( !FormatPDREal( tstr, (*sP).z, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
         }
 
-        ++sP;
+        if( 0 == PROP3 )
+            ++j;
+
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
@@ -289,13 +289,20 @@ bool IGES_ENTITY_126::format( int &index )
 
 bool IGES_ENTITY_126::rescale( double sf )
 {
-    list<IGES_POINT>::iterator sPt = controls.begin();
-    list<IGES_POINT>::iterator ePt = controls.end();
+    if( NULL == coeffs )
+        return true;
 
-    while( sPt != ePt )
+    for( int i = 0, j = 0; i < nCoeffs; ++i )
     {
-        *sPt = *sPt * sf;
-        ++sPt;
+        coeffs[j] *= sf;
+        ++j;
+        coeffs[j] *= sf;
+        ++j;
+        coeffs[j] *= sf;
+        ++j;
+
+        if( 0 != PROP3 )
+            ++j;
     }
 
     return true;
@@ -464,23 +471,63 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 
     double tR;
 
-    for( int i = 2 + K + M; i > 0; --i )
+    if( knots )
+        delete [] knots;
+
+    if( coeffs )
+        delete [] coeffs;
+
+    knots = NULL;
+    coeffs = NULL;
+    nKnots = 2 + K + M;
+    knots = new double[nKnots];
+
+    if( NULL == knots )
+    {
+        ERRMSG << "\n + [INFO] couldn't allocate memory for knots\n";
+        pdout.clear();
+        return false;
+    }
+
+    for( int i = 0; i < nKnots; ++i )
     {
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
-            ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots.size() + 1) << "\n";
+            ERRMSG << "\n + [INFO] couldn't read knot value #" << (i + 1) << "\n";
+            delete [] knots;
+            knots = NULL;
             pdout.clear();
             return false;
         }
 
-        knots.push_back( tR );
+        knots[i] = tR;
     }
 
-    for( int i = 0; i <= K; ++i )
+    nCoeffs = K + 1;
+
+    if( 0 == PROP3 )
+        coeffs = new double[nCoeffs * 4];   // rational
+    else
+        coeffs = new double[nCoeffs * 3];   // polynomial
+
+    if( NULL == coeffs )
+    {
+        ERRMSG << "\n + [INFO] couldn't allocate memory for coefficients\n";
+        delete [] knots;
+        knots = NULL;
+        pdout.clear();
+        return false;
+    }
+
+    for( int i = 0, j = 3; i <= K; ++i )
     {
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+            delete [] knots;
+            knots = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
             pdout.clear();
             return false;
         }
@@ -488,34 +535,55 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         if( tR <= 0 )
         {
             ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+            delete [] knots;
+            knots = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
             pdout.clear();
             return false;
         }
 
-        weights.push_back( tR );
+        if( 0 == PROP3 )
+        {
+            coeffs[j] = tR;
+            j += 4;
+        }
     }
 
     double tX;
     double tY;
     double tZ;
 
-    for( int i = 0; i <= K; ++i )
+    for( int i = 0, j = 0; i <= K; ++i )
     {
         if( !ParseReal( pdout, idx, tX, eor, pd, rd )
             || !ParseReal( pdout, idx, tY, eor, pd, rd )
             || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read control point #" << (i + 1) << "\n";
+            delete [] knots;
+            knots = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
             pdout.clear();
             return false;
         }
 
-        controls.push_back( IGES_POINT( tX, tY, tZ ) );
+        coeffs[j++] = tX;
+        coeffs[j++] = tY;
+        coeffs[j++] = tZ;
+
+        if( 0 == PROP3 )
+            ++j;
     }
 
     if( !ParseReal( pdout, idx, V0, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read starting parameter value\n";
+        delete [] knots;
+        knots = NULL;
+        delete [] coeffs;
+        coeffs = NULL;
         pdout.clear();
         return false;
     }
@@ -523,6 +591,10 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !ParseReal( pdout, idx, V1, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read ending parameter value\n";
+        delete [] knots;
+        knots = NULL;
+        delete [] coeffs;
+        coeffs = NULL;
         pdout.clear();
         return false;
     }
@@ -533,6 +605,10 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
     {
         ERRMSG << "\n + [INFO] couldn't read unit normal vector\n";
+        delete [] knots;
+        knots = NULL;
+        delete [] coeffs;
+        coeffs = NULL;
         pdout.clear();
         return false;
     }
@@ -558,6 +634,10 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        delete [] knots;
+        knots = NULL;
+        delete [] coeffs;
+        coeffs = NULL;
         pdout.clear();
         return false;
     }
@@ -565,6 +645,10 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     if( !readComments( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        delete [] knots;
+        knots = NULL;
+        delete [] coeffs;
+        coeffs = NULL;
         pdout.clear();
         return false;
     }
@@ -643,9 +727,97 @@ int IGES_ENTITY_126::GetNSegments( void )
     return 1;
 }
 
+
 bool IGES_ENTITY_126::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
 {
     // XXX - TO BE IMPLEMENTED
 #warning TO BE IMPLEMENTED
     return false;
+}
+
+
+bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff, bool& isRational,
+                                    bool& isClosed, bool& isPeriodic )
+{
+    nCoeff = 0;
+    order =0 ;
+    knot = NULL;
+    coeff = NULL;
+
+    if( !knots )
+        return false;
+
+    *knot = knots;
+    *coeff = coeffs;
+    nCoeff = nCoeffs;
+    order = M + 1;
+
+    if( PROP2 )
+        isClosed = true;
+    else
+        isClosed = false;
+
+    if( PROP3 )
+        isRational = false;
+    else
+        isRational = true;
+
+    if( PROP4 )
+        isPeriodic = true;
+    else
+        isPeriodic = false;
+
+    return true;
+}
+
+
+
+bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, double* coeff, bool& isRational,
+                   bool& isClosed, bool& isPeriodic )
+{
+    if( !knot || !coeff )
+    {
+        ERRMSG << "\n + [INFO] invalid NURBS parameter pointer (NULL)\n";
+        return false;
+    }
+
+    if( order < 2 )
+    {
+        ERRMSG << "\n + [INFO] invalid order; minimum is 2 which represents a line\n";
+        return false;
+    }
+
+    if( nCoeff < order )
+    {
+        ERRMSG << "\n + [INFO] invalid number of control points; minimum is equal to the order of the B-Splines\n";
+        return false;
+    }
+
+    // M = Degree of basis function; Order = Degree + 1
+    // # of knots = 2 + K + M
+    // # of coefficients = K + 1
+
+    nKnots = nCoeff + order;
+    nCoeffs = nCoeff;
+    K = nCoeff - 1;
+    M = order - 1;
+
+    // XXX - delete SISL curve if applicable
+
+    if( knots )
+    {
+        delete [] knots;
+        knots = NULL;
+    }
+
+    if( coeffs )
+    {
+        delete [] coeffs;
+        coeffs = NULL;
+    }
+
+    knots = knot;
+    coeffs = coeff;
+
+    return true;
 }

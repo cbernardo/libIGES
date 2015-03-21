@@ -56,6 +56,11 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
+    // parameters used in interpolations
+    double radius;
+    double startAng;    // start angle
+    double endAng;      // terminate angle
+
 public:
     IGES_ENTITY_100( IGES* aParent );
     virtual ~IGES_ENTITY_100();

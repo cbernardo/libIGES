@@ -710,12 +710,10 @@ IGES_CURVE* IGES_ENTITY_126::GetCurve( int index )
 }
 
 
-IGES_POINT IGES_ENTITY_126::GetStartPoint( bool xform )
+bool IGES_ENTITY_126::GetStartPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT pt( 0.0,0.0,0.0 );
-
     if( nCoeffs < 2 )
-        return pt;
+        return false;
 
     if( !scurve )
     {
@@ -724,7 +722,7 @@ IGES_POINT IGES_ENTITY_126::GetStartPoint( bool xform )
         if( !scurve )
         {
             ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
-            return pt;
+            return false;
         }
     }
 
@@ -746,6 +744,7 @@ IGES_POINT IGES_ENTITY_126::GetStartPoint( bool xform )
 
         default:
             ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            return false;
             break;
     }
 
@@ -756,16 +755,14 @@ IGES_POINT IGES_ENTITY_126::GetStartPoint( bool xform )
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
 
-    return pt;
+    return true;
 }
 
 
-IGES_POINT IGES_ENTITY_126::GetEndPoint( bool xform )
+bool IGES_ENTITY_126::GetEndPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT pt( 0.0,0.0,0.0 );
-
     if( nCoeffs < 2 )
-        return pt;
+        return false;
 
     if( !scurve )
     {
@@ -774,7 +771,7 @@ IGES_POINT IGES_ENTITY_126::GetEndPoint( bool xform )
         if( !scurve )
         {
             ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
-            return pt;
+            return false;
         }
     }
 
@@ -796,6 +793,7 @@ IGES_POINT IGES_ENTITY_126::GetEndPoint( bool xform )
 
         default:
             ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            return false;
             break;
     }
 
@@ -806,7 +804,7 @@ IGES_POINT IGES_ENTITY_126::GetEndPoint( bool xform )
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
 
-    return pt;
+    return true;
 }
 
 

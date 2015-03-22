@@ -66,8 +66,9 @@ public:
     virtual ~IGES_ENTITY_100();
 
     // Inherited from IGES_CURVE
-    virtual IGES_POINT GetStartPoint( bool xform = true );
-    virtual IGES_POINT GetEndPoint( bool xform = true );
+    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
+
     virtual int GetNSegments( void );
     virtual bool IsClosed();
     virtual int GetNCurves( void );

@@ -313,31 +313,29 @@ bool IGES_ENTITY_110::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-IGES_POINT IGES_ENTITY_110::GetStartPoint( bool xform )
+bool IGES_ENTITY_110::GetStartPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT p( X1, Y1, Z1 );
+    pt.x = X1;
+    pt.y = Y1;
+    pt.z = Z1;
 
     if( xform && pTransform )
-    {
-        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
-        p = pT->GetTransformMatrix() * p;
-    }
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return p;
+    return true;
 }
 
 
-IGES_POINT IGES_ENTITY_110::GetEndPoint( bool xform )
+bool IGES_ENTITY_110::GetEndPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT p( X2, Y2, Z2 );
+    pt.x = X2;
+    pt.y = Y2;
+    pt.z = Z2;
 
     if( xform && pTransform )
-    {
-        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
-        p = pT->GetTransformMatrix() * p;
-    }
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return p;
+    return true;
 }
 
 

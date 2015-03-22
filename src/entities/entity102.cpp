@@ -240,8 +240,12 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
             else
                 dN = parent->globalData.minResolution;
 
-            p1 = (*sp)->GetStartPoint( true );
-            p2 = (*pp)->GetEndPoint( true );
+            if( !(*sp)->GetStartPoint( p1, true )
+                || !(*pp)->GetEndPoint( p2, true ) )
+            {
+                ERRMSG << "\n + [INFO] one of Start Point or End Point could not be determined\n";
+                ok = false;
+            }
 
             if( !PointMatches(p1, p2, dN) )
             {
@@ -613,35 +617,37 @@ IGES_CURVE* IGES_ENTITY_102::GetCurve( int index )
 }
 
 
-IGES_POINT IGES_ENTITY_102::GetStartPoint( bool xform )
+bool IGES_ENTITY_102::GetStartPoint( IGES_POINT& pt, bool xform )
 {
     if( curves.empty() )
-        return IGES_POINT( 0.0, 0.0, 0.0 );
+        return false;
 
     std::list<IGES_CURVE*>::iterator sc = curves.begin();
 
-    IGES_POINT pt = (*sc)->GetStartPoint( xform );
+    if( !(*sc)->GetStartPoint( pt, xform ) )
+        return false;
 
     if( xform && pTransform )
-        pt = pTransform->T * pt;
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return pt;
+    return true;
 }
 
 
-IGES_POINT IGES_ENTITY_102::GetEndPoint( bool xform )
+bool IGES_ENTITY_102::GetEndPoint( IGES_POINT& pt, bool xform )
 {
     if( curves.empty() )
-        return IGES_POINT( 0.0, 0.0, 0.0 );
+        return false;
 
     std::list<IGES_CURVE*>::reverse_iterator sc = curves.rbegin();
 
-    IGES_POINT pt = (*sc)->GetEndPoint( xform );
+    if( !(*sc)->GetEndPoint( pt, xform ) )
+        return false;
 
     if( xform && pTransform )
-        pt = pTransform->T * pt;
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return pt;
+    return true;
 }
 
 
@@ -664,8 +670,15 @@ bool IGES_ENTITY_102::IsClosed()
     if( curves.size() == 1 && (*sc)->GetEntityType() != ENT_CIRCULAR_ARC )
         return false;
 
-    IGES_POINT p1 = (*sc)->GetStartPoint( true );
-    IGES_POINT p2 = (*lc)->GetEndPoint( true );
+    IGES_POINT p1;
+    IGES_POINT p2;
+
+    if( !(*sc)->GetStartPoint( p1, true )
+        || !(*lc)->GetEndPoint( p2, true ) )
+    {
+        ERRMSG << "\n + [info] one of Start Point or End Point could not be determined\n";
+        return false;
+    }
 
     bool has_segments = false;
 

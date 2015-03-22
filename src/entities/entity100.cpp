@@ -422,32 +422,29 @@ bool IGES_ENTITY_100::rescale( double sf )
 }
 
 
-IGES_POINT IGES_ENTITY_100::GetStartPoint( bool xform )
+bool IGES_ENTITY_100::GetStartPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT p( xStart, yStart, zOffset );
-    IGES_POINT q( 0.0, 0.0, 0.0 );
+    pt.x = xStart;
+    pt.y = yStart;
+    pt.z = zOffset;
 
     if( xform && pTransform )
-    {
-        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
-        p = pT->GetTransformMatrix() * p;
-    }
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return p;
+    return true;
 }
 
 
-IGES_POINT IGES_ENTITY_100::GetEndPoint( bool xform )
+bool IGES_ENTITY_100::GetEndPoint( IGES_POINT& pt, bool xform )
 {
-    IGES_POINT p( xEnd, yEnd, zOffset );
+    pt.x = xEnd;
+    pt.y = yEnd;
+    pt.z = zOffset;
 
     if( xform && pTransform )
-    {
-        IGES_ENTITY_124* pT = (IGES_ENTITY_124*)pTransform;
-        p = pT->GetTransformMatrix() * p;
-    }
+        pt = pTransform->GetTransformMatrix() * pt;
 
-    return p;
+    return true;
 }
 
 

@@ -77,9 +77,9 @@ public:
     // return the specified curve object by index
     virtual IGES_CURVE* GetCurve( int index ) = 0;
     // return the start point of this curve object (normally transformed)
-    virtual IGES_POINT GetStartPoint( bool xform = true ) = 0;
+    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true ) = 0;
     // return the end point of this curve object (normally transformed)
-    virtual IGES_POINT GetEndPoint( bool xform = true ) = 0;
+    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true ) = 0;
     // return the number of segments within the curve; for
     // composite curves this may be the same as GetNCurves
     // but in the case of piece-wise linear collections this would
@@ -107,9 +107,6 @@ public:
     virtual bool SetEntityForm( int aForm ) = 0;
     // XXX - consider adding a method to retrieve the LENGTH of Segment N;
     // this could be useful to aid in calculations for rendering entities.
-
-    // XXX - Change GetStartPoint/GetEndPoint to return BOOL and take a pointer to
-    // an IGES_PT as the first parameter
 };
 
 #endif  // IGES_CURVE_H

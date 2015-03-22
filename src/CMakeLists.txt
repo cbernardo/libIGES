@@ -11,6 +11,22 @@ set( LIBIGES_VERSION_MINOR 1 )
 
 option( USE_SISL "Use the SINTEF SISL library; note license restrictions on cloud services" OFF )
 
+if( NOT DEFINED SISL_INCLUDE_DIR )
+message( FATAL_ERROR "SISL_INCLUDE_DIR is not defined" )
+endif()
+
+if( NOT EXISTS "${SISL_INCLUDE_DIR}/sisl.h" )
+message( FATAL_ERROR "sisl.h was not found in '${SISL_INCLUDE_DIR}'" )
+endif()
+
+if( NOT DEFINED SISL_LIB_DIR )
+message( FATAL_ERROR "SISL_LIB_DIR is not defined" )
+endif()
+
+if( NOT EXISTS "${SISL_LIB_DIR}/libsisl.so" )
+message( FATAL_ERROR "libsisl was not found in '${SISL_LIB_DIR}'" )
+endif()
+
 set( LIBIGES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
 set( LIBIGES_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
 
@@ -30,6 +46,7 @@ configure_file(
 include_directories(
     "${LIBIGES_BINARY_DIR}"
     "${LIBIGES_SOURCE_DIR}/include"
+    "${SISL_INCLUDE_DIR}"
     )
 
 #set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
@@ -67,6 +84,8 @@ add_library( iges STATIC
     "${SRC_IGS}/iges_elements.cpp"
     "${SRC_IGS}/iges_helpers.cpp"
     )
+
+target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )
 
 add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/test_read.cpp"

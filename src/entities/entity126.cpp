@@ -23,6 +23,7 @@
  */
 
 #include <sstream>
+#include <sisl.h>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -49,6 +50,7 @@ IGES_ENTITY_126::IGES_ENTITY_126( IGES* aParent ) : IGES_CURVE( aParent )
     nCoeffs = 0;
     knots = NULL;
     coeffs = NULL;
+    scurve = NULL;
 
     return;
 }
@@ -61,6 +63,9 @@ IGES_ENTITY_126::~IGES_ENTITY_126()
 
     if( coeffs )
         delete [] coeffs;
+
+    if( scurve )
+        freeCurve( scurve );
 
     return;
 }
@@ -685,8 +690,9 @@ bool IGES_ENTITY_126::SetHierarchy( IGES_STAT_HIER aHierarchy )
 
 bool IGES_ENTITY_126::IsClosed()
 {
-    // XXX - TO BE IMPLEMENTED
-#warning TO BE IMPLEMENTED
+    if( PROP2 )
+        return true;
+
     return false;
 }
 
@@ -706,33 +712,180 @@ IGES_CURVE* IGES_ENTITY_126::GetCurve( int index )
 
 IGES_POINT IGES_ENTITY_126::GetStartPoint( bool xform )
 {
-    // XXX - TO BE IMPLEMENTED
     IGES_POINT pt( 0.0,0.0,0.0 );
-#warning TO BE IMPLEMENTED
+
+    if( nCoeffs < 2 )
+        return pt;
+
+    if( !scurve )
+    {
+        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+        if( !scurve )
+        {
+            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+            return pt;
+        }
+    }
+
+    double vals[6];
+    int kt = 0;
+    double r = 0;
+    int stat = 0;
+
+    s1225( scurve, 0, V0, &kt, vals, &vals[3], &r, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            break;
+    }
+
+    pt.x = vals[0];
+    pt.y = vals[1];
+    pt.z = vals[2];
+
+    if( xform && pTransform )
+        pt = pTransform->GetTransformMatrix() * pt;
+
     return pt;
 }
 
 
 IGES_POINT IGES_ENTITY_126::GetEndPoint( bool xform )
 {
-    // XXX - TO BE IMPLEMENTED
     IGES_POINT pt( 0.0,0.0,0.0 );
-#warning TO BE IMPLEMENTED
+
+    if( nCoeffs < 2 )
+        return pt;
+
+    if( !scurve )
+    {
+        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+        if( !scurve )
+        {
+            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+            return pt;
+        }
+    }
+
+    double vals[6];
+    int kt = 0;
+    double r = 0;
+    int stat = 0;
+
+    s1225( scurve, 0, V1, &kt, vals, &vals[3], &r, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            break;
+    }
+
+    pt.x = vals[0];
+    pt.y = vals[1];
+    pt.z = vals[2];
+
+    if( xform && pTransform )
+        pt = pTransform->GetTransformMatrix() * pt;
+
     return pt;
 }
 
 
 int IGES_ENTITY_126::GetNSegments( void )
 {
-    return 1;
+    // return the number of coefficients; this allows the user
+    // to ensure that each piecewise section of curve is represented
+    return nCoeffs;
 }
 
 
 bool IGES_ENTITY_126::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
 {
-    // XXX - TO BE IMPLEMENTED
-#warning TO BE IMPLEMENTED
-    return false;
+    pt.x = 0.0;
+    pt.y = 0.0;
+    pt.z = 0.0;
+
+    if( nCoeffs < 2 )
+    {
+        ERRMSG << "\n + [ERROR] no data\n";
+        return false;
+    }
+
+    if( !scurve )
+    {
+        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+        if( !scurve )
+        {
+            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+            return false;
+        }
+    }
+
+    if( var < 0.0 || var > 1.0 )
+    {
+        ERRMSG << "\n + [ERROR] var out of range (must be 0 .. 1.0)\n";
+        return false;
+    }
+
+    if( nSeg < 0 || nSeg >= nCoeffs )
+    {
+        ERRMSG << "\n + [ERROR] nSeg out of range; max nSeg == " << (nCoeffs -1) << "\n";
+        return false;
+    }
+
+    int idx0 = (nKnots - nCoeffs) >> 1;
+
+    var = (1.0 - var) * knots[idx0 + nSeg] + var * knots[idx0 + nSeg + 1];
+
+    double vals[6];
+    int kt = 0;
+    double r = 0;
+    int stat = 0;
+
+    s1225( scurve, 0, V1, &kt, vals, &vals[3], &r, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            break;
+    }
+
+    pt.x = vals[0];
+    pt.y = vals[1];
+    pt.z = vals[2];
+
+    if( xform && pTransform )
+        pt = pTransform->GetTransformMatrix() * pt;
+
+    return true;
 }
 
 
@@ -802,7 +955,11 @@ bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, doubl
     K = nCoeff - 1;
     M = order - 1;
 
-    // XXX - delete SISL curve if applicable
+    if( scurve )
+    {
+        freeCurve( scurve );
+        scurve = NULL;
+    }
 
     if( knots )
     {
@@ -818,6 +975,32 @@ bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, doubl
 
     knots = knot;
     coeffs = coeff;
+
+    scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+    if( !scurve )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+        return false;
+    }
+
+    int stat = 0;
+    s1363( scurve, &V0, &V1, &stat );
+
+    switch ( stat )
+    {
+    case 0:
+        break;
+
+    case 1:
+        ERRMSG << "\n + [WARNING] unspecified problems determining V0, V1 parameter values\n";
+        break;
+
+    default:
+        ERRMSG << "\n + [INFO] could not determine V0, V1 parameter values\n";
+        return false;
+        break;
+    }
 
     return true;
 }

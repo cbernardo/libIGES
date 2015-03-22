@@ -10,22 +10,64 @@ test programs 'readtest' and 'mergetest' to read and
 write IGES files and how to help contribute to the
 improvement of libIGES.
 
+This library makes use of the SINTEF SISL library
+(https://github.com/SINTEF-Geometry/SISL.git) which
+is released under the GNU Affero General Public License V3.
+As of 22 Mar 2015 SISL may be used in non-commercial
+software such as libIGES or KiCad even though such
+software may be used for commercial product development;
+if in doubt about your licensing obligations and use,
+contact the appropriate SINTEF representative for
+clarification. If you intend to use libIGES within
+any commercial cloud services you definitely must make
+licensing arrangements with SINTEF.
+
 I. Building libIGES and the test programs
     a. Dependencies
         + cmake
         + make
         + libboost (boost_filesystem  and boost_system)
         + C++ compiler (preferably gcc 4.9 or later)
+        + SINTEF SISL library (https://github.com/SINTEF-Geometry/SISL.git)
 
     b. Building:
-        + change to the source directory:
-            cd src
-        + create a 'build' directory and change to that:
-            mkdir build && cd build
-        + configure with cmake:
-            cmake ..
-        + compile with make:
-            make
+        i. SISL
+            + clone source:
+              git clone https://github.com/SINTEF-Geometry/SISL.git
+            + change to SISL directory and patch CMakeLists.txt to
+              produce a SHARED library - see git diff below:
+
+                diff --git a/CMakeLists.txt b/CMakeLists.txt:
+                index 47643a0..ed3b592 100644
+                --- a/CMakeLists.txt
+                +++ b/CMakeLists.txt
+                @@ -17,7 +17,7 @@ INCLUDE_DIRECTORIES(
+                # Make the sisl library
+
+                FILE(GLOB sisl_SRCS src/*.c include/*.h)
+                -ADD_LIBRARY(sisl ${sisl_SRCS})
+                +ADD_LIBRARY(sisl SHARED ${sisl_SRCS})
+                SET_PROPERTY(TARGET sisl
+                PROPERTY FOLDER "sisl/Libs")
+
+            + build SISL; from the SISL source directory:
+              mkdir build && cd build
+              cmake ..
+              make
+
+        ii. libIGES
+            + change to the source directory:
+                cd src
+            + create a 'build' directory and change to that:
+                mkdir build && cd build
+            + configure with cmake; you will need to specify the SISL include
+              directory and SISL library directory as in this example:
+                cmake -DSISL_INCLUDE_DIR=/home/usr/SISL/include -DSISL_LIB_DIR=/home/usr/SISL/build ..
+            + compile with make:
+                make
+            + if you have stripped the 'rpath' from the files, you must copy 'libsisl.so' to
+              a directory where the dynamic linker/loader will find it.
+
 
 II. Test program: readtest
     The program 'readtest' will read the file specified on

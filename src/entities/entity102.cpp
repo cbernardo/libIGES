@@ -228,7 +228,6 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 }
             }
 
-#ifdef USE_SISL
             // check that StartPoint[N] == EndPoint[N-1]
             // we must execute the transform since 2D curves may be tested
             // against 3D curves
@@ -240,7 +239,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
                 dN = 1e-9;
             else
                 dN = parent->globalData.minResolution;
-            
+
             p1 = (*sp)->GetStartPoint( true );
             p2 = (*pp)->GetEndPoint( true );
 
@@ -264,7 +263,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
 
                 ok = false;
             }
-#endif  // USE_SISL
+
         }
 
         jEnt = iEnt;

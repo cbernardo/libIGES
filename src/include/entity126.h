@@ -28,6 +28,8 @@
 #include <iges_curve.h>
 #include <iges_elements.h>
 
+struct SISLCurve;
+
 // NOTE:
 // The associated parameter data are:
 // K: int: Upper index of sum (note: not the number of knots)
@@ -58,6 +60,9 @@
 
 class IGES_ENTITY_126 : public IGES_CURVE
 {
+private:
+    SISLCurve* scurve;
+
 protected:
 
     friend class IGES;

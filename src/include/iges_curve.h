@@ -107,6 +107,9 @@ public:
     virtual bool SetEntityForm( int aForm ) = 0;
     // XXX - consider adding a method to retrieve the LENGTH of Segment N;
     // this could be useful to aid in calculations for rendering entities.
+
+    // XXX - Change GetStartPoint/GetEndPoint to return BOOL and take a pointer to
+    // an IGES_PT as the first parameter
 };
 
 #endif  // IGES_CURVE_H

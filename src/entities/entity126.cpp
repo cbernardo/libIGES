@@ -973,6 +973,12 @@ bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, doubl
         coeffs = NULL;
     }
 
+    // flag whether the curve is rational or polynomial
+    if( isRational )
+        PROP3 = 0;
+    else
+        PROP3 = 1;
+
     knots = knot;
     coeffs = coeff;
 
@@ -1000,6 +1006,114 @@ bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, doubl
         ERRMSG << "\n + [INFO] could not determine V0, V1 parameter values\n";
         return false;
         break;
+    }
+
+    // determine planarity
+    if( hasUniquePlane( &vnorm ) )
+        PROP1 = 1;
+    else
+        PROP1 = 0;
+
+    // determine periodicity, and closure
+    double uir = 1e-8;
+    stat = 0;
+
+    if( parent )
+        uir = parent->globalData.minResolution;
+
+    s1364( scurve, uir, &stat );
+
+    switch( stat )
+    {
+        case 2:
+            // closed and periodic
+            PROP2 = 1;
+            PROP4 = 1;
+            break;
+
+        case 1:
+            // curve is closed
+            PROP2 = 1;
+            PROP4 = 0;
+            break;
+
+        case 0:
+            // curve is open
+            PROP2 = 0;
+            PROP4 = 0;
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] s1364() failed\n";
+            return false;
+    }
+
+    return true;
+}
+
+
+bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
+{
+    // if we have a line (or no data) return false
+    if( nCoeffs < 3 )
+        return false;
+
+    // if we have 3 control points then we have a unique plane
+    if( nCoeffs == 3 && !norm )
+        return true;
+
+    // we must test for planarity by taking the normal vector of every
+    // 3 control points; if all normals are equal then we have a plane
+    IGES_POINT p0;
+    IGES_POINT p1;
+    IGES_POINT p2;
+
+    IGES_POINT* pts[3] = { &p0, &p1, &p2 };
+
+    int i = 0;
+    int j = 0;
+
+    IGES_POINT tnorm0;
+    IGES_POINT tnorm1;
+
+    for( i = 0; i < 3; ++i )
+    {
+        pts[i]->x = coeffs[j++];
+        pts[i]->y = coeffs[j++];
+        pts[i]->z = coeffs[j++];
+
+        if( 0 == PROP3 )
+            ++j;
+    }
+
+    CalcNormal( &p0, &p1, &p2, norm );
+
+    if( nCoeffs == 3 )
+        return true;
+
+    tnorm0 = *norm;
+    IGES_POINT* px;
+
+    for( i = 3; i < nCoeffs; ++i )
+    {
+        px = pts[0];
+        pts[0] = pts[1];
+        pts[1] = pts[2];
+        pts[2] = px;
+
+        pts[2]->x = coeffs[j++];
+        pts[2]->y = coeffs[j++];
+        pts[2]->z = coeffs[j++];
+
+        if( 0 == PROP3 )
+            ++j;
+
+        CalcNormal( pts[0], pts[1], pts[2], &tnorm1 );
+
+        if( !PointMatches( tnorm0, tnorm1, 1e-8 ) )
+            return false;
+
+        tnorm0 = tnorm1;
     }
 
     return true;

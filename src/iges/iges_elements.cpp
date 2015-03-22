@@ -69,7 +69,7 @@ IGES_POINT& IGES_POINT::operator+=( const IGES_POINT& v )
 }
 
 
-IGES_POINT  IGES_POINT::operator+( const IGES_POINT& v )
+IGES_POINT const IGES_POINT::operator+( const IGES_POINT& v )
 {
     IGES_POINT p( *this );
     p.x += v.x;
@@ -92,7 +92,7 @@ IGES_POINT& IGES_POINT::operator-=( const IGES_POINT& v )
 }
 
 
-IGES_POINT  IGES_POINT::operator-( const IGES_POINT& v )
+IGES_POINT  const IGES_POINT::operator-( const IGES_POINT& v )
 {
     IGES_POINT p;
     p.x -= v.x;

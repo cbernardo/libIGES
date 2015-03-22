@@ -63,6 +63,9 @@ class IGES_ENTITY_126 : public IGES_CURVE
 private:
     SISLCurve* scurve;
 
+    // norm: if provided the normal to the plane will be returned
+    bool hasUniquePlane( IGES_POINT* norm = NULL );
+
 protected:
 
     friend class IGES;
@@ -120,12 +123,6 @@ public:
     double V0;
     double V1;
     IGES_POINT vnorm;
-
-    // XXX: TO IMPLEMENT:
-    // Test for planarity: since SISL does not do the work
-    // we must test for planarity by taking the normal vector of every
-    // 3 control points; if all normals are equal then we have a plane;
-    // we also have a plane if we have only 2 or 3 control points.
 };
 
 #endif  // ENTITY_126_H

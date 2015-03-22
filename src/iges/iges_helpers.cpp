@@ -97,6 +97,7 @@ bool CheckNormal( double& X, double &Y, double& Z )
     return true;
 }
 
+
 void print_transform( const IGES_TRANSFORM* T )
 {
     cout << setprecision( 3 );
@@ -105,6 +106,7 @@ void print_transform( const IGES_TRANSFORM* T )
     cout << "R3: " << T->R.v[2][0] << ", " << T->R.v[2][1] << ", " << T->R.v[2][2] << ",  T.z = " << T->T.z << "\n";
     return;
 }
+
 
 void print_matrix( const IGES_MATRIX* m )
 {
@@ -115,9 +117,34 @@ void print_matrix( const IGES_MATRIX* m )
     return;
 }
 
+
 void print_vec( const IGES_POINT* p )
 {
     cout << setprecision( 3 );
     cout << "V: " << p->x << ", " << p->y << ", " << p->z << "\n";
     return;
+}
+
+
+// calculate the normal given points p0, p1, p2
+bool CalcNormal( const IGES_POINT* p0, const IGES_POINT* p1, const IGES_POINT* p2, IGES_POINT* pn )
+{
+    if( !p0 || !p1 || !p2 || !pn )
+    {
+        ERRMSG << "\n + [ERROR] NULL pointer passed as an argument\n";
+        return false;
+    }
+
+    IGES_POINT tp0( *p0 );
+    IGES_POINT tp1( *p1 );
+    IGES_POINT tp2( *p2 );
+
+    IGES_POINT t0 = tp1 - tp0;
+    IGES_POINT t1 = tp2 - tp0;
+
+    pn->x = t0.y * t1.z - t0.z * t1.y;
+    pn->y = t0.z * t1.x - t0.x * t1.z;
+    pn->z = t0.x * t1.y - t0.y * t1.x;
+
+    return CheckNormal( pn->x, pn->y, pn->z );
 }

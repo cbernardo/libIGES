@@ -37,9 +37,9 @@ struct IGES_POINT
     IGES_POINT( const double x, const double y, const double z );
     IGES_POINT& operator*=( const double scalar );
     IGES_POINT& operator+=( const IGES_POINT& v );
-    IGES_POINT  operator+( const IGES_POINT& v );
+    IGES_POINT  const operator+( const IGES_POINT& v );
     IGES_POINT& operator-=( const IGES_POINT& v );
-    IGES_POINT  operator-( const IGES_POINT& v );
+    IGES_POINT  const operator-( const IGES_POINT& v );
 };
 
 // V1 = V0 * scalar

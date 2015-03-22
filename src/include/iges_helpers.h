@@ -47,4 +47,7 @@ void print_matrix( const IGES_MATRIX* m );
 class IGES_POINT;
 void print_vec( const IGES_POINT* p );
 
+// calculate the normal given points p0, p1, p2
+bool CalcNormal( const IGES_POINT* p0, const IGES_POINT* p1, const IGES_POINT* p2, IGES_POINT* pn );
+
 #endif  // IGES_HELPERS_H

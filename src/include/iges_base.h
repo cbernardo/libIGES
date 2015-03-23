@@ -49,6 +49,7 @@ enum IGES_UNIT
 {
     UNIT_START = 1,
     UNIT_INCH = UNIT_START,
+    UNIT_IN   = UNIT_INCH,
     UNIT_MILLIMETER,
     UNIT_MM = UNIT_MILLIMETER,
     UNIT_EXTERN,        // unit specified in Global Section Part 15;

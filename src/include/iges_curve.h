@@ -67,7 +67,7 @@ public:
     // methods required of parameterized curve entities
 
     // return true if this entity represents a closed curve
-    virtual bool IsClosed() = 0;
+    virtual bool IsClosed( void ) = 0;
     // return the number of curves in this object;
     // -2 = Point or Point Association entity
     // -1 = no valid curve entities

@@ -345,7 +345,7 @@ int IGES_ENTITY_110::GetNSegments( void )
 }
 
 
-bool IGES_ENTITY_110::IsClosed()
+bool IGES_ENTITY_110::IsClosed( void )
 {
     return false;
 }

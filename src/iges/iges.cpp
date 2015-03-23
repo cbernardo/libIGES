@@ -1175,8 +1175,8 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
     }
     else if( globalData.unitsFlag != UNIT_EXTERN )
     {
-        if( globalData.unitsName.compare( UNIT_NAMES[globalData.unitsFlag] ) )
-            globalData.unitsName = UNIT_NAMES[globalData.unitsFlag];
+        if( globalData.unitsName.compare( UNIT_NAMES[globalData.unitsFlag - UNIT_START] ) )
+            globalData.unitsName = UNIT_NAMES[globalData.unitsFlag - UNIT_START];
     }
 
     // G16: Max. Number of LineWidth Gradations
@@ -1382,8 +1382,8 @@ bool IGES::readGlobals( IGES_RECORD& rec, std::ifstream& file )
 
     if( globalData.unitsFlag != UNIT_MILLIMETER )
     {
-        globalData.minResolution *= UNIT_TO_MM[globalData.unitsFlag];
-        globalData.cf *= UNIT_TO_MM[globalData.unitsFlag];
+        globalData.minResolution *= UNIT_TO_MM[globalData.unitsFlag - UNIT_START];
+        globalData.cf *= UNIT_TO_MM[globalData.unitsFlag- UNIT_START];
         globalData.unitsFlag = UNIT_MILLIMETER;
         globalData.convert = true;
     }
@@ -1655,7 +1655,7 @@ bool IGES::ConvertUnits( IGES_UNIT newUnit )
 
     // + Calculate a scale factor to convert units.
     // + adjust the User Intended Minimum to represent the mm equivalent (if possible)
-    cf = UNIT_TO_MM[globalData.unitsFlag] / UNIT_TO_MM[newUnit];
+    cf = UNIT_TO_MM[globalData.unitsFlag - UNIT_START] / UNIT_TO_MM[newUnit - UNIT_START];
 
     if( cf > 0.9999998 && cf < 1.000001 )
         return true;
@@ -2234,38 +2234,13 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     double pms = newParent->globalData.modelScale;
     IGES_UNIT pUF = newParent->globalData.unitsFlag;
 
-    // calculate a scale factor which yields the desired
-    // final modelScale with the given Units. If this factor is
-    // not 1.0 then trawl the list of entities and convert
-    double cf = 1.0;
-    bool adjScale = false;
-
     if( globalData.modelScale != pms )
-    {
-        cf = pms / globalData.modelScale;
-        adjScale = true;
-    }
+        ChangeModelScale( pms );
 
     if( globalData.unitsFlag != pUF )
-    {
-        cf *= UNIT_TO_MM[globalData.unitsFlag] / UNIT_TO_MM[pUF];
-        adjScale = true;
-    }
+        ConvertUnits( pUF );
 
     size_t nEnt = entities.size();
-
-    if( adjScale )
-    {
-        // scale all existing entities
-        for( size_t i = 0; i < nEnt; ++ i )
-        {
-            if( !entities[i]->rescale(cf) )
-            {
-                ERRMSG << "\n + [BUG] cannot convert units\n";
-                return false;
-            }
-        }
-    }
 
     // determine crude linewidth adjustment; the new linewidths are guaranteed to
     // be incorrect unless (a) they are 0 or (b) maxLWG and maxLW are the same

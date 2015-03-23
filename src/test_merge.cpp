@@ -27,7 +27,9 @@
  *
  */
 
-// NOTE: Rotation appears to be incorrect; +Angle = Clockwise rather than CCW
+// NOTE:
+//  1. Allow user to specify UNITS output (unit:)
+//  2. Allow user to specify nominal orientation of input model (orient: w, x, y, z)
 
 // Format:
 // file: "quoted filename"

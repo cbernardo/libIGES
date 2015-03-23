@@ -657,7 +657,7 @@ int IGES_ENTITY_102::GetNSegments( void )
 }
 
 
-bool IGES_ENTITY_102::IsClosed()
+bool IGES_ENTITY_102::IsClosed( void )
 {
     if( curves.empty() )
         return false;

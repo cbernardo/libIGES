@@ -82,6 +82,16 @@ protected:
     double *knots;
     double *coeffs;
 
+    int K;
+    int M;
+    int PROP1;  // 0,1: Nonplanar, Planar and Unique
+    int PROP2;  // 0,1: Open, Closed curve
+    int PROP3;  // 0,1: Rational, Polynomial
+    int PROP4;  // 0,1: Nonperiodic, Periodic
+    double V0;
+    double V1;
+    IGES_POINT vnorm;
+
 public:
     IGES_ENTITY_126( IGES* aParent );
     ~IGES_ENTITY_126();
@@ -97,7 +107,7 @@ public:
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // virtual functions inherited from IGES_CURVE
-    virtual bool IsClosed();
+    virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
     virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
@@ -114,15 +124,10 @@ public:
     bool SetNURBSData( int& nCoeff, int& order, double* knot, double* coeff, bool& isRational,
                        bool& isClosed, bool& isPeriodic );
 
-    int K;
-    int M;
-    int PROP1;  // 0,1: Nonplanar, Planar
-    int PROP2;  // 0,1: Open, Closed curve
-    int PROP3;  // 0,1: Rational, Polynomial
-    int PROP4;  // 0,1: Nonperiodic, Periodic
-    double V0;
-    double V1;
-    IGES_POINT vnorm;
+    bool IsPlanar( void );
+    bool IsRational( void );
+    bool isPeriodic( void );
+    bool GetNormal( IGES_POINT& aNorm );
 };
 
 #endif  // ENTITY_126_H

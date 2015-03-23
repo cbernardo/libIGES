@@ -306,7 +306,7 @@ bool IGES_ENTITY_126::rescale( double sf )
         coeffs[j] *= sf;
         ++j;
 
-        if( 0 != PROP3 )
+        if( 0 == PROP3 )
             ++j;
     }
 
@@ -688,12 +688,46 @@ bool IGES_ENTITY_126::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_126::IsClosed()
+bool IGES_ENTITY_126::IsClosed( void )
 {
     if( PROP2 )
         return true;
 
     return false;
+}
+
+
+bool IGES_ENTITY_126::IsPlanar( void )
+{
+    if( PROP1 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_126::IsRational( void )
+{
+    if( PROP3 )
+        return false;
+
+    return true;
+}
+
+
+bool IGES_ENTITY_126::isPeriodic( void )
+{
+    if( PROP4 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_126::GetNormal( IGES_POINT& aNorm )
+{
+    aNorm = vnorm;
+    return IsPlanar();
 }
 
 

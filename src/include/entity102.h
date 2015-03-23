@@ -101,7 +101,7 @@ public:
     virtual bool SetEntityForm(int aForm);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    virtual bool IsClosed();
+    virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
     virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );

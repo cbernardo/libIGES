@@ -454,7 +454,7 @@ int IGES_ENTITY_100::GetNSegments( void )
 }
 
 
-bool IGES_ENTITY_100::IsClosed()
+bool IGES_ENTITY_100::IsClosed( void )
 {
     IGES_POINT p0( xCenter, yCenter, 0.0 );
     IGES_POINT p1( xStart, yStart, 0.0 );

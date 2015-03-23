@@ -70,7 +70,7 @@ public:
     virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
 
     virtual int GetNSegments( void );
-    virtual bool IsClosed();
+    virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
     virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );

@@ -29,7 +29,7 @@
 
 // NOTE:
 //  1. Allow user to specify UNITS output (unit:)
-//  2. Allow user to specify nominal orientation of input model (orient: w, x, y, z)
+//  2. Allow user to specify nominal orientation of input model (orient: w, x, y, z, dX, dY, dZ)
 
 // Format:
 // file: "quoted filename"
@@ -54,6 +54,28 @@ using namespace std;
 
 #define ONAME "test_out_merge.igs"
 
+struct ORIENT
+{
+    double w;
+    double x;
+    double y;
+    double z;
+
+    double dX;
+    double dY;
+    double dZ;
+
+    ORIENT()
+    {
+        w = 0.0;
+        x = 0.0;
+        y = 0.0;
+        z = 1.0;
+        dX = 0.0;
+        dY = 0.0;
+        dZ = 0.0;
+    }
+};
 
 struct TPARAMS
 {
@@ -77,14 +99,18 @@ struct TPARAMS
 
 // merge the model with the given filename 'modelOut' and instantiate
 // the new model with the given list of transforms
-bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos );
+bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<pair<string, ORIENT > >& o );
 
 // parse a line an update the model/placement data
-void parseLine( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
+void parseLine( vector<pair<string, list<TPARAMS>* > >& models, vector<pair<string, ORIENT > >& orients, const std::string& iline );
 // parse a filename and add the result to the file list
 void parseFile( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
 // parse a position line and add the result to the list
 void parsePos( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
+// parse an orientation line and add the result to the list
+void parseOrient( const std::string& fname, vector<pair<string, ORIENT > >& orients, const std::string& iline );
+// parse a UNIT line
+void parseUnit( const std::string& iline );
 // create a rotation matrix around X
 void rotateX( IGES_MATRIX& mat, double angle );
 // create a rotation matrix around Y
@@ -92,21 +118,74 @@ void rotateY( IGES_MATRIX& mat, double angle );
 // create a rotation matrix around Z
 void rotateZ( IGES_MATRIX& mat, double angle );
 
+IGES_UNIT unit = UNIT_END;
+
+string AUNIT[10] = {
+    "in",
+    "mm",
+    "ft",
+    "mi",
+    "m",
+    "km",
+    "mil",
+    "micron",
+    "cm",
+    "microinch"
+};
+
+IGES_UNIT IUNIT[10] = {
+    UNIT_INCH,
+    UNIT_MILLIMETER,
+    UNIT_FOOT,
+    UNIT_MILE,
+    UNIT_METER,
+    UNIT_KILOMETER,
+    UNIT_MIL,
+    UNIT_MICRON,
+    UNIT_CENTIMETER,
+    UNIT_MICROINCH
+};
+
+
 int main( int argc, char** argv )
 {
     IGES modelOut;
-    modelOut.globalData.unitsFlag = UNIT_MILLIMETER;
     vector<pair<string, list<TPARAMS>* > > modelNames;
+    vector<pair<string, ORIENT > > orients;
 
     if( argc != 2 )
     {
         cerr << "*** Invocation: mergetest inputFilename\n";
         cerr << "*** Sample input file:\n";
+        cerr << "unit: mm\n";
         cerr << "file: \"modelA.igs\"\n";
+        cerr << "orient: -90,1,0,0,0,0,1;\n";
         cerr << "pos: 0,0,0,0,0.8;\n";
         cerr << "pos: 0,0,10,10,0.8;\n";
         cerr << "file: \"modelB.igs\"\n";
         cerr << "pos: 90,1,10,10,0.8;\n";
+        cerr << "\n\nParameters:\n";
+        cerr << "unit: (optional) one of 'in' (inches) or 'mm'\n";
+        cerr << "file: (required) name of the model to include in the assembly\n";
+        cerr << "orient: (optional) transform data to put the model into its nominal (0,0,0) orientation\n";
+        cerr << "        param 1: rotation (degrees)\n";
+        cerr << "        param 2: x magnitude of rotation vector\n";
+        cerr << "        param 3: y magnitude of rotation vector\n";
+        cerr << "        param 4: z magnitude of rotation vector\n";
+        cerr << "        param 5: x translation\n";
+        cerr << "        param 6: y translation\n";
+        cerr << "        param 7: z translation\n";
+        cerr << "pos: (required) Z axis rotation and translation for each instance of the model\n";
+        cerr << "     param 1: z rotation (degrees)\n";
+        cerr << "     param 2: 0/1 = top side/bottom side\n";
+        cerr << "     param 3: x translation\n";
+        cerr << "     param 4: y translation\n";
+        cerr << "     param 5: z translation\n\n";
+        cerr << "note: orientation of a part on the bottom side is determined according to the\n";
+        cerr << "      IDFv3 rules; the part is rotated along the Y axis and the z rotation is\n";
+        cerr << "      in the reverse direction from what it would be if the part were on the top.\n\n";
+
+        return -1;
     }
 
     ifstream ifile;
@@ -125,7 +204,7 @@ int main( int argc, char** argv )
         getline( ifile, iline );
 
         if( !iline.empty() )
-            parseLine( modelNames, iline );
+            parseLine( modelNames, orients, iline );
     }
 
     if( modelNames.empty() )
@@ -134,11 +213,15 @@ int main( int argc, char** argv )
         return 0;
     }
 
+    if( unit == UNIT_END )
+        unit = UNIT_MILLIMETER;
+
+    modelOut.globalData.unitsFlag = unit;
     bool fail = false;
 
     for( size_t i = 0; i < modelNames.size(); ++i )
     {
-        if( !merge( modelOut, modelNames[i].first, modelNames[i].second ) )
+        if( !merge( modelOut, modelNames[i].first, modelNames[i].second, orients ) )
         {
             fail = true;
             break;
@@ -155,7 +238,7 @@ int main( int argc, char** argv )
 }
 
 
-bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos )
+bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<pair<string, ORIENT > >& o )
 {
 
     if( pos->empty() )
@@ -173,6 +256,52 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos )
     }
 
     IGES_ENTITY* ep;
+    IGES_TRANSFORM* pO = NULL;
+
+    // determine if there is an transform to associate with the basic model
+    if( !o.empty() )
+    {
+        vector<pair<string, ORIENT > >::iterator sbeg = o.begin();
+        vector<pair<string, ORIENT > >::iterator send = o.end();
+
+        while( sbeg != send )
+        {
+            if( !sbeg->first.compare( fname ) )
+            {
+                ORIENT od = sbeg->second;
+                pO = new IGES_TRANSFORM;
+
+                if( !pO )
+                {
+                    cout << "Could not instantiate a transform for '" << fname << "'\n";
+                    return false;
+                }
+
+                // set the translation parameters
+                pO->T.x = od.dX;
+                pO->T.y = od.dY;
+                pO->T.z = od.dZ;
+
+                // set the rotation matrix;
+                pO->R.v[0][0] = 1.0 - 2.0 * ( od.y*od.y + od.z*od.z );
+                pO->R.v[0][1] = 2.0 * ( od.x*od.y - od.z*od.w );
+                pO->R.v[0][2] = 2.0 * ( od.x*od.z + od.y*od.w );
+
+                pO->R.v[1][0] = 2.0 * ( od.x*od.y + od.z*od.w );
+                pO->R.v[1][1] = 1.0 - 2.0 * ( od.x*od.x + od.z*od.z );
+                pO->R.v[1][2] = 2.0 * ( od.y*od.z - od.x*od.w );
+
+                pO->R.v[2][0] = 2.0 * ( od.x*od.z - od.y*od.w );
+                pO->R.v[2][1] = 2.0 * ( od.y*od.z + od.x*od.w );
+                pO->R.v[2][2] = 1.0 - 2.0 * ( od.x*od.x + od.y*od.y );
+
+                break;
+            }
+
+            ++sbeg;
+        }
+    }
+
     IGES_ENTITY_308* p308 = NULL;
     IGES_ENTITY_408* p408;
     IGES_ENTITY_124* p124;
@@ -186,6 +315,9 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos )
         {
             if( !modelA.Export( &modelOut, &p308 ) || !p308 )
             {
+                if( pO )
+                    delete pO;
+
                 cout << "Could not export model '" << fname << "'\n";
                 return false;
             }
@@ -193,8 +325,10 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos )
 
         modelOut.NewEntity( ENT_TRANSFORMATION_MATRIX, &ep );
         p124 = (IGES_ENTITY_124*)ep;
-
         sPos->GetTransform( p124->T );
+
+        if( pO )
+            p124->T = p124->T * (*pO);
 
         modelOut.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
         p408 = (IGES_ENTITY_408*)ep;
@@ -203,6 +337,9 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos )
 
         ++sPos;
     }
+
+    if( pO )
+        delete pO;
 
     return true;
 }
@@ -240,12 +377,16 @@ void TPARAMS::GetTransform( IGES_TRANSFORM& T )
     return;
 }
 
-void parseLine( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline )
+void parseLine( vector<pair<string, list<TPARAMS>* > >& models, vector<pair<string, ORIENT > >& orients, const std::string& iline )
 {
     if( iline.find("file:") != string::npos )
         parseFile( models, iline );
     else if( iline.find("pos:") != string::npos && !models.empty() )
         parsePos( models, iline );
+    else if( iline.find("unit:") != string::npos && unit == UNIT_END )
+        parseUnit( iline );
+    else if( iline.find("orient:") != string::npos && !models.empty() )
+        parseOrient( models.back().first, orients, iline );
 
     return;
 }
@@ -363,4 +504,127 @@ void rotateZ( IGES_MATRIX& mat, double angle )
     mat.v[0][1] = -sinN;
     mat.v[1][0] = sinN;
     mat.v[1][1] = cosN;
+}
+
+
+// parse an orientation line, convert angle/direction to quaternion and add the result to the list
+void parseOrient( const std::string& fname, vector<pair<string, ORIENT > >& orients, const std::string& iline )
+{
+    if( !orients.empty() && !fname.compare( orients.back().first ) )
+    {
+        cerr << "+ [WARNING]: multiple 'orient' lines for file '" << fname << "'\n";
+        return;
+    }
+
+    int sp = int(iline.find_first_of( ':' )) + 1;
+
+    double tR;
+    double ang;
+    bool eor = false;
+    ORIENT arg;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    ang = M_PI * tR / 360.0;
+    arg.w = cos( ang );
+    double sang = sin( ang );
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.x = tR;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.y = tR;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.z = tR;
+
+    if( !CheckNormal( arg.x, arg.y, arg.z ) )
+    {
+        cerr << "Invalid orientation line (bad direction vector): '" << iline << "'\n";
+        return;
+    }
+
+    arg.x *= sang;
+    arg.y *= sang;
+    arg.z *= sang;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.dX = tR;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.dY = tR;
+
+    if( !ParseReal( iline, sp, tR, eor, ',', ';' ) )
+    {
+        cerr << "Invalid orientation line: '" << iline << "'\n";
+        return;
+    }
+
+    arg.dZ = tR;
+    orients.push_back(pair<string, ORIENT>(fname, arg) );
+
+    return;
+}
+
+// parse a UNIT line
+void parseUnit( const std::string& iline )
+{
+    size_t sp = int(iline.find_first_of( ':' )) + 1;
+    size_t fp = iline.find_first_of( "imfkc", sp );
+
+    if( fp == string::npos )
+    {
+        cerr << "+ [WARNING]: no unit data in '" << iline << "'\n";
+        return;
+    }
+
+    size_t lp = iline.find_last_of( "nmtilh" );
+
+    if( lp == string::npos || lp < fp )
+    {
+        cerr << "+ [WARNING]: no unit data in '" << iline << "'\n";
+        return;
+    }
+
+    string aline = iline.substr( fp, lp - fp + 1 );
+
+    for( int i = 0; i < 10; ++i )
+    {
+        if( !aline.compare( AUNIT[i] ) )
+        {
+            unit = IUNIT[i];
+            return;
+        }
+    }
+
+    return;
 }

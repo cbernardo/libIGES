@@ -100,8 +100,19 @@ III. Test program: mergetest
     control file and IGES files used.
 
     Input control file format:
+    unit: (optional) one of 'in' or 'mm'
     file: "model_filename.igs"
+    orient: (optional) used to change the normal orientation of the part;
+            this transform is applied to all instances of the part
+            param 1: rotation (degrees)\n";
+            param 2: x magnitude of rotation vector\n";
+            param 3: y magnitude of rotation vector\n";
+            param 4: z magnitude of rotation vector\n";
+            param 5: x translation\n";
+            param 6: y translation\n";
+            param 7: z translation\n";
     pos: zRotation, flip (0/1), xOffset, yOffset, zOffset;
+         this is applied to a single instance of the part
     [other 'pos:' lines to create more instances of the model]
     [more sets of 'file:' and 'pos:' lines]
 
@@ -115,6 +126,7 @@ III. Test program: mergetest
       'flip' is 1.
 
     Input control file example:
+    unit: mm
     file: "block-and_peg.IGS"
     pos: 0,0,0,0,0;
     file: "block_hole.IGS"
@@ -122,6 +134,7 @@ III. Test program: mergetest
     file: "peg.IGS"
     pos: 0,0,15,15,1.6;
     file: "6371.igs"
+    orient: 90,1,0,0,0,0,0;
     pos: 0,0,30,30,1.6;
     pos: 90,1,30,30,0;
 
@@ -131,9 +144,6 @@ III. Test program: mergetest
     Note: IGES models may be in any of 3 orientations
     (vertical axis of the physical model along X, Y, or Z);
     this is due primarily to different users choosing different
-    planes of reference when models are created. The 'mergetest'
-    program will eventually contain extra parameters to reorient
-    the model before appying the position controls but at the
-    moment that functionality is not yet coded so don't be
-    surprised if your assembly doesn't quite look the way
-    you expected it to.
+    planes of reference when models are created. To compensate
+    for a different orientation make use of the 'orient'
+    parameters.

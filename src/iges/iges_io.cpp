@@ -438,6 +438,11 @@ bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, cha
         return false;
     }
 
+    size_t dex = tmp.find_first_of( 'D' );
+
+    if( dex != string::npos )
+        tmp[dex] = 'E';
+
     const char* cp = tmp.c_str();
     char* rp;
 
@@ -544,11 +549,20 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 
         if( pexp != string::npos )
         {
-            if( nc > 7 || ne < -38.0 || ne > 38.0 )
-                tStr[pexp] = 'D'; // change exponent to 'D' (double)
-            else
-                tStr[pexp] = 'E'; // change exponent to 'E' (float)
+            if( 0 )
+            {
+                if( nc > 7 || ne < -38.0 || ne > 38.0 )
+                    tStr[pexp] = 'D'; // change exponent to 'D' (double)
+                else
+                    tStr[pexp] = 'E'; // change exponent to 'E' (float)
+            }
 
+            // note: according to the specification 'D' shall be used
+            // for doubles and 'E' for single floats; however many
+            // MCAD packages do not work correctly with 'D' so we
+            // shall only output 'E'. The input parser however is
+            // tolerant of the 'D' notation.
+            tStr[pexp] = 'E'; // change exponent to 'E' (float)
             tStr = tStr.substr( 0, pidx + 1 ) + tStr.substr( pexp );
         }
         else

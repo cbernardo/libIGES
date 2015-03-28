@@ -69,14 +69,42 @@
 // + Structure
 //
 
+struct SISLSurf;
+
 class IGES_ENTITY_128 : public IGES_ENTITY
 {
+private:
+    SISLSurf* ssurf;
+
 protected:
 
     friend class IGES;
     virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
+
+    int nKnots1;    // number of knots in parameter 1
+    int nKnots2;    // number of knots in parameter 2
+    int nCoeffs1;   // number of weights and control points in parameter 1
+    int nCoeffs2;   // number of weights and control points in parameter 2
+    double *knots1; // knots in patameter 1
+    double *knots2; // knots in patameter 2
+    double *coeffs; // contorl points and weights
+
+    int K1;
+    int K2;
+    int M1;
+    int M2;
+    int PROP1;
+    int PROP2;
+    int PROP3;
+    int PROP4;
+    int PROP5;
+
+    double U0;
+    double U1;
+    double V0;
+    double V1;
 
 public:
     IGES_ENTITY_128( IGES* aParent );
@@ -92,23 +120,10 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    int K1;
-    int K2;
-    int M1;
-    int M2;
-    int PROP1;
-    int PROP2;
-    int PROP3;
-    int PROP4;
-    int PROP5;
-    std::list<double>knots1;
-    std::list<double>knots2;
-    std::list<double>weights;
-    std::list<IGES_POINT>controls;
-    double U0;
-    double U1;
-    double V0;
-    double V1;
+    // std::list<double>knots1;
+    // std::list<double>knots2;
+    // std::list<double>weights;
+    // std::list<IGES_POINT>controls;
 };
 
 #endif  // ENTITY_128_H

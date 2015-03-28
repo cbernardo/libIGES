@@ -24,6 +24,7 @@
 
 #include <sstream>
 #include <error_macros.h>
+#include <sisl.h>
 #include <iges.h>
 #include <iges_io.h>
 #include <iges_helpers.h>
@@ -50,12 +51,33 @@ IGES_ENTITY_128::IGES_ENTITY_128( IGES* aParent ) : IGES_ENTITY( aParent )
     V0 = 0.0;
     V1 = 0.0;
 
+    nKnots1 = 0;
+    nKnots2 = 0;
+    nCoeffs1 = 0;
+    nCoeffs2 = 0;
+    knots1 = NULL;
+    knots2 = NULL;
+    coeffs = NULL;
+    ssurf = NULL;
+
     return;
 }
 
 
 IGES_ENTITY_128::~IGES_ENTITY_128()
 {
+    if( knots1 )
+        delete [] knots1;
+
+    if( knots2 )
+        delete [] knots2;
+
+    if( coeffs )
+        delete [] coeffs;
+
+    if( ssurf )
+        freeSurf( ssurf );
+
     return;
 }
 
@@ -75,6 +97,12 @@ bool IGES_ENTITY_128::associate( std::vector<IGES_ENTITY*>* entities )
 bool IGES_ENTITY_128::format( int &index )
 {
     pdout.clear();
+
+    if( !knots1 || !knots2 || !coeffs )
+    {
+        ERRMSG << "\n + [INFO] no surface data\n";
+        return false;
+    }
 
     if( index < 1 || index > 9999999 )
     {
@@ -149,17 +177,17 @@ bool IGES_ENTITY_128::format( int &index )
     }
 
     // # of knots1 = 2 + K1 + M1
-    if( (2 + K1 + M1) != (int)knots1.size() )
+    if( (2 + K1 + M1) != nKnots1 )
     {
-        ERRMSG << "\n + [INFO] invalid number of knots[1] (" << knots1.size();
+        ERRMSG << "\n + [INFO] invalid number of knots[1] (" << nKnots1;
         cerr << ") expecting " << (2 + K1 + M1) << "\n";
         return false;
     }
 
     // # of knots2 = 2 + K2 + M2
-    if( (2 + K2 + M2) != (int)knots2.size() )
+    if( (2 + K2 + M2) != nKnots2 )
     {
-        ERRMSG << "\n + [INFO] invalid number of knots[2] (" << knots2.size();
+        ERRMSG << "\n + [INFO] invalid number of knots[2] (" << nKnots1;
         cerr << ") expecting " << (2 + K2 + M2) << "\n";
         return false;
     }
@@ -167,17 +195,9 @@ bool IGES_ENTITY_128::format( int &index )
     // # of weights = (K1 + 1)*(K2 + 1)
     int C = (K1 + 1)*(K2 + 1);
 
-    if( C != (int)weights.size() )
+    if( C != nCoeffs1 * nCoeffs2 )
     {
-        ERRMSG << "\n + [INFO] invalid number of weights (" << weights.size();
-        cerr << ") expecting " << C << "\n";
-        return false;
-    }
-
-    // # of control points = (K1 + 1)*(K2 + 1)
-    if( C != (int)controls.size() )
-    {
-        ERRMSG << "\n + [INFO] invalid number of control points (" << controls.size();
+        ERRMSG << "\n + [INFO] invalid number of weights (" << (nCoeffs1 * nCoeffs2);
         cerr << ") expecting " << C << "\n";
         return false;
     }
@@ -196,57 +216,61 @@ bool IGES_ENTITY_128::format( int &index )
     string lstr = ostr.str();
     string tstr;
 
-    std::list<double>::iterator sD = knots1.begin();
-    std::list<double>::iterator eD = knots1.end();
-
-    while( sD != eD )
+    for( int i = 0; i < nKnots1; ++i )
     {
-        if( !FormatPDREal( tstr, *sD, pd, uir ) )
+        if( !FormatPDREal( tstr, knots1[i], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format knots[1]\n";
             return false;
         }
 
-        ++sD;
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
-    sD = knots2.begin();
-    eD = knots2.end();
-
-    while( sD != eD )
+    for( int i = 0; i < nKnots2; ++i )
     {
-        if( !FormatPDREal( tstr, *sD, pd, uir ) )
+        if( !FormatPDREal( tstr, knots2[i], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format knots[2]\n";
             return false;
         }
 
-        ++sD;
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
     }
 
-    sD = weights.begin();
-    eD = weights.end();
-
-    while( sD != eD )
+    if( 0 == PROP3 )
     {
-        if( !FormatPDREal( tstr, *sD, pd, uir ) )
+        for( int i = 0, j = 3; i < C; ++i, j += 4 )
         {
-            ERRMSG << "\n + [INFO] could not format weights\n";
-            return false;
+            if( !FormatPDREal( tstr, coeffs[j], pd, 1e-6 ) )
+            {
+                ERRMSG << "\n + [INFO] could not format weights\n";
+                return false;
+            }
+
+            AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
         }
 
-        ++sD;
-        AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+    }
+    else
+    {
+        double tD = 1.0;
+
+        for( int i = 0; i < C; ++i )
+        {
+            if( !FormatPDREal( tstr, tD, pd, 0.1 ) )
+            {
+                ERRMSG << "\n + [INFO] could not format weights\n";
+                return false;
+            }
+
+            AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+        }
     }
 
-    std::list<IGES_POINT>::iterator sP = controls.begin();
-    std::list<IGES_POINT>::iterator eP = controls.end();
-
-    while( sP != eP )
+    for( int i = 0, j = 0; i < C; ++i )
     {
-        if( !FormatPDREal( tstr, (*sP).x, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
@@ -254,7 +278,7 @@ bool IGES_ENTITY_128::format( int &index )
 
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
-        if( !FormatPDREal( tstr, (*sP).y, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
@@ -262,14 +286,16 @@ bool IGES_ENTITY_128::format( int &index )
 
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
 
-        if( !FormatPDREal( tstr, (*sP).z, pd, uir ) )
+        if( !FormatPDREal( tstr, coeffs[j++], pd, uir ) )
         {
             ERRMSG << "\n + [INFO] could not format control points\n";
             return false;
         }
 
-        ++sP;
         AddPDItem( tstr, lstr, pdout, index, sequenceNumber, pd, rd );
+
+        if( 0 == PROP3 )
+            ++j;
     }
 
     if( !FormatPDREal( tstr, U0, pd, uir ) )
@@ -332,13 +358,34 @@ bool IGES_ENTITY_128::format( int &index )
 
 bool IGES_ENTITY_128::rescale( double sf )
 {
-    list<IGES_POINT>::iterator sPt = controls.begin();
-    list<IGES_POINT>::iterator ePt = controls.end();
+    if( !coeffs )
+        return true;
 
-    while( sPt != ePt )
+    int C = nCoeffs1 * nCoeffs2;
+
+    if( 0 == PROP3 )
     {
-        *sPt = *sPt * sf;
-        ++sPt;
+        for( int i = 0, j = 0; i < C; ++i )
+        {
+            coeffs[j] *= sf;
+            ++j;
+            coeffs[j] *= sf;
+            ++j;
+            coeffs[j] *= sf;
+            j += 2;
+        }
+    }
+    else
+    {
+        for( int i = 0, j = 0; i < C; ++i )
+        {
+            coeffs[j] *= sf;
+            ++j;
+            coeffs[j] *= sf;
+            ++j;
+            coeffs[j] *= sf;
+            ++j;
+        }
     }
 
     return true;
@@ -398,7 +445,7 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
-        ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
+        ERRMSG << "\n + [INFO] could not read data for B-Spline Surface\n";
         pdout.clear();
         return false;
     }
@@ -548,67 +595,178 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 
     double tR;
 
-    for( int i = 2 + K1 + M1; i > 0; --i )
-    {
-        if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
-        {
-            ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots1.size() + 1) << "\n";
-            pdout.clear();
-            return false;
-        }
+    nKnots1 = 2 + K1 + M1;
 
-        knots1.push_back( tR );
+    knots1 = new double[nKnots1];
+
+    if( NULL == knots1 )
+    {
+        ERRMSG << "\n + [INFO] couldn't allocate memory for knots1\n";
+        pdout.clear();
+        return false;
     }
 
-    for( int i = 2 + K2 + M2; i > 0; --i )
+    for( int i = 0; i < nKnots1; ++i )
     {
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
-            ERRMSG << "\n + [INFO] couldn't read knot value #" << (knots2.size() + 1) << "\n";
+            ERRMSG << "\n + [INFO] couldn't read knot1 value #" << (i + 1) << "\n";
+            delete [] knots1;
+            knots1 = NULL;
             pdout.clear();
             return false;
         }
 
-        knots2.push_back( tR );
+        knots1[i] = tR;
     }
 
-    int C = (K1 + 1)*(K2 + 1);
+    nKnots2 = 2 + K2 + M2;
 
-    for( int i = 0; i < C; ++i )
+    knots2 = new double[nKnots2];
+
+    if( NULL == knots2 )
+    {
+        ERRMSG << "\n + [INFO] couldn't allocate memory for knots2\n";
+        delete [] knots1;
+        knots1 = NULL;
+        pdout.clear();
+        return false;
+    }
+
+    for( int i = 0; i < nKnots2; ++i )
     {
         if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
         {
-            ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+            ERRMSG << "\n + [INFO] couldn't read knot2 value #" << (i + 1) << "\n";
+            delete [] knots1;
+            knots1 = NULL;
+            delete [] knots2;
+            knots2 = NULL;
             pdout.clear();
             return false;
         }
 
-        if( tR <= 0 )
+        knots2[i] = tR;
+    }
+
+    nCoeffs1 = (K1 + 1);
+    nCoeffs2 = (K2 + 1);
+    int C = nCoeffs1 * nCoeffs2;
+
+    if( 0 == PROP3 )
+    {
+        // rational splines
+        coeffs = new double[C * 4];
+    }
+    else
+    {
+        // polynomial splines
+        coeffs = new double[C * 3];
+    }
+
+    if( NULL == coeffs )
+    {
+        ERRMSG << "\n + [INFO] couldn't allocate memory for coefficients\n";
+        delete [] knots1;
+        knots1 = NULL;
+        delete [] knots2;
+        knots2 = NULL;
+        pdout.clear();
+        return false;
+    }
+
+    if( 0 == PROP3 )
+    {
+        for( int i = 0, j = 3; i < C; ++i, j += 4 )
         {
-            ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
-            pdout.clear();
-            return false;
-        }
+            if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
+            {
+                ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+                delete [] knots1;
+                knots1 = NULL;
+                delete [] knots2;
+                knots2 = NULL;
+                delete [] coeffs;
+                coeffs = NULL;
+                pdout.clear();
+                return false;
+            }
 
-        weights.push_back( tR );
+            if( tR <= 0 )
+            {
+                ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+                delete [] knots1;
+                knots1 = NULL;
+                delete [] knots2;
+                knots2 = NULL;
+                delete [] coeffs;
+                coeffs = NULL;
+                pdout.clear();
+                return false;
+            }
+
+            coeffs[j] = tR;
+        }
+    }
+    else
+    {
+        for( int i = 0; i < C; ++i )
+        {
+            if( !ParseReal( pdout, idx, tR, eor, pd, rd ) )
+            {
+                ERRMSG << "\n + [INFO] couldn't read weight value #" << (i + 1) << "\n";
+                delete [] knots1;
+                knots1 = NULL;
+                delete [] knots2;
+                knots2 = NULL;
+                delete [] coeffs;
+                coeffs = NULL;
+                pdout.clear();
+                return false;
+            }
+
+            if( tR <= 0 )
+            {
+                ERRMSG << "\n + [CORRUPT FILE] invalid weight (" << tR << ")\n";
+                delete [] knots1;
+                knots1 = NULL;
+                delete [] knots2;
+                knots2 = NULL;
+                delete [] coeffs;
+                coeffs = NULL;
+                pdout.clear();
+                return false;
+            }
+        }
     }
 
     double tX;
     double tY;
     double tZ;
 
-    for( int i = 0; i < C; ++i )
+    for( int i = 0, j = 0; i < C; ++i )
     {
         if( !ParseReal( pdout, idx, tX, eor, pd, rd )
             || !ParseReal( pdout, idx, tY, eor, pd, rd )
             || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
         {
             ERRMSG << "\n + [INFO] couldn't read control point #" << (i + 1) << "\n";
+            delete [] knots1;
+            knots1 = NULL;
+            delete [] knots2;
+            knots2 = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
             pdout.clear();
             return false;
         }
 
-        controls.push_back( IGES_POINT( tX, tY, tZ ) );
+        coeffs[j++] = tX;
+        coeffs[j++] = tY;
+        coeffs[j++] = tZ;
+
+        if( 0 == PROP3 )
+            ++j;
     }
 
     if( !ParseReal( pdout, idx, U0, eor, pd, rd ) )

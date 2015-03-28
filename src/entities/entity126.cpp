@@ -87,6 +87,12 @@ bool IGES_ENTITY_126::format( int &index )
 {
     pdout.clear();
 
+    if( !knots || !coeffs )
+    {
+        ERRMSG << "\n + [INFO] no curve data\n";
+        return false;
+    }
+
     if( index < 1 || index > 9999999 )
     {
         ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
@@ -184,9 +190,9 @@ bool IGES_ENTITY_126::format( int &index )
     for( int i = 0, j = 3; i < nCoeffs; ++i )
     {
         if( 0 == PROP3 )
-            tD = coeffs[j];
+            tD = coeffs[j++];
 
-        if( !FormatPDREal( tstr, tD, pd, uir ) )
+        if( !FormatPDREal( tstr, tD, pd, 1e-6 ) )
         {
             ERRMSG << "\n + [INFO] could not format weights\n";
             return false;

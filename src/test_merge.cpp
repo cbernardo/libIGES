@@ -27,15 +27,13 @@
  *
  */
 
-// NOTE:
-//  1. Allow user to specify UNITS output (unit:)
-//  2. Allow user to specify nominal orientation of input model (orient: w, x, y, z, dX, dY, dZ)
-
 // Format:
+// (optional) unit: in/mm
 // file: "quoted filename"
+// (optional) orient: w, x, y, z, dX, dY, dZ;
 // pos: zrot, flip (0,1), Xoffset, Yoffset, Zoffset;
 // [more 'pos:'] lines if multiple instances are desired
-// [more 'file:' + 'pos:' lines for additional parts and subassemblies]
+// [more 'file:' + 'orient' + 'pos:' lines for additional parts and subassemblies]
 
 #include <cmath>
 #include <iostream>

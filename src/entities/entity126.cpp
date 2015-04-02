@@ -1129,7 +1129,7 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
         return true;
 
     // we must test for planarity by taking the normal vector of every
-    // 3 control points; if all normals are equal then we have a plane
+    // 3 control points; if all normals are equal (or anti) then we have a plane
     IGES_POINT p0;
     IGES_POINT p1;
     IGES_POINT p2;
@@ -1176,7 +1176,8 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
 
         CalcNormal( pts[0], pts[1], pts[2], &tnorm1 );
 
-        if( !PointMatches( tnorm0, tnorm1, 1e-8 ) )
+        if( !PointMatches( tnorm0, tnorm1, 1e-8 )
+            && !PointMatches( tnorm0, -tnorm1, 1e-8 ) )
             return false;
 
         tnorm0 = tnorm1;

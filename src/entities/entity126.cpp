@@ -109,7 +109,8 @@ bool IGES_ENTITY_126::format( int &index )
 
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
-    double uir = 1e-6;  // any REAL parameters are NURBS controls; maintain high precision
+    // any REAL parameters are NURBS data, possibly (U,V) curve on surface; maintain high precision
+    double uir = 1e-8;
 
     if( K < 1 )
     {
@@ -962,9 +963,8 @@ bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, doub
 }
 
 
-
-bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, double* coeff, bool& isRational,
-                   bool& isClosed, bool& isPeriodic )
+bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff, bool isRational,
+                   bool isClosed, bool isPeriodic )
 {
     if( !knot || !coeff )
     {
@@ -1017,8 +1017,36 @@ bool IGES_ENTITY_126::SetNURBSData( int& nCoeff, int& order, double* knot, doubl
     else
         PROP3 = 1;
 
-    knots = knot;
-    coeffs = coeff;
+    knots = new double[nKnots];
+
+    if( !knots )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed for knots[]\n";
+        return false;
+    }
+
+    int nDbls;
+
+    if( isRational )
+        nDbls = nCoeffs * 4;
+    else
+        nDbls = nCoeffs * 3;
+
+    coeffs = new double[nDbls];
+
+    if( !coeffs )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed for coeffs[]\n";
+        delete [] knots;
+        knots = NULL;
+        return false;
+    }
+
+    for( int i = 0; i < nKnots; ++i )
+        knots[i] = knot[i];
+
+    for( int i = 0; i < nDbls; ++i )
+        coeffs[i] = coeff[i];
 
     scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
 

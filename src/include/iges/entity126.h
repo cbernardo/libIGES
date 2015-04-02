@@ -115,14 +115,14 @@ public:
     virtual int GetNSegments( void );
     virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
 
-    // nCoeff: number of coontrol points and weights
+    // nCoeff: number of control points and weights
     // knot: pointer to hold pointer to knots
     // coeffs: pointer to hold pointer to control points and weights
     bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff, bool& isRational,
                        bool& isClosed, bool& isPeriodic );
 
-    bool SetNURBSData( int& nCoeff, int& order, double* knot, double* coeff, bool& isRational,
-                       bool& isClosed, bool& isPeriodic );
+    bool SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff,
+                       bool isRational );
 
     bool IsPlanar( void );
     bool IsRational( void );

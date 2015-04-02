@@ -963,8 +963,7 @@ bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, doub
 }
 
 
-bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff, bool isRational,
-                   bool isClosed, bool isPeriodic )
+bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff, bool isRational )
 {
     if( !knot || !coeff )
     {

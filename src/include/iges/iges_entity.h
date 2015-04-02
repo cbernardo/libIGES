@@ -29,6 +29,7 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <vector>
 
 #include "iges_base.h"
 

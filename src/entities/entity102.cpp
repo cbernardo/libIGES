@@ -710,3 +710,34 @@ bool IGES_ENTITY_102::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
     ERRMSG << "\n + [WARNING] method invoked on composite curve\n";
     return false;
 }
+
+
+bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
+{
+    if( !aSegment )
+    {
+        ERRMSG << "\n + [ERROR] null pointer passed as aSegment\n";
+        return false;
+    }
+
+    if( aSegment->GetEntityType() == ENT_COMPOSITE_CURVE )
+    {
+        ERRMSG << "\n + [VIOLATION] segment pointer is a composite curve\n";
+        return false;
+    }
+
+    if( !curves.empty() && IsClosed() )
+    {
+        ERRMSG << "\n + [ERROR] curve is aready closed\n";
+        return false;
+    }
+
+    if( !aSegment->AddReference( this ) )
+    {
+        ERRMSG << "\n + [ERROR] could not add reference\n";
+        return false;
+    }
+
+    curves.push_back( aSegment );
+    return true;
+}

@@ -91,6 +91,9 @@ public:
     IGES_ENTITY_102( IGES* aParent );
     virtual ~IGES_ENTITY_102();
 
+    // method for adding items to this compound curve
+    bool AddSegment( IGES_CURVE* aSegment );
+
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

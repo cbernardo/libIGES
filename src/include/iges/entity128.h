@@ -101,9 +101,9 @@ protected:
     int PROP4;
     int PROP5;
 
-    double U0;
+    double U0;  // first parameter
     double U1;
-    double V0;
+    double V0;  // second parameter
     double V1;
 
 public:
@@ -120,10 +120,25 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    // std::list<double>knots1;
-    // std::list<double>knots2;
-    // std::list<double>weights;
-    // std::list<IGES_POINT>controls;
+    // nCoeff: number of control points and weights
+    // knot: pointer to hold pointer to knots
+    // coeffs: pointer to hold pointer to control points and weights
+    bool GetNURBSData( int& nCoeff1, int& nCoeff2, int& order1, int& order2,
+                       double** knot1, double** knot2, double** coeff,
+                       bool& isRational, bool& isClosed1, bool& isClosed2,
+                       bool& isPeriodic1, bool& isPeriodic2 );
+
+    bool SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
+                       const double* knot1, const double* knot2,
+                       const double* coeff, bool isRational,
+                       bool isPeriodic1, bool isPeriodic2 );
+
+    bool IsRational( void );
+    bool isClosed1( void );
+    bool isClosed2( void );
+    bool isPeriodic1( void );
+    bool isPeriodic2( void );
+
 };
 
 #endif  // ENTITY_128_H

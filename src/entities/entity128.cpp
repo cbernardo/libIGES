@@ -120,7 +120,7 @@ bool IGES_ENTITY_128::format( int &index )
 
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
-    double uir = 1e-6;  // any REAL parameters are NURBS controls; maintain high precision
+    double uir = 1e-8;  // any REAL parameters are NURBS data, maintain high precision
 
     if( K1 < 1 )
     {
@@ -836,5 +836,310 @@ bool IGES_ENTITY_128::SetEntityForm( int aForm )
 bool IGES_ENTITY_128::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
     // hierarchy is ignored so always return true
+    return true;
+}
+
+
+bool IGES_ENTITY_128::IsRational( void )
+{
+    if( 0 == PROP3 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_128::isClosed1( void )
+{
+    if( 1 == PROP1 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_128::isClosed2( void )
+{
+    if( 1 == PROP2 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_128::isPeriodic1( void )
+{
+    if( 1 == PROP4 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_128::isPeriodic2( void )
+{
+    if( 1 == PROP5 )
+        return true;
+
+    return false;
+}
+
+
+bool IGES_ENTITY_128::GetNURBSData( int& nCoeff1, int& nCoeff2,
+                                    int& order1, int& order2,
+                                    double** knot1, double** knot2,
+                                    double** coeff, bool& isRational,
+                                    bool& isClosed1, bool& isClosed2,
+                                    bool& isPeriodic1, bool& isPeriodic2 )
+{
+    nCoeff1 = 0;
+    nCoeff2 = 0;
+    order1 = 0 ;
+    order2 = 0 ;
+    knot1 = NULL;
+    knot2 = NULL;
+    coeff = NULL;
+
+    if( !knots1 )
+        return false;
+
+    *knot1 = knots1;
+    *knot2 = knots2;
+    *coeff = coeffs;
+    nCoeff1 = nCoeffs1;
+    nCoeff2 = nCoeffs2;
+    order1 = M1 + 1;
+    order2 = M2 + 1;
+
+    if( PROP1 )
+        isClosed1 = true;
+    else
+        isClosed1 = false;
+
+    if( PROP2 )
+        isClosed2 = true;
+    else
+        isClosed2 = false;
+
+    if( PROP3 )
+        isRational = false;
+    else
+        isRational = true;
+
+    if( PROP4 )
+        isPeriodic1 = true;
+    else
+        isPeriodic1 = false;
+
+    if( PROP5 )
+        isPeriodic2 = true;
+    else
+        isPeriodic2 = false;
+
+    return true;
+}
+
+
+bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
+                                    const double* knot1, const double* knot2,
+                                    const double* coeff, bool isRational,
+                                    bool isPeriodic1, bool isPeriodic2 )
+{
+    if( !knot1 || !knot2 || !coeff )
+    {
+        ERRMSG << "\n + [INFO] invalid NURBS parameter pointer (NULL)\n";
+        return false;
+    }
+
+    if( order1 < 2 )
+    {
+        ERRMSG << "\n + [INFO] invalid order1; minimum is 2 which represents a line\n";
+        return false;
+    }
+
+    if( order2 < 2 )
+    {
+        ERRMSG << "\n + [INFO] invalid order2; minimum is 2 which represents a line\n";
+        return false;
+    }
+
+    if( nCoeff1 < order1 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of control points in parameter 1; minimum is equal to the order of the B-Splines\n";
+        return false;
+    }
+
+    if( nCoeff2 < order2 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of control points in parameter 2; minimum is equal to the order of the B-Splines\n";
+        return false;
+    }
+
+    // M = Degree of basis function; Order = Degree + 1
+    // # of knots = 2 + K + M
+    // # of coefficients = K + 1
+
+    nKnots1 = nCoeff1 + order1;
+    nKnots2 = nCoeff2 + order2;
+    nCoeffs1 = nCoeff1;
+    nCoeffs2 = nCoeff2;
+    K1 = nCoeff1 - 1;
+    K2 = nCoeff2 - 1;
+    M1 = order1 - 1;
+    M2 = order2 - 1;
+
+    if( ssurf )
+    {
+        freeSurf( ssurf );
+        ssurf = NULL;
+    }
+
+    if( knots1 )
+    {
+        delete [] knots1;
+        knots1 = NULL;
+    }
+
+    if( knots2 )
+    {
+        delete [] knots2;
+        knots2 = NULL;
+    }
+
+    if( coeffs )
+    {
+        delete [] coeffs;
+        coeffs = NULL;
+    }
+
+    // flag whether the surface is rational or polynomial
+    if( isRational )
+        PROP3 = 0;
+    else
+        PROP3 = 1;
+
+    knots1 = new double[nKnots1];
+
+    if( !knots1 )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed for knots1[]\n";
+        return false;
+    }
+
+    knots2 = new double[nKnots2];
+
+    if( !knots2 )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed for knots2[]\n";
+        delete [] knots1;
+        knots1 = NULL;
+        return false;
+    }
+
+    int nDbls;
+
+    if( isRational )
+        nDbls = nCoeffs1 * nCoeffs2 * 4;
+    else
+        nDbls = nCoeffs1 * nCoeffs2 * 3;
+
+    coeffs = new double[nDbls];
+
+    if( !coeffs )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed for coeffs[]\n";
+        delete [] knots1;
+        knots1 = NULL;
+        delete [] knots2;
+        knots2 = NULL;
+        return false;
+    }
+
+    for( int i = 0; i < nKnots1; ++i )
+        knots1[i] = knot1[i];
+
+    for( int i = 0; i < nKnots2; ++i )
+        knots2[i] = knot2[i];
+
+    for( int i = 0; i < nDbls; ++i )
+        coeffs[i] = coeff[i];
+
+    ssurf = newSurf( nCoeffs1, nCoeffs2, M1 + 1, M2 + 1,
+                     knots1, knots2, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+    if( !ssurf )
+    {
+        ERRMSG << "\n + [INFO] memory allocation failed in SISL newSurf()\n";
+        return false;
+    }
+
+    int stat = 0;
+    s1603( ssurf, &U0, &V0, &U1, &V1, &stat );
+
+    switch ( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified problems determining U,V parameter values\n";
+            break;
+
+        default:
+            ERRMSG << "\n + [INFO] could not determine U,V parameter values\n";
+            return false;
+            break;
+    }
+
+    // determine closure; we rely on the user to supply the correct periodicity
+    double uir = 1e-8;
+    stat = 0;
+
+    if( parent )
+        uir = parent->globalData.minResolution;
+
+    do
+    {
+        int dg1, dg2, dg3, dg4;
+        s1450( ssurf, uir, &PROP1, &PROP2, &dg1, &dg2, &dg3, &dg4, &stat );
+    } while( 0 );
+
+    switch ( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified problems determining closure\n";
+            break;
+
+        default:
+            ERRMSG << "\n + [INFO] could not determine closure\n";
+            return false;
+            break;
+    }
+
+    if( !PROP1 && isPeriodic1 )
+    {
+        ERRMSG << "\n + [WARNING] surface open in Parameter 1 specified as periodic\n";
+        isPeriodic1 = false;
+    }
+
+    if( !PROP2 && isPeriodic2 )
+    {
+        ERRMSG << "\n + [WARNING] surface open in Parameter 2 specified as periodic\n";
+        isPeriodic2 = false;
+    }
+
+    if( isPeriodic1 )
+        PROP4 = 1;
+    else
+        PROP4 = 0;
+
+    if( isPeriodic2 )
+        PROP5 = 1;
+    else
+        PROP5 = 0;
+
     return true;
 }

@@ -781,6 +781,7 @@ bool IGES_ENTITY_126::GetStartPoint( IGES_POINT& pt, bool xform )
 
         case 1:
             ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            stat = 0;
             break;
 
         default:
@@ -830,6 +831,7 @@ bool IGES_ENTITY_126::GetEndPoint( IGES_POINT& pt, bool xform )
 
         case 1:
             ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            stat = 0;
             break;
 
         default:
@@ -910,6 +912,7 @@ bool IGES_ENTITY_126::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
 
         case 1:
             ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            stat = 0;
             break;
 
         default:
@@ -1065,6 +1068,7 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
 
     case 1:
         ERRMSG << "\n + [WARNING] unspecified problems determining V0, V1 parameter values\n";
+        stat = 0;
         break;
 
     default:

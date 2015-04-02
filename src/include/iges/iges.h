@@ -26,9 +26,6 @@
 #ifndef IGES_H
 #define IGES_H
 
-// NOTE: This file should describe the IGES superclass which can be used to
-// read/write data and instantiate an IGES model.
-
 #include <list>
 #include <string>
 #include <vector>

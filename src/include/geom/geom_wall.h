@@ -34,22 +34,19 @@ class IGES;
 class IGES_GEOM_WALL
 {
 private:
-    IGES_POINT vnorm;   // normal vector
-    SISLSurf* plane;    // NURBS representation of the plane
-    SISLCurve* side0;   // Representation of one of the 4 bounding edges
-    SISLCurve* side1;
-    SISLCurve* side2;
-    SISLCurve* side3;
+    SISLSurf* plane;        // NURBS representation of the plane
+    SISLCurve* side[4];     // Representation of one of the 4 bounding edges
+    IGES_POINT vertex[4];   // vertices as specified by the user
 
     void init( void );
+    void clear( void );
 
 public:
     IGES_GEOM_WALL();
-    IGES_GEOM_WALL( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGES_POINT p3 );
     ~IGES_GEOM_WALL();
 
     bool SetParams( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGES_POINT p3 );
-    bool Instantiate( IGES* model );
+    IGES_ENTITY_144* Instantiate( IGES* model );
 };
 
 #endif  // IGES_GEOM_WALL_H

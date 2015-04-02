@@ -46,6 +46,8 @@ configure_file(
 include_directories(
     "${LIBIGES_BINARY_DIR}"
     "${LIBIGES_SOURCE_DIR}/include"
+    "${LIBIGES_SOURCE_DIR}/include/iges"
+    "${LIBIGES_SOURCE_DIR}/include/geom"
     "${SISL_INCLUDE_DIR}"
     )
 
@@ -58,6 +60,7 @@ set( CMAKE_CXX_FLAGS "-g -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
+set( SRC_GEOM "${CMAKE_CURRENT_SOURCE_DIR}/geom" )
 
 add_library( iges STATIC
     "${SRC_ENT}/iges_entity.cpp"
@@ -83,6 +86,9 @@ add_library( iges STATIC
     "${SRC_IGS}/iges.cpp"
     "${SRC_IGS}/iges_elements.cpp"
     "${SRC_IGS}/iges_helpers.cpp"
+    "${SRC_GEOM}/geom_wall.cpp"
+    "${SRC_GEOM}/geom_cylinder.cpp"
+    "${SRC_GEOM}/geom_plane.cpp"
     )
 
 target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )
@@ -91,14 +97,14 @@ add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/test_read.cpp"
     )
 
-#add_executable( csgtest
-#    "${LIBIGES_SOURCE_DIR}/test_csg.cpp"
-#    )
-
 add_executable( mergetest
     "${LIBIGES_SOURCE_DIR}/test_merge.cpp"
     )
 
+add_executable( curvetest
+    "${LIBIGES_SOURCE_DIR}/test_curves.cpp"
+    )
+
 target_link_libraries( readtest iges )
-#target_link_libraries( csgtest iges )
 target_link_libraries( mergetest iges )
+target_link_libraries( curvetest iges )

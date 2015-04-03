@@ -10,3 +10,6 @@ Curve on Surface (E142).
    point set for each curve or surface and let the specific
    IGES entity calculate the point set based on an error
    parameter specified by the user (default: IGES minResolution).
+
+3. Surface of Revolution:
+    + ensure Axis is a LINE entity

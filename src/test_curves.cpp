@@ -21,6 +21,7 @@
 #include <iostream>
 #include <iges.h>
 #include <geom_wall.h>
+#include <geom_cylinder.h>
 
 using namespace std;
 
@@ -111,6 +112,30 @@ int main()
             cerr << "[FAIL]: could not instantiate wall\n";
             return -1;
         }
+    }
+
+    IGES_GEOM_CYLINDER cyl;
+
+    IGES_POINT p0, p1, p2;
+    p0.x = -0.5;
+    p0.y = -0.5;
+    p0.z = 0.0;
+    p1.x = 0.0;
+    p1.y = 0.0;
+    p1.z = 0.0;
+
+    if( !cyl.SetParams( p0, p1, p1 ) )
+    {
+        cerr << "[FAIL]: could not initialize cylinder\n";
+        return -1;
+    }
+
+    vector<IGES_ENTITY_144*> tlist;
+
+    if( !cyl.Instantiate( &model, 1.5, -0.5, tlist ) )
+    {
+        cerr << "[FAIL]: could not instantiate cylinder\n";
+        return -1;
     }
 
     model.Write( "junk.igs", true );

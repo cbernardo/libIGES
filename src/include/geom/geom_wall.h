@@ -35,7 +35,7 @@ class IGES_GEOM_WALL
 {
 private:
     SISLSurf* plane;        // NURBS representation of the plane
-    SISLCurve* side[4];     // Representation of one of the 4 bounding edges
+    SISLCurve* side[4];     // Representation of the 4 bounding edges
     IGES_POINT vertex[4];   // vertices as specified by the user
 
     void init( void );

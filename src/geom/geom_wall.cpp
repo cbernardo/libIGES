@@ -185,7 +185,7 @@ bool IGES_GEOM_WALL::SetParams( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGE
         }
 
         pCurve = &side[i];
-        double epar;
+        double epar = 1e-8;
         s1602( startp, endp, 2, 3, 0.0, &epar, pCurve, &stat );
 
         switch( stat )
@@ -194,12 +194,12 @@ bool IGES_GEOM_WALL::SetParams( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGE
                 break;
 
             case 1:
-                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS plane\n";
+                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS curve\n";
                 stat = 0;
                 break;
 
             default:
-                ERRMSG << "\n + [ERROR] could not create NURBS plane\n";
+                ERRMSG << "\n + [ERROR] could not create NURBS curve\n";
                 clear();
                 return false;
                 break;
@@ -611,15 +611,6 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
         model->DelEntity( (IGES_ENTITY*)itps );
         return NULL;
     }
-
-    // XXX - TO BE IMPLEMENTED
-    // +* copy surface to isurf
-    // +* copy side[n] to ibound[n]
-    // +* set line data in iline[n]
-    // +* put ibound[n] into icc[0]
-    // +* put iline[n] into icc[1]
-    // +* put isurf, icc into icurve
-    // +* put isurf, icurve into itps
 
     return itps;
 }

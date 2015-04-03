@@ -26,4 +26,32 @@
 #ifndef IGES_GEOM_CYLINDER_H
 #define IGES_GEOM_CYLINDER_H
 
+#include <vector>
+#include <sisl.h>
+#include <all_entities.h>
+
+class IGES;
+
+class IGES_GEOM_CYLINDER
+{
+private:
+    IGES_POINT arcs[5];     // center, start .. end for series of sub-arcs;
+                            // the end point of one sub-arc is the start
+                            // of the next
+    int narcs;              // number of arc segments to represent the surface
+    double radius;
+    double angles[6];       // start/end angles for arc1, arc2, arc3
+
+    void init( void );
+    void clear( void );
+
+public:
+    IGES_GEOM_CYLINDER();
+    ~IGES_GEOM_CYLINDER();
+
+    bool SetParams( IGES_POINT center, IGES_POINT start, IGES_POINT end );
+    bool Instantiate( IGES* model, double top, double bot,
+                      std::vector<IGES_ENTITY_144*>& result );
+};
+
 #endif  // IGES_GEOM_CYLINDER_H

@@ -1,0 +1,77 @@
+Notes on implementing the PCB noundary and cutouts:
+---------------------------------------------------
+
+I. Step 1 processing:
+    KiCad arcs, lines, and circles must be converted
+    to sets of bounds:
+    a. main boundary
+    b. drill holes and other circular cutouts
+    c. internal cutouts
+
+II. Step 2 processing:
+    a. Circular holes must be checked against the main
+    outline and the main outline's segments adjusted
+    accordingly.
+        + there may be only 0 or 2 intersections with
+          the main boundary; 1 intersection means the
+          hole is tangent to an edge and this is
+          forbidden since it is a serious mechanical
+          defect. More than 2 intersections is forbidden
+          since that would split the main outline into
+          multiple bodies.
+
+          There is an exception to this rule when the
+          intersection happens to be the terminal point
+          of a segment; in this instance we need to
+          store a pointer to both entities (CW entity
+          first) and (to avoid duplicate calcs in the
+          future) mark whether the intersection is a
+          terminal point or not.
+
+        + Take any of the arcs formed by the split at
+          the 2 intersections and determine if it is
+          inside or outside the main outline. If it is
+          outside then take the CW terminus and split
+          the intersecting entities as necessary,
+          otherwise take the CCW terminus and split
+          the intersecting entitites. Finally, eliminate
+          all intermediate segments in the outline in a
+          CCW direction. Remember to correctly handle
+          the cases where the ends of the segment list
+          are involved.
+
+    b. Circular holes must be checked against each cutout
+    and the cutout adjusted accordingly.
+        + [TBD] the scheme is similar to that of the
+          main outline but we are performing a boolean
+          addition rather than a subtraction
+        + ???
+
+III. Step 3 processing:
+    Remaining circular holes must be checked against
+    eachother and overlapping holes merged; to avoid
+    multiple calculations, create lists with all holes
+    which overlap. In a pathological case for example
+    a user may employ multiple holes to represent a slot
+    and these holes must be amalgamated to produce a
+    strange undulating slot. Since we cannot guess at
+    the user's intention, such multiple drills will
+    remain as multiple overlapping drills; they will not
+    be interpreted as a slot.
+
+IV. Step 4 processing:
+    Cutouts must be checked against eachother and
+    merged.
+
+    a. [TBD] this requires a bit more thought than the
+    case of circles being removed since in many cases
+    we will be dealing with multiple segments.
+
+V. Step 5 processing:
+    Cutouts (except for merged circular holes) must be
+    checked against the main outline and the outline
+    adjusted accordingly.
+
+    a. [TBD] The processing shall be similar to that
+    of Step 4 but we are performing a boolean subtraction
+    rather than an addition.

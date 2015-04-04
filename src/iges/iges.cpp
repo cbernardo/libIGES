@@ -267,7 +267,7 @@ bool IGES::init(void)
     globalData.doubleMaxExp = 0;
     globalData.doubleMaxSig = 0;
     globalData.modelScale = 1.0;
-    globalData.unitsFlag = UNIT_INCH;
+    globalData.unitsFlag = UNIT_MILLIMETER;
     globalData.maxLinewidthGrad = 1;
     globalData.maxLinewidth = 0;
     globalData.minResolution = 1.0e-8;

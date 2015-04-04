@@ -27,7 +27,7 @@
 #define IGES_BASE_H
 
 // precision used to represent angles
-#define IGES_ANGLE_RES (1.0e-12)
+#define IGES_ANGLE_RES (1.0e-15)
 
 enum IGES_COLOR
 {

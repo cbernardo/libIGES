@@ -110,7 +110,7 @@ bool IGES_ENTITY_126::format( int &index )
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
     // any REAL parameters are NURBS data, possibly (U,V) curve on surface; maintain high precision
-    double uir = 1e-8;
+    double uir = 1e-15;
 
     if( K < 1 )
     {
@@ -1125,11 +1125,12 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
 {
     // if we have a line (or no data) return false
     if( nCoeffs < 3 )
+    {
+        norm->x = 0.0;
+        norm->y = 0.0;
+        norm->z = 1.0;
         return false;
-
-    // if we have 3 control points then we have a unique plane
-    if( nCoeffs == 3 && !norm )
-        return true;
+    }
 
     // we must test for planarity by taking the normal vector of every
     // 3 control points; if all normals are equal (or anti) then we have a plane
@@ -1181,7 +1182,12 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
 
         if( !PointMatches( tnorm0, tnorm1, 1e-8 )
             && !PointMatches( tnorm0, tnorm1 * -1.0, 1e-8 ) )
+        {
+            norm->x = 0.0;
+            norm->y = 0.0;
+            norm->z = 1.0;
             return false;
+        }
 
         tnorm0 = tnorm1;
     }

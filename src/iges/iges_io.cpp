@@ -495,6 +495,12 @@ bool FormatDEInt( std::string& out, const int num )
 // format a real number as a float or double and tack on a delimeter (may be PD or RD)
 bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 {
+    if( 0 >= minRes )
+    {
+        ERRMSG << "\n + [BUG] minRes <= 0\n";
+        return false;
+    }
+
     double vlim = var / minRes;
 
     if( vlim < -1.0 )

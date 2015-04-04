@@ -57,7 +57,7 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 
         while( rbeg != rend )
         {
-            if( !(*rbeg)->DelReference( this ) )
+            if( !((IGES_ENTITY*)(*rbeg))->DelReference( this ) )
             {
                 ERRMSG << "\n + [BUG] could not delete reference from a child entity\n";
             }
@@ -409,6 +409,7 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
     if( clear_all )
     {
         sp = curves.begin();
+        sp = curves.end();
 
         while( sp != ep )
         {
@@ -736,6 +737,12 @@ bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
     {
         ERRMSG << "\n + [ERROR] could not add reference\n";
         return false;
+    }
+
+    if( !aSegment->SetDependency( STAT_DEP_PHY ) )
+    {
+        ERRMSG << "\n + [WARNING] could not set physical dependency on Entity #";
+        cerr << aSegment->GetEntityType() << "\n";
     }
 
     curves.push_back( aSegment );

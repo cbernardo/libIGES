@@ -120,11 +120,14 @@ int main()
     p0.x = -0.5;
     p0.y = -0.5;
     p0.z = 0.0;
-    p1.x = 0.0;
+    p1.x = -1.0;
     p1.y = 0.0;
     p1.z = 0.0;
+    p2.x = 0.0;
+    p2.y = 0.0;
+    p2.z = 0.0;
 
-    if( !cyl.SetParams( p0, p1, p1 ) )
+    if( !cyl.SetParams( p0, p1, p2 ) )
     {
         cerr << "[FAIL]: could not initialize cylinder\n";
         return -1;

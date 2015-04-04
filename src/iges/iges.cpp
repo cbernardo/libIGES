@@ -270,7 +270,7 @@ bool IGES::init(void)
     globalData.unitsFlag = UNIT_INCH;
     globalData.maxLinewidthGrad = 1;
     globalData.maxLinewidth = 0;
-    globalData.minResolution = 0;
+    globalData.minResolution = 1.0e-8;
     globalData.maxCoordinateValue = 0.0;
     globalData.igesVersion = 3;
     globalData.draftStandard = DRAFT_NONE;

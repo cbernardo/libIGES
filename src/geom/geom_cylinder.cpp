@@ -123,9 +123,11 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
         return false;
     }
 
-    IGES_POINT p0 = center - start;
+    IGES_POINT p0 = center;
+    p0 -= start;
     double rad1 = sqrt( p0.x*p0.x + p0.y*p0.y );
-    p0 = center - end;
+    p0 = center;
+    p0 -= end;
     double rad2 = sqrt( p0.x*p0.x + p0.y*p0.y );
 
     if( abs(rad1 - rad2) > 0.001 )
@@ -289,7 +291,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     // + [2xnarcs]xE102: icc, compound curve (1 for NURBS bound, 1 for geometric bound)
     // + (narcs)xE142: ibound, Curve on surface (bounds of E120)
     // + (narcs)xE144: itps, trimmed surface
-    // + E124: transforms required for bottom part of simple bounding curve
+    // + (narcs)E124: transforms required for bottom part of simple bounding curve
 
     IGES_ENTITY_110* iline[8];
     IGES_ENTITY_120* isurf = NULL;
@@ -298,7 +300,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     IGES_ENTITY_102* icc[6];
     IGES_ENTITY_142* ibound[3];
     IGES_ENTITY_144* itps[3];
-    IGES_ENTITY_124* itrans;
+    IGES_ENTITY_124* itrans[3];
     SISLCurve* inurbs[12];
 
     for( int i = 0; i < 8; ++i )
@@ -318,6 +320,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     for( int i = 0; i < 3; ++i )
         itps[i] = NULL;
+
+    for( int i = 0; i < 3; ++i )
+        itrans[i] = NULL;
 
     for( int i = 0; i < 12; ++i )
         inurbs[i] = NULL;
@@ -358,6 +363,12 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         if( itps[i] ) \
             model->DelEntity((IGES_ENTITY*)itps[i]); \
             itps[i] = NULL; \
+    }\
+    for( int i = 0; i < 3; ++i ) \
+    { \
+        if( itrans[i] ) \
+            model->DelEntity((IGES_ENTITY*)itrans[i]); \
+            itrans[i] = NULL; \
     }\
     for( int i = 0; i < 12; ++i ) \
     { \
@@ -414,25 +425,31 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     }
 
     // transform entity
-    if( !model->NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
+    for( int i = 0; i < narcs; ++i )
     {
-        ERRMSG << "\n + [INFO] could not instantiate IGES transform matrix\n";
-        CLEANUP;
-        return false;
+        if( !model->NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
+        {
+            ERRMSG << "\n + [INFO] could not instantiate IGES transform matrix\n";
+            CLEANUP;
+            return false;
+        }
+
+        itrans[i] = dynamic_cast<IGES_ENTITY_124*>(ep);
+
+        if( !itrans[i] )
+        {
+            model->DelEntity( ep );
+            ERRMSG << "\n + [BUG] could not typecast IGES transform matrix\n";
+            CLEANUP;
+            return false;
+        }
+
+        itrans[i]->T.T.x = arcs[0].x;
+        itrans[i]->T.T.z = 2.0 * bot;
+        itrans[i]->T.R.v[0][0] = -1.0;
+        itrans[i]->T.R.v[2][2] = -1.0;
+        itrans[i]->SetEntityForm( 1 );
     }
-
-    itrans = dynamic_cast<IGES_ENTITY_124*>(ep);
-
-    if( !itrans )
-    {
-        model->DelEntity( ep );
-        ERRMSG << "\n + [BUG] could not typecast IGES transform matrix\n";
-        CLEANUP;
-        return false;
-    }
-
-    itrans->T.R.v[0][0] = -1.0;
-    itrans->SetEntityForm( 1 );
 
     // piecewise nurbs segments
     nsegs = narcs * 4;
@@ -546,10 +563,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     // create the axis of revolution and generatrix
     iline[0]->X1 = arcs[0].x;
     iline[0]->Y1 = arcs[0].y;
-    iline[0]->Z1 = top;
+    iline[0]->Z1 = bot;
     iline[0]->X2 = arcs[0].x;
     iline[0]->Y2 = arcs[0].y;
-    iline[0]->Z2 = bot;
+    iline[0]->Z2 = top;
 
     iline[1]->X1 = arcs[0].x + radius;
     iline[1]->Y1 = arcs[0].y;
@@ -629,13 +646,13 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     iarc[0]->yEnd = arcs[2].y;
 
     iarc[1]->zOffset = bot;
-    iarc[1]->xCenter = -arcs[0].x;
+    iarc[1]->xCenter = 0;
     iarc[1]->yCenter = arcs[0].y;
-    iarc[1]->xStart = -arcs[1].x;
-    iarc[1]->yStart = arcs[1].y;
-    iarc[1]->xEnd = -arcs[2].x;
-    iarc[1]->yEnd = arcs[2].y;
-    iarc[1]->SetTransform( itrans );
+    iarc[1]->xStart = arcs[0].x - arcs[2].x;
+    iarc[1]->yStart = arcs[2].y;
+    iarc[1]->xEnd = arcs[0].x - arcs[1].x;
+    iarc[1]->yEnd = arcs[1].y;
+    iarc[1]->SetTransform( itrans[0] );
 
     if( narcs > 1 )
     {
@@ -648,13 +665,13 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         iarc[2]->yEnd = arcs[3].y;
 
         iarc[3]->zOffset = bot;
-        iarc[3]->xCenter = -arcs[0].x;
+        iarc[3]->xCenter = 0;
         iarc[3]->yCenter = arcs[0].y;
-        iarc[3]->xStart = -arcs[2].x;
-        iarc[3]->yStart = arcs[2].y;
-        iarc[3]->xEnd = -arcs[3].x;
-        iarc[3]->yEnd = arcs[3].y;
-        iarc[3]->SetTransform( itrans );
+        iarc[3]->xStart = arcs[0].x - arcs[3].x;
+        iarc[3]->yStart = arcs[3].y;
+        iarc[3]->xEnd = arcs[0].x - arcs[2].x;
+        iarc[3]->yEnd = arcs[2].y;
+        iarc[3]->SetTransform( itrans[1] );
     }
 
     if( narcs > 2 )
@@ -668,16 +685,15 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         iarc[4]->yEnd = arcs[4].y;
 
         iarc[5]->zOffset = bot;
-        iarc[5]->xCenter = -arcs[0].x;
+        iarc[5]->xCenter = 0;
         iarc[5]->yCenter = arcs[0].y;
-        iarc[5]->xStart = -arcs[3].x;
-        iarc[5]->yStart = arcs[3].y;
-        iarc[5]->xEnd = -arcs[4].x;
-        iarc[5]->yEnd = arcs[4].y;
-        iarc[5]->SetTransform( itrans );
+        iarc[5]->xStart = arcs[0].x - arcs[4].x;
+        iarc[5]->yStart = arcs[4].y;
+        iarc[5]->xEnd = arcs[0].x - arcs[3].x;
+        iarc[5]->yEnd = arcs[3].y;
+        iarc[5]->SetTransform( itrans[2] );
     }
 
-    // qwerty; Assignment fails; check arc params carefully
     // compound curve for geometric bound
     if( !icc[narcs]->AddSegment( iarc[0] )
         || !icc[narcs]->AddSegment( iline[2] )
@@ -847,6 +863,40 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     for( int i = 0; i < narcs; ++i )
         result.push_back( itps[i] );
+
+    // clean up on success
+    do
+    {
+        for( int i = 0; i < 8; ++i )
+            iline[i] = NULL;
+
+        for( int i = 0; i < 12; ++i )
+            icurve[i] = NULL;
+
+        for( int i = 0; i < 6; ++i )
+            iarc[i] = NULL;
+
+        for( int i = 0; i < 6; ++i )
+            icc[i] = NULL;
+
+        for( int i = 0; i < 3; ++i )
+            ibound[i] = NULL;
+
+        for( int i = 0; i < 3; ++i )
+            itps[i] = NULL;
+
+        for( int i = 0; i < 3; ++i )
+            itrans[i] = NULL;
+
+        for( int i = 0; i < 12; ++i )
+        {
+            if( inurbs[i] )
+                freeCurve( inurbs[i] );
+
+            inurbs[i] = NULL;
+        }
+
+    } while( 0 );
 
     return true;
 }

@@ -404,6 +404,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             CLEANUP;
             return false;
         }
+
+        iline[i]->SetDependency( STAT_DEP_PHY );
     }
 
     // surface entity
@@ -423,6 +425,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         CLEANUP;
         return false;
     }
+
+    isurf->SetDependency( STAT_DEP_PHY );
 
     // transform entity
     for( int i = 0; i < narcs; ++i )
@@ -472,6 +476,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             CLEANUP;
             return false;
         }
+
+        icurve[i]->SetDependency( STAT_DEP_PHY );
     }
 
     // piecewise circular arc segments
@@ -495,6 +501,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             CLEANUP;
             return false;
         }
+
+        iarc[i]->SetDependency( STAT_DEP_PHY );
     }
 
     // composite curves
@@ -516,6 +524,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             CLEANUP;
             return false;
         }
+
+        icc[i]->SetDependency( STAT_DEP_PHY );
     }
 
     // boundary (curve on surface)
@@ -537,6 +547,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             CLEANUP;
             return false;
         }
+
+        ibound[i]->SetDependency( STAT_DEP_PHY );
     }
 
     // trimmed parametric surface

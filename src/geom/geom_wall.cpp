@@ -244,6 +244,7 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
     }
 
     isurf = dynamic_cast<IGES_ENTITY_128*>(ep);
+    isurf->SetDependency( STAT_DEP_PHY );
 
     if( NULL == isurf )
     {
@@ -280,6 +281,8 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
             model->DelEntity( (IGES_ENTITY*)isurf );
             return NULL;
         }
+
+        ibound[i]->SetDependency( STAT_DEP_PHY );
     }
 
     IGES_ENTITY_110* iline[4];
@@ -316,6 +319,8 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
             model->DelEntity( (IGES_ENTITY*)isurf );
             return NULL;
         }
+
+        iline[i]->SetDependency( STAT_DEP_PHY );
     }
 
     IGES_ENTITY_102* icc[2];
@@ -358,6 +363,8 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
             model->DelEntity( (IGES_ENTITY*)isurf );
             return NULL;
         }
+
+        icc[i]->SetDependency( STAT_DEP_PHY );
     }
 
     IGES_ENTITY_142* icurve;
@@ -398,6 +405,8 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
         model->DelEntity( (IGES_ENTITY*)isurf );
         return NULL;
     }
+
+    icurve->SetDependency( STAT_DEP_PHY );
 
     IGES_ENTITY_144* itps;
 

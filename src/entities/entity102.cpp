@@ -667,7 +667,7 @@ bool IGES_ENTITY_102::IsClosed( void )
     std::list<IGES_CURVE*>::iterator ec = curves.end();
     std::list<IGES_CURVE*>::reverse_iterator lc = curves.rbegin();
 
-    // if we require at least 1 item which reports segments > 0
+    // we require at least 1 item which reports segments > 0
     if( curves.size() == 1 && (*sc)->GetEntityType() != ENT_CIRCULAR_ARC )
         return false;
 

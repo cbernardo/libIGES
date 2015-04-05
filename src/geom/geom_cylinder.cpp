@@ -199,7 +199,7 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
         // range of angles will be >= 0 .. <= 3*M_PI
         angles[0] = ang1;
 
-        if( ang2 <= M_PI )
+        if( ang2 <= M_PI || ( ang1 >= M_PI && ang2 <= 2.0 * M_PI ) )
         {   angles[1] = ang2;
             narcs = 1;
         }

@@ -1,12 +1,12 @@
 /*
- * file: geom_plane.h
+ * file: geom_outline.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: object to aid in the creation of an IGES model
- * for the top and bottom surfaces of a PCB. A segment may be
- * a circular arc (aka arc), a circle, or a line and is capable
- * of computing its intersection with any other given segment.
+ * Description: This class represents an outline which consists of
+ * a list of segments. Once the segments form a closed loop no
+ * more segments may be added and the internal segments are arranged
+ * in a counterclockwise fashion.
  *
  * This file is part of libIGES.
  *
@@ -25,7 +25,16 @@
  *
  */
 
-#ifndef IGES_GEOM_PLANE_H
-#define IGES_GEOM_PLANE_H
+/*
+ * NOTES:
+ *
+ * OPERATIONS:
+ * + AddSegment: adds another segment to the list; the added segment
+ *   must have a start point which coincides with the terminal point
+ *   of the previous segment.
+ */
 
-#endif  // IGES_GEOM_PLANE_H
+#ifndef IGES_GEOM_OUTLINE_H
+#define IGES_GEOM_OUTLINE_H
+
+#endif  // IGES_GEOM_OUTLINE_H

@@ -1077,6 +1077,16 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
         break;
     }
 
+    if( 0.0 == V0 && 1.0 != V1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots; ++i )
+            knots[i] /= V1;
+
+        V1 = 1.0;
+    }
+
+
     // determine planarity
     if( hasUniquePlane( &vnorm ) )
         PROP1 = 1;

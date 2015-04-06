@@ -85,22 +85,12 @@ IGES_POINT const IGES_POINT::operator+( const IGES_POINT& v )
 // enough to cause nearness tests to fail.
 IGES_POINT& IGES_POINT::operator-=( const IGES_POINT& v )
 {
-    x -= v.x;
-    y -= v.y;
-    z -= v.z;
+    x = x - v.x;
+    y = y - v.y;
+    z = z - v.z;
+
     return *this;
 }
-
-
-IGES_POINT  const IGES_POINT::operator-( const IGES_POINT& v )
-{
-    IGES_POINT p;
-    p.x -= v.x;
-    p.y -= v.y;
-    p.z -= v.z;
-    return p;
-}
-
 
 IGES_POINT operator*( const IGES_POINT& v, const double scalar )
 {
@@ -115,6 +105,15 @@ IGES_POINT operator*( const IGES_POINT& v, const double scalar )
 IGES_POINT operator*( const double scalar, const IGES_POINT& v )
 {
     return v * scalar;
+}
+
+
+// pX = p0 - p1
+IGES_POINT operator-( const IGES_POINT& p0, const IGES_POINT& p1 )
+{
+    IGES_POINT px = p0;
+    px -= p1;
+    return px;
 }
 
 

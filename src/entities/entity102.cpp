@@ -746,5 +746,7 @@ bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
     }
 
     curves.push_back( aSegment );
+    aSegment->SetDependency( STAT_DEP_PHY );
+
     return true;
 }

@@ -660,6 +660,8 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
         return false;
     }
 
+    PTS->SetDependency( STAT_DEP_PHY );
+
     return true;
 }
 
@@ -690,6 +692,8 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
         PTO = NULL;
         return false;
     }
+
+    PTO->SetDependency( STAT_DEP_PHY );
 
     return true;
 }
@@ -728,6 +732,8 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
         ERRMSG << "\n + [INFO] [BUG] could not add child reference\n";
         return false;
     }
+
+    aPtr->SetDependency( STAT_DEP_PHY );
 
     PTI.push_back( aPtr );
     N2 = (int)PTI.size();

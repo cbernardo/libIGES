@@ -14,4 +14,13 @@ Curve on Surface (E142).
 3. Surface of Revolution:
     + ensure Axis is a LINE entity
 
-4. [URGENT] Bug in IGES_POINT; 'p0 = p1 - p2' returns the wrong result
+4. [FIXED] [URGENT] Bug in IGES_POINT; 'p0 = p1 - p2' returns the wrong result
+
+5. To load Molex model 473460001.igs support is required for entities:
+    + Type 104: Conic Arc
+    + Type 186: Manifold Solid B-REP
+    + Type 502: Vertex List
+    + Type 504: Edge List
+    + Type 508: Loop
+    + Type 510: Face
+    + Type 514: Shell

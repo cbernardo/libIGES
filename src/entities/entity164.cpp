@@ -483,5 +483,6 @@ bool IGES_ENTITY_164::SetClosedCurve( IGES_CURVE* aCurve )
         return false;
     }
 
+    PTR->SetDependency( STAT_DEP_PHY );
     return true;
 }

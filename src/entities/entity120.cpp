@@ -422,6 +422,19 @@ bool IGES_ENTITY_120::GetAxis( IGES_CURVE** aCurve )
 
 bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
 {
+    if( NULL == aCurve )
+    {
+        ERRMSG << "\n + [ERROR] NULL pointer passed for axis\n";
+        return false;
+    }
+
+    if( aCurve->GetEntityType() != ENT_LINE )
+    {
+        ERRMSG << "\n + [ERROR] invalid entity (type ";
+        cerr << aCurve->GetEntityType() << ") passed for axis\n";
+        return false;
+    }
+
     if( L )
     {
         L->DelReference( this );
@@ -432,6 +445,7 @@ bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
         return false;
 
     L = aCurve;
+    L->SetDependency( STAT_DEP_PHY );
 
     return true;
 }
@@ -463,6 +477,12 @@ bool IGES_ENTITY_120::GetGeneratrix( IGES_CURVE** aCurve )
 
 bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
 {
+    if( NULL == aCurve )
+    {
+        ERRMSG << "\n + [ERROR] NULL pointer passed for generatrix\n";
+        return false;
+    }
+
     if( C )
     {
         C->DelReference( this );
@@ -473,6 +493,7 @@ bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
         return false;
 
     C = aCurve;
+    C->SetDependency( STAT_DEP_PHY );
 
     return true;
 }

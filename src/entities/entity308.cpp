@@ -526,6 +526,7 @@ bool IGES_ENTITY_308::AddDE( IGES_ENTITY* aPtr )
         return false;
     }
 
+    aPtr->SetDependency( STAT_DEP_PHY );
     DE.push_back( aPtr );
     N = (int)DE.size();
 

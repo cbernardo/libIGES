@@ -1000,11 +1000,11 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
         return false;
     }
 
+    // note: As per spec. (Sec. 2.2.4.4.3) this field may contain a positive number
+    // in which case it is simply ignored. In versions of the spec. earlier than 3.0
+    // positive numbers were occasionally used to designate version numbers.
     if( tmpInt > 0 )
-    {
-        ERRMSG << "\n + invalid Structure pointer (" << tmpInt << "); must be <= 0\n";
-        return false;
-    }
+        tmpInt = 0;
 
     structure = tmpInt;
 

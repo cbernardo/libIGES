@@ -363,22 +363,18 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    // NOTE:
-    // for some reason the prefix notation (p1 -= p0) introduces some error
-    // which results in a failure of the test so we use the normal notation.
     p1 = p1 - p0;
     p2 = p2 - p0;
     uir *= uir * 3.0;
 
+    if( uir < 1e-8 )
+        uir = 1e-8;
+
     double d1 = p1.x*p1.x + p1.y*p1.y;
     double d2 = p2.x*p2.x + p2.y*p2.y;
+    d1 = d2 - d1;
 
-    if( d1 >= d2 )
-        d1 -= d2;
-    else
-        d1 = d2 - d1;
-
-    if( d1 > uir )
+    if( abs( d1 ) > uir )
     {
         ERRMSG << "\n + [BAD FILE] Circle (DE " << sequenceNumber;
         cerr << ") has unequal radii (diff: " << d1 << ") " << uir << "\n";

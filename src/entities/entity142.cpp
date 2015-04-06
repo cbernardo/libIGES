@@ -549,6 +549,8 @@ bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
         return false;
     }
 
+    SPTR->SetDependency( STAT_DEP_PHY );
+
     return true;
 }
 
@@ -581,6 +583,8 @@ bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
         return false;
     }
 
+    BPTR->SetDependency( STAT_DEP_PHY );
+
     return true;
 }
 
@@ -612,6 +616,8 @@ bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
         return false;
     }
+
+    CPTR->SetDependency( STAT_DEP_PHY );
 
     return true;
 }

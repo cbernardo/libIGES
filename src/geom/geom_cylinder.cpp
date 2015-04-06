@@ -123,11 +123,11 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
         return false;
     }
 
-    IGES_POINT p0 = center;
-    p0 -= start;
+    IGES_POINT p0 = center - start;
+    // p0 -= start;    // XXX -
     double rad1 = sqrt( p0.x*p0.x + p0.y*p0.y );
-    p0 = center;
-    p0 -= end;
+    p0 = center - end;
+    // p0 -= end;       // XXX -
     double rad2 = sqrt( p0.x*p0.x + p0.y*p0.y );
 
     if( abs(rad1 - rad2) > 0.001 )

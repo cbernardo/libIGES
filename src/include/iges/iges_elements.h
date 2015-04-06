@@ -39,13 +39,14 @@ struct IGES_POINT
     IGES_POINT& operator+=( const IGES_POINT& v );
     IGES_POINT  const operator+( const IGES_POINT& v );
     IGES_POINT& operator-=( const IGES_POINT& v );
-    IGES_POINT  const operator-( const IGES_POINT& v );
 };
 
 // V1 = V0 * scalar
 IGES_POINT operator*( const IGES_POINT& v, const double scalar );
 // V1 = scalar * V0
 IGES_POINT operator*( const double scalar, const IGES_POINT& v );
+// pX = p0 - p1
+IGES_POINT operator-( const IGES_POINT& p0, const IGES_POINT& p1 );
 
 struct IGES_MATRIX
 {

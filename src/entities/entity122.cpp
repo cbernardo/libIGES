@@ -406,5 +406,7 @@ bool IGES_ENTITY_122::SetDE( IGES_CURVE* aPtr )
         return false;
 
     DE = aPtr;
+    DE->SetDependency( STAT_DEP_PHY );
+
     return true;
 }

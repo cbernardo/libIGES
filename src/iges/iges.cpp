@@ -2094,7 +2094,7 @@ bool IGES::writeGlobals( std::ofstream& file )
     }
 
     // Item 19: (Real) Min. user intended resolution/granularity
-    // REQ NODEF ( use 0.001mm if none specified )
+    // REQ NODEF
     if( !FormatPDREal( tstr, globalData.minResolution, pd, globalData.minResolution ) )
     {
         ERRMSG << "\n + [INFO] failed to format Min. Intended Resolution\n";

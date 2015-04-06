@@ -57,6 +57,7 @@ IGES_GEOM_SEGMENT::~IGES_GEOM_SEGMENT()
 void IGES_GEOM_SEGMENT::init( void )
 {
     msegtype = SEGTYPE_NONE;
+    mCWArc = false;
     mradius = 0.0;
     msang = 0.0;
     meang = 0.0;
@@ -103,7 +104,8 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 // set the parameters for an arc; the parameters must be specified such that
 // the arc is traced in a counterclockwise direction as viewed from a positive
 // Z location.
-bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart, IGES_POINT aEnd )
+bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
+                                   IGES_POINT aEnd, bool isCW )
 {
     init();
 
@@ -161,9 +163,27 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart, IGES_P
     mstart = aStart;
     mend = aEnd;
     msegtype = SEGTYPE_ARC;
+    mCWArc = isCW;
     return true;
 }
 
+// calculate intersections with another segment (list of points)
+bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
+                                          std::list<IGES_POINT>& aIntersectList,
+                                          IGES_INTERSECT_FLAG& flags )
+{
+    flags = IGES_IFLAG_NONE;
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+// split at the given list of intersections (1 or 2 intersections only)
+bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
+                               std::list<IGES_GEOM_SEGMENT*> aNewSegmentList )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
 
 // retrieve the representation of the curve as IGES 2D primitives
 bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
@@ -214,7 +234,12 @@ bool IGES_GEOM_SEGMENT::GetVerticalSurface( IGES* aModel, std::vector<IGES_ENTIT
             do
             {
                 IGES_GEOM_CYLINDER cyl;
-                cyl.SetParams( mcenter, mstart, mend );
+
+                if( !mCWArc )
+                    cyl.SetParams( mcenter, mstart, mend );
+                else
+                    cyl.SetParams( mcenter, mend, mstart );
+
                 ok = cyl.Instantiate( aModel, aTopZ, aBotZ, aSurface );
             } while( 0 );
 

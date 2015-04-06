@@ -31,6 +31,7 @@ int test_cyl_wall( void );
 int main()
 {
     IGES model;
+    bool arcDir = true;
 
     // create an X-shaped set of walls to demonstrate how the
     // PCB sides and drilled holes may be represented
@@ -52,8 +53,7 @@ int main()
     seg.SetParams( p[0], p[1] );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall1, seg 2/3
-    //seg.SetParams( p[2], p[3], p[1] );  // concave
-    seg.SetParams( p[2], p[1], p[3] );  // convex
+    seg.SetParams( p[2], p[3], p[1], arcDir );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall1, seg 3/3
     seg.SetParams( p[4], p[3] );
@@ -74,8 +74,7 @@ int main()
     seg.SetParams( p[0], p[1] );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall2, seg 2/3
-    //seg.SetParams( p[2], p[3], p[1] );  // concave
-    seg.SetParams( p[2], p[1], p[3] );  // convex
+    seg.SetParams( p[2], p[3], p[1], arcDir );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall2, seg 3/3
     seg.SetParams( p[4], p[3] );
@@ -96,8 +95,7 @@ int main()
     seg.SetParams( p[0], p[1] );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall3, seg 2/3
-    //seg.SetParams( p[2], p[3], p[1] );  // concave
-    seg.SetParams( p[2], p[1], p[3] );  // convex
+    seg.SetParams( p[2], p[3], p[1], arcDir );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall3, seg 3/3
     seg.SetParams( p[4], p[3] );
@@ -118,8 +116,7 @@ int main()
     seg.SetParams( p[0], p[1] );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall4, seg 2/3
-    //seg.SetParams( p[2], p[3], p[1] );  // concave
-    seg.SetParams( p[2], p[1], p[3] );  // convex
+    seg.SetParams( p[2], p[3], p[1], arcDir );
     seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
     // wall4, seg 3/3
     seg.SetParams( p[4], p[3] );

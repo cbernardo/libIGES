@@ -34,6 +34,19 @@
 #include <entity126.h>
 #include <entity144.h>
 
+
+// flag used for geometry intersection information
+enum IGES_INTERSECT_FLAG
+{
+    IGES_IFLAG_NONE = 0,    // no special conditions to report
+    IGES_IFLAG_TANGENT,     // intersection is at a tangent (invalid geometry)
+    IGES_IFLAG_EDGE,        // intersection is along an edge; result contains
+                            // start and end point of the edge.
+    IGES_IFLAG_INSIDE,      // this circle is inside the given circle (invalid geometry)
+    IGES_IFLAG_ENCIRCLES    // this circle envelopes the given circle (invalid geometry)
+};
+
+
 class IGES_GEOM_SEGMENT
 {
 private:
@@ -41,6 +54,7 @@ private:
     double mradius; // radius of arc or circle
     double msang;   // start angle of arc
     double meang;   // end angle of arc
+    bool mCWArc;    // true if the arc is in the clockwise orientation
 
     IGES_POINT mcenter;
     IGES_POINT mstart;
@@ -58,11 +72,20 @@ public:
     // set the parameters for an arc; the parameters must be specified such that
     // the arc is traced in a counterclockwise direction as viewed from a positive
     // Z location.
-    bool SetParams( IGES_POINT aCenter, IGES_POINT aStart, IGES_POINT aEnd );
+    bool SetParams( IGES_POINT aCenter, IGES_POINT aStart, IGES_POINT aEnd, bool isCW );
 
-    // XXX - TO BE IMPLEMENTED
+    bool IsCW( void )
+    {
+        return mCWArc;
+    }
+
     // + calculate intersections with another segment (list of points)
+    bool GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
+                           std::list<IGES_POINT>& aIntersectList,
+                           IGES_INTERSECT_FLAG& flags );
+
     // + split at the given list of intersections (1 or 2 intersections only)
+    bool Split( std::list<IGES_POINT>& aIntersectList, std::list<IGES_GEOM_SEGMENT*> aNewSegmentList );
 
     // retrieve the representation of the curve as IGES
     // 2D primitives (Entity 100 or Entity 110). An arc

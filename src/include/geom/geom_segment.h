@@ -43,24 +43,104 @@ enum IGES_INTERSECT_FLAG
     IGES_IFLAG_EDGE,        // intersection is along an edge; result contains
                             // start and end point of the edge.
     IGES_IFLAG_INSIDE,      // this circle is inside the given circle (invalid geometry)
-    IGES_IFLAG_ENCIRCLES    // this circle envelopes the given circle (invalid geometry)
+    IGES_IFLAG_ENCIRCLES,   // this circle envelopes the given circle (invalid geometry)
+    IGES_IFLAG_IDENT        // 2 circles are identical
 };
 
 
 class IGES_GEOM_SEGMENT
 {
 private:
-    char msegtype;  // segment type
+    char msegtype;  // segment type,
     double mradius; // radius of arc or circle
-    double msang;   // start angle of arc
-    double meang;   // end angle of arc
+    double msang;   // start angle of arc (always in CCW direction)
+    double meang;   // end angle of arc (always in CCW direction)
     bool mCWArc;    // true if the arc is in the clockwise orientation
 
     IGES_POINT mcenter;
-    IGES_POINT mstart;
-    IGES_POINT mend;
+    IGES_POINT mstart;  // start point of arc; may be in CCW or CW direction
+    IGES_POINT mend;    // end point of arc; may be in CCW or CW direction
 
     void init( void );
+
+protected:
+    char getSegType( void ) const
+    {
+        return msegtype;
+    }
+
+    char getRadius( void ) const
+    {
+        return mradius;
+    }
+
+    char getStartAngle( void ) const
+    {
+        return msang;
+    }
+
+    char getEndAngle( void ) const
+    {
+        return meang;
+    }
+
+    char getCWArc( void ) const
+    {
+        return mCWArc;
+    }
+
+    IGES_POINT getCenter( void ) const
+    {
+        return mcenter;
+    }
+
+    IGES_POINT getStart( void ) const
+    {
+        // ensure that the start/end points given
+        // describe a CCW arc
+        if( mCWArc )
+            return mend;
+
+        return mstart;
+    }
+
+    IGES_POINT getEnd( void ) const
+    {
+        // ensure that the start/end points given
+        // describe a CCW arc
+        if( mCWArc )
+            return mstart;
+
+        return mend;
+    }
+
+    // c2 = center of second circle
+    // r2 = radius of second circle
+    // d = distance between centers
+    // p1 = first point of intersection, CW on c1 from 0 angle
+    // p2 = second point of intersection, CW from p1 on c1
+    void calcCircleIntercepts( IGES_POINT c2, double r2, double d,
+                               IGES_POINT& p1, IGES_POINT& p2 );
+
+    // check case where both segments are circles
+    bool checkCircles( const IGES_GEOM_SEGMENT& aSegment,
+                       std::list<IGES_POINT>& aIntersectList,
+                       IGES_INTERSECT_FLAG& flags );
+
+    // check case where both segments are arcs (one may be a circle)
+    bool checkArcs( const IGES_GEOM_SEGMENT& aSegment,
+                    std::list<IGES_POINT>& aIntersectList,
+                    IGES_INTERSECT_FLAG& flags );
+
+    // check case where one segment is an arc and one a line
+    bool checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
+                       std::list<IGES_POINT>& aIntersectList,
+                       IGES_INTERSECT_FLAG& flags );
+
+    // check case where both segments are lines
+    bool checkLines( const IGES_GEOM_SEGMENT& aSegment,
+                     std::list<IGES_POINT>& aIntersectList,
+                     IGES_INTERSECT_FLAG& flags );
 
 public:
     IGES_GEOM_SEGMENT();

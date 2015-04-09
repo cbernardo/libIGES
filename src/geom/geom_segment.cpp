@@ -153,6 +153,14 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     msang = atan2( aStart.y - aCenter.y, aStart.x - aCenter.x );
     meang = atan2( aEnd.y - aCenter.y, aEnd.x - aCenter.x );
 
+    // note: start/end angles are always according to CCW order
+    if( isCW )
+    {
+        double x = msang;
+        msang = meang;
+        meang = x;
+    }
+
     while( meang < msang )
         meang += 2.0 * M_PI;
 
@@ -173,9 +181,65 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
                                           IGES_INTERSECT_FLAG& flags )
 {
     flags = IGES_IFLAG_NONE;
-    // XXX - TO BE IMPLEMENTED
-    return false;
+
+    if( SEGTYPE_NONE == msegtype )
+    {
+        ERRMSG << "\n + [ERROR] no data in segment\n";
+        return false;
+    }
+
+    // cases to check for:
+    // a. circles are identical (bad geometry, return IGES_IFLAG_IDENT)
+    // b. *this is inside aSegment and both entities are circles
+    //    (bad geometry, return IGES_IFLAG_INSIDE)
+    // c. *this surrounds aSegment and both entities are circles
+
+    // cases to evaluate:
+    // a. circle, circle
+    // b. circle, arc
+    // c. arc, circle
+    // d. circle, line
+    // e. line, circle
+    // f. arc, line
+    // g. line, arc
+    // h. line, line
+    // i. arc, arc
+    char oSegType = aSegment.getSegType();
+
+    if( SEGTYPE_NONE == oSegType )
+    {
+        ERRMSG << "\n + [ERROR] no data in second segment\n";
+        return false;
+    }
+
+    // *this is a circle and it may intersect with a circle, arc, or line
+    if( SEGTYPE_CIRCLE == msegtype )
+    {
+        if( SEGTYPE_CIRCLE == oSegType )
+            return checkCircles( aSegment, aIntersectList, flags );
+
+        if( SEGTYPE_ARC == oSegType )
+            return checkArcs(  aSegment, aIntersectList, flags );
+
+        return checkArcLine(  aSegment, aIntersectList, flags );
+    }
+
+    // *this is an arc and it may intersect with a line, arc, or circle
+    if( SEGTYPE_ARC == msegtype )
+    {
+        if( SEGTYPE_LINE == oSegType )
+            return checkArcLine(  aSegment, aIntersectList, flags );
+
+        return checkArcs(  aSegment, aIntersectList, flags );
+    }
+
+    // *this is a line and it may intersect with a line, arc or circle
+    if( SEGTYPE_LINE == oSegType )
+        return checkLines(  aSegment, aIntersectList, flags );
+
+    return checkArcLine( aSegment, aIntersectList, flags );
 }
+
 
 // split at the given list of intersections (1 or 2 intersections only)
 bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
@@ -184,6 +248,7 @@ bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
     // XXX - TO BE IMPLEMENTED
     return false;
 }
+
 
 // retrieve the representation of the curve as IGES 2D primitives
 bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
@@ -277,4 +342,160 @@ bool IGES_GEOM_SEGMENT::GetVerticalSurface( IGES* aModel, std::vector<IGES_ENTIT
     }
 
     return ok;
+}
+
+
+void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d,
+    IGES_POINT& p1, IGES_POINT& p2 )
+{
+    // note: given distance d between 2 circle centers
+    // where radii = R[1], R[2],
+    // distance x to the radical line as measured from
+    // C[1] is (d^2 - R[2]^2 + R[1]^2)/(2d)
+
+    double rd = (d*d - r2*r2 + mradius*mradius)/(2.0 * d);
+    double dy = c2.y - mcenter.y;
+    double dx = c2.x - mcenter.x;
+
+    // intersection of the radical line and the line passing through the centers:
+    // the calculation is parameterized to avoid divisions by 0 provided d != 0.
+    double x = rd / d * dx + mcenter.x;
+    double y = rd / d * dy + mcenter.y;
+
+    // height of the triangle / d
+    double h = sqrt( mradius*mradius - rd*rd ) / d;
+
+    // first intersection point
+    double x0 = x + h * dy;
+    double y0 = y + h * dx;
+
+    // second intersection point
+    double x1 = x - h * dy;
+    double y1 = y - h * dx;
+
+    // work out which intersection comes first
+    // when going clockwise on C1
+    double a0 = atan2( y0 - mcenter.y, x0 - mcenter.x );
+    double a1 = atan2( y1 - mcenter.y, x1 - mcenter.x );
+
+    if( ( a0 >= 0.0 && a1 >= 0.0 && a0 > a1 )
+        || ( a0 < 0.0 && a1 < 0.0 && a0 > a1 )
+        || ( a0 < 0.0 && a1 >= 0.0 ) )
+    {
+        double tv = x0;
+        x0 = x1;
+        x1 = tv;
+        tv = y0;
+        y0 = y1;
+        y1 = tv;
+    }
+
+    p1.x = x0;
+    p1.y = y0;
+    p1.z = 0.0;
+
+    p2.x = x1;
+    p2.y = y1;
+    p2.z = 0.0;
+
+    return;
+}
+
+
+// check case where both segments are circles
+bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
+    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+{
+    IGES_POINT c2 = aSegment.getCenter();
+    double r2 = aSegment.getRadius();
+    double dx = mcenter.x - c2.x;
+    double dy = mcenter.y - c2.y;
+    double d= sqrt( dx*dx + dy*dy );
+
+    if( d > ( mradius + r2 ) )
+        return false;
+
+    // check if the circles are identical
+    if ( PointMatches( mcenter, c2, 0.001 )
+        && abs( mradius - r2 ) < 0.001 )
+    {
+        flags = IGES_IFLAG_IDENT;
+        return false;
+    }
+
+    if( abs( d - mradius - r2 ) < 0.001 )
+    {
+        flags = IGES_IFLAG_TANGENT;
+        return false;
+    }
+
+    if( d < mradius || d < r2)
+    {
+        // check if aSegment is inside this circle
+        if( d <= (mradius - r2) )
+        {
+            flags = IGES_IFLAG_ENCIRCLES;
+            return false;
+        }
+
+        // check if this circle is inside aSegment
+        if( d <= (r2 - mradius) )
+        {
+            flags = IGES_IFLAG_INSIDE;
+            return false;
+        }
+    }
+
+    // there must be 2 intersection points
+    IGES_POINT p1;
+    IGES_POINT p2;
+    calcCircleIntercepts( c2, r2, d, p1, p2 );
+    aIntersectList.push_back( p1 );
+    aIntersectList.push_back( p2 );
+
+    return true;
+}
+
+
+// check case where both segments are arcs (one may be a circle)
+bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
+    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+
+// check case where one segment is an arc and one a line
+bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
+    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+{
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+
+// check case where both segments are lines
+bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
+    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+{
+    // XXX - TO BE IMPLEMENTED
+    // Writing each line as:
+    // y0 = a0*x + b0
+    // y1 = a1*x + b1
+    // Solving for x at the intersection:
+    // x = (b1 - b0) / (a0 - a1)
+    //  >> if a0 == a1 we have parallel lines
+    // Solving for y (non parallel cases only):
+    // y = a0 * (b1 - b0) / (a0 - a1) + b0
+
+    // cases:
+    // 1. parallel: if there is an intersection a segment or the
+    //      entire segments overlap
+    // 2. non-parallel: if there is an intersection then it is
+    //      a unique point which can be parameterized using either
+    //      line equation.
+
+    // if( qwerty )
+    return false;
 }

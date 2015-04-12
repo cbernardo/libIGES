@@ -32,6 +32,28 @@
  * + AddSegment: adds another segment to the list; the added segment
  *   must have a start point which coincides with the terminal point
  *   of the previous segment.
+ *
+ * + AddOutline: the outline may be a GEOM_SEGMENT (circle only)
+ *   or a GEOM_OUTLINE (generic outline). If the two outlines intersect
+ *   then they are merged and the method returns TRUE, otherwise the
+ *   method returns FALSE. If there is invalid geometry (the 2 outlines
+ *   intersect at a point or at more than 2 points) the method returns
+ *   FALSE and sets an appropriate flag. Intersection at more than 2 points
+ *   implies either a floating island of material or a surface with a
+ *   likely unintended cutout; in either case it is a serious mechanical
+ *   design flaw and is prohibited without exceptions by this software.
+ *
+ * + SubOutline: the given outline (a GEOM_SEGMENT circle or a GEOM_OUTLINE)
+ *   is cut out from *this outline if it intersects the edge and the method
+ *   returns TRUE, otherwise the method returns FALSE. If there is invalid
+ *   geometry (intersects at a point or at more than 2 points) the method
+ *   returns FALSE and sets an appropriate flag. Intersection at more than
+ *   2 points may imply that the outline will be split into at least 2
+ *   separate bodies; this generally means very poor mechanical design so
+ *   with this software it is prohibited without exception. It is possible that
+ *   the main ouline will not be split into separate bodies but in such
+ *   circumstances the user must work around the 2-point restriction by
+ *   dividing the offending cutout into at least 2 separate bodies.
  */
 
 #ifndef IGES_GEOM_OUTLINE_H

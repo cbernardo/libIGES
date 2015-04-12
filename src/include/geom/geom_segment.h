@@ -164,6 +164,9 @@ public:
                            std::list<IGES_POINT>& aIntersectList,
                            IGES_INTERSECT_FLAG& flags );
 
+    // + calculate the top-left and bottom-right rectangular bounds
+    bool GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 );
+
     // + split at the given list of intersections (1 or 2 intersections only)
     bool Split( std::list<IGES_POINT>& aIntersectList, std::list<IGES_GEOM_SEGMENT*> aNewSegmentList );
 

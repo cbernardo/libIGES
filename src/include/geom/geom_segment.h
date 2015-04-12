@@ -64,55 +64,14 @@ private:
     void init( void );
 
 protected:
-    char getSegType( void ) const
-    {
-        return msegtype;
-    }
-
-    char getRadius( void ) const
-    {
-        return mradius;
-    }
-
-    char getStartAngle( void ) const
-    {
-        return msang;
-    }
-
-    char getEndAngle( void ) const
-    {
-        return meang;
-    }
-
-    char getCWArc( void ) const
-    {
-        return mCWArc;
-    }
-
-    IGES_POINT getCenter( void ) const
-    {
-        return mcenter;
-    }
-
-    IGES_POINT getStart( void ) const
-    {
-        // ensure that the start/end points given
-        // describe a CCW arc
-        if( mCWArc )
-            return mend;
-
-        return mstart;
-    }
-
-    IGES_POINT getEnd( void ) const
-    {
-        // ensure that the start/end points given
-        // describe a CCW arc
-        if( mCWArc )
-            return mstart;
-
-        return mend;
-    }
+    char getSegType( void ) const;
+    double getRadius( void ) const;
+    double getStartAngle( void ) const;
+    double getEndAngle( void ) const;
+    bool getCWArc( void ) const;
+    IGES_POINT getCenter( void ) const;
+    IGES_POINT getStart( void ) const;
+    IGES_POINT getEnd( void ) const;
 
     // c2 = center of second circle
     // r2 = radius of second circle

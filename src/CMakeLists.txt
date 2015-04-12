@@ -106,6 +106,11 @@ add_executable( curvetest
     "${LIBIGES_SOURCE_DIR}/test_curves.cpp"
     )
 
+add_executable( segtest
+    "${LIBIGES_SOURCE_DIR}/test_segs.cpp"
+    )
+
 target_link_libraries( readtest iges )
 target_link_libraries( mergetest iges )
 target_link_libraries( curvetest iges )
+target_link_libraries( segtest iges )

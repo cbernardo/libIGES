@@ -632,10 +632,10 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     //          t^2*(x1^2 -2x1*x2 +x2^2) +t*2*(x0*x2 -x0*x1 +x1*x2 -x2^2) + (x0^2 -2*x0*x2 +x2^2)
     //        (y0 - y)^2 expands to the same general expression
     //      + gathering known values into single coefficients we get:
-    //          a0 = 2*(x1^2 -2x1*x2 +x2^2)
+    //          a0 = (x1^2 -2x1*x2 +x2^2)
     //          b0 = 2*(x0*x2 -x0*x1 +x1*x2 -x2^2)
     //          c0 = (x0^2 -2*x0*x2 +x2^2)
-    //          a1 = 2*(y1^2 -2y1*y2 +y2^2)
+    //          a1 = (y1^2 -2y1*y2 +y2^2)
     //          b1 = 2*(y0*y2 -y0*y1 +y1*y2 -y2^2)
     //          c1 = (y0^2 -2*y0*y2 +y2^2)
     //      + Step 2 reduces to:
@@ -649,11 +649,11 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     // If the discriminant > 0, solve for t and for any value 0<= t <= 1
     // check if p(t) lies on the arc/circle
 
-    double a0 = 2.0 * ( lS.x * lS.x - 2.0 * lS.x * lE.x + lE.x * lE.x );
+    double a0 = ( lS.x * lS.x - 2.0 * lS.x * lE.x + lE.x * lE.x );
     double b0 = 2.0 * ( arcC.x * lE.x - arcC.x * lS.x + lS.x * lE.x - lE.x * lE.x );
     double c0 = arcC.x * arcC.x - 2.0 * arcC.x * lE.x + lE.x * lE.x;
 
-    double a1 = 2.0 * ( lS.y * lS.y - 2.0 * lS.y * lE.y + lE.y * lE.y );
+    double a1 = ( lS.y * lS.y - 2.0 * lS.y * lE.y + lE.y * lE.y );
     double b1 = 2.0 * ( arcC.y * lE.y - arcC.y * lS.y + lS.y * lE.y - lE.y * lE.y );
     double c1 = arcC.y * arcC.y - 2.0 * arcC.y * lE.y + lE.y * lE.y;
 
@@ -680,15 +680,15 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
     if( t0 >= 0.0 && t0 <= 1.0 )
     {
-        p[0].x = t0 * lS.x + (1 - t0) * lE.x;
-        p[0].y = t0 * lS.y + (1 - t0) * lE.y;
+        p[0].x = t0 * lS.x + (1.0 - t0) * lE.x;
+        p[0].y = t0 * lS.y + (1.0 - t0) * lE.y;
         ++np;
     }
 
     if( t1 >= 0.0 && t1 <= 1.0 )
     {
-        p[np].x = t0 * lS.x + (1 - t0) * lE.x;
-        p[np].y = t0 * lS.y + (1 - t0) * lE.y;
+        p[np].x = t1 * lS.x + (1.0 - t1) * lE.x;
+        p[np].y = t1 * lS.y + (1.0 - t1) * lE.y;
         ++np;
     }
 
@@ -952,4 +952,62 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
     }
 
     return true;
+}
+
+
+char IGES_GEOM_SEGMENT::getSegType( void ) const
+{
+    return msegtype;
+}
+
+
+double IGES_GEOM_SEGMENT::getRadius( void ) const
+{
+    return mradius;
+}
+
+
+double IGES_GEOM_SEGMENT::getStartAngle( void ) const
+{
+    return msang;
+}
+
+
+double IGES_GEOM_SEGMENT::getEndAngle( void ) const
+{
+    return meang;
+}
+
+
+bool IGES_GEOM_SEGMENT::getCWArc( void ) const
+{
+    return mCWArc;
+}
+
+
+IGES_POINT IGES_GEOM_SEGMENT::getCenter( void ) const
+{
+    return mcenter;
+}
+
+
+IGES_POINT IGES_GEOM_SEGMENT::getStart( void ) const
+{
+    // ensure that the start/end points given
+    // describe a CCW arc
+    if( mCWArc )
+        return mend;
+
+    return mstart;
+}
+
+
+IGES_POINT IGES_GEOM_SEGMENT::getEnd( void ) const
+{
+    // ensure that the start/end points given
+    // describe a CCW arc
+    if( mCWArc )
+        return mstart;
+
+    return mend;
 }

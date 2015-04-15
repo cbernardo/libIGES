@@ -301,6 +301,14 @@ bool IGES_ENTITY_126::format( int &index )
 
 bool IGES_ENTITY_126::rescale( double sf )
 {
+    // XXX - BUG: for now we simply refuse to scale a NURBS curve since
+    // the majority of such curves are part of a Curve on a Parametric
+    // Surface (BPTR to Entity 144). Ideally we should be able to traverse
+    // the ancestors of this NURBS curve and decide whether or not it
+    // makes sense to scale the control points.
+    //return true;
+    return true;
+
     if( NULL == coeffs )
         return true;
 

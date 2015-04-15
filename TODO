@@ -1,4 +1,4 @@
-1. Implement some entity dependency code; see p.69 of IGES spec.
+1. [DONE] Implement some entity dependency code; see p.69 of IGES spec.
 For example, every entity added to a Composite Curve should
 have a Physical Dependency. In turn any Composite Curve
 acting as a Curve on Surface is dependent on that
@@ -24,3 +24,16 @@ Curve on Surface (E142).
     + Type 508: Loop
     + Type 510: Face
     + Type 514: Shell
+
+6. [BUG] A NURBS curve must not scale its control points if it is
+   a curve on a parametric surface (a parent entity is a BPTR of
+   an Entity 142: Curve on Parametric Surface). Note than in other
+   cases a NURBS curve may have its control points scaled - for
+   example when it is a curve used as a generatrix for a surface
+   of revolution. As an ad-hoc remedy we may simply refuse to scale
+   NURBS curves; this would work in most cases since these curves
+   are used almost exclusively as children of a BPTR entity.
+   Fixing the behavior may involve some refactoring of the load code
+   to ensure that any scaling is performed after all associations
+   have been established; this will ensure that ancestors can be
+   correctly traversed.

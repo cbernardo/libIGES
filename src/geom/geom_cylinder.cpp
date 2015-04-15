@@ -128,9 +128,9 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
     p0 = center - end;
     double rad2 = sqrt( p0.x*p0.x + p0.y*p0.y );
 
-    if( abs(rad1 - rad2) > 0.001 )
+    if( abs(rad1 - rad2) > 1e-8 )
     {
-        ERRMSG << "\n + [ERROR] radii differ by more than 0.001\n";
+        ERRMSG << "\n + [ERROR] radii differ by more than 1e-8\n";
         return false;
     }
 

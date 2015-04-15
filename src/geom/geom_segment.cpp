@@ -143,10 +143,10 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     dy = aEnd.y - aCenter.y;
     double r2 = sqrt( dx*dx + dy*dy );
 
-    if( abs(r2 - mradius) > 1.0e-3 )
+    if( abs(r2 - mradius) > 1e-8 )
     {
         mradius = 0;
-        ERRMSG << "\n + [ERROR] radii differ by > 1e-3\n";
+        ERRMSG << "\n + [ERROR] radii differ by > 1e-8\n";
         return false;
     }
 
@@ -781,46 +781,79 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    // XXX - TO BE IMPLEMENTED
-    // Writing each line as:
-    // y0 = a0*x + b0
-    // y1 = a1*x + b1
-    // Solving for x at the intersection:
-    // x = (b1 - b0) / (a0 - a1)
-    //  >> if a0 == a1 we have parallel lines
-    // Solving for y (non parallel cases only):
-    // y = a0 * (b1 - b0) / (a0 - a1) + b0
+    if( SEGTYPE_NONE == msegtype || SEGTYPE_NONE == aSegment.getSegType() )
+    {
+        ERRMSG << "\n + [ERROR] one of the segments has no data\n";
+        return false;
+    }
 
-    // cases:
-    // 1. parallel: if there is an intersection a segment or the
-    //      entire segments overlap
-    // 2. non-parallel: if there is an intersection then it is
-    //      a unique point which can be parameterized using either
-    //      line equation.
+    // Step 1: line segment parameterization:
+    // X(t) = t(X2 - X1) + X1
+    // Y(t) = t(Y2 - Y1) + Y1
+    // For segment 1:
+    // X(t1) = t1 * XA1 + XB1
+    // Y(t1) = t1 * YA1 + YB1
+    // Segment 2:
+    // X(t2) = t2 * XA2 + XB2
+    // Y(t2) = t2 * YA2 + YB2
 
-    // if( qwerty )
+    // Step 2: solving for X(t1) = X(t2):
+    // t1 * XA1 + XB1 = t2 * XA2 + XB2
+    // t1 = (t2 * XA2 + XB2 - XB1) / XA1
+    // Step 3: solving for Y(y1) = Y(t2):
+    // t1 * YA1 + YB1 = t2 * YA2 + YB2
+    // t1 = (t2 * YA2 + YB2 - YB1) / YA1
 
-    // Step 1: the line segments must be parameterized:
-    // xa = ta*xa1 + (1-ta)*xa2
-    // ya = ta*ya1 + (1-ta)*ya2
-    // xb = tb*xb1 + (1-tb)*xb2
-    // yb = tb*yb1 + (1-tb)*yb2
+    // Step 3: solving for t2:
+    // t2 * XA2 * YA1 + YA1 * (XB2 - XB1) = t2 * YA2 * XA1 + XA1 * (YB2 - YB1)
+    // => t2 * (XA2*YA1 - YA2*XA1) = XA1 * (YB2 - YB1) - YA1 * (XB2 - XB1)
+    // => t2 = (XA1 * (YB2 - YB1) - YA1 * (XB2 - XB1)) / (XA2*YA1 - YA2*XA1)
+    // NOTE: t2 has no solution if the lines are parallel or colinear
+    //       When colinear, both numerator and denominator are 0
+    //       When parallel, the numerator is non-zero and the denominator is 0
 
-    // Step 2: solving for ta given xa = xb
-    // ta*(xa1 -xa2) + xa2 = tb*(xb1 - xb2) + xb2
-    // ta = (tb*(xb1 -xb2) +xb2) / (xa1 -xa2)
-    // note: if xa1 == xa2 then solve using ya = yb instead:
-    // ta = (tb*(yb1 - yb2) +yb2) / (ya1 -ya2)
+    double XA1 = mend.x - mstart.x;
+    double YA1 = mend.y - mstart.y;
+    IGES_POINT p0 = aSegment.getStart();
+    IGES_POINT p1 = aSegment.getEnd();
+    double XA2 = p1.x - p0.x;
+    double YA2 = p1.y - p0.y;
 
-    // Step 2: substitute ta into the equation for y (or x, if xa1 == xa2)
-    // y = ta*ya1 + (1-ta)*ya2
-    // [ x = tx*xa1 + (1-ta)*xa2 ]
+    double XB1 = mstart.x;
+    double YB1 = mstart.y;
+    double XB2 = p0.x;
+    double YB2 = p0.y;
 
-    // Step 3: calculate tb from y: [tb from x]
-    // tb = (y - yb2) / (yb1 - yb2)
-    // [ tb = (x - xb2) / (xb1 - xb2) ]
-    // if yb1 == yb2 [xb1 == xb2] then we automatically have an intersection,
-    // otherwise we only have an intersection if 0 <= tb <= 1
+    double num = (XA1 * (YB2 - YB1) - YA1 * (XB2 - XB1));
+    double den = (XA2*YA1 - YA2*XA1);
+
+    if( abs( den ) < 1e-6 )
+    {
+        // check if lines are parallel
+        if( abs( num ) > 1e-6 )
+            return false;
+
+        // lines are colinear, but do they intersect (overlap along a segment)?
+        // XXX - to be implemented
+        return false;
+    }
+
+    double t2 = num / den;
+    double t1;
+
+    if( abs( XA1 ) < abs( YA1 ) )
+        t1 = (t2 * YA2 + YB2 - YB1) / YA1;
+    else
+        t1 = (t2 * XA2 + XB2 - XB1) / XA1;
+
+    if( t2 > -1e-8 && t2 < (1 + 1e-8)
+        && t1 > -1e-8 && t1 < (1 + 1e-8) )
+    {
+        p0.x = t2 * XA2 + XB2;
+        p0.y = t2 * YA2 + YB2;
+        aIntersectList.push_back( p0 );
+        return true;
+    }
 
     return false;
 }

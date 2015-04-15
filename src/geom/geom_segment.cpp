@@ -101,6 +101,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
     return true;
 }
 
+
 // set the parameters for an arc; the parameters must be specified such that
 // the arc is traced in a counterclockwise direction as viewed from a positive
 // Z location.
@@ -416,8 +417,11 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
         return false;
 
     // check if the circles are identical
-    if ( PointMatches( mcenter, c2, 0.001 )
-        && abs( mradius - r2 ) < 0.001 )
+    // note: lax evaluation of 1e-3 is used since any
+    // smaller difference whether in inch or mm is really
+    // too small for PCB manufacturability
+    if ( PointMatches( mcenter, c2, 1e-3 )
+        && abs( mradius - r2 ) < 1e-3 )
     {
         flags = IGES_IFLAG_IDENT;
         return false;
@@ -683,12 +687,23 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         p[0].x = t0 * lS.x + (1.0 - t0) * lE.x;
         p[0].y = t0 * lS.y + (1.0 - t0) * lE.y;
         ++np;
+
+        if( ( ( PointMatches( p[0], arcS, 1e-8 ) || PointMatches( p[0], arcE, 1e-8 ) )
+            && !arcCircle )
+            || abs( t0 ) < 1e-8 || abs( t0 - 1.0 ) < 1e-8 )
+            flags = IGES_IFLAG_ENDPOINT;
     }
 
     if( t1 >= 0.0 && t1 <= 1.0 )
     {
         p[np].x = t1 * lS.x + (1.0 - t1) * lE.x;
         p[np].y = t1 * lS.y + (1.0 - t1) * lE.y;
+
+        if( ( ( PointMatches( p[np], arcS, 1e-8 ) || PointMatches( p[np], arcE, 1e-8 ) )
+            && !arcCircle )
+            || abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8 )
+            flags = IGES_IFLAG_ENDPOINT;
+
         ++np;
     }
 
@@ -787,6 +802,8 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
         return false;
     }
 
+    flags = IGES_IFLAG_NONE;
+
     // Step 1: line segment parameterization:
     // X(t) = t(X2 - X1) + X1
     // Y(t) = t(Y2 - Y1) + Y1
@@ -827,6 +844,9 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
     double num = (XA1 * (YB2 - YB1) - YA1 * (XB2 - XB1));
     double den = (XA2*YA1 - YA2*XA1);
 
+    double t1;
+    double t2;
+
     if( abs( den ) < 1e-6 )
     {
         // check if lines are parallel
@@ -834,12 +854,122 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
             return false;
 
         // lines are colinear, but do they intersect (overlap along a segment)?
-        // XXX - to be implemented
-        return false;
+        // if there is an overlap the points must be in order 0 <= t1 < t2 <= 1
+        // as parameterized on *this segment.
+
+        // cases:
+        // 1. (S0, E0) not in (S1, E1) *and* (S1, E1) not in (S0, E0): no overlap
+        // 2. [S0 and E0 in (S1, E1)] *or* [S1 and E1 in (S0, E0)]: one segment inside the other or equal
+        // 3. S0 or E0 in (S1, E1) *and* S1 or E1 in (S0, E1): partial overlap
+
+        bool s0i = false;
+        bool e0i = false;
+        bool s1i = false;
+        bool e1i = false;
+
+        if( abs( XA2 ) >= abs( YA2 ) )
+        {
+            t1 = ( mstart.x - XB2 ) / XA2;
+            t2 = ( mend.x - XB2 ) / XA2;
+        }
+        else
+        {
+            t1 = ( mstart.y - YB2 ) / YA2;
+            t2 = ( mend.y - YB2 ) / YA2;
+        }
+
+        if( abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8 )
+            s0i = true;
+
+        if( abs( t2 ) < 1e-8 || abs( t2 - 1.0 ) < 1e-8 )
+            e0i = true;
+
+        if( abs( XA1 ) >= abs( YA1 ) )
+        {
+            t1 = ( p0.x - XB1 ) / XA1;
+            t2 = ( p1.x - XB1 ) / XA1;
+        }
+        else
+        {
+            t1 = ( p0.y - YB1 ) / YA1;
+            t2 = ( p1.y - YB1 ) / YA1;
+        }
+
+        if( abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8 )
+            s1i = true;
+
+        if( abs( t2 ) < 1e-8 || abs( t2 - 1.0 ) < 1e-8 )
+            e1i = true;
+
+        if( !s0i && !e0i && !s1i && !e1i )
+            return false;
+
+        flags = IGES_IFLAG_EDGE;
+
+        if( s0i && e0i )
+        {
+            aIntersectList.push_back( mstart );
+            aIntersectList.push_back( mend );
+            return true;
+        }
+
+        if( s1i && e1i )
+        {
+            if( abs( XA1 ) >= abs( YA1 ) )
+            {
+                t1 = ( p0.x - XB1 ) / XA1;
+                t2 = ( p1.x - XB1 ) / XA1;
+            }
+            else
+            {
+                t1 = ( p0.y - YB1 ) / YA1;
+                t2 = ( p1.y - YB1 ) / YA1;
+            }
+
+            if( t1 < t2 )
+            {
+                aIntersectList.push_back( p0 );
+                aIntersectList.push_back( p1 );
+            }
+            else
+            {
+                aIntersectList.push_back( p1 );
+                aIntersectList.push_back( p0 );
+            }
+
+            return true;
+        }
+
+        if( s0i && s1i )
+        {
+            aIntersectList.push_back( mstart );
+            aIntersectList.push_back( p0 );
+            return true;
+        }
+
+        if( s0i && e1i )
+        {
+            aIntersectList.push_back( mstart );
+            aIntersectList.push_back( p1 );
+            return true;
+        }
+
+        // must be e0i
+
+        if( s1i )
+        {
+            aIntersectList.push_back( p0 );
+            aIntersectList.push_back( mend );
+            return true;
+        }
+
+        // must be e0i && e1i
+        aIntersectList.push_back( p1 );
+        aIntersectList.push_back( mend );
+        return true;
     }
 
-    double t2 = num / den;
-    double t1;
+    t2 = num / den;
 
     if( abs( XA1 ) < abs( YA1 ) )
         t1 = (t2 * YA2 + YB2 - YB1) / YA1;
@@ -852,6 +982,11 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
         p0.x = t2 * XA2 + XB2;
         p0.y = t2 * YA2 + YB2;
         aIntersectList.push_back( p0 );
+
+        if( abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8
+            || abs( t2 ) < 1e-8 || abs( t2 - 1.0 ) < 1e-8 )
+            flags = IGES_IFLAG_ENDPOINT;
+
         return true;
     }
 

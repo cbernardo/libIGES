@@ -39,6 +39,7 @@
 enum IGES_INTERSECT_FLAG
 {
     IGES_IFLAG_NONE = 0,    // no special conditions to report
+    IGES_IFLAG_ENDPOINT,    // intersection is at the endpoint of a segment
     IGES_IFLAG_TANGENT,     // intersection is at a tangent (invalid geometry)
     IGES_IFLAG_EDGE,        // intersection is along an edge; result contains
                             // start and end point of the edge.

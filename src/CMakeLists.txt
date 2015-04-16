@@ -95,19 +95,19 @@ add_library( iges STATIC
 target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )
 
 add_executable( readtest
-    "${LIBIGES_SOURCE_DIR}/test_read.cpp"
+    "${LIBIGES_SOURCE_DIR}/tests/test_read.cpp"
     )
 
 add_executable( mergetest
-    "${LIBIGES_SOURCE_DIR}/test_merge.cpp"
+    "${LIBIGES_SOURCE_DIR}/tests/test_merge.cpp"
     )
 
 add_executable( curvetest
-    "${LIBIGES_SOURCE_DIR}/test_curves.cpp"
+    "${LIBIGES_SOURCE_DIR}/tests/test_curves.cpp"
     )
 
 add_executable( segtest
-    "${LIBIGES_SOURCE_DIR}/test_segs.cpp"
+    "${LIBIGES_SOURCE_DIR}/tests/test_segs.cpp"
     )
 
 target_link_libraries( readtest iges )

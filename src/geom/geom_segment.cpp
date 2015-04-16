@@ -465,21 +465,28 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
-
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
     double d= sqrt( dx*dx + dy*dy );
+    double a0 = getStartAngle();
+    double a1 = getEndAngle();
+    double b0 = aSegment.getStartAngle();
+    double b1 = aSegment.getEndAngle();
 
     if( d > ( mradius + r2 ) )
         return false;
 
+    if( abs( d - mradius - r2 ) < 0.001 )
+    {
+        flags = IGES_IFLAG_TANGENT;
+        return false;
+    }
+
     // check if the circles are identical
-    if ( PointMatches( mcenter, c2, 0.001 )
-        && abs( mradius - r2 ) < 0.001 )
+    if ( PointMatches( mcenter, c2, 1e-3 )
+        && abs( mradius - r2 ) < 1e-3 )
     {
         // there may be an intersection along an edge
         if( SEGTYPE_CIRCLE == msegtype )
@@ -499,10 +506,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         }
 
         // determine if an entire segment is enveloped
-        double a0 = aSegment.getStartAngle();
-        double a1 = aSegment.getEndAngle();
-
-        if( a0 >= msang && a1 <= meang )
+        if( (b0 >= a0 && b1 <= a1)
+            || ((b0 + 2.0*M_PI) >= a0 && (b1 + 2.0*M_PI) <= a1)
+            || ((b0 - 2.0*M_PI) >= a0 && (b1 - 2.0*M_PI) <= a1) )
         {
             aIntersectList.push_back( aSegment.getStart() );
             aIntersectList.push_back( aSegment.getEnd() );
@@ -510,7 +516,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
-        if( msang >= a0 && meang <= a1 )
+        if( (a0 >= b0 && meang <= b1)
+            || (a0 >= (b0 + 2.0*M_PI) && a1 <= (b1 + 2.0*M_PI))
+            || (a0 >= (b0 - 2.0*M_PI) && a1 <= (b1 - 2.0*M_PI)) )
         {
             aIntersectList.push_back( getStart() );
             aIntersectList.push_back( getEnd() );
@@ -518,48 +526,96 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
-        // XXX - oh, so many other cases to consider!
+        // case 1: aSegment encompasses the start of *this
+        if( (b0 <= a0 && b1 >= a0 && b1 <= a1)
+            || ((b0 - 2.0*M_PI) <= a0 && (b1 - 2.0*M_PI) >= a0 && (b1 - 2.0*M_PI) <= a1) )
+        {
+            aIntersectList.push_back( getStart() );
+            aIntersectList.push_back( aSegment.getEnd() );
+            flags = IGES_IFLAG_EDGE;
+            return true;
+        }
+
+        // case 2: aSegment encompasses the end of *this
+        if( (b0 >= a0 && b0 <= a1 && b1 >= a1)
+            || ((b0 + 2.0*M_PI) >= a0 && (b0 + 2.0*M_PI) <= a1 && (b1 + 2.0*M_PI) >= a1)
+            || ((b0 - 2.0*M_PI) >= a0 && (b0 - 2.0*M_PI) <= a1 && (b1 - 2.0*M_PI) >= a1) )
+        {
+            aIntersectList.push_back( getStart() );
+            aIntersectList.push_back( aSegment.getEnd() );
+            flags = IGES_IFLAG_EDGE;
+            return true;
+        }
 
         return false;
     }
 
-    // XXX - the radii differ so if there is any intersection it is at 1 or 2 points
-
-    // XXX - TO BE CHECKED AND IMPLEMENTED
-    /*
-    if( abs( d - mradius - r2 ) < 0.001 )
-    {
-        flags = IGES_IFLAG_TANGENT;
-        return false;
-    }
-
-    if( d < mradius || d < r2)
-    {
-        // check if aSegment is inside this circle
-        if( d <= (mradius - r2) )
-        {
-            flags = IGES_IFLAG_ENCIRCLES;
-            return false;
-        }
-
-        // check if this circle is inside aSegment
-        if( d <= (r2 - mradius) )
-        {
-            flags = IGES_IFLAG_INSIDE;
-            return false;
-        }
-    }
-
-    // there must be 2 intersection points
+    // the radii differ so if there is any intersection it is at 1 or 2 points
     IGES_POINT p1;
     IGES_POINT p2;
     calcCircleIntercepts( c2, r2, d, p1, p2 );
+
+    // determine if any of the points lie on *this arc and
+    // place them in a ccw order
+
     aIntersectList.push_back( p1 );
     aIntersectList.push_back( p2 );
+    double angX = atan2( p1.y - mcenter.y, p1.x - mcenter.x );
+    IGES_POINT p0[2];
+    double ang0[2];
+    int np = 0;
+
+    if( (angX >= a0 && angX <= a1)
+        || ((angX + 2.0*M_PI) >= a0 && (angX + 2.0*M_PI) <= a1)
+        || ((angX - 2.0*M_PI) >= a0 && (angX - 2.0*M_PI) <= a1) )
+    {
+        p0[0] = p1;
+        ang0[0] = angX;
+        ++np;
+    }
+
+    angX = atan2( p2.y - mcenter.y, p2.x - mcenter.x );
+    if( (angX >= a0 && angX <= a1)
+        || ((angX + 2.0*M_PI) >= a0 && (angX + 2.0*M_PI) <= a1)
+        || ((angX - 2.0*M_PI) >= a0 && (angX - 2.0*M_PI) <= a1) )
+    {
+        p0[np] = p2;
+        ang0[np] = angX;
+        ++np;
+    }
+
+    if( 0 == np )
+    {
+        return false;
+    }
+
+    if( 1 == np )
+    {
+        aIntersectList.push_back( p0[0] );
+        return true;
+    }
+
+    // adjust range to fit within a0 .. a1
+    for( int i = 0; i < np; ++i )
+    {
+        if( ang0[i] < a0 )
+            ang0[i] += 2.0*M_PI;
+        else if ( ang0[i] > a1 )
+            ang0[i] -= 2.0*M_PI;
+    }
+
+    if( ang0[0] > ang0[1] )
+    {
+        aIntersectList.push_back( p0[1] );
+        aIntersectList.push_back( p0[0] );
+    }
+    else
+    {
+        aIntersectList.push_back( p0[0] );
+        aIntersectList.push_back( p0[1] );
+    }
 
     return true;
-    */
-    return false;
 }
 
 

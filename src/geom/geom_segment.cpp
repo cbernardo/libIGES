@@ -137,6 +137,8 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
         mstart = mcenter;
         mstart.x += mradius;
         mend = mstart;
+        msang = 0.0;
+        meang = 2.0 * M_PI;
         return true;
     }
 
@@ -475,16 +477,45 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     double b0 = aSegment.getStartAngle();
     double b1 = aSegment.getEndAngle();
 
+#warning TO BE IMPLEMENTED
+    // XXX - we may have a condition where we have 2 edge overlaps;
+    // this violates our constraint of 0 or 2 point intersections
+    // and we must inform the calling routine of the problem (invalid geometry)
+
+    // check if no intersection possible
     if( d > ( mradius + r2 ) )
         return false;
 
     if( abs( d - mradius - r2 ) < 0.001 )
     {
-        flags = IGES_IFLAG_TANGENT;
+        // calculate the intersection point and check if it lies on both arcs
+        double tang0 = atan2( c2.y - mcenter.y, c2.x - mcenter.x );
+        double tang1;
+
+        if( tang0 > 0.0 )
+            tang1 = tang0 - M_PI;
+        else
+            tang1 = tang0 + M_PI;
+
+        if( tang0 > a0 )
+            tang0 -= 2.0 * M_PI;
+
+        if( tang0 < a0 )
+            tang0 += 2.0 * M_PI;
+
+        if( tang1 > b0 )
+            tang1 -= 2.0 * M_PI;
+
+        if( tang1 < b0 )
+            tang1 += 2.0 * M_PI;
+
+        if( tang0 >= a0 && tang0 <= a1 && tang1 >= b0 && tang1 <= b1 )
+            flags = IGES_IFLAG_TANGENT;
+
         return false;
     }
 
-    // check if the circles are identical
+    // check if the arcs are identical
     if ( PointMatches( mcenter, c2, 1e-3 )
         && abs( mradius - r2 ) < 1e-3 )
     {
@@ -505,6 +536,24 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
+        // Special case: arcs only intersect at their endpoints;
+        // we must return the endpoints with the flag IGES_IFLAG_ENDPOINT
+        // possible sub-cases:
+        // b1 == a0, b0 == a1 - 2*M_PI
+        // a1 == b0, a0 == b1 - 2*M_PI
+        // b0 == a1, b1 == a0 + 2*M_PI
+        // a0 == b1, a1 == b0 + 2*M_PI
+        if( (abs(b1 - a0) < 1e-8 && abs(b0 -a1 + 2.0*M_PI) < 1e-8)
+            || (abs(a1 - b0) < 1e-8 && abs(a0 -b1 + 2.0*M_PI) < 1e-8)
+            || (abs(b0 - a1) < 1e-8 && abs(b1 -a0 - 2.0*M_PI) < 1e-8)
+            || (abs(a0 - b1) < 1e-8 && abs(a1 -b0 - 2.0*M_PI) < 1e-8) )
+        {
+            aIntersectList.push_back( getStart() );
+            aIntersectList.push_back( getEnd() );
+            flags = IGES_IFLAG_ENDPOINT;
+            return true;
+        }
+
         // determine if an entire segment is enveloped
         if( (b0 >= a0 && b1 <= a1)
             || ((b0 + 2.0*M_PI) >= a0 && (b1 + 2.0*M_PI) <= a1)
@@ -516,7 +565,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
-        if( (a0 >= b0 && meang <= b1)
+        if( (a0 >= b0 && a1 <= b1)
             || (a0 >= (b0 + 2.0*M_PI) && a1 <= (b1 + 2.0*M_PI))
             || (a0 >= (b0 - 2.0*M_PI) && a1 <= (b1 - 2.0*M_PI)) )
         {
@@ -548,6 +597,51 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         }
 
         return false;
+    }
+
+    // Special cases: arcs only intersect at their endpoints
+    // 1. aSegment->radius < *this->radius : return flag IGES_IFLAG_OUTSIDE; this
+    //    return value can be used by the calling routine to determine whether
+    //    nothing should be done (subtracting) or *this arc should be replaced
+    //    by aSegment (adding) provided aSegment has no non-endpoint intersections
+    //    with all other members of the outline.
+    // 2. aSegment->radius > *this->radius and a point halfway along *this
+    //    arc is inside aSegment : return flag IGES_IFLAG_INSIDE. For a subtractive
+    //    case, the calling routine can take the flag value to indicate that *this
+    //    arc must be replaced by aSegment provided there are absolutely no other
+    //    intersections in the outline which are not endpoints. For an additive case
+    //    nothing is to be done
+    // 3. aSegment->radius > *this->radius and a point halfway along *this
+    //    arc is outside aSegment : return flag IGES_IFLAG_OUTSIDE
+
+    if( ( PointMatches( getStart(), aSegment.getStart(), 1e-3 )
+        && PointMatches( getEnd(), aSegment.getEnd(), 1e-3 ) )
+        || (PointMatches( getStart(), aSegment.getEnd(), 1e-3 )
+        && PointMatches( getEnd(), aSegment.getStart(), 1e-3 ) ) )
+    {
+        aIntersectList.push_back( getStart() );
+        aIntersectList.push_back( getEnd() );
+
+        if( r2 > mradius )
+        {
+            double mrad = (a0 + a1) * 0.5;
+            double iaX = mcenter.x + mradius * cos( mrad );
+            double iaY = mcenter.y + mradius * sin( mrad );
+
+            iaX = iaX - c2.x;
+            iaY = iaY - c2.y;
+
+            mrad = sqrt(iaX*iaX + iaY*iaY);
+
+            if( mrad < r2 )
+            {
+                flags = IGES_IFLAG_INSIDE;
+                return true;
+            }
+        }
+
+        flags = IGES_IFLAG_OUTSIDE;
+        return true;
     }
 
     // the radii differ so if there is any intersection it is at 1 or 2 points
@@ -640,17 +734,10 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     if( SEGTYPE_ARC == msegtype || SEGTYPE_CIRCLE == msegtype )
     {
         if( SEGTYPE_CIRCLE == msegtype )
-        {
             arcCircle = true;
-            arcSAng = 0.0;
-            arcEAng = 0.0;
-        }
-        else
-        {
-            arcSAng = getStartAngle();
-            arcEAng = getEndAngle();
-        }
 
+        arcSAng = getStartAngle();
+        arcEAng = getEndAngle();
         arcR = mradius;
         arcC = mcenter;
         arcS = mstart;
@@ -662,17 +749,10 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     else
     {
         if( SEGTYPE_CIRCLE == aSegment.getSegType() )
-        {
             arcCircle = true;
-            arcSAng = 0.0;
-            arcEAng = 0.0;
-        }
-        else
-        {
-            arcSAng = aSegment.getStartAngle();
-            arcEAng = aSegment.getEndAngle();
-        }
 
+        arcSAng = aSegment.getStartAngle();
+        arcEAng = aSegment.getEndAngle();
         arcR = aSegment.getRadius();
         arcC = aSegment.getCenter();
         arcS = aSegment.getStart();
@@ -723,10 +803,19 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
     double D = B * B - 4.0 * A * C;
 
-    if( abs( D ) < 0.001 )
+    bool tangent = false;
+
+    if( abs( D ) < 1e-6 )
     {
-        flags = IGES_IFLAG_TANGENT;
-        return false;
+        if( arcCircle )
+        {
+            flags = IGES_IFLAG_TANGENT;
+            return false;
+        }
+
+        // we only have a problem with tangent geometry if
+        // the line actually touches the arc
+        tangent = true;
     }
 
     if( D < 0 )
@@ -737,17 +826,21 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
     int np = 0;
     IGES_POINT p[2];
+    IGES_INTERSECT_FLAG f[2];
 
     if( t0 >= 0.0 && t0 <= 1.0 )
     {
         p[0].x = t0 * lS.x + (1.0 - t0) * lE.x;
         p[0].y = t0 * lS.y + (1.0 - t0) * lE.y;
-        ++np;
 
         if( ( ( PointMatches( p[0], arcS, 1e-8 ) || PointMatches( p[0], arcE, 1e-8 ) )
             && !arcCircle )
             || abs( t0 ) < 1e-8 || abs( t0 - 1.0 ) < 1e-8 )
-            flags = IGES_IFLAG_ENDPOINT;
+            f[0] = IGES_IFLAG_ENDPOINT;
+        else
+            f[0] = IGES_IFLAG_NONE;
+
+        ++np;
     }
 
     if( t1 >= 0.0 && t1 <= 1.0 )
@@ -758,7 +851,9 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         if( ( ( PointMatches( p[np], arcS, 1e-8 ) || PointMatches( p[np], arcE, 1e-8 ) )
             && !arcCircle )
             || abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8 )
-            flags = IGES_IFLAG_ENDPOINT;
+            f[np] = IGES_IFLAG_ENDPOINT;
+        else
+            f[np] = IGES_IFLAG_NONE;
 
         ++np;
     }
@@ -773,8 +868,12 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         if( 1 == np )
         {
             aIntersectList.push_back( p[0] );
+            flags = f[0];
             return true;
         }
+
+        if( IGES_IFLAG_ENDPOINT == f[0] || IGES_IFLAG_ENDPOINT == f[1] )
+            flags = IGES_IFLAG_ENDPOINT;
 
         bool swap = false; // set to true if p[0], p[1] must be swapped
 
@@ -820,11 +919,21 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     if( 0 == np2 )
         return false;
 
+    if( tangent )
+    {
+        flags = IGES_IFLAG_TANGENT;
+        return false;
+    }
+
     if( 1 == np2 )
     {
+        flags = f[0];
         aIntersectList.push_back( pt[0] );
         return true;
     }
+
+    if( IGES_IFLAG_ENDPOINT == f[0] || IGES_IFLAG_ENDPOINT == f[1] )
+        flags = IGES_IFLAG_ENDPOINT;
 
     // determine point order on the arc
     if( ang[0] < arcSAng )

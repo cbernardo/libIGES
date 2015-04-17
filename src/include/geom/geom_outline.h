@@ -28,6 +28,12 @@
 /*
  * NOTES:
  *
+ * MESSAGES FOR THE USER:
+ * + Operations may result in failures due to invalid geometry; this
+ *   object must support a queue of messages in order to be able to
+ *   pass meaningful messages onto users who are not using the
+ *   software within a UNIX shell.
+ *
  * OPERATIONS:
  * + AddSegment: adds another segment to the list; the added segment
  *   must have a start point which coincides with the terminal point

@@ -36,16 +36,26 @@
 
 
 // flag used for geometry intersection information
+// Note that many of the cases in which we flag invalid geometry may in fact
+// not be invalid geometry but the geom_* code is intended to help in an ECAD
+// application rather than provide full MCAD support. This decision keeps this
+// code simpler while forcing the ECAD designer to put more thought into the
+// manufacturing design of the board.
 enum IGES_INTERSECT_FLAG
 {
     IGES_IFLAG_NONE = 0,    // no special conditions to report
     IGES_IFLAG_ENDPOINT,    // intersection is at the endpoint of a segment
     IGES_IFLAG_TANGENT,     // intersection is at a tangent (invalid geometry)
     IGES_IFLAG_EDGE,        // intersection is along an edge; result contains
-                            // start and end point of the edge.
+                            // start and end point of the edge. Initially the code
+                            // shall enforce simple geometry so an EDGE flag
+                            // shall be treated as invalid geometry.
     IGES_IFLAG_INSIDE,      // this circle is inside the given circle (invalid geometry)
+                            // or this arc is inside the given arc.
     IGES_IFLAG_ENCIRCLES,   // this circle envelopes the given circle (invalid geometry)
-    IGES_IFLAG_IDENT        // 2 circles are identical
+    IGES_IFLAG_OUTSIDE,     // this arc is outside the given arc
+    IGES_IFLAG_IDENT,       // 2 circles are identical
+    IGES_IFLAG_MULTIEDGE    // arcs overlap on 2 edges (invalid geometry)
 };
 
 

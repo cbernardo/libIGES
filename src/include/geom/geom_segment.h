@@ -34,6 +34,13 @@
 #include <entity126.h>
 #include <entity144.h>
 
+enum IGES_SEGTYPE
+{
+    IGES_SEGTYPE_NONE = 0,
+    IGES_SEGTYPE_LINE = 1,
+    IGES_SEGTYPE_ARC = 2,
+    IGES_SEGTYPE_CIRCLE = 4
+};
 
 // flag used for geometry intersection information
 // Note that many of the cases in which we flag invalid geometry may in fact
@@ -62,7 +69,7 @@ enum IGES_INTERSECT_FLAG
 class IGES_GEOM_SEGMENT
 {
 private:
-    char msegtype;  // segment type,
+    IGES_SEGTYPE msegtype;  // segment type,
     double mradius; // radius of arc or circle
     double msang;   // start angle of arc (always in CCW direction)
     double meang;   // end angle of arc (always in CCW direction)
@@ -75,11 +82,13 @@ private:
     void init( void );
 
 protected:
-    char getSegType( void ) const;
+    friend class IGES_GEOM_OUTLINE;
+
+    IGES_SEGTYPE getSegType( void ) const;
     double getRadius( void ) const;
     double getStartAngle( void ) const;
     double getEndAngle( void ) const;
-    bool getCWArc( void ) const;
+    bool   isArcCW( void ) const;
     IGES_POINT getCenter( void ) const;
     IGES_POINT getStart( void ) const;
     IGES_POINT getEnd( void ) const;

@@ -33,12 +33,6 @@
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 
-#define SEGTYPE_NONE 0
-#define SEGTYPE_LINE 1
-#define SEGTYPE_ARC 2
-#define SEGTYPE_CIRCLE 4
-
-
 using namespace std;
 
 
@@ -56,7 +50,7 @@ IGES_GEOM_SEGMENT::~IGES_GEOM_SEGMENT()
 
 void IGES_GEOM_SEGMENT::init( void )
 {
-    msegtype = SEGTYPE_NONE;
+    msegtype = IGES_SEGTYPE_NONE;
     mCWArc = false;
     mradius = 0.0;
     msang = 0.0;
@@ -97,7 +91,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 
     mstart = aStart;
     mend = aEnd;
-    msegtype = SEGTYPE_LINE;
+    msegtype = IGES_SEGTYPE_LINE;
     return true;
 }
 
@@ -132,7 +126,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
 
     if( PointMatches( aStart, aEnd, 1e-8 ) )
     {
-        msegtype = SEGTYPE_CIRCLE;
+        msegtype = IGES_SEGTYPE_CIRCLE;
         mcenter = aCenter;
         mstart = mcenter;
         mstart.x += mradius;
@@ -173,7 +167,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
 
     mstart = aStart;
     mend = aEnd;
-    msegtype = SEGTYPE_ARC;
+    msegtype = IGES_SEGTYPE_ARC;
     mCWArc = isCW;
     return true;
 }
@@ -185,7 +179,7 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
 {
     flags = IGES_IFLAG_NONE;
 
-    if( SEGTYPE_NONE == msegtype )
+    if( IGES_SEGTYPE_NONE == msegtype )
     {
         ERRMSG << "\n + [ERROR] no data in segment\n";
         return false;
@@ -207,37 +201,37 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
     // g. line, arc
     // h. line, line
     // i. arc, arc
-    char oSegType = aSegment.getSegType();
+    IGES_SEGTYPE oSegType = aSegment.getSegType();
 
-    if( SEGTYPE_NONE == oSegType )
+    if( IGES_SEGTYPE_NONE == oSegType )
     {
         ERRMSG << "\n + [ERROR] no data in second segment\n";
         return false;
     }
 
     // *this is a circle and it may intersect with a circle, arc, or line
-    if( SEGTYPE_CIRCLE == msegtype )
+    if( IGES_SEGTYPE_CIRCLE == msegtype )
     {
-        if( SEGTYPE_CIRCLE == oSegType )
+        if( IGES_SEGTYPE_CIRCLE == oSegType )
             return checkCircles( aSegment, aIntersectList, flags );
 
-        if( SEGTYPE_ARC == oSegType )
+        if( IGES_SEGTYPE_ARC == oSegType )
             return checkArcs(  aSegment, aIntersectList, flags );
 
         return checkArcLine(  aSegment, aIntersectList, flags );
     }
 
     // *this is an arc and it may intersect with a line, arc, or circle
-    if( SEGTYPE_ARC == msegtype )
+    if( IGES_SEGTYPE_ARC == msegtype )
     {
-        if( SEGTYPE_LINE == oSegType )
+        if( IGES_SEGTYPE_LINE == oSegType )
             return checkArcLine(  aSegment, aIntersectList, flags );
 
         return checkArcs(  aSegment, aIntersectList, flags );
     }
 
     // *this is a line and it may intersect with a line, arc or circle
-    if( SEGTYPE_LINE == oSegType )
+    if( IGES_SEGTYPE_LINE == oSegType )
         return checkLines(  aSegment, aIntersectList, flags );
 
     return checkArcLine( aSegment, aIntersectList, flags );
@@ -297,8 +291,8 @@ bool IGES_GEOM_SEGMENT::GetVerticalSurface( IGES* aModel, std::vector<IGES_ENTIT
 
     switch( msegtype )
     {
-        case SEGTYPE_CIRCLE:
-        case SEGTYPE_ARC:
+        case IGES_SEGTYPE_CIRCLE:
+        case IGES_SEGTYPE_ARC:
             do
             {
                 IGES_GEOM_CYLINDER cyl;
@@ -520,7 +514,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         && abs( mradius - r2 ) < 1e-3 )
     {
         // there may be an intersection along an edge
-        if( SEGTYPE_CIRCLE == msegtype )
+        if( IGES_SEGTYPE_CIRCLE == msegtype )
         {
             aIntersectList.push_back( aSegment.getStart() );
             aIntersectList.push_back( aSegment.getEnd() );
@@ -528,7 +522,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
-        if( SEGTYPE_CIRCLE == aSegment.getSegType() )
+        if( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
         {
             aIntersectList.push_back( getStart() );
             aIntersectList.push_back( getEnd() );
@@ -731,9 +725,9 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     IGES_POINT lS;
     IGES_POINT lE;
 
-    if( SEGTYPE_ARC == msegtype || SEGTYPE_CIRCLE == msegtype )
+    if( IGES_SEGTYPE_ARC == msegtype || IGES_SEGTYPE_CIRCLE == msegtype )
     {
-        if( SEGTYPE_CIRCLE == msegtype )
+        if( IGES_SEGTYPE_CIRCLE == msegtype )
             arcCircle = true;
 
         arcSAng = getStartAngle();
@@ -748,7 +742,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     }
     else
     {
-        if( SEGTYPE_CIRCLE == aSegment.getSegType() )
+        if( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
             arcCircle = true;
 
         arcSAng = aSegment.getStartAngle();
@@ -961,7 +955,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    if( SEGTYPE_NONE == msegtype || SEGTYPE_NONE == aSegment.getSegType() )
+    if( IGES_SEGTYPE_NONE == msegtype || IGES_SEGTYPE_NONE == aSegment.getSegType() )
     {
         ERRMSG << "\n + [ERROR] one of the segments has no data\n";
         return false;
@@ -1162,12 +1156,12 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
 // + calculate the top-left and bottom-right rectangular bounds
 bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 {
-    if( SEGTYPE_NONE == msegtype )
+    if( IGES_SEGTYPE_NONE == msegtype )
     {
         return false;
     }
 
-    if( SEGTYPE_LINE == msegtype )
+    if( IGES_SEGTYPE_LINE == msegtype )
     {
         if( abs( mstart.x - mend.x ) < 1e-8 )
         {
@@ -1211,7 +1205,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         return true;
     }   // if line segment
 
-    if( SEGTYPE_CIRCLE == msegtype )
+    if( IGES_SEGTYPE_CIRCLE == msegtype )
     {
         p0.x = mcenter.x - mradius;
         p1.x = mcenter.x + mradius;
@@ -1288,7 +1282,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 }
 
 
-char IGES_GEOM_SEGMENT::getSegType( void ) const
+IGES_SEGTYPE IGES_GEOM_SEGMENT::getSegType( void ) const
 {
     return msegtype;
 }
@@ -1312,7 +1306,7 @@ double IGES_GEOM_SEGMENT::getEndAngle( void ) const
 }
 
 
-bool IGES_GEOM_SEGMENT::getCWArc( void ) const
+bool IGES_GEOM_SEGMENT::isArcCW( void ) const
 {
     return mCWArc;
 }

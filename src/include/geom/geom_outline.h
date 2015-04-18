@@ -65,4 +65,78 @@
 #ifndef IGES_GEOM_OUTLINE_H
 #define IGES_GEOM_OUTLINE_H
 
+#include <list>
+#include <string>
+
+class IGES_GEOM_SEGMENT;
+
+class IGES_GEOM_OUTLINE
+{
+private:
+    std::list< std::string > errors;
+    bool mIsClosed;     // true if the outline is closed
+    double mWinding;    // accumulator to test for CW/CCW winding
+
+protected:
+    std::list<IGES_GEOM_SEGMENT*> msegments;    // list of segments
+    std::list<IGES_GEOM_OUTLINE*> mcutouts;     // list of non-overlapping cutouts
+    std::list<IGES_GEOM_SEGMENT*> mholes;       // list of non-overlapping holes
+
+public:
+    IGES_GEOM_OUTLINE();
+    ~IGES_GEOM_OUTLINE();
+
+    // Retrieve the error stack
+    const std::list< std::string >* GetErrors( void );
+
+    // Clear the error stack
+    void ClearErrors( void );
+
+    // Returns 'true' if the outline is closed
+    bool IsClosed( void );
+
+    // Add a segment to this outline; the user must ensure that
+    // the outline is closed before performing any other type
+    // of operation.
+    bool AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error );
+
+    // Merge the given closed outline with this one; to keep the
+    // code simple, the following restriction is imposed:
+    // the two outlines may only intersect at 2 points.
+    bool AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error );
+
+    // Subtract the given outline from this one; to keep the
+    // code simple, the following restriction is imposed:
+    // the two outlines may only intersect at 2 points.
+    bool SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error );
+
+    // Subtract the given circular segment from this outline; to keep the
+    // code simple, the following restriction is imposed:
+    // the two outlines may only intersect at 2 points.
+    bool SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error );
+
+    // Add the given cutout in preparation for exporting a solid model.
+    // If the cutout is known to be non-overlapping then the 'overlaps'
+    // flag may be set to 'false' to skip overlap tests. If the user
+    // does not know whether the outline overlaps or not, then the
+    // overlaps flag must be set to 'true' to ensure that checks are
+    // performed to ensure valid geometry. If the function succeeds
+    // it will manage the given cutout; if the function returns
+    // false then the calling routine is responsible for the disposal
+    // of the cutout object. It is the caller's responsibility to
+    // ensure that the cutouts do not overlap with any other cutouts,
+    // otherwise the geometry will be invalid.
+    bool AddCutout( IGES_GEOM_OUTLINE* aCutout, bool overlaps, bool& error );
+
+    // Add the given circular segment as a cutout; if the segment is
+    // known to be non-overlapping then 'overlaps' may be set to 'false',
+    // otherwise it must be set to 'true'. If the function succeeds it
+    // will manage the given segment; if the function returns false
+    // then it is the caller's responsibility to dispose of the object.
+    // It is the caller's responsibility to ensure that the cutouts do not
+    // overlap with any other cutouts, otherwise the geometry will be invalid.
+    bool AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bool& error );
+
+};
+
 #endif  // IGES_GEOM_OUTLINE_H

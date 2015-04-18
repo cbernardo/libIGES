@@ -1338,3 +1338,25 @@ IGES_POINT IGES_GEOM_SEGMENT::getEnd( void ) const
 
     return mend;
 }
+
+// reverse the point order if applicable
+void IGES_GEOM_SEGMENT::reverse( void )
+{
+    if( IGES_SEGTYPE_NONE == msegtype || IGES_SEGTYPE_CIRCLE == msegtype )
+        return;
+
+    IGES_POINT tmp = mstart;
+    mstart = mend;
+    mend = tmp;
+
+    if( IGES_SEGTYPE_ARC == msegtype )
+    {
+        if( mCWArc )
+            mCWArc = false;
+        else
+            mCWArc = true;
+    }
+
+    return;
+}
+

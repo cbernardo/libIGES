@@ -90,6 +90,7 @@ add_library( iges STATIC
     "${SRC_GEOM}/geom_cylinder.cpp"
     "${SRC_GEOM}/geom_plane.cpp"
     "${SRC_GEOM}/geom_segment.cpp"
+    "${SRC_GEOM}/geom_outline.cpp"
     )
 
 target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )

@@ -69,6 +69,7 @@ enum IGES_INTERSECT_FLAG
 class IGES_GEOM_SEGMENT
 {
 private:
+    friend class IGES_GEOM_OUTLINE;
     IGES_SEGTYPE msegtype;  // segment type,
     double mradius; // radius of arc or circle
     double msang;   // start angle of arc (always in CCW direction)
@@ -82,8 +83,6 @@ private:
     void init( void );
 
 protected:
-    friend class IGES_GEOM_OUTLINE;
-
     IGES_SEGTYPE getSegType( void ) const;
     double getRadius( void ) const;
     double getStartAngle( void ) const;
@@ -120,6 +119,9 @@ protected:
     bool checkLines( const IGES_GEOM_SEGMENT& aSegment,
                      std::list<IGES_POINT>& aIntersectList,
                      IGES_INTERSECT_FLAG& flags );
+
+    // reverse the point order if applicable
+    void reverse( void );
 
 public:
     IGES_GEOM_SEGMENT();

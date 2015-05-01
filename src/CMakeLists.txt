@@ -111,7 +111,12 @@ add_executable( segtest
     "${LIBIGES_SOURCE_DIR}/tests/test_segs.cpp"
     )
 
+add_executable( olntest
+    "${LIBIGES_SOURCE_DIR}/tests/test_outline.cpp"
+    )
+
 target_link_libraries( readtest iges )
 target_link_libraries( mergetest iges )
 target_link_libraries( curvetest iges )
 target_link_libraries( segtest iges )
+target_link_libraries( olntest iges )

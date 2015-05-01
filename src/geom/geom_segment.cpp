@@ -240,10 +240,80 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
 
 // split at the given list of intersections (1 or 2 intersections only)
 bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
-                               std::list<IGES_GEOM_SEGMENT*> aNewSegmentList )
+                               std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( IGES_SEGTYPE_NONE == msegtype )
+    {
+        ERRMSG << "\n [BUG]: splitting a non-defined segment\n";
+        return false;
+    }
+
+    switch( aIntersectList.size() )
+    {
+        case 0:
+            return false;
+            break;
+
+        case 1:
+        case 2:
+            break;
+
+        default:
+            ERRMSG << "\n [BUG]: invalid split list (contains more than 2 points)\n";
+            return false;
+            break;
+    }
+
+    if( IGES_SEGTYPE_CIRCLE != msegtype )
+    {
+        list<IGES_POINT>::iterator sP = aIntersectList.begin();
+        list<IGES_POINT>::iterator eP = aIntersectList.end();
+
+        while( sP != eP )
+        {
+            if( PointMatches( *sP, mstart, 1e-8 )
+                || PointMatches( *sP, mend, 1e-8 ) )
+            {
+                sP = aIntersectList.erase( sP );
+                continue;
+            }
+
+            ++sP;
+        }
+
+        if( aIntersectList.empty() )
+            return false;
+    }
+
+    bool ok = false;
+
+    switch( msegtype )
+    {
+        case IGES_SEGTYPE_LINE:
+            ok = splitLine( aIntersectList, aNewSegmentList );
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            ok = splitArc( aIntersectList, aNewSegmentList );
+            break;
+
+        case IGES_SEGTYPE_CIRCLE:
+            ok = splitCircle( aIntersectList, aNewSegmentList );
+            break;
+
+        default:
+            ERRMSG << "\n [BUG]: bad segment type (" << msegtype << ")\n";
+            return false;
+            break;
+    }
+
+    if( !ok )
+    {
+        ERRMSG << "\n [INFO]: could not split segment\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -255,7 +325,7 @@ bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves
 }
 
 
-// retrieve the curve as a parametric curve on plane
+// retrieve the curve as a list of parametric curves on plane
 bool IGES_GEOM_SEGMENT::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
                         double aMinX, double aMaxX, double aMinY, double aMaxY,
                         double zHeight )
@@ -1153,7 +1223,7 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
 }
 
 
-// + calculate the top-left and bottom-right rectangular bounds
+// calculate the bottom-left and top-right rectangular bounds
 bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 {
     if( IGES_SEGTYPE_NONE == msegtype )
@@ -1166,7 +1236,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         if( abs( mstart.x - mend.x ) < 1e-8 )
         {
             // we have a vertical line
-            if( mstart.y > mend.y )
+            if( mstart.y <= mend.y )
             {
                 p0 = mstart;
                 p1 = mend;
@@ -1191,7 +1261,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
             p0.x = mend.x;
         }
 
-        if( mstart.y >= mend.y )
+        if( mstart.y < mend.y )
         {
             p0.y = mstart.y;
             p1.y = mend.y;
@@ -1210,8 +1280,8 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         p0.x = mcenter.x - mradius;
         p1.x = mcenter.x + mradius;
 
-        p0.y = mcenter.y + mradius;
-        p1.y = mcenter.y - mradius;
+        p0.y = mcenter.y - mradius;
+        p1.y = mcenter.y + mradius;
 
         return true;
     }
@@ -1258,7 +1328,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
     else
         p0.x = mend.x;
 
-    if( mstart.y > mend.y )
+    if( mstart.y < mend.y )
         p0.y = mstart.y;
     else
         p0.y = mend.y;
@@ -1271,10 +1341,10 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         if( m[i].x > p1.x )
             p1.x = m[i].x;
 
-        if( m[i].y > p0.y )
+        if( m[i].y < p0.y )
             p0.y = m[i].y;
 
-        if( m[i].y < p1.y )
+        if( m[i].y > p1.y )
             p1.y = m[i].y;
     }
 
@@ -1360,3 +1430,99 @@ void IGES_GEOM_SEGMENT::reverse( void )
     return;
 }
 
+bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
+                std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+{
+#warning TO BE IMPLEMENTED
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
+               std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+{
+    #warning TO BE IMPLEMENTED
+    // XXX - TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
+                  std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+{
+    if( aIntersectList.size() != 2 )
+    {
+        ERRMSG << "\n + [ERROR] splitting a circle requires 2 points, " << aIntersectList.size() << " provided\n";
+        return false;
+    }
+
+    IGES_POINT p0 = aIntersectList.front();
+    IGES_POINT p1 = aIntersectList.back();
+
+    if( abs(p0.x - p1.x) < 1e-8 && abs(p0.y - p1.y) < 1e-8 )
+    {
+        ERRMSG << "\n + [ERROR] split points are identical (invalid geometry)\n";
+        return false;
+    }
+
+    double dx = p0.x - mcenter.x;
+    double dy = p0.y - mcenter.y;
+    double dd = dx*dx + dy*dy;
+    double dr = mradius * mradius;
+
+    if( abs(dd - dr) > 1e-8 )
+    {
+        ERRMSG << "\n + [ERROR] radius of p0 varies by more than 1e-8 from circle's radius\n";
+        return false;
+    }
+
+    double a0 = atan2( dy, dx );
+    dx = p1.x - mcenter.x;
+    dy = p1.y - mcenter.y;
+    dd = dx*dx + dy*dy;
+
+    if( abs(dd - dr) > 1e-8 )
+    {
+        ERRMSG << "\n + [ERROR] radius of p1 varies by more than 1e-8 from circle's radius\n";
+        return false;
+    }
+
+    double a1 = atan2( dy, dx );
+
+    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+
+    if( !sp )
+    {
+        ERRMSG << "\n + [ERROR] could not allocate memory\n";
+        return false;
+    }
+
+    // explicitly assign values for the new arc; this saves
+    // some computation time over SetParams()
+    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->mcenter = mcenter;
+    sp->mstart = p0;
+    sp->mend = p1;
+    sp->msang = a0;
+    sp->meang = a1;
+    sp->mCWArc = false;
+
+    if( sp->msang > sp->meang )
+        sp->meang += 2.0 * M_PI;
+
+    aNewSegmentList.push_back( sp );
+
+    // The preserved section of the circle runs CCW from p1 to p0
+    mstart = p1;
+    mend = p0;
+    msegtype = IGES_SEGTYPE_ARC;
+    mCWArc = false;
+    msang = a1;
+    meang = a0;
+
+    if( msang > meang )
+        meang += 2.0 * M_PI;
+
+    return true;
+}

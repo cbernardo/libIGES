@@ -78,6 +78,8 @@ private:
     double mWinding;    // accumulator to test for CW/CCW winding
 
 protected:
+    IGES_POINT mBottomLeft; // bottom left coordinate
+    IGES_POINT mTopRight;   // top right coordinate of bounding box
     std::list<IGES_GEOM_SEGMENT*> msegments;    // list of segments
     std::list<IGES_GEOM_OUTLINE*> mcutouts;     // list of non-overlapping cutouts
     std::list<IGES_GEOM_SEGMENT*> mholes;       // list of non-overlapping holes
@@ -94,6 +96,9 @@ public:
 
     // Returns 'true' if the outline is closed
     bool IsClosed( void );
+
+    // Returns 'true' if the point is on or inside this outline
+    bool IsInside( IGES_POINT aPoint, bool& error );
 
     // Add a segment to this outline; the user must ensure that
     // the outline is closed before performing any other type
@@ -136,6 +141,12 @@ public:
     // It is the caller's responsibility to ensure that the cutouts do not
     // overlap with any other cutouts, otherwise the geometry will be invalid.
     bool AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bool& error );
+
+    // retrieve trimmed parametric surfaces representing vertical sides
+    // of the main outline and all cutouts
+    bool GetVerticalSurface( IGES* aModel, bool& error,
+                             std::vector<IGES_ENTITY_144*>& aSurface,
+                             double aTopZ, double aBotZ );
 
 };
 

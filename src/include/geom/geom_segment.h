@@ -91,6 +91,12 @@ protected:
     IGES_POINT getCenter( void ) const;
     IGES_POINT getStart( void ) const;
     IGES_POINT getEnd( void ) const;
+    bool splitLine( std::list<IGES_POINT>& aIntersectList,
+                    std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList );
+    bool splitArc( std::list<IGES_POINT>& aIntersectList,
+                   std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList );
+    bool splitCircle( std::list<IGES_POINT>& aIntersectList,
+                      std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList );
 
     // c2 = center of second circle
     // r2 = radius of second circle
@@ -145,11 +151,22 @@ public:
                            std::list<IGES_POINT>& aIntersectList,
                            IGES_INTERSECT_FLAG& flags );
 
-    // + calculate the top-left and bottom-right rectangular bounds
+    // + calculate the bottom-left and top-right rectangular bounds
     bool GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 );
 
     // + split at the given list of intersections (1 or 2 intersections only)
-    bool Split( std::list<IGES_POINT>& aIntersectList, std::list<IGES_GEOM_SEGMENT*> aNewSegmentList );
+    // Cases:
+    //   1. Circle: must have 2 points; the circle is split into 2 arcs with
+    //              the new arc being CCW from point 1 to point 2; the old
+    //              circle segment becomes a CCW arc from point 2 to point 1.
+    //   2. Arc: may be 1 or 2 points; up to 2 new arcs are created with the
+    //           same sense (CCW or CW) as the original arc.
+    //   3. Line: may be 1 or 2 points; new segments are added such that they
+    //            maintain the order of the original paramaterized segment;
+    //            that is, each new segment has a parameter value 't' on the
+    //            original segment such that 't' is monotonically increasing
+    //            from 0 .. 1.
+    bool Split( std::list<IGES_POINT>& aIntersectList, std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList );
 
     // retrieve the representation of the curve as IGES
     // 2D primitives (Entity 100 or Entity 110). An arc
@@ -157,13 +174,12 @@ public:
     // segments for the consumption of MCADs.
     bool GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
 
-    // retrieve the curve as a parametric curve on plane; it is
-    // assumed that the plane's first parameter is along X and
-    // the second along Y. The segment is converted to parameter
-    // space assuming uniform parameter values U:(0..1), V:(0..1)
-    // and the given X,Y values specifying the plane. Arcs shall
-    // automatically be broken into segments as necessary to ensure
-    // a 1:1 mapping within each segment.
+    // retrieve the curve as a list of parametric curves on plane; it is
+    // assumed that the plane's first parameter is along X and the second
+    // along Y. The segment is converted to parameter space assuming uniform
+    // parameter values U:(0..1), V:(0..1) and the given X,Y values specifying
+    // the plane. Arcs shall automatically be broken into segments as necessary
+    // to ensure a 1:1 mapping within each segment.
     // Restrictions:
     // 1. The plane must have the same coordinate system as the segment.
     // 2. The plane must encompass all points in the curve or else the

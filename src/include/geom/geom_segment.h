@@ -82,7 +82,7 @@ private:
 
     void init( void );
 
-protected:
+public: // XXX- restore to protected
     IGES_SEGTYPE getSegType( void ) const;
     double getRadius( void ) const;
     double getStartAngle( void ) const;

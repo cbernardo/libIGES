@@ -61,6 +61,97 @@ int main()
         return -1;
     }
 
+    // radius: 1, c(+2,0)
+    c2[0].x = 2.0;
+    c2[0].y = 0.0;
+    c2[1].x = 3.0;
+    c2[1].y = 0.0;
+    c2[2].x = 3.0;
+    c2[2].y = 0.0;
+    seg2.SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( &seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
+    // radius: 1, c(0,+2)
+    c2[0].x = 0.0;
+    c2[0].y = 2.0;
+    c2[1].x = 1.0;
+    c2[1].y = 2.0;
+    c2[2].x = 1.0;
+    c2[2].y = 2.0;
+    seg2.SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( &seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
+    // radius: 1, c(0,-2)
+    c2[0].x = 0.0;
+    c2[0].y = -2.0;
+    c2[1].x = 1.0;
+    c2[1].y = -2.0;
+    c2[2].x = 1.0;
+    c2[2].y = -2.0;
+    seg2.SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( &seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
+    // radius: 0.2, c(-1,0)
+    c2[0].x = -1.0;
+    c2[0].y = 0.0;
+    c2[1].x = -0.8;
+    c2[1].y = 0.0;
+    c2[2].x = -0.8;
+    c2[2].y = 0.0;
+    seg2.SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( &seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
+    // radius: 0.2, c(-1.75,0.968246)
+    c2[0].x = -1.75;
+    c2[0].y = 0.968246;
+    c2[1].x = -1.55;
+    c2[1].y = 0.968246;
+    c2[2].x = -1.55;
+    c2[2].y = 0.968246;
+    seg2.SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( &seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
+    IGES_GEOM_SEGMENT* seg3 = new IGES_GEOM_SEGMENT;
+    // radius: 0.5, c(0,0)
+    c2[0].x = 0.0;
+    c2[0].y = 0.0;
+    c2[1].x = 0.5;
+    c2[1].y = 0.0;
+    c2[2].x = 0.5;
+    c2[2].y = 0.0;
+    seg3->SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( seg3, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 

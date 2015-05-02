@@ -142,8 +142,10 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
 
     if( abs(r2 - mradius) > 1e-8 )
     {
-        mradius = 0;
-        ERRMSG << "\n + [ERROR] radii differ by > 1e-8\n";
+        ERRMSG << "\n + [ERROR] radii differ by > 1e-8 (" << abs(r2 - mradius) << ")\n";
+        cerr << " + mradius: " << mradius << "\n";
+        cerr << " +      r2: " << r2 << "\n";
+        init();
         return false;
     }
 
@@ -429,16 +431,18 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
     double x = rd / d * dx + mcenter.x;
     double y = rd / d * dy + mcenter.y;
 
-    // height of the triangle / d
-    double h = sqrt( mradius*mradius - rd*rd ) / d;
+    // height of the triangle
+    double h = sqrt( mradius*mradius - rd*rd );
+    double ra0 = atan2( dy, dx ) + M_PI / 2.0;
+    double ra1 = ra0 + M_PI;
 
     // first intersection point
-    double x0 = x + h * dy;
-    double y0 = y + h * dx;
+    double x0 = x + h * cos(ra0);
+    double y0 = y + h * sin(ra0);
 
     // second intersection point
-    double x1 = x - h * dy;
-    double y1 = y - h * dx;
+    double x1 = x + h * cos(ra1);
+    double y1 = y + h * sin(ra1);
 
     // work out which intersection comes first
     // when going clockwise on C1
@@ -465,6 +469,16 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
     p2.y = y1;
     p2.z = 0.0;
 
+    cout << "XXX: circles intersect at\n";
+    cout << " c0(" << mcenter.x << ", " << mcenter.y << "), r0: " << mradius << "\n";
+    cout << " c1(" << c2.x << ", " << c2.y << "), r1: " << r2 << "\n";
+    cout << " p0, p1 on C0 yields radii (" << sqrt( (p1.x - mcenter.x) * (p1.x - mcenter.x) + (p1.y - mcenter.y) * (p1.y - mcenter.y) );
+    cout << ", " << sqrt( (p2.x - mcenter.x) * (p2.x - mcenter.x) + (p2.y - mcenter.y) * (p2.y - mcenter.y) ) << ")\n";
+    cout << " p0, p1 on C0 yields radii (" << sqrt( (p1.x - c2.x) * (p1.x - c2.x) + (p1.y - c2.y) * (p1.y - c2.y) );
+    cout << ", " << sqrt( (p2.x - c2.x) * (p2.x - c2.x) + (p2.y - c2.y) * (p2.y - c2.y) ) << ")\n";
+    cout << " p0(" << p1.x << ", " << p1.y << ")\n";
+    cout << " p1(" << p2.x << ", " << p2.y << ")\n";
+
     return;
 }
 
@@ -473,6 +487,7 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
 bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
+    cout << "XXX: check Circles\n";
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
@@ -531,11 +546,12 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
+    cout << "XXX: check Arcs\n";
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
-    double d= sqrt( dx*dx + dy*dy );
+    double d = sqrt( dx*dx + dy*dy );
     double a0 = getStartAngle();
     double a1 = getEndAngle();
     double b0 = aSegment.getStartAngle();
@@ -547,7 +563,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     // and we must inform the calling routine of the problem (invalid geometry)
 
     // check if no intersection possible
-    if( d > ( mradius + r2 ) )
+    if( (d > ( mradius + r2 )) || ((d + r2) < mradius) || ((d + mradius) < r2) )
         return false;
 
     if( abs( d - mradius - r2 ) < 0.001 )
@@ -618,6 +634,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
+        // XXX - TO BE IMPLEMENTED
+        // Special case: arcs intersect at only a single endpoint
+
         // determine if an entire segment is enveloped
         if( (b0 >= a0 && b1 <= a1)
             || ((b0 + 2.0*M_PI) >= a0 && (b1 + 2.0*M_PI) <= a1)
@@ -678,6 +697,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     // 3. aSegment->radius > *this->radius and a point halfway along *this
     //    arc is outside aSegment : return flag IGES_IFLAG_OUTSIDE
 
+    // XXX - TO BE IMPEMENTED - only execute if both segments are arcs
     if( ( PointMatches( getStart(), aSegment.getStart(), 1e-3 )
         && PointMatches( getEnd(), aSegment.getEnd(), 1e-3 ) )
         || (PointMatches( getStart(), aSegment.getEnd(), 1e-3 )
@@ -708,7 +728,8 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         return true;
     }
 
-    // the radii differ so if there is any intersection it is at 1 or 2 points
+    // the arcs are not concentric so if there is any intersection
+    // it is at 1 or 2 points
     IGES_POINT p1;
     IGES_POINT p2;
     calcCircleIntercepts( c2, r2, d, p1, p2 );
@@ -716,8 +737,6 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     // determine if any of the points lie on *this arc and
     // place them in a ccw order
 
-    aIntersectList.push_back( p1 );
-    aIntersectList.push_back( p2 );
     double angX = atan2( p1.y - mcenter.y, p1.x - mcenter.x );
     IGES_POINT p0[2];
     double ang0[2];
@@ -1442,9 +1461,131 @@ bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
 bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
                std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
 {
-    #warning TO BE IMPLEMENTED
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    IGES_POINT p0 = aIntersectList.front();
+    double dx = p0.x - mcenter.x;
+    double dy = p0.y - mcenter.y;
+    double dd = dx*dx + dy*dy;
+    double dr = mradius * mradius;
+
+    if( abs(dd - dr) > 1e-6 )   // XXX - was once 1e-8
+    {
+        ERRMSG << "\n + [ERROR] radius of p0 varies by more than 1e-8 from arc's radius (" << (dd - dr) << ")\n";
+        return false;
+    }
+
+    double a0 = atan2( dy, dx );
+
+    if( a0 < getStartAngle() )
+        a0 += 2.0 * M_PI;
+
+    if( a0 > getEndAngle() )
+    {
+        ERRMSG << "\n + [ERROR] p0 is not on the arc\n";
+        return false;
+    }
+
+    IGES_GEOM_SEGMENT* sp;
+
+    if( 1 == aIntersectList.size() )
+    {
+        // create the new arc
+        sp = new IGES_GEOM_SEGMENT;
+        sp->mstart = p0;
+        sp->mend = mend;
+        sp->msang = a0;
+        sp->meang = meang;
+        sp->mCWArc = mCWArc;
+        sp->msegtype = IGES_SEGTYPE_ARC;
+        sp->mradius = mradius;
+        sp->mcenter = mcenter;
+        aNewSegmentList.push_back( sp );
+
+        // adjust the extent of this arc
+        mend = p0;
+        meang = a0;
+
+        return true;
+    }
+
+    IGES_POINT p1 = aIntersectList.back();
+
+    dx = p1.x - mcenter.x;
+    dy = p1.y - mcenter.y;
+    dd = dx*dx + dy*dy;
+    dr = mradius * mradius;
+
+    if( abs(dd - dr) > 1e-8 )
+    {
+        ERRMSG << "\n + [ERROR] radius of p1 varies by more than 1e-8 from arc's radius\n";
+        return false;
+    }
+
+    double a1 = atan2( dy, dx );
+
+    if( a1 < getStartAngle() )
+        a1 += 2.0 * M_PI;
+
+    if( a1 > getEndAngle() )
+    {
+        ERRMSG << "\n + [ERROR] p1 is not on the arc\n";
+        return false;
+    }
+
+    // swap points if necessary to ensure correct order on the arc
+    if( mCWArc )
+    {
+        if( a1 > a0 )
+        {
+            double t0 = a0;
+            a0 = a1;
+            a1 = t0;
+            IGES_POINT tp0 = p0;
+            p0 = p1;
+            p1 = tp0;
+        }
+    }
+    else
+    {
+        if( a1 < a0 )
+        {
+            double t0 = a0;
+            a0 = a1;
+            a1 = t0;
+            IGES_POINT tp0 = p0;
+            p0 = p1;
+            p1 = tp0;
+        }
+    }
+
+    // create the first of 2 new arcs
+    sp = new IGES_GEOM_SEGMENT;
+    sp->mstart = p0;
+    sp->mend = p1;
+    sp->msang = a0;
+    sp->meang = a1;
+    sp->mCWArc = mCWArc;
+    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->mradius = mradius;
+    sp->mcenter = mcenter;
+    aNewSegmentList.push_back( sp );
+
+    // create the second of 2 new arcs
+    sp = new IGES_GEOM_SEGMENT;
+    sp->mstart = p1;
+    sp->mend = mend;
+    sp->msang = a1;
+    sp->meang = meang;
+    sp->mCWArc = mCWArc;
+    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->mradius = mradius;
+    sp->mcenter = mcenter;
+    aNewSegmentList.push_back( sp );
+
+    // adjust the extent of this arc
+    mend = p0;
+    meang = a0;
+
+    return true;
 }
 
 
@@ -1459,6 +1600,9 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
 
     IGES_POINT p0 = aIntersectList.front();
     IGES_POINT p1 = aIntersectList.back();
+
+    cout << "XXX: p0(" << p0.x << ", " << p0.y << ")\n";
+    cout << "XXX: p1(" << p1.x << ", " << p1.y << ")\n";
 
     if( abs(p0.x - p1.x) < 1e-8 && abs(p0.y - p1.y) < 1e-8 )
     {
@@ -1506,6 +1650,7 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
     sp->mend = p1;
     sp->msang = a0;
     sp->meang = a1;
+    sp->mradius = mradius;
     sp->mCWArc = false;
 
     if( sp->msang > sp->meang )

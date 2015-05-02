@@ -59,6 +59,62 @@ struct GEOM_INTERSECT
 };
 
 
+static void print_point( IGES_POINT p0 )
+{
+    cout << "(" << p0.x << ", " << p0.y << ")\n";
+}
+
+static void print_seg( IGES_GEOM_SEGMENT* seg )
+{
+    cout << "      type: ";
+
+    switch( seg->getSegType() )
+    {
+        case IGES_SEGTYPE_NONE:
+            cout << "NONE\n";
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            cout << "ARC\n";
+            cout << "c";
+            print_point( seg->getCenter() );
+            cout << "s";
+            print_point( seg->getStart() );
+            cout << "e";
+            print_point( seg->getEnd() );
+            break;
+
+        case IGES_SEGTYPE_CIRCLE:
+            cout << "CIRCLE\n";
+            break;
+
+        case IGES_SEGTYPE_LINE:
+            cout << "LINE\n";
+            break;
+
+        default:
+            cout << "INVALID\n";
+            break;
+    }
+}
+
+
+static void print_geom_intersects( const list<GEOM_INTERSECT>& aList )
+{
+    list<GEOM_INTERSECT>::const_iterator sL = aList.begin();
+    list<GEOM_INTERSECT>::const_iterator eL = aList.end();
+
+    while( sL != eL )
+    {
+        cerr << "** GEOM_INTERSECT\n";
+        cerr << "   point(" << sL->vertex.x << ", " << sL->vertex.y << ")\n";
+        cerr << "   segA: " << sL->segA << "\n";
+        print_seg( sL->segA );
+        ++sL;
+    }
+}
+
+
 IGES_GEOM_OUTLINE::IGES_GEOM_OUTLINE()
 {
     mIsClosed = false;
@@ -150,6 +206,8 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     if( aPoint.x < mBottomLeft.x || aPoint.y < mBottomLeft.y
         || aPoint.x > mTopRight.x || aPoint.y > mTopRight.y )
     {
+        cout << "XXX: point(" << aPoint.x << ", " << aPoint.y << ")\n";
+        cout << "XXX: outside ( out of bounds )\n";
         return false;
     }
 
@@ -210,6 +268,9 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 
         ++sSegs;
     }
+
+    cout << "XXX: point(" << aPoint.x << ", " << aPoint.y << ")\n";
+    cout << "XXX: nI: " << nI << "\n";
 
     // note: an odd number means the point is inside the outline
     if( nI % 2 )
@@ -421,6 +482,7 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 // the two outlines may only intersect at 2 points.
 bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 {
+    cout << "XXX: SUB OUTLINE ITERATION\n";
     if( !mIsClosed )
     {
         ostringstream msg;
@@ -481,10 +543,14 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
             std::list<IGES_POINT>::iterator iPts = iList.begin();
             std::list<IGES_POINT>::iterator ePts = iList.end();
 
+            cout << "XXX: iList has " << iList.size() << " intersections\n";
+
             while( iPts != ePts )
             {
                 GEOM_INTERSECT gi;
                 gi.vertex = *iPts;
+                cout << "XXX: v";
+                print_point( *iPts );
                 gi.segA = *iSeg;
                 gi.segB = aCircle;
                 gi.iSegA = iSeg;
@@ -536,6 +602,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         if( iList.empty() )
         {
             iList.push_back( iIn->vertex );
+            lSegs.push_back( iIn->iSegA );
         }
         else
         {
@@ -574,6 +641,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         error = true;
+        print_geom_intersects( intersects );
         return false;
     }
 
@@ -683,6 +751,21 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         return false;
     }
 
+    if( isIn )
+        cout << "XXX: (POINT INSIDE)\n";
+    else
+    {
+        cout << "XXX: (POINT OUTSIDE)\n";
+        cout << "c";
+        print_point(p0);
+        cout << "s";
+        print_point(iList.front());
+        cout << "e";
+        print_point(iList.back());
+    }
+
+    cout << "XXX: expect 2 intersections, have " << iList.size() << "\n";
+
     IGES_POINT pF[2];   // final point order
     bool isEnd[2];      // indicates if pF[n] is an endpoint
     list<IGES_GEOM_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
@@ -709,18 +792,10 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     // the same entity then the single Split() operator
     // must specify both split points.
 
+    cout << "XXX: lSegs.size(): " << lSegs.size() << "\n";
     if( isIn )
     {
-        if( a1 < a2 )
-        {
-            pF[0] = iList.front();
-            pF[1] = iList.back();
-            isEnd[0] = p1e;
-            isEnd[1] = p2e;
-            pSeg[0] = lSegs.front();
-            pSeg[1] = lSegs.back();
-        }
-        else
+        if( a2 < 0.0 && a1 >= 0.0 )
         {
             pF[1] = iList.front();
             pF[0] = iList.back();
@@ -729,10 +804,19 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
             pSeg[1] = lSegs.front();
             pSeg[0] = lSegs.back();
         }
+        else
+        {
+            pF[0] = iList.front();
+            pF[1] = iList.back();
+            isEnd[0] = p1e;
+            isEnd[1] = p2e;
+            pSeg[0] = lSegs.front();
+            pSeg[1] = lSegs.back();
+        }
     }
     else
     {
-        if( a1 < a2 )
+        if( a1 < 0.0 && a2 >= 0.0 )
         {
             pF[1] = iList.front();
             pF[0] = iList.back();
@@ -753,7 +837,24 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     }
 
     IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
-    sp->SetParams( p0, pF[0], pF[1], true );
+
+    if( !sp->SetParams( p0, pF[0], pF[1], true ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] intersections do not lie on the circular cutout";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        cout << "  c";
+        print_point( p0 );
+        cout << "  s";
+        print_point( pF[0] );
+        cout << "  e";
+        print_point( pF[1] );
+        delete sp;
+        return false;
+    }
 
     if( msegments.front()->getSegType() == IGES_SEGTYPE_CIRCLE )
     {
@@ -792,6 +893,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         // if both points lie on a single segment then split at 2 points
         if( pSeg[0] == pSeg[1] )
         {
+            cout << "XXX: splitting at multiple points\n";
             iList.clear();
             iList.push_back(pF[0]);
             iList.push_back(pF[1]);
@@ -808,8 +910,6 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
                 delete sp;
                 return false;
             }
-
-            cout << "XXX: Split in 2 places!\n";
 
             if( sList.size() != 2 )
             {
@@ -834,10 +934,13 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
             delete sList.front();
             sList.pop_front();
             sList.push_front( sp );
-            msegments.insert( ++pSeg[0], sList.begin(), sList.end() );
+            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[0];
+            msegments.insert( ++pS0, sList.begin(), sList.end() );
             return true;
         }
     }
+
+    cout << "XXX: splitting at single points\n";
 
     // perform the splits
     for( int i = 0; i < 2; ++ i )
@@ -882,7 +985,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
             // a single new segment should have been returned; add it
             // to the list of segments
-            msegments.insert( ++pSeg[i], sList.front() );
+            msegments.insert( pSeg[i], sList.front() );
         }
     }
 
@@ -1002,12 +1105,15 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bo
 
     if( !overlaps )
     {
+        cout << "XXX: adding without tests\n";
         mholes.push_back( aCircle );
         return true;
     }
 
+    cout << "XXX: checking overlap\n";
     if( SubOutline( aCircle, error ) )
         return true;
+    cout << "XXX: no overlap; checking for error\n";
 
     if( error )
     {
@@ -1019,6 +1125,7 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bo
         return false;
     }
 
+    cout << "XXX: no error; adding to list\n";
     mholes.push_back( aCircle );
     return true;
 }

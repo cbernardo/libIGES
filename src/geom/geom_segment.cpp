@@ -173,11 +173,6 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     msegtype = IGES_SEGTYPE_ARC;
     mCWArc = isCW;
 
-    cout << "XXX: created new arc, c(" << mcenter.x << ", " << mcenter.y;
-    cout << "), s(" << mstart.x << ", " << mstart.y << "), e(";
-    cout << mend.x << ", " << mend.y << "), a(";
-    cout << msang << ", " << meang << "), r(" << mradius;
-    cout << "), CW: " << mCWArc << "\n";
     return true;
 }
 
@@ -200,6 +195,9 @@ double IGES_GEOM_SEGMENT::GetLength( void )
                 double dy = mend.y - mstart.y;
                 return sqrt(dx*dx + dy*dy);
             } while( 0 );
+            break;
+
+        default:
             break;
     }
 
@@ -567,7 +565,6 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    aIntersectList.clear(); // XXX - TESTING
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
@@ -718,35 +715,39 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     // 3. aSegment->radius > *this->radius and a point halfway along *this
     //    arc is outside aSegment : return flag IGES_IFLAG_OUTSIDE
 
-    // XXX - TO BE IMPEMENTED - only execute if both segments are arcs
-    if( ( PointMatches( getStart(), aSegment.getStart(), 1e-3 )
-        && PointMatches( getEnd(), aSegment.getEnd(), 1e-3 ) )
-        || (PointMatches( getStart(), aSegment.getEnd(), 1e-3 )
-        && PointMatches( getEnd(), aSegment.getStart(), 1e-3 ) ) )
+
+    if( IGES_SEGTYPE_ARC == msegtype && IGES_SEGTYPE_ARC == aSegment.getSegType() )
     {
-        aIntersectList.push_back( getStart() );
-        aIntersectList.push_back( getEnd() );
-
-        if( r2 > mradius )
+        // special case: arcs intersect only at the endpoints
+        if( ( PointMatches( getStart(), aSegment.getStart(), 1e-3 )
+            && PointMatches( getEnd(), aSegment.getEnd(), 1e-3 ) )
+            || (PointMatches( getStart(), aSegment.getEnd(), 1e-3 )
+            && PointMatches( getEnd(), aSegment.getStart(), 1e-3 ) ) )
         {
-            double mrad = (a0 + a1) * 0.5;
-            double iaX = mcenter.x + mradius * cos( mrad );
-            double iaY = mcenter.y + mradius * sin( mrad );
+            aIntersectList.push_back( getStart() );
+            aIntersectList.push_back( getEnd() );
 
-            iaX = iaX - c2.x;
-            iaY = iaY - c2.y;
-
-            mrad = sqrt(iaX*iaX + iaY*iaY);
-
-            if( mrad < r2 )
+            if( r2 > mradius )
             {
-                flags = IGES_IFLAG_INSIDE;
-                return true;
-            }
-        }
+                double mrad = (a0 + a1) * 0.5;
+                double iaX = mcenter.x + mradius * cos( mrad );
+                double iaY = mcenter.y + mradius * sin( mrad );
 
-        flags = IGES_IFLAG_OUTSIDE;
-        return true;
+                iaX = iaX - c2.x;
+                iaY = iaY - c2.y;
+
+                mrad = sqrt(iaX*iaX + iaY*iaY);
+
+                if( mrad < r2 )
+                {
+                    flags = IGES_IFLAG_INSIDE;
+                    return true;
+                }
+            }
+
+            flags = IGES_IFLAG_OUTSIDE;
+            return true;
+        }
     }
 
     // the arcs are not concentric so if there is any intersection
@@ -890,28 +891,6 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     cout << "XXX: np: " << np << "\n";
 
     // XXX - NOTE: shall we ensure CCW order on *this ?
-
-    // XXX - ORIG
-    /*
-    if( (angX >= a0 && angX <= a1)
-        || ((angX + 2.0*M_PI) >= a0 && (angX + 2.0*M_PI) <= a1)
-        || ((angX - 2.0*M_PI) >= a0 && (angX - 2.0*M_PI) <= a1) )
-    {
-        p0[0] = p1;
-        ang0[0] = angX;
-        ++np;
-    }
-
-    angX = atan2( p2.y - mcenter.y, p2.x - mcenter.x );
-    if( (angX >= a0 && angX <= a1)
-        || ((angX + 2.0*M_PI) >= a0 && (angX + 2.0*M_PI) <= a1)
-        || ((angX - 2.0*M_PI) >= a0 && (angX - 2.0*M_PI) <= a1) )
-    {
-        p0[np] = p2;
-        ang0[np] = angX;
-        ++np;
-    }
-    */
 
     if( 0 == np )
     {
@@ -1092,6 +1071,9 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
         ++np;
     }
+
+    if( 0 == np )
+        return false;
 
     double ang[2];
 
@@ -1610,9 +1592,147 @@ void IGES_GEOM_SEGMENT::reverse( void )
 bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
                 std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
 {
-#warning TO BE IMPLEMENTED
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( aIntersectList.empty() )
+    {
+        ERRMSG << "\n + [BUG] empty split list\n";
+        return false;
+    }
+
+    if( aIntersectList.size() > 2 )
+    {
+        ERRMSG << "\n + [BUG] too many split points (" << aIntersectList.size();
+        cerr << "), max is 2\n";
+        return false;
+    }
+
+    // Line segment parameterization:
+    // X(t) = t(X2 - X1) + X1
+    // Y(t) = t(Y2 - Y1) + Y1
+    //
+    // Solving for t given X(t):
+    // t = (X - X1)/(X2 - X1)
+    //
+    // Solving for t given Y(t):
+    // t = (Y - Y1)/(Y2 - Y1)
+
+    bool yp = false;    // true if we prefer Y parameterization
+    double num;
+    double den;
+
+    if( abs(mend.x - mstart.x) < abs(mend.y - mstart.y) )
+    {
+        yp = true;
+        num = -mstart.y;
+        den = 1.0 / (mend.y - mstart.y);
+    }
+    else
+    {
+        num = -mstart.x;
+        den = 1.0 / (mend.x - mstart.x);
+    }
+
+    list<IGES_POINT>::iterator sPL = aIntersectList.begin();
+    list<IGES_POINT>::iterator ePL = aIntersectList.end();
+
+    double tp[2];   // parameter points
+    int np = 0;     // number of points to break at
+    double t;       // parameter
+    double u;       // complementary coordinate value
+
+    while( sPL != ePL )
+    {
+        if( yp )
+        {
+            t = (num + sPL->y) * den;
+
+            if( t < 0.0 || t > 1.0 )
+            {
+                ERRMSG << "\n + [ERROR] point " << np << " is not on the line (t: " << t << ")\n";
+                cerr << "p" << np << "(" << sPL->x << ", " << sPL->y << ")\n";
+                cerr << "line: (" << mstart.x << ", " << mstart.y << ")--(";
+                cerr << mend.x << ", " << mend.y << ")\n";
+                return false;
+            }
+
+            u = t*(mend.x - mstart.x) + mstart.x;
+
+            if( abs(u - sPL->x) > 1e-8 )
+            {
+                ERRMSG << "\n + [ERROR] point " << np << " is not on the line\n";
+                return false;
+            }
+
+            tp[np] = t;
+            ++np;
+        }
+        else
+        {
+            t = (num + sPL->x) * den;
+
+            if( t < 0.0 || t > 1.0 )
+            {
+                ERRMSG << "\n + [ERROR] point " << np << " is not on the line (t: " << t << ")\n";
+                cerr << "p" << np << "(" << sPL->x << ", " << sPL->y << ")\n";
+                cerr << "line: (" << mstart.x << ", " << mstart.y << ")--(";
+                cerr << mend.x << ", " << mend.y << ")\n";
+                return false;
+            }
+
+            u = t*(mend.y - mstart.y) + mstart.y;
+
+            if( abs(u - sPL->y) > 1e-8 )
+            {
+                ERRMSG << "\n + [ERROR] point " << np << " is not on the line\n";
+                return false;
+            }
+
+            tp[np] = t;
+            ++np;
+        }
+
+        ++sPL;
+    }
+
+    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+    IGES_POINT p0;
+
+    if( 1 == np )
+    {
+        // set up the new segment
+        p0 = aIntersectList.front();
+        sp->SetParams(p0, mend);
+        aNewSegmentList.push_back( sp );
+
+        // adjust this segment
+        mend = p0;
+        return true;
+    }
+
+    IGES_POINT p1;
+
+    if( tp[0] < tp[1] )
+    {
+        p0 = aIntersectList.front();
+        p1 = aIntersectList.back();
+    }
+    else
+    {
+        p1 = aIntersectList.front();
+        p0 = aIntersectList.back();
+    }
+
+    // set up the first segment
+    sp->SetParams( p0, p1 );
+    aNewSegmentList.push_back( sp );
+
+    // create and set up the second segment
+    sp = new IGES_GEOM_SEGMENT;
+    sp->SetParams( p1, mend );
+    aNewSegmentList.push_back( sp );
+
+    // adjust this segment
+    mend = p0;
+    return true;
 }
 
 

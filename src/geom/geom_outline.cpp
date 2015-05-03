@@ -86,10 +86,17 @@ static void print_seg( IGES_GEOM_SEGMENT* seg )
 
         case IGES_SEGTYPE_CIRCLE:
             cout << "CIRCLE\n";
+            cout << "c";
+            print_point( seg->getCenter() );
+            cout << "r:" << seg->getRadius();
             break;
 
         case IGES_SEGTYPE_LINE:
             cout << "LINE\n";
+            cout << "s";
+            print_point( seg->getStart() );
+            cout << "e";
+            print_point( seg->getEnd() );
             break;
 
         default:
@@ -531,6 +538,8 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         if( (*iSeg)->GetIntersections( *aCircle, iList, flag ) )
         {
             cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
+            print_seg(*iSeg);
+
             if( IGES_IFLAG_NONE != flag )
             {
                 ostringstream msg;
@@ -681,44 +690,6 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         }
     } while( 0 );
 
-    if( p1e && p2e )
-    {
-        // check that the 2 endpoints are common to a segment,
-        // otherwise we have invalid geometry
-        bool bad = true;
-        list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
-        list<GEOM_INTERSECT>::iterator eIn = intersects.end();
-
-        while( iIn != eIn )
-        {
-            if( iIn->segA->getSegType() != IGES_SEGTYPE_CIRCLE )
-            {
-                if( ( PointMatches( iList.front(), iIn->segA->getStart(), 1e-8 )
-                    && PointMatches( iList.back(), iIn->segA->getEnd(), 1e-8 ) )
-                    || ( PointMatches( iList.back(), iIn->segA->getStart(), 1e-8 )
-                    && PointMatches( iList.front(), iIn->segA->getEnd(), 1e-8 ) ) )
-                {
-                    bad = false;
-                    bypass = iIn->segA;
-                    break;
-                }
-            }
-
-            ++iIn;
-        }
-
-        if( bad )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[INFO] invalid geometry: violates restriction of 2 unique intersections (n = " << nI << ")";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-    }
-
     // we can trim the entity using the given circle; determine which section of the
     // circle is inside the outline
     IGES_POINT p0 = aCircle->mcenter;
@@ -727,20 +698,16 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     double a1 = atan2( p1.y - p0.y, p1.x - p0.x );
     p1 = iList.back();
     double a2 = atan2( p1.y - p0.y, p1.x - p0.x );
-    double a3 = 0;
 
     if( a1 < 0.0 )
-        a3 += a1 + 2.0 * M_PI;
-    else
-        a3 += a1;
+        a1 += 2.0 * M_PI;
 
     if( a2 < 0.0 )
-        a3 += a2 + 2.0 * M_PI;
-    else
-        a3 += a2;
+        a2 += 2.0 * M_PI;
+
+    double a3 = (a1 + a2) / 2.0;
 
     IGES_POINT pX;  // a point midway along the 2nd CCW section of the circle
-    a3 /= 2.0;
     pX.x = p0.x + aCircle->mradius * cos( a3 );
     pX.y = p0.y + aCircle->mradius * sin( a3 );
 
@@ -801,7 +768,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     cout << "XXX: lSegs.size(): " << lSegs.size() << "\n";
     if( isIn )
     {
-        if( a2 < 0.0 && a1 >= 0.0 )
+        if( a2 > a1 )
         {
             pF[1] = iList.front();
             pF[0] = iList.back();
@@ -822,7 +789,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     }
     else
     {
-        if( a1 < 0.0 && a2 >= 0.0 )
+        if( a1 > a2 )
         {
             pF[1] = iList.front();
             pF[0] = iList.back();
@@ -865,23 +832,14 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     if( p1e && p2e )
     {
         // do not trim if length(sp) < length(seg)
-        if( !bypass )
+        if( bypass )
         {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[BUG] bypass segment pointer not set";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            delete sp;
-            return false;
-        }
-
-        if( sp->GetLength() < bypass->GetLength() )
-        {
-            cout << "XXX: not applying trim\n";
-            delete sp;
-            return false;
+            if( sp->GetLength() < bypass->GetLength() )
+            {
+                cout << "XXX: not applying trim\n";
+                delete sp;
+                return false;
+            }
         }
     }
 

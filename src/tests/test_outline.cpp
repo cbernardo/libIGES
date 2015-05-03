@@ -283,6 +283,12 @@ int test_arcs( void )
         }
     }
 
+    if( !otln.IsContiguous() )
+    {
+        cout << "* [FAIL]: outline was not contiguous\n";
+        return -1;
+    }
+    
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 
@@ -470,6 +476,12 @@ int test_lines( void )
     if( !otln.AddCutout( hole, true, error ) )
     {
         cout << "* [FAIL]: could not add a cutout\n";
+        return -1;
+    }
+
+    if( !otln.IsContiguous() )
+    {
+        cout << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 

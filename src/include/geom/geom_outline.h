@@ -97,6 +97,9 @@ public:
     // Returns 'true' if the outline is closed
     bool IsClosed( void );
 
+    // Returns 'true' if the (closed) outline is contiguous
+    bool IsContiguous( void );
+
     // Returns 'true' if the point is on or inside this outline
     bool IsInside( IGES_POINT aPoint, bool& error );
 

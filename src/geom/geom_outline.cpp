@@ -176,6 +176,51 @@ bool IGES_GEOM_OUTLINE::IsClosed( void )
 }
 
 
+// Returns 'true' if the (closed) outline is contiguous
+bool IGES_GEOM_OUTLINE::IsContiguous( void )
+{
+    if( msegments.empty() )
+    {
+        ERRMSG << "\n + [INFO] empty outline\n";
+        return false;
+    }
+
+    if( !mIsClosed )
+    {
+        ERRMSG << "\n + [INFO] outline is not closed\n";
+        return false;
+    }
+
+    list<IGES_GEOM_SEGMENT*>::iterator sO = msegments.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator eO = msegments.end();
+    list<IGES_GEOM_SEGMENT*>::iterator pO = --msegments.end();
+
+    if( IGES_SEGTYPE_CIRCLE == (*sO)->getSegType() )
+        return true;
+
+    int acc = 0;
+    bool bad = false;
+
+    while( sO != eO )
+    {
+        if( !PointMatches( (*sO)->mstart, (*pO)->mend, 1e-8 ) )
+        {
+            ERRMSG << "\n + [INFO] discontinuous at seg_" << acc << "\n";
+            bad = true;
+        }
+
+        ++acc;
+        pO = sO;
+        ++sO;
+    }
+
+    if( bad )
+        return false;
+
+    return true;
+}
+
+
 // Returns 'true' if the point is on or inside this outline
 bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 {
@@ -699,10 +744,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     p1 = iList.back();
     double a2 = atan2( p1.y - p0.y, p1.x - p0.x );
 
-    if( a1 < 0.0 )
-        a1 += 2.0 * M_PI;
-
-    if( a2 < 0.0 )
+    if( a2 < a1 )
         a2 += 2.0 * M_PI;
 
     double a3 = (a1 + a2) / 2.0;
@@ -766,47 +808,24 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     // must specify both split points.
 
     cout << "XXX: lSegs.size(): " << lSegs.size() << "\n";
+
     if( isIn )
     {
-        if( a2 > a1 )
-        {
             pF[1] = iList.front();
             pF[0] = iList.back();
             isEnd[1] = p1e;
             isEnd[0] = p2e;
             pSeg[1] = lSegs.front();
             pSeg[0] = lSegs.back();
-        }
-        else
-        {
-            pF[0] = iList.front();
-            pF[1] = iList.back();
-            isEnd[0] = p1e;
-            isEnd[1] = p2e;
-            pSeg[0] = lSegs.front();
-            pSeg[1] = lSegs.back();
-        }
     }
     else
     {
-        if( a1 > a2 )
-        {
-            pF[1] = iList.front();
-            pF[0] = iList.back();
-            isEnd[1] = p1e;
-            isEnd[0] = p2e;
-            pSeg[1] = lSegs.front();
-            pSeg[0] = lSegs.back();
-        }
-        else
-        {
             pF[0] = iList.front();
             pF[1] = iList.back();
             isEnd[0] = p1e;
             isEnd[1] = p2e;
             pSeg[0] = lSegs.front();
             pSeg[1] = lSegs.back();
-        }
     }
 
     IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;

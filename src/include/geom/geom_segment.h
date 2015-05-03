@@ -141,6 +141,8 @@ public:
     // Z location.
     bool SetParams( IGES_POINT aCenter, IGES_POINT aStart, IGES_POINT aEnd, bool isCW );
 
+    double GetLength( void );
+
     bool IsCW( void )
     {
         return mCWArc;

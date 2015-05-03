@@ -155,13 +155,14 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     // note: start/end angles are always according to CCW order
     if( isCW )
     {
-        double x = msang;
-        msang = meang;
-        meang = x;
+        while( msang < meang )
+            msang += 2.0 * M_PI;
     }
-
-    while( meang < msang )
-        meang += 2.0 * M_PI;
+    else
+    {
+        while( meang < msang )
+            meang += 2.0 * M_PI;
+    }
 
     mcenter = aCenter;
     mstart = aStart;
@@ -171,7 +172,38 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     mend = aEnd;
     msegtype = IGES_SEGTYPE_ARC;
     mCWArc = isCW;
+
+    cout << "XXX: created new arc, c(" << mcenter.x << ", " << mcenter.y;
+    cout << "), s(" << mstart.x << ", " << mstart.y << "), e(";
+    cout << mend.x << ", " << mend.y << "), a(";
+    cout << msang << ", " << meang << "), r(" << mradius;
+    cout << "), CW: " << mCWArc << "\n";
     return true;
+}
+
+double IGES_GEOM_SEGMENT::GetLength( void )
+{
+    switch( msegtype )
+    {
+        case IGES_SEGTYPE_CIRCLE:
+            return 2.0 * M_PI * mradius;
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            return (getEndAngle() - getStartAngle()) * mradius;
+            break;
+
+        case IGES_SEGTYPE_LINE:
+            do
+            {
+                double dx = mend.x - mstart.x;
+                double dy = mend.y - mstart.y;
+                return sqrt(dx*dx + dy*dy);
+            } while( 0 );
+            break;
+    }
+
+    return 0.0;
 }
 
 // calculate intersections with another segment (list of points)
@@ -469,16 +501,6 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
     p2.y = y1;
     p2.z = 0.0;
 
-    cout << "XXX: circles intersect at\n";
-    cout << " c0(" << mcenter.x << ", " << mcenter.y << "), r0: " << mradius << "\n";
-    cout << " c1(" << c2.x << ", " << c2.y << "), r1: " << r2 << "\n";
-    cout << " p0, p1 on C0 yields radii (" << sqrt( (p1.x - mcenter.x) * (p1.x - mcenter.x) + (p1.y - mcenter.y) * (p1.y - mcenter.y) );
-    cout << ", " << sqrt( (p2.x - mcenter.x) * (p2.x - mcenter.x) + (p2.y - mcenter.y) * (p2.y - mcenter.y) ) << ")\n";
-    cout << " p0, p1 on C0 yields radii (" << sqrt( (p1.x - c2.x) * (p1.x - c2.x) + (p1.y - c2.y) * (p1.y - c2.y) );
-    cout << ", " << sqrt( (p2.x - c2.x) * (p2.x - c2.x) + (p2.y - c2.y) * (p2.y - c2.y) ) << ")\n";
-    cout << " p0(" << p1.x << ", " << p1.y << ")\n";
-    cout << " p1(" << p2.x << ", " << p2.y << ")\n";
-
     return;
 }
 
@@ -487,7 +509,6 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
 bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    cout << "XXX: check Circles\n";
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
@@ -546,7 +567,7 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
 bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
 {
-    cout << "XXX: check Arcs\n";
+    aIntersectList.clear(); // XXX - TESTING
     IGES_POINT c2 = aSegment.getCenter();
     double r2 = aSegment.getRadius();
     double dx = mcenter.x - c2.x;
@@ -737,11 +758,141 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     // determine if any of the points lie on *this arc and
     // place them in a ccw order
 
-    double angX = atan2( p1.y - mcenter.y, p1.x - mcenter.x );
+    double angX0 = atan2( p1.y - mcenter.y, p1.x - mcenter.x );
+    double angX1 = atan2( p2.y - mcenter.y, p2.x - mcenter.x );
     IGES_POINT p0[2];
     double ang0[2];
     int np = 0;
+    int isOnArc[2];
+    double tang;
 
+    isOnArc[0] = 0;
+    isOnArc[1] = 0;
+
+    if ( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
+    {
+        ++isOnArc[0];
+        ++isOnArc[1];
+        cout << "XXX: *aSegment is a circle, ++isOnArc\n";
+    }
+    else
+    {
+        // check if each point lies on the arc
+        tang = angX0;
+
+        if( tang > b1 )
+            tang -= 2.0 * M_PI;
+
+        if( tang < b0 )
+            tang += 2.0 * M_PI;
+
+        if( tang <= b1 )
+        {
+            cout << "XXX: p0 is on arc *aSegment\n";
+            ++isOnArc[0];
+        }
+        else
+        {
+            cout << "XXX: p0 not on *aSegment\n";
+            cout << "XXX: a(" << a0 << ", " << a1 << "), aX0: " << angX0 << ", tang: " << tang << "\n";
+        }
+
+        tang = angX1;
+
+        if( tang > b1 )
+            tang -= 2.0 * M_PI;
+
+        if( tang < b0 )
+            tang += 2.0 * M_PI;
+
+        if( tang <= b1 )
+        {
+            cout << "XXX: p1 is on arc *aSegment\n";
+            ++isOnArc[1];
+        }
+        else
+        {
+            cout << "XXX: p1 not on *aSegment\n";
+            cout << "XXX: a(" << a0 << ", " << a1 << "), aX1: " << angX1 << ", tang: " << tang << "\n";
+        }
+    }
+
+    if( IGES_SEGTYPE_CIRCLE == msegtype )
+    {
+        cout << "XXX: *this is a circle, ++isOnArc\n";
+        ++isOnArc[0];
+        ++isOnArc[1];
+    }
+    else
+    {
+        // check if each point lies on the arc
+        tang = angX0;
+
+        if( tang > a1 )
+            tang -= 2.0 * M_PI;
+
+        if( tang < a0 )
+            tang += 2.0 * M_PI;
+
+        if( tang <= a1 )
+        {
+            cout << "XXX: p0 is on arc *this\n";
+            ++isOnArc[0];
+        }
+        else
+        {
+            cout << "XXX: p0 not on *this\n";
+            cout << "XXX: a(" << a0 << ", " << a1 << "), aX0: " << angX0 << ", tang: " << tang << "\n";
+        }
+
+        tang = angX1;
+
+        if( tang > a1 )
+            tang -= 2.0 * M_PI;
+
+        if( tang < a0 )
+            tang += 2.0 * M_PI;
+
+        if( tang <= a1 )
+        {
+            cout << "XXX: p1 is on arc *this\n";
+            ++isOnArc[1];
+        }
+        else
+        {
+            cout << "XXX: p1 not on *this\n";
+            cout << "XXX: a(" << a0 << ", " << a1 << "), aX1: " << angX1 << ", tang: " << tang << "\n";
+        }
+    }
+
+    if( angX0 < a0 )
+        angX0 += 2.0 * M_PI;
+
+    if( angX1 < a0 )
+        angX1 += 2.0 * M_PI;
+
+    if( 2 == isOnArc[0] )
+    {
+        cout << "XXX: adding p0\n";
+        p0[0] = p1;
+        ang0[0] = angX0;
+        ++np;
+    }
+
+    if( 2 == isOnArc[1] )
+    {
+        cout << "XXX: adding p1\n";
+        p0[np] = p2;
+        ang0[np] = angX1;
+        ++np;
+    }
+
+    cout << "XXX: np: " << np << "\n";
+
+    // XXX - NOTE: shall we ensure CCW order on *this ?
+
+    // XXX - ORIG
+    /*
     if( (angX >= a0 && angX <= a1)
         || ((angX + 2.0*M_PI) >= a0 && (angX + 2.0*M_PI) <= a1)
         || ((angX - 2.0*M_PI) >= a0 && (angX - 2.0*M_PI) <= a1) )
@@ -760,6 +911,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         ang0[np] = angX;
         ++np;
     }
+    */
 
     if( 0 == np )
     {
@@ -1385,12 +1537,18 @@ double IGES_GEOM_SEGMENT::getRadius( void ) const
 
 double IGES_GEOM_SEGMENT::getStartAngle( void ) const
 {
+    if( mCWArc )
+        return meang;
+
     return msang;
 }
 
 
 double IGES_GEOM_SEGMENT::getEndAngle( void ) const
 {
+    if( mCWArc )
+        return msang;
+
     return meang;
 }
 
@@ -1467,7 +1625,7 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
     double dd = dx*dx + dy*dy;
     double dr = mradius * mradius;
 
-    if( abs(dd - dr) > 1e-6 )   // XXX - was once 1e-8
+    if( abs(dd - dr) > 1e-8 )
     {
         ERRMSG << "\n + [ERROR] radius of p0 varies by more than 1e-8 from arc's radius (" << (dd - dr) << ")\n";
         return false;
@@ -1488,6 +1646,18 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
 
     if( 1 == aIntersectList.size() )
     {
+        cout << "XXX: arc0[c(" << mcenter.x << ", " << mcenter.y;
+        cout << "), s(" << mstart.x << ", " << mstart.y;
+        cout << "), e(" << p0.x << ", " << p0.y;
+        cout << "), a(" << msang << ", " << a0 << "), r = ";
+        cout << mradius << ", CW: " << mCWArc << "]\n";
+
+        cout << "XXX: arc1[c(" << mcenter.x << ", " << mcenter.y;
+        cout << "), s(" << p0.x << ", " << p0.y;
+        cout << "), e(" << mend.x << ", " << mend.y;
+        cout << "), a(" << a0 << ", " << meang << "), r = ";
+        cout << mradius << ", CW: " << mCWArc << "]\n";
+
         // create the new arc
         sp = new IGES_GEOM_SEGMENT;
         sp->mstart = p0;
@@ -1557,6 +1727,24 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
         }
     }
 
+    cout << "XXX: arc0[c(" << mcenter.x << ", " << mcenter.y;
+    cout << "), s(" << mstart.x << ", " << mstart.y;
+    cout << "), e(" << p0.x << ", " << p0.y;
+    cout << "), a(" << msang << ", " << a0 << "), r = ";
+    cout << mradius << ", CW: " << mCWArc << "]\n";
+
+    cout << "XXX: arc1[c(" << mcenter.x << ", " << mcenter.y;
+    cout << "), s(" << p0.x << ", " << p0.y;
+    cout << "), e(" << p1.x << ", " << p1.y;
+    cout << "), a(" << a0 << ", " << a1 << "), r = ";
+    cout << mradius << ", CW: " << mCWArc << "]\n";
+
+    cout << "XXX: arc2[c(" << mcenter.x << ", " << mcenter.y;
+    cout << "), s(" << p1.x << ", " << p1.y;
+    cout << "), e(" << mend.x << ", " << mend.y;
+    cout << "), a(" << a1 << ", " << meang << "), r = ";
+    cout << mradius << ", CW: " << mCWArc << "]\n";
+
     // create the first of 2 new arcs
     sp = new IGES_GEOM_SEGMENT;
     sp->mstart = p0;
@@ -1600,9 +1788,6 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
 
     IGES_POINT p0 = aIntersectList.front();
     IGES_POINT p1 = aIntersectList.back();
-
-    cout << "XXX: p0(" << p0.x << ", " << p0.y << ")\n";
-    cout << "XXX: p1(" << p1.x << ", " << p1.y << ")\n";
 
     if( abs(p0.x - p1.x) < 1e-8 && abs(p0.y - p1.y) < 1e-8 )
     {

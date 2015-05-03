@@ -522,6 +522,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
     IGES_INTERSECT_FLAG flag;
 
+    int acc = 1;    // XXX - DEBUG
     while( iSeg != eSeg )
     {
         flag = IGES_IFLAG_NONE;
@@ -529,6 +530,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
         if( (*iSeg)->GetIntersections( *aCircle, iList, flag ) )
         {
+            cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
             if( IGES_IFLAG_NONE != flag )
             {
                 ostringstream msg;
@@ -571,8 +573,10 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
                 error = true;
                 return false;
             }
+            cout << "XXX: NO X in seg " << acc << " of " << msegments.size() << "\n";
         }
 
+        ++acc;
         ++iSeg;
     }
 
@@ -633,7 +637,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
     nI = (int)iList.size();
 
-    if( 1 >= nI || 2 < nI )
+    if( 1 > nI || 2 < nI )
     {
         ostringstream msg;
         GEOM_ERR( msg );
@@ -648,10 +652,11 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     // determine number of endpoints
     bool p1e = false;   // set to true if Point 1 is an endpoint
     bool p2e = false;   // set to true if Point 2 is an endpoint
+    IGES_GEOM_SEGMENT* bypass = NULL;
 
-    if( intersects.size() > 2 )
+    do
     {
-        // we must have at least 1 endpoint
+        // check for endpoints
         list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
         list<GEOM_INTERSECT>::iterator eIn = intersects.end();
 
@@ -674,7 +679,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
             ++iIn;
         }
-    }
+    } while( 0 );
 
     if( p1e && p2e )
     {
@@ -694,6 +699,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
                     && PointMatches( iList.front(), iIn->segA->getEnd(), 1e-8 ) ) )
                 {
                     bad = false;
+                    bypass = iIn->segA;
                     break;
                 }
             }
@@ -856,6 +862,29 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         return false;
     }
 
+    if( p1e && p2e )
+    {
+        // do not trim if length(sp) < length(seg)
+        if( !bypass )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[BUG] bypass segment pointer not set";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            delete sp;
+            return false;
+        }
+
+        if( sp->GetLength() < bypass->GetLength() )
+        {
+            cout << "XXX: not applying trim\n";
+            delete sp;
+            return false;
+        }
+    }
+
     if( msegments.front()->getSegType() == IGES_SEGTYPE_CIRCLE )
     {
         // Special case: this outline is currently a circle
@@ -941,12 +970,14 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     }
 
     cout << "XXX: splitting at single points\n";
+    cout << "XXX: (p1e, p2e) : (" << p1e << ", " << p2e << ")\n";
 
     // perform the splits
     for( int i = 0; i < 2; ++ i )
     {
         if( !isEnd[i] )
         {
+            cout << "XXX: splitting, i = " << i << "\n";
             // split here
             iList.clear();
             iList.push_back(pF[i]);
@@ -960,6 +991,10 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
                 ERRMSG << msg.str() << "\n";
                 errors.push_back( msg.str() );
                 error = true;
+                cout << "Segment to be split:\n";
+                print_seg(*pSeg[i]);
+                cout << "Split point v";
+                print_point(pF[i]);
                 delete sp;
                 return false;
             }
@@ -985,7 +1020,8 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
             // a single new segment should have been returned; add it
             // to the list of segments
-            msegments.insert( pSeg[i], sList.front() );
+            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[i];
+            msegments.insert( ++pS0, sList.front() );
         }
     }
 

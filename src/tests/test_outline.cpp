@@ -18,7 +18,7 @@ int test_lines( void );
 
 int main()
 {
-    if( 0 )
+    if( 1 )
     {
         if( test_arcs() )
         {
@@ -27,10 +27,13 @@ int main()
         }
     }
 
-    if( test_lines() )
+    if( 1 )
     {
-        cout << "[FAIL]: test_lines() encountered problems\n";
-        return -1;
+        if( test_lines() )
+        {
+            cout << "[FAIL]: test_lines() encountered problems\n";
+            return -1;
+        }
     }
 
     cout << "[OK]: All tests passed\n";
@@ -334,11 +337,12 @@ int test_lines( void )
         return -1;
     }
 
+    IGES_POINT c1[2];   // parameters for circles
+
     if( 1 )
     {
         // nibble out 8 bits
         IGES_GEOM_SEGMENT circ;
-        IGES_POINT c1[2];   // parameters for circles
 
         // radius: 0.5, c(10,10)
         c1[0].x = 10.0;
@@ -424,7 +428,6 @@ int test_lines( void )
             return -1;
         }
 
-        /*
         // radius: 3.5, c(10,-10)
         c1[0].x = 10.0;
         c1[0].y = -10.0;
@@ -452,8 +455,22 @@ int test_lines( void )
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
-        */
+    }
 
+    IGES_GEOM_SEGMENT* hole = new IGES_GEOM_SEGMENT;
+
+    // radius: 4.5, c(0,0)
+    c1[0].x = 0.0;
+    c1[0].y = 0.0;
+    c1[1].x = 4.5;
+    c1[1].y = 0.0;
+
+    hole->SetParams( c1[0], c1[1], c1[1], false );
+
+    if( !otln.AddCutout( hole, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout\n";
+        return -1;
     }
 
     IGES model;

@@ -1039,7 +1039,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         tSeg = msegments.erase( tSeg );
     }
 
-    msegments.insert( pSeg[0], sp );
+    msegments.insert( tSeg, sp );
     return true;
 }
 

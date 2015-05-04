@@ -82,6 +82,8 @@ static void print_seg( IGES_GEOM_SEGMENT* seg )
             print_point( seg->getStart() );
             cout << "e";
             print_point( seg->getEnd() );
+            cout << "cw: " << seg->isArcCW() << "\n";
+            cout << "ang_start/ang_end: " << seg->getStartAngle() << ", " << seg->getEndAngle() << "\n";
             break;
 
         case IGES_SEGTYPE_CIRCLE:
@@ -582,7 +584,8 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
             cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
             print_seg(*iSeg);
 
-            if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag )
+            if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag
+                && IGES_IFLAG_TANGENT != flag )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );
@@ -812,21 +815,21 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 
     if( isIn )
     {
-        pF[0] = iList.front();
-        pF[1] = iList.back();
-        isEnd[0] = p1e;
-        isEnd[1] = p2e;
-        pSeg[0] = lSegs.front();
-        pSeg[1] = lSegs.back();
-    }
-    else
-    {
         pF[1] = iList.front();
         pF[0] = iList.back();
         isEnd[1] = p1e;
         isEnd[0] = p2e;
         pSeg[1] = lSegs.front();
         pSeg[0] = lSegs.back();
+    }
+    else
+    {
+        pF[0] = iList.front();
+        pF[1] = iList.back();
+        isEnd[0] = p1e;
+        isEnd[1] = p2e;
+        pSeg[0] = lSegs.front();
+        pSeg[1] = lSegs.back();
     }
 
     IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
@@ -1041,10 +1044,14 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
         if( PointMatches( (*tSeg)->mstart, pF[1], 1e-8 ) )
             break;
 
+        cout << "XXX: deleting segment ...\n";
+        print_seg( *tSeg );
         delete *tSeg;
         tSeg = msegments.erase( tSeg );
     }
 
+    cout << "XXX: inserting segment ...\n";
+    print_seg( sp );
     msegments.insert( tSeg, sp );
     return true;
 }   // AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
@@ -1106,7 +1113,8 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
             cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
             print_seg(*iSeg);
 
-            if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag )
+            if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag
+                && IGES_IFLAG_TANGENT != flag )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );

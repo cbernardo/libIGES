@@ -155,12 +155,12 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     // note: start/end angles are always according to CCW order
     if( isCW )
     {
-        while( msang < meang )
+        if( msang < meang )
             msang += 2.0 * M_PI;
     }
     else
     {
-        while( meang < msang )
+        if( meang < msang )
             meang += 2.0 * M_PI;
     }
 
@@ -1023,20 +1023,38 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     {
         if( arcCircle )
         {
+            double t = -B / ( 2.0 * A );
+
+            if( t < 0.0 || t > 1.0 )
+                return false;
+
             flags = IGES_IFLAG_TANGENT;
-            return false;
+            IGES_POINT p;
+            p.x = t * lS.x + (1.0 - t) * lE.x;
+            p.y = t * lS.y + (1.0 - t) * lE.y;
+            aIntersectList.push_back( p );
+            return true;
         }
 
-        // we only have a problem with tangent geometry if
-        // the line actually touches the arc
         tangent = true;
     }
 
     if( D < 0 )
         return false;
 
-    double t0 = ( -B + sqrt( D ) ) / ( 2.0 * A );
-    double t1 = ( -B - sqrt( D ) ) / ( 2.0 * A );
+    double t0;
+    double t1;
+
+    if( tangent )
+    {
+        t0 = -B / ( 2.0 * A );
+        t1 = t0;
+    }
+    else
+    {
+        t0 = ( -B + sqrt( D ) ) / ( 2.0 * A );
+        t1 = ( -B - sqrt( D ) ) / ( 2.0 * A );
+    }
 
     int np = 0;
     IGES_POINT p[2];
@@ -1139,7 +1157,8 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     if( tangent )
     {
         flags = IGES_IFLAG_TANGENT;
-        return false;
+        aIntersectList.push_back( pt[0] );
+        return true;
     }
 
     if( 1 == np2 )

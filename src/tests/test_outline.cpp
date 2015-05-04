@@ -26,7 +26,7 @@ int test_addr( void );
 
 int main()
 {
-    if( 0 )
+    if( 1 )
     {
         if( test_arcs() )
         {
@@ -557,11 +557,11 @@ int test_addr( void )
     }
 
     IGES_POINT c1[2];   // parameters for circles
+    IGES_GEOM_SEGMENT circ;
 
-    if( 1 )
+    if( 0 )
     {
         // add an equally wide circle to the top part
-        IGES_GEOM_SEGMENT circ;
 
         // radius: 10, c(0,10)
         c1[0].x = 0.0;
@@ -576,7 +576,10 @@ int test_addr( void )
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
         }
+    }
 
+    if( 0 )
+    {
         // add an equally wide circle to the LHS but protruding slightly;
         // the case of an equally wide circle which is slightly sunken
         // is prohibited by the 2-point intersection constraint so we
@@ -594,7 +597,10 @@ int test_addr( void )
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
         }
+    }
 
+    if( 1 )
+    {
         // add a circle to the BR corner
         // radius: 5, c(10,-10)
         c1[0].x = 10.0;

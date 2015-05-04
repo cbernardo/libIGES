@@ -13,12 +13,20 @@
 
 using namespace std;
 
+// NOTE: Until full outline manipulation code is implemented
+// we will only be able to add or subtract circles from any
+// given outline.
+
+// take one large circle and subtract a series of smaller circles from it.
 int test_arcs( void );
+// take a square and subtract a series of circles from it.
 int test_lines( void );
+// take a square and add a series of circles to it
+int test_addr( void );
 
 int main()
 {
-    if( 1 )
+    if( 0 )
     {
         if( test_arcs() )
         {
@@ -27,9 +35,18 @@ int main()
         }
     }
 
-    if( 1 )
+    if( 0 )
     {
         if( test_lines() )
+        {
+            cout << "[FAIL]: test_lines() encountered problems\n";
+            return -1;
+        }
+    }
+
+    if( 1 )
+    {
+        if( test_addr() )
         {
             cout << "[FAIL]: test_lines() encountered problems\n";
             return -1;
@@ -288,7 +305,7 @@ int test_arcs( void )
         cout << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
-    
+
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 
@@ -495,5 +512,120 @@ int test_lines( void )
     }
 
     model.Write( "test_oln_lines.igs", true );
+    return 0;
+}
+
+
+int test_addr( void )
+{
+    IGES_GEOM_SEGMENT* sides[4];
+    IGES_POINT v[4];
+
+    v[0].x = 10.0;
+    v[0].y = 10.0;
+    v[1].x = -10.0;
+    v[1].y = 10.0;
+    v[2].x = -10.0;
+    v[2].y = -10.0;
+    v[3].x = 10.0;
+    v[3].y = -10.0;
+
+    for( int i = 0; i < 4; ++i )
+        sides[i] = new IGES_GEOM_SEGMENT;
+
+    sides[0]->SetParams(v[0], v[1]);
+    sides[1]->SetParams(v[1], v[2]);
+    sides[2]->SetParams(v[2], v[3]);
+    sides[3]->SetParams(v[3], v[0]);
+
+    IGES_GEOM_OUTLINE otln;
+    bool error = false;
+
+    if( !otln.AddSegment( sides[0], error )
+        || !otln.AddSegment( sides[1], error )
+        || !otln.AddSegment( sides[2], error )
+        || !otln.AddSegment( sides[3], error ) )
+    {
+        cout << "* [FAIL]: could not add segment to outline\n";
+        return -1;
+    }
+
+    if( !otln.IsClosed() )
+    {
+        cout << "* [FAIL]: outline is not closed\n";
+        return -1;
+    }
+
+    IGES_POINT c1[2];   // parameters for circles
+
+    if( 1 )
+    {
+        // add an equally wide circle to the top part
+        IGES_GEOM_SEGMENT circ;
+
+        // radius: 10, c(0,10)
+        c1[0].x = 0.0;
+        c1[0].y = 10.0;
+        c1[1].x = 10.0;
+        c1[1].y = 10.0;
+
+        circ.SetParams( c1[0], c1[1], c1[1], false );
+
+        if( !otln.AddOutline( &circ, error ) )
+        {
+            cout << "* [FAIL]: could not add an outline\n";
+            return -1;
+        }
+
+        // add an equally wide circle to the LHS but protruding slightly;
+        // the case of an equally wide circle which is slightly sunken
+        // is prohibited by the 2-point intersection constraint so we
+        // do not attempt that case.
+        // radius: 10.0, c(-12,0)
+        c1[0].x = -12.0;
+        c1[0].y = 0.0;
+        c1[1].x = -2.0;
+        c1[1].y = 0.0;
+
+        circ.SetParams( c1[0], c1[1], c1[1], false );
+
+        if( !otln.AddOutline( &circ, error ) )
+        {
+            cout << "* [FAIL]: could not add an outline\n";
+            return -1;
+        }
+
+        // add a circle to the BR corner
+        // radius: 5, c(10,-10)
+        c1[0].x = 10.0;
+        c1[0].y = -10.0;
+        c1[1].x = 15.0;
+        c1[1].y = -10.0;
+
+        circ.SetParams( c1[0], c1[1], c1[1], false );
+
+        if( !otln.AddOutline( &circ, error ) )
+        {
+            cout << "* [FAIL]: could not add an outline\n";
+            return -1;
+        }
+    }
+
+    if( !otln.IsContiguous() )
+    {
+        cout << "* [FAIL]: outline was not contiguous\n";
+        return -1;
+    }
+
+    IGES model;
+    std::vector<IGES_ENTITY_144*> res;
+
+    if( !otln.GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+    {
+        cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+        return -1;
+    }
+
+    model.Write( "test_oln_addr.igs", true );
     return 0;
 }

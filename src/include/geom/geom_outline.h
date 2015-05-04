@@ -113,6 +113,9 @@ public:
     // the two outlines may only intersect at 2 points.
     bool AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error );
 
+    // Merge the given circle with this outline
+    bool AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error );
+
     // Subtract the given outline from this one; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.

@@ -37,3 +37,117 @@ Curve on Surface (E142).
    to ensure that any scaling is performed after all associations
    have been established; this will ensure that ancestors can be
    correctly traversed.
+
+7. Caveats:
+	To keep the code as simple as possible a number of constraints
+   are applied. Without enforcing various constraints we would have to
+   add substantial code which would make this library more like a full
+   functional MCAD, a situation which should be avoided. Unfortunately
+   this desire for simplicity also results in the possibility of
+   incorrect behavior in a number of pathological cases. This is a
+   short list of known constraints and expected bad behavior.
+
+   A. Constraints:
+      + A coutout may only intersect an outline at 2 unique points.
+        If there are an uneven number of unique points then we have
+        invalid geometry. If we have an equal number of unique
+        points N and N > 2 then the subtraction operation may yield
+        multiple bodies. This code is not intended to support
+        multiple bodies and since substantial calculations are
+        required to determine if the result will contain multiple
+        bodies, we keep the code simple by prohibiting geometry
+        which results in intersections at more than 2 unique points.
+        A corollary to this is that a cutout may not intersect an
+        outline along an edge. Imagine a simple case of a rectangular
+        outline and a rectangular cutout which lies along 1 or 2
+        edges of the outline; such a case must clearly result in
+        valid geometry, however such cases are prohibited by this
+        constraint.
+      + Cutouts and circular holes must not overlap eachother. This
+        means that all overlapping cutouts and circular holes must
+        be merged prior to specifying them as a cutout to a board
+        outline. The recommended order of operations are:
+        (a) subtract all circular holes from the main outline and
+        repeat the operation until no more holes intersect the
+        main outline. (b) merge all overlapping circular holes.
+        (c) add all circular holes to each non-circular cutout
+        until no more circular holes overlap a cutout. (d) merge
+        all overlapping non-circular cutouts; note the constraint
+        on 2 unique intersection points applies to this operation.
+      + If cutouts overlap then they must intersect at 2 unique
+        points and no cutout may lie entirely within another
+        cutout. If this constraint is not met then unpredictable
+        bad geometry shall result.
+      + Cutouts must not exist entirely outside the board outline;
+        the code does not check for such cases and they will
+        result in bad geometry. However it would be possible to
+        test for this bad geometry in the future without
+        too great a cost in computations; once it has been
+        determined that a cutout does not intersect the main
+        outline then it is a simple matter of testing a single
+        point on the cutout and if that point lies outside the
+        outline then we have invalid geometry.
+      + Cutouts may not intersect an outline at a single point;
+        this would result in bad geometry. This constraint is
+        not unique to this library; no manufacturing design
+        software will gladly accept what is essentially a
+        wall thickness of 0.
+
+   B. Bad behavior:
+      + Applying cutouts:
+        (a) Imagine a solid consisting of 2 circles with equal radius R
+        and a distance between centers, D where D < 2*R. This solid
+        would have a figure-8 appearance. Now imagine a cutout within
+        that solid and which intersects the vertices of the figure 8.
+        Applying the cutout would result in invalid geometry,
+        specifically the figure 8 will be split into 2 bodies which
+        touch at 2 points. This pathological case can be flagged
+        by testing the cutout to determine whether all points
+        aside from the points of intersection lie within the figure 8,
+        however to reduce the number of computations such a
+        check is not performed. It is possible for the user to take
+        any arbitrary solid and construct an arbitrary cutout which
+        divides the solid into 2 solids which coincide at 2 points.
+        In all such cases the outline manipulation code will fail
+        with somewhat unpredictable results. It is not possible
+        to create an outline which results in 3 or more bodies since
+        such an outline would violate the constraint on 2 unique
+        points of intersection. However, the user can willfully
+        ignore the constraint on non-overlapping cutouts to create
+        multiple cutouts which in principle should divide the solid
+        into more than 2 bodies.
+        (b) A related problem is the case where an outline and a
+        cutout do not overlap but intersect at 2 unique points;
+        this will result in bad geometry. Once again it is possible
+        to test for the condition but at the expense of almost
+        doubling computation times so the check is simply not
+        performed.
+      + Adding outlines:
+        (a) Imagine an outline edge with a crescent notch on the
+        edge and an included angle > PI radians on the arc. A
+        circular disc can sit in such a way that the outline
+        is intersected at 2 points but the disc is not large
+        enough to cover the entire crescent shape and correct
+        addition of the disc would result in 2 bodies coincident
+        at 2 points. In such a case the resulting geometry will
+        be incorrect; the cresent niche will be removed and
+        there will be a small protrusion in its place. In general
+        it is possible to contrive 2 arbitrary outlines which
+        intersect at 2 unique points but produce 2 bodies; in all
+        such cases the code will produce bad geometry. In this
+        particular case the intersecting bodies lie entirely
+        outside eachother but are coincident at 2 points. 
+        (b) In contrast to (a), imagine 2 outlines with one
+        outline entirely within the second outline but intersecting
+        at 2 unique points, for example a rectangular outline with
+        a circular outline inside it. The geometry code will
+        incorrectly truncate the enveloping outline in such cases.
+        
+
+   C. General comments:
+      + Despite all these restrictions and shortcomings a user will
+        generally not have any problems creating a board with good
+        geometry. If a user creates a board with bad geometry this
+        will generally be the result of bad design and the user will
+        need to think more carefully about the design.
+

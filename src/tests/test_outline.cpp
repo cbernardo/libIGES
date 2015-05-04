@@ -35,7 +35,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_lines() )
         {
@@ -48,7 +48,7 @@ int main()
     {
         if( test_addr() )
         {
-            cout << "[FAIL]: test_lines() encountered problems\n";
+            cout << "[FAIL]: test_addr() encountered problems\n";
             return -1;
         }
     }
@@ -559,7 +559,7 @@ int test_addr( void )
     IGES_POINT c1[2];   // parameters for circles
     IGES_GEOM_SEGMENT circ;
 
-    if( 0 )
+    if( 1 )
     {
         // add an equally wide circle to the top part
 
@@ -578,7 +578,7 @@ int test_addr( void )
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         // add an equally wide circle to the LHS but protruding slightly;
         // the case of an equally wide circle which is slightly sunken
@@ -593,6 +593,23 @@ int test_addr( void )
         circ.SetParams( c1[0], c1[1], c1[1], false );
 
         if( !otln.AddOutline( &circ, error ) )
+        {
+            cout << "* [FAIL]: could not add an outline\n";
+            return -1;
+        }
+    }
+    else
+    {
+        // cut out a circle tangent to TOP and BOT
+        // radius: 10, c(-10,0)
+        c1[0].x = -10.0;
+        c1[0].y = 0.0;
+        c1[1].x = 0.0;
+        c1[1].y = 0.0;
+
+        circ.SetParams( c1[0], c1[1], c1[1], false );
+
+        if( !otln.SubOutline( &circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;

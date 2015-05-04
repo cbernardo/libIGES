@@ -170,7 +170,8 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
         angles[0] = ang1;
 
         if( ang2 <= 2.0 * M_PI )
-        {   angles[1] = ang2;
+        {
+            angles[1] = ang2;
             narcs = 1;
         }
         else
@@ -194,32 +195,48 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
     }
     else
     {
-        // XXX - BUG:
-        // Actually upper limit is < 4*M_PI so we can have up to 4 arcs, not
-        // 3 as currently coded
-        // range of angles will be >= 0 .. <= 3*M_PI
+        // range of angles will be >= 0 .. < 3*M_PI
         angles[0] = ang1;
 
         if( ang2 <= M_PI || ( ang1 >= M_PI && ang2 <= 2.0 * M_PI ) )
-        {   angles[1] = ang2;
+        {
+            angles[1] = ang2;
             narcs = 1;
         }
         else
         {
-            angles[1] = M_PI;
-            angles[2] = M_PI;
-
-            if( ang2 <= 2.0 * M_PI )
+            if( ang1 < M_PI )
             {
-                angles[3] = ang2;
-                narcs = 2;
+                angles[1] = M_PI;
+                angles[2] = M_PI;
+
+                if( ang2 <= 2.0 * M_PI )
+                {
+                    angles[3] = ang2;
+                    narcs = 2;
+                }
+                else
+                {
+                    angles[3] = 2.0 * M_PI;
+                    angles[4] = 0.0;
+                    angles[5] = ang2 - 2.0 * M_PI;
+                    narcs = 3;
+                }
             }
             else
             {
-                angles[3] = 2.0 * M_PI;
-                angles[4] = 0.0;
-                angles[5] = ang2 - 2.0 * M_PI;
-                narcs = 3;
+                if( ang2 <= 2.0 * M_PI )
+                {
+                    angles[1] = ang2;
+                    narcs = 1;
+                }
+                else
+                {
+                    angles[1] = 2.0 * M_PI;
+                    angles[2] = 0.0;
+                    angles[3] = ang2 - 2.0 * M_PI;
+                    narcs = 2;
+                }
             }
         }
     }
@@ -268,11 +285,6 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         ERRMSG << "\n + [ERROR] no model data to Instantiate\n";
         return false;
     }
-
-    cout << "XXX: narcs: " << narcs << "\n";
-    int na = narcs + 2;
-    for( int q = 0; q < na; ++q )
-        cout << "narc point " << q << ": (" << arcs[q].x << ", " << arcs[q].y << ")\n";
 
     if( !model )
     {

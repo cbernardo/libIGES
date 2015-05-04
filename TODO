@@ -150,4 +150,10 @@ Curve on Surface (E142).
         geometry. If a user creates a board with bad geometry this
         will generally be the result of bad design and the user will
         need to think more carefully about the design.
+      + Even if a user does not violate any of the restrictions it
+        is still a trivial matter to create a board outline which
+        is not suitable for manufacture; this is an unavoidable
+        issue in MCAD systems and is not unique to this library.
+        Ultimately it is the user's responsibility to check for
+        manufacturability of the product.
 

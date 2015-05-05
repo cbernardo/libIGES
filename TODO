@@ -48,21 +48,20 @@ Curve on Surface (E142).
    short list of known constraints and expected bad behavior.
 
    A. Constraints:
-      + A coutout may only intersect an outline at 2 unique points.
-        If there are an uneven number of unique points then we have
-        invalid geometry. If we have an equal number of unique
-        points N and N > 2 then the subtraction operation may yield
-        multiple bodies. This code is not intended to support
-        multiple bodies and since substantial calculations are
-        required to determine if the result will contain multiple
-        bodies, we keep the code simple by prohibiting geometry
-        which results in intersections at more than 2 unique points.
-        A corollary to this is that a cutout may not intersect an
-        outline along an edge. Imagine a simple case of a rectangular
-        outline and a rectangular cutout which lies along 1 or 2
-        edges of the outline; such a case must clearly result in
-        valid geometry, however such cases are prohibited by this
-        constraint.
+      + An outline O2 being subtracted or added to an outline O1 may
+        only intersect at 2 unique points. If there are an uneven
+        number of unique points then we have invalid geometry.
+        If we have an equal number of unique points N and N > 2
+        then a subtraction operation may yield multiple bodies
+        while for addition the merging code becomes substantially
+        more complex. A corollary to this is that a cutout/add-on
+        may not intersect an outline along an edge. Imagine a simple
+        case of a rectangular outline and a rectangular cutout which
+        lies along 1 or 2 edges of the outline; such a case must clearly
+        result in valid geometry, however such cases are prohibited by
+        this constraint. The same prohibition applies to similar cases
+        involving the merging (addition) of outlines.
+
       + Cutouts and circular holes must not overlap eachother. This
         means that all overlapping cutouts and circular holes must
         be merged prior to specifying them as a cutout to a board
@@ -74,19 +73,29 @@ Curve on Surface (E142).
         until no more circular holes overlap a cutout. (d) merge
         all overlapping non-circular cutouts; note the constraint
         on 2 unique intersection points applies to this operation.
-      + If cutouts overlap then they must intersect at 2 unique
-        points and no cutout may lie entirely within another
-        cutout. If this constraint is not met then unpredictable
-        bad geometry shall result.
-      + Cutouts must not exist entirely outside the board outline;
-        the code does not check for such cases and they will
+
+      + Cutouts/add-ons must not exist entirely outside the board
+        outline; the code does not check for such cases and they will
         result in bad geometry. However it would be possible to
         test for this bad geometry in the future without
         too great a cost in computations; once it has been
-        determined that a cutout does not intersect the main
+        determined that a cutout/add-on does not intersect the main
         outline then it is a simple matter of testing a single
-        point on the cutout and if that point lies outside the
-        outline then we have invalid geometry.
+        point on the cutout and alerting the caller to whether that
+        point was inside or outside the outline. It would be the
+        responsibility of the calling routine to determine if the
+        operation were a case of bad geometry. Cases of such bad
+        geometry would include (a) hole or cutout entirely outside
+        the main outline, (b) add-on entirely inside an outline -
+        this includes the case of a cutout entirely within a cutout.
+        Cases which are not necessarily bad geometry include
+        cutouts entirely outside another cutout or cutouts entirely
+        inside the main outline.
+
+      + Outlines must not be self-intersecting; this is a requirement
+        of all MCAD software but the condition is not checked in
+        this library.
+
       + Cutouts may not intersect an outline at a single point;
         this would result in bad geometry. This constraint is
         not unique to this library; no manufacturing design
@@ -122,6 +131,7 @@ Curve on Surface (E142).
         to test for the condition but at the expense of almost
         doubling computation times so the check is simply not
         performed.
+
       + Adding outlines:
         (a) Imagine an outline edge with a crescent notch on the
         edge and an included angle > PI radians on the arc. A
@@ -136,13 +146,13 @@ Curve on Surface (E142).
         intersect at 2 unique points but produce 2 bodies; in all
         such cases the code will produce bad geometry. In this
         particular case the intersecting bodies lie entirely
-        outside eachother but are coincident at 2 points. 
+        outside eachother but are coincident at 2 points.
         (b) In contrast to (a), imagine 2 outlines with one
         outline entirely within the second outline but intersecting
         at 2 unique points, for example a rectangular outline with
         a circular outline inside it. The geometry code will
         incorrectly truncate the enveloping outline in such cases.
-        
+
 
    C. General comments:
       + Despite all these restrictions and shortcomings a user will
@@ -150,6 +160,7 @@ Curve on Surface (E142).
         geometry. If a user creates a board with bad geometry this
         will generally be the result of bad design and the user will
         need to think more carefully about the design.
+
       + Even if a user does not violate any of the restrictions it
         is still a trivial matter to create a board outline which
         is not suitable for manufacture; this is an unavoidable
@@ -157,3 +168,17 @@ Curve on Surface (E142).
         Ultimately it is the user's responsibility to check for
         manufacturability of the product.
 
+      + The algorithm for determining whether an outline's
+        winding is CW or CCW is simplistic and is only guaranteed
+        to work correctly if all outline segments are line
+        segments. As an example of a case which would yield
+        the wrong result, take 3 segments arranged in an arc
+        to form a bracket '['. Now imagine a large clockwise
+        arc starting at the lower right point and finishing
+        at the upper right point. The winding in this case
+        would be clockwise but the calculation would yield
+        the wrong result. Perhaps this problem could be fixed
+        by treating arcs in a special way and including the
+        halfway point on the arc in the calculations. If the
+        calculated winding value is incorrect then bad geometry
+        shall ensue.

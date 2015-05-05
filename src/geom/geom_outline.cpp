@@ -282,8 +282,10 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     list<IGES_POINT> iList;
     IGES_INTERSECT_FLAG flag;
 
+    int acc = 0;
     while( sSegs != eSegs )
     {
+        cout << "XXX: iter " << ++acc << "\n";
         if( (*sSegs)->GetIntersections( ls0, iList, flag ) )
         {
             list<IGES_POINT>::iterator sL = iList.begin();
@@ -301,10 +303,21 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
                     if( PointMatches( *sL, (*sSegs)->getStart(), 1e-8 )
                         || PointMatches( *sL, (*sSegs)->getEnd(), 1e-8 ) )
                     {
+                        cout << "XXX: boundary test\n";
                         (*sSegs)->GetBoundingBox( bb0, bb1 );
 
+                        /* XXX - ORIG - seems to fail in some circumstances
                         if( bb0.y <= aPoint.y && bb1.y <= aPoint.y )
                             ++nI;
+                        */
+                        cout << "bb0: " << bb0.x << ", " << bb0.y << "\n";
+                        cout << "bb1: " << bb1.x << ", " << bb1.y << "\n";
+                        cout << "aPt: " << aPoint.x << ", " << aPoint.y << "\n";
+                        if( !(bb0.y > aPoint.y || bb1.y > aPoint.y ) )
+                        {
+                            cout << "XXX: ++nI\n";
+                            ++nI;
+                        }
 
                     }
                     else
@@ -422,7 +435,8 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
 
     msegments.push_back( aSegment );
 
-    // calculate winding
+    // calculate winding based on area of the curve;
+    // in this case mWinding > 0 = CW
     pseg = msegments.back();
     // note: do not use getStart(), getEnd() as those functions
     // ensure CCW order on an arc whereas mstart, mend ensure
@@ -430,7 +444,21 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
     p0 = pseg->mend;
     p1 = pseg->mstart;
 
-    mWinding += ( p0.x - p1.x ) * ( p0.y + p1.y );
+    if( IGES_SEGTYPE_ARC == pseg->getSegType() )
+    {
+        // To ensure correct winding calculations involving
+        // arcs we must take the midpoint of the arc and
+        // calculate the winding based on 2 segments.
+        IGES_POINT p2;
+        pseg->GetMidpoint( p2 );
+
+        mWinding += ( p0.x - p2.x ) * ( p0.y + p2.y );
+        mWinding += ( p2.x - p1.x ) * ( p2.y + p1.y );
+    }
+    else
+    {
+        mWinding += ( p0.x - p1.x ) * ( p0.y + p1.y );
+    }
 
     if( msegments.size() > 1 )
     {
@@ -465,52 +493,36 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
                 IGES_GEOM_SEGMENT* sp0;
                 IGES_GEOM_SEGMENT* sp1;
 
-                if( msegments.front()->getSegType() == IGES_SEGTYPE_ARC
-                    && msegments.back()->getSegType() == IGES_SEGTYPE_ARC )
+                // the 2 segments are either both arcs or an arc and a line
+                sp0 = msegments.front();
+                sp1 = msegments.back();
+
+                if( mWinding > 0.0 )
                 {
-                    // 2 arcs: if both are CW then reverse the segments,
-                    // otherwise change nothing
-                    sp0 = msegments.front();
-                    sp1 = msegments.back();
-
-                    if( sp0->isArcCW() && sp1->isArcCW() )
-                    {
-                        sp0->reverse();
-                        sp1->reverse();
-                    }
+                    sp0->reverse();
+                    sp1->reverse();
                 }
-                else
-                {
-                    // 1 arc and 1 line
 
-                    if( msegments.front()->getSegType() == IGES_SEGTYPE_ARC )
-                    {
-                        sp0 = msegments.front();
-                        sp1 = msegments.back();
-                    }
-                    else
-                    {
-                        sp0 = msegments.back();
-                        sp1 = msegments.front();
-                    }
-
-                    if( sp0->isArcCW() )
-                    {
-                        sp0->reverse();
-                        sp1->reverse();
-                    }
-                }
             }
             else
             {
-                cout << "XXX: mWinding: " << mWinding << "\n";
                 if( mWinding > 0.0 )
                 {
                     // reverse everything
-                    // XXX - TO BE IMPLEMENTED
-                    ERRMSG << "XXX: TO BE IMPLEMENTED\n";
-                    cout << "XXX: nsegs: " << msegments.size() << "\n";
-                    return false;
+                    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
+                    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+                    list<IGES_GEOM_SEGMENT*> tsegs;
+
+                    while( sSeg != eSeg )
+                    {
+                        (*sSeg)->reverse();
+                        tsegs.push_front( *sSeg );
+                        ++sSeg;
+                    }
+
+                    msegments.clear();
+                    msegments = tsegs;
+                    return true;
                 }
             }   // if we have only 2 segments in the closed outline
         }       // if outline is now closed
@@ -554,6 +566,10 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         error = true;
         return false;
     }
+
+    // XXX - TO BE IMPLEMENTED:
+    // Test the bounding boxes and exit if there is no overlap;
+    // this can save some computation time in a number of circumstances
 
     error = false;
     list<GEOM_INTERSECT> intersects;
@@ -1079,20 +1095,1184 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
 }   // opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub )
 
 
+// operate on the generic outline (add/subtract)
+bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub )
+{
+    // Implementation:
+    // a. Determine intersection points on *this and aOutline
+    //    and ensure that if there is an intersection that it
+    //    is at 2 unique points.
+    // b. Split *this at the unique points; for each point
+    //    retain an iterator to the segment whose 'mstart'
+    //    is the split point.
+    // c. Split aOutline at the unique points; for each point
+    //    retain an iterator to the segment whose 'mstart'
+    //    is the split point.
+    // d. Take a point along the segment in *this which was
+    //    associated with the split point and determine whether
+    //    it is inside or outside aOutline.
+    // e. Take a point along the segment in aOutline which was
+    //    associated with the split point and determine whether
+    //    it is inside or outside *this.
+    // f. A test for invalid geometry: if both (d) and (e) are
+    //    inside (or outside) then we have invalid geometry due
+    //    to a case of 2 non-overlapping outlines coinciding at
+    //    2 points.
+    // g. Trimming:
+    //    1. Subtraction: determine the iterators for the aOutline
+    //       segments "inside" *this and the iterators for the
+    //       *this segments "outside" aOutline. Trim away the
+    //       "outside" segments of aOutline and the "inside" segments
+    //       of *this. Starting at the CCW point of the remaining
+    //       segments in *this, insert the remaining segments of
+    //       aOutline starting at the CW-most position and with each
+    //       segment reversed.
+    //    2. Addition: similar to subtraction, but eliminate the
+    //       "inside" segments of aOutline and add them to the
+    //       remaining segments of *this proceeding in the normal
+    //       CCW order along aOutline.
+    //
+
+    if( !mIsClosed )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] outline is not closed";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( NULL == aOutline )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] NULL pointer passed for argument";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( !aOutline->IsClosed() )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] argument outline is not closed";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    // XXX - TO BE IMPLEMENTED:
+    // Test the bounding boxes and exit if there is no overlap;
+    // this can save some computation time in a number of circumstances
+
+    // XXX - TO BE IMPLEMENTED:
+    // in the special case of the aOutline containing a
+    // circle, attempt to add/subtract the circle and
+    // if successful then destroy the aOutline container.
+
+    error = false;
+    list<GEOM_INTERSECT> intersects;
+    list<IGES_POINT> iList;
+    list<IGES_GEOM_SEGMENT*>::iterator iSeg = msegments.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+    IGES_INTERSECT_FLAG flag;
+
+    int acc = 1;    // XXX - DEBUG
+    while( iSeg != eSeg )
+    {
+        flag = IGES_IFLAG_NONE;
+        iList.clear();
+
+        list<IGES_GEOM_SEGMENT*>::iterator sO = aOutline->msegments.begin();
+        list<IGES_GEOM_SEGMENT*>::iterator eO = aOutline->msegments.end();
+
+        while( sO != eO )
+        {
+            if( (*iSeg)->GetIntersections( **sO, iList, flag ) )
+            {
+                cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
+                print_seg(*iSeg);
+
+                if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag
+                    && IGES_IFLAG_TANGENT != flag )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[INFO] flag was set on intersect: " << flag << " (treated as invalid geom.)";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+
+                std::list<IGES_POINT>::iterator iPts = iList.begin();
+                std::list<IGES_POINT>::iterator ePts = iList.end();
+
+                cout << "XXX: iList has " << iList.size() << " intersections\n";
+
+                while( iPts != ePts )
+                {
+                    GEOM_INTERSECT gi;
+                    gi.vertex = *iPts;
+                    cout << "XXX: v";
+                    print_point( *iPts );
+                    gi.segA = *iSeg;
+                    gi.segB = *sO;
+                    gi.iSegA = iSeg;
+                    gi.iSegB = sO;
+                    intersects.push_back( gi );
+                    ++iPts;
+                }
+            }
+            else
+            {
+                if( IGES_IFLAG_NONE != flag )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[INFO] invalid geometry: flag = " << flag;
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+                cout << "XXX: NO X in seg " << acc << " of " << msegments.size() << "\n";
+            }
+
+            ++sO;
+        }
+
+        ++acc;
+        ++iSeg;
+    }
+
+    // Possible number of *distinct* intersections:
+    // a. 0: all is good, no intersection
+    // b. 1: bad geometry, intersection at a point
+    // c. 2: we can adjust the outline
+    // d. 3 or more: bad geometry: violates 2-point
+    //       restriction on intersections.
+
+    if( intersects.empty() )
+        return false;
+
+    iList.clear();
+    list<list<IGES_GEOM_SEGMENT*>::iterator> lSegs;
+    list<list<IGES_GEOM_SEGMENT*>::iterator> oSegs;
+
+    // compute the number of unique intersecting points:
+    list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
+    list<GEOM_INTERSECT>::iterator eIn = intersects.end();
+
+    while( iIn != eIn )
+    {
+        if( iList.empty() )
+        {
+            iList.push_back( iIn->vertex );
+            lSegs.push_back( iIn->iSegA );
+            oSegs.push_back( iIn->iSegB );
+        }
+        else
+        {
+            std::list<IGES_POINT>::iterator iPts = iList.begin();
+            std::list<IGES_POINT>::iterator ePts = iList.end();
+            bool isUnique = true;
+
+            while( iPts != ePts )
+            {
+                if( PointMatches( *iPts, iIn->vertex, 1e-8 ) )
+                {
+                    isUnique = false;
+                    break;
+                }
+
+                ++iPts;
+            }
+
+            if( isUnique )
+            {
+                iList.push_back( iIn->vertex );
+                lSegs.push_back( iIn->iSegA );
+                oSegs.push_back( iIn->iSegB );
+            }
+        }
+
+        ++iIn;
+    }
+
+    if( iList.size() != 2 )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] invalid geometry: violates restriction of 2 unique intersections (n = ";
+        msg << iList.size() << ")";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        print_geom_intersects( intersects );
+        return false;
+    }
+
+    // split *this
+    bool p1e = false;   // set to true if Point 1 is an endpoint
+    bool p2e = false;   // set to true if Point 2 is an endpoint
+
+    if( ( IGES_SEGTYPE_CIRCLE != (*lSegs.front())->getSegType() )
+        && ( PointMatches( iList.front(), (*lSegs.front())->mstart, 1e-8 )
+        || PointMatches( iList.front(), (*lSegs.front())->mend, 1e-8 ) ) )
+    {
+        p1e = true;
+    }
+
+    if( ( IGES_SEGTYPE_CIRCLE != (*lSegs.back())->getSegType() )
+        && ( PointMatches( iList.back(), (*lSegs.back())->mstart, 1e-8 )
+        || PointMatches( iList.back(), (*lSegs.back())->mend, 1e-8 ) ) )
+    {
+        p2e = true;
+    }
+
+    if( !p1e && !p2e && *lSegs.front() == *lSegs.back() )
+    {
+        // we are splitting a single entity at 2 points
+        cout << "XXX: splitting at 2 points\n";
+        list<IGES_GEOM_SEGMENT*> sList;
+
+        if( !(*lSegs.front())->Split(iList, sList) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[BUG] could not split *this outline";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        cout << "XXX: old nsegs: " << msegments.size() << "\n";
+        list<IGES_GEOM_SEGMENT*>::iterator sSL = sList.begin();
+        list<IGES_GEOM_SEGMENT*>::iterator eSL = sList.end();
+        list<IGES_GEOM_SEGMENT*>::iterator ps0 = lSegs.front();
+        msegments.insert( ++ps0, sSL, eSL );
+        cout << "XXX: new nsegs: " << msegments.size() << "\n";
+    }
+    else
+    {
+        // we are splitting individual entities at single points
+        cout << "XXX: splitting at single points\n";
+        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
+        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
+        list<IGES_POINT>::iterator iPts = iList.begin();
+        list<IGES_POINT>::iterator ePts = iList.end();
+
+        while( sSegs != eSegs )
+        {
+            IGES_GEOM_SEGMENT* pSeg = **sSegs;
+
+            if( !PointMatches( *iPts, pSeg->mstart, 1e-8 )
+                && !PointMatches( *iPts, pSeg->mend, 1e-8 ) )
+            {
+                // this is not an endpoint; split the entity
+                list<IGES_GEOM_SEGMENT*> sList;
+                list<IGES_POINT> pl;
+                pl.push_back( *iPts );
+
+                if( !pSeg->Split(pl, sList) )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] could not split *this outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+
+                cout << "XXX: old nsegs: " << msegments.size() << "\n";
+                list<IGES_GEOM_SEGMENT*>::iterator ps0 = *sSegs;
+                msegments.insert( ++ps0, sList.front() );
+                cout << "XXX: new nsegs: " << msegments.size() << "\n";
+            }
+
+            ++iPts;
+            ++sSegs;
+        }
+    }
+
+    // split aOutline
+    p1e = false;
+    p2e = false;
+
+    if( ( IGES_SEGTYPE_CIRCLE != (*oSegs.front())->getSegType() )
+        && ( PointMatches( iList.front(), (*oSegs.front())->mstart, 1e-8 )
+        || PointMatches( iList.front(), (*oSegs.front())->mend, 1e-8 ) ) )
+    {
+        p1e = true;
+    }
+
+    if( ( IGES_SEGTYPE_CIRCLE != (*oSegs.back())->getSegType() )
+        && ( PointMatches( iList.back(), (*oSegs.back())->mstart, 1e-8 )
+        || PointMatches( iList.back(), (*oSegs.back())->mend, 1e-8 ) ) )
+    {
+        p2e = true;
+    }
+
+    if( !p1e && !p2e && *oSegs.front() == *oSegs.back() )
+    {
+        // we are splitting a single entity at 2 points
+        cout << "XXX: splitting aOutline at 2 points\n";
+        list<IGES_GEOM_SEGMENT*> sList;
+
+        if( !(*oSegs.front())->Split(iList, sList) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[BUG] could not split aOutline";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
+        list<IGES_GEOM_SEGMENT*>::iterator sSL = sList.begin();
+        list<IGES_GEOM_SEGMENT*>::iterator eSL = sList.end();
+        list<IGES_GEOM_SEGMENT*>::iterator ps0 = oSegs.front();
+        aOutline->msegments.insert( ++ps0, sSL, eSL );
+        cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
+    }
+    else
+    {
+        // we are splitting individual entities at single points
+        cout << "XXX: splitting aOutline at single points\n";
+        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
+        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
+        list<IGES_POINT>::iterator iPts = iList.begin();
+        list<IGES_POINT>::iterator ePts = iList.end();
+
+        while( sSegs != eSegs )
+        {
+            IGES_GEOM_SEGMENT* pSeg = **sSegs;
+
+            if( !PointMatches( *iPts, pSeg->mstart, 1e-8 )
+                && !PointMatches( *iPts, pSeg->mend, 1e-8 ) )
+            {
+                // this is not an endpoint; split the entity
+                list<IGES_GEOM_SEGMENT*> sList;
+                list<IGES_POINT> pl;
+                pl.push_back( *iPts );
+
+                if( !pSeg->Split(pl, sList) )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] could not split *this outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+
+                cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
+                list<IGES_GEOM_SEGMENT*>::iterator ps0 = *sSegs;
+                aOutline->msegments.insert( ++ps0, sList.front() );
+                cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
+            }
+
+            ++iPts;
+            ++sSegs;
+        }
+    }
+
+    // d. Take a point along the segment in *this which was
+    //    associated with the split point and determine whether
+    //    it is inside or outside aOutline.
+    // e. Take a point along the segment in aOutline which was
+    //    associated with the split point and determine whether
+    //    it is inside or outside *this.
+
+    IGES_POINT pT;  // test point to use in determining if a segment is
+                    // inside or outside a closed region
+
+    // test if CCW point from the split point on *this is in or out
+    if( PointMatches( iList.front(), (*lSegs.front())->mstart, 1e-8 ) )
+    {
+        (*lSegs.front())->GetMidpoint( pT );
+    }
+    else
+    {
+        list<IGES_GEOM_SEGMENT*>::iterator sSL = lSegs.front();
+        ++sSL;
+
+        if( sSL == msegments.end() )
+            sSL = msegments.begin();
+
+        if( PointMatches( iList.front(), (*sSL)->mstart, 1e-8 ) )
+        {
+            (*sSL)->GetMidpoint( pT );
+            lSegs.front() = sSL;
+        }
+        else
+        {
+            ++sSL;
+
+            if( sSL == msegments.end() )
+                sSL = msegments.begin();
+
+            if( PointMatches( iList.front(), (*sSL)->mstart, 1e-8 ) )
+            {
+                (*sSL)->GetMidpoint( pT );
+                lSegs.front() = sSL;
+            }
+            else
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] cannot find *this segment starting at split point 0";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                return false;
+            }
+        }
+    }
+
+    print_point( pT );
+    bool tpIn0 = aOutline->IsInside( pT, error );
+
+    if( !tpIn0 && error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] cannot test if a point is inside aOutline";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    // test if CCW point from the split point on aOutline is in or out
+    if( PointMatches( iList.front(), (*oSegs.front())->mstart, 1e-8 ) )
+    {
+        (*oSegs.front())->GetMidpoint( pT );
+    }
+    else
+    {
+        list<IGES_GEOM_SEGMENT*>::iterator sSL = oSegs.front();
+        ++sSL;
+
+        if( sSL == aOutline->msegments.end() )
+            sSL = aOutline->msegments.begin();
+
+        if( PointMatches( iList.front(), (*sSL)->mstart, 1e-8 ) )
+        {
+            (*sSL)->GetMidpoint( pT );
+            oSegs.front() = sSL;
+        }
+        else
+        {
+            ++sSL;
+
+            if( sSL == aOutline->msegments.end() )
+                sSL = aOutline->msegments.begin();
+
+            if( PointMatches( iList.front(), (*sSL)->mstart, 1e-8 ) )
+            {
+                (*sSL)->GetMidpoint( pT );
+                oSegs.front() = sSL;
+            }
+            else
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] cannot find aOutline segment starting at split point 0";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                return false;
+            }
+        }
+    }
+
+    print_point( pT );
+    bool tpIn1 = IsInside( pT, error );
+
+    if( !tpIn1 && error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] cannot test if a point is inside *this";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    // f. A test for invalid geometry: if both (d) and (e) are
+    //    inside (or outside) then we have invalid geometry due
+    //    to a case of 2 non-overlapping outlines coinciding at
+    //    2 points.
+
+    if( tpIn0 == tpIn1 )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] invalid geometry (non-overlapping regions coincident at 2 points)";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    // g. Trimming:
+    //    1. Subtraction: determine the iterators for the aOutline
+    //       segments "inside" *this and the iterators for the
+    //       *this segments "outside" aOutline. Trim away the
+    //       "outside" segments of aOutline and the "inside" segments
+    //       of *this. Starting at the CCW point of the remaining
+    //       segments in *this, insert the remaining segments of
+    //       aOutline starting at the CW-most position and with each
+    //       segment reversed.
+    //    2. Addition: similar to subtraction, but eliminate the
+    //       "inside" segments of aOutline and add them to the
+    //       remaining segments of *this proceeding in the normal
+    //       CCW order along aOutline.
+    //
+
+    // delete inside segments of *this
+    // note: lSegs.front() must point to the first CW
+    // segment and eSegT to the first CCW segment
+    list<IGES_GEOM_SEGMENT*>::iterator eSegT = lSegs.front();
+
+    if( tpIn0 )
+    {
+        if( msegments.begin() == lSegs.front() )
+        {
+            lSegs.front() = --msegments.end();
+        }
+        else
+            --lSegs.front();
+
+        while( true )
+        {
+            if( msegments.end() == eSegT )
+            {
+                eSegT = msegments.begin();
+
+                if( msegments.empty() )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] deleted entire outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+            }
+
+            if( PointMatches( (*eSegT)->mstart, iList.back(), 1e-8 ) )
+                break;
+
+            delete *eSegT;
+            eSegT = msegments.erase( eSegT );
+        }
+    }
+    else
+    {
+        list<IGES_GEOM_SEGMENT*> tSegs;
+
+        while( true )
+        {
+            if( msegments.end() == eSegT )
+            {
+                eSegT = msegments.begin();
+
+                if( msegments.empty() )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] deleted entire outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+            }
+
+            if( PointMatches( (*eSegT)->mstart, iList.back(), 1e-8 ) )
+                break;
+
+            tSegs.push_back( *eSegT );
+            eSegT = msegments.erase( eSegT );
+        }
+
+        while( !msegments.empty() )
+        {
+            delete msegments.front();
+            msegments.pop_front();
+        }
+
+        msegments = tSegs;
+        lSegs.front() = msegments.end();
+        eSegT = msegments.begin();
+    }
+
+    // trim the applied outline
+    list<IGES_GEOM_SEGMENT*>::iterator eSegO = oSegs.front();
+
+    // note: oSegs.front() must point to the first CW segment
+    // and eSeg0 must point to the first CCW segment
+    if( ( tpIn1 && !opsub ) || ( opsub && !tpIn1 ) )
+    {
+        if( oSegs.front() == aOutline->msegments.begin() )
+            oSegs.front() = --aOutline->msegments.end();
+        else
+            --oSegs.front();
+
+        while( true )
+        {
+            if( aOutline->msegments.end() == eSegO )
+            {
+                eSegO = aOutline->msegments.begin();
+
+                if( aOutline->msegments.empty() )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] deleted entire outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+            }
+
+            if( PointMatches( (*eSegO)->mstart, iList.back(), 1e-8 ) )
+                break;
+
+            delete *eSegO;
+            eSegO = aOutline->msegments.erase( eSegO );
+        }
+
+        if( aOutline->msegments.end() == eSegO )
+            eSegO = aOutline->msegments.begin();
+
+    }
+    else
+    {
+        // store elements starting at oSegs.front()
+        list<IGES_GEOM_SEGMENT*> tSegs;
+
+        while( true )
+        {
+            if( aOutline->msegments.end() == eSegO )
+            {
+                eSegO = aOutline->msegments.begin();
+
+                if( aOutline->msegments.empty() )
+                {
+                    ostringstream msg;
+                    GEOM_ERR( msg );
+                    msg << "[BUG] deleted entire outline";
+                    ERRMSG << msg.str() << "\n";
+                    errors.push_back( msg.str() );
+                    error = true;
+                    return false;
+                }
+            }
+
+            if( PointMatches( (*eSegO)->mstart, iList.back(), 1e-8 ) )
+                break;
+
+            tSegs.push_back( *eSegO );
+            eSegO = aOutline->msegments.erase( eSegO );
+        }
+
+        while( !aOutline->msegments.empty() )
+        {
+            delete aOutline->msegments.front();
+            aOutline->msegments.pop_front();
+        }
+
+        aOutline->msegments = tSegs;
+        oSegs.front() = --aOutline->msegments.end();
+        eSegO = aOutline->msegments.begin();
+    }
+
+    // stitch partial outlines together
+    if( opsub )
+    {
+        // insert the remaining segments of aOutline starting at
+        // the CW-most position and with each segment reversed.
+        // XXX - to be implemented
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] NOT YET IMPLEMENTED";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+    else
+    {
+        // insert the remaining segments of aOutline starting at
+        // the CCW-most position
+        list<IGES_GEOM_SEGMENT*>::iterator eT = eSegO;
+        eSegT = lSegs.front();
+
+        while( eT != aOutline->msegments.end() )
+        {
+            msegments.insert( eSegT, *eT );
+            eT = aOutline->msegments.erase( eT );
+        }
+
+        if( !aOutline->msegments.empty() )
+        {
+            eT = aOutline->msegments.begin();
+
+            while( eT != aOutline->msegments.end() )
+            {
+                msegments.insert( eSegT, *eT );
+                ++eT;
+            }
+
+            aOutline->msegments.clear();
+        }
+    }
+
+    cout << "XXX: OK so far\n";
+    list<IGES_GEOM_SEGMENT*>::iterator zzS = msegments.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator zzE = msegments.end();
+    int q = 0;
+    while( zzS != zzE )
+    {
+        cout << "SEG #" << q++ << "\n";
+        print_seg(*zzS);
+        ++zzS;
+    }
+
+    return true;
+
+#warning TO BE IMPLEMENTED
+#if 0
+
+    // determine number of endpoints
+
+    do
+    {
+        // check for endpoints
+        list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
+        list<GEOM_INTERSECT>::iterator eIn = intersects.end();
+
+        while( iIn != eIn )
+        {
+            if( iIn->segA->getSegType() != IGES_SEGTYPE_CIRCLE )
+            {
+                if( !p1e && ( PointMatches( iList.front(), iIn->segA->getStart(), 1e-8 )
+                    || PointMatches( iList.front(), iIn->segA->getEnd(), 1e-8 ) ) )
+                {
+                    p1e = true;
+                }
+
+                if( !p2e && ( PointMatches( iList.back(), iIn->segA->getStart(), 1e-8 )
+                    || PointMatches( iList.back(), iIn->segA->getEnd(), 1e-8 ) ) )
+                {
+                    p2e = true;
+                }
+            }
+
+            ++iIn;
+        }
+    } while( 0 );
+
+    // we can adjust the entity using the given circle; determine which section of the
+    // circle is outside (add) or inside (subtract) the outline
+    IGES_POINT p0 = aCircle->mcenter;
+    IGES_POINT p1 = iList.front();
+
+    double a1 = atan2( p1.y - p0.y, p1.x - p0.x );
+    p1 = iList.back();
+    double a2 = atan2( p1.y - p0.y, p1.x - p0.x );
+
+    if( a2 < a1 )
+        a2 += 2.0 * M_PI;
+
+    double a3 = (a1 + a2) / 2.0;
+
+    IGES_POINT pX;  // a point midway along the 2nd CCW section of the circle
+    pX.x = p0.x + aCircle->mradius * cos( a3 );
+    pX.y = p0.y + aCircle->mradius * sin( a3 );
+
+    error = 0;
+    bool isIn = IsInside( pX, error );
+
+    if( !isIn && error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] IsInside() failed; see previous messages";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    // test if the other half of the circle is inside or outside
+    do
+    {
+        a3 += M_PI;
+        pX.x = p0.x + aCircle->mradius * cos( a3 );
+        pX.y = p0.y + aCircle->mradius * sin( a3 );
+        bool isIn2 = IsInside( pX, error );
+
+        if( !isIn2 && error )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[INFO] IsInside() failed; see previous messages";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            return false;
+        }
+
+        if( isIn2 == isIn )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[INFO] Invalid geometry: circular arc is coincident with but ";
+
+            if( isIn )
+                msg << "inside ";
+            else
+                msg << "outside ";
+
+            msg << "the outline";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            return false;
+        }
+
+    } while( 0 );
+
+    if( isIn )
+    {
+        cout << "XXX: (POINT INSIDE)\n";
+        cout << "c";
+        print_point(p0);
+        cout << "s";
+        print_point(iList.front());
+        cout << "e";
+        print_point(iList.back());
+    }
+    else
+    {
+        cout << "XXX: (POINT OUTSIDE)\n";
+        cout << "c";
+        print_point(p0);
+        cout << "s";
+        print_point(iList.front());
+        cout << "e";
+        print_point(iList.back());
+    }
+
+    IGES_POINT pF[2];   // final point order
+    bool isEnd[2];      // indicates if pF[n] is an endpoint
+    list<IGES_GEOM_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
+
+    // note: The OUT(/IN) segment must be put in CCW(/CW) order and
+    // its endpoints shall split the appropriate outline
+    // entities. From the new outline list, take the outline
+    // whose 'mend' equals 'mstart' of the new arc segment
+    // then eradicate all following items until we encounter
+    // the segment whose 'mstart' equals the new arc's 'mend'.
+    // Append the new arc to the FIRST segment mentioned above.
+    //
+    // Special case: if the outline is a circle then simply
+    // split the circle using the (mend, mstart) points of the
+    // new arc segment, add the new segment and discard the
+    // second segment returned by the Split() operator.
+    //
+    // Splitting entities: Keep in mind that a circle may
+    // split an arc or line into 2 or 3 parts. If a point
+    // is also an endpoint then the Split() function shall
+    // not be invoked for that point. All items to be
+    // Split() (either 0, 1, or 2 entities) shall be put
+    // into a list; if the list has 2 entities and they are
+    // the same entity then the single Split() operator
+    // must specify both split points.
+
+    cout << "XXX: lSegs.size(): " << lSegs.size() << "\n";
+
+    if( isIn )
+    {
+        pF[1] = iList.front();
+        pF[0] = iList.back();
+        isEnd[1] = p1e;
+        isEnd[0] = p2e;
+        pSeg[1] = lSegs.front();
+        pSeg[0] = lSegs.back();
+    }
+    else
+    {
+        pF[0] = iList.front();
+        pF[1] = iList.back();
+        isEnd[0] = p1e;
+        isEnd[1] = p2e;
+        pSeg[0] = lSegs.front();
+        pSeg[1] = lSegs.back();
+    }
+
+    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+
+    if( !sp->SetParams( p0, pF[0], pF[1], opsub ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] intersections do not lie on the circular arc";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        cout << "  c";
+        print_point( p0 );
+        cout << "  s";
+        print_point( pF[0] );
+        cout << "  e";
+        print_point( pF[1] );
+        delete sp;
+        return false;
+    }
+
+    if( msegments.front()->getSegType() == IGES_SEGTYPE_CIRCLE )
+    {
+        // Special case: this outline is currently a circle
+        iList.clear();
+        iList.push_back(pF[0]);
+        iList.push_back(pF[1]);
+        list<IGES_GEOM_SEGMENT*> sList;
+
+        if( !(*pSeg[0])->Split(iList, sList) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[BUG] could not split circle";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            delete sp;
+            return false;
+        }
+
+        // a single new segment should have been returned;
+        // that segment should simply be discarded
+        while( !sList.empty() )
+        {
+            delete sList.back();
+            sList.pop_back();
+        }
+
+        msegments.push_back( sp );
+        return true;
+    }
+
+    if( !p1e && !p2e )
+    {
+        // if both points lie on a single segment then split at 2 points
+        if( pSeg[0] == pSeg[1] )
+        {
+            cout << "XXX: splitting at multiple points\n";
+            iList.clear();
+            iList.push_back(pF[0]);
+            iList.push_back(pF[1]);
+            list<IGES_GEOM_SEGMENT*> sList;
+
+            if( !(*pSeg[0])->Split(iList, sList) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] could not split segment";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                delete sp;
+                return false;
+            }
+
+            if( sList.size() != 2 )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] expected 2 new segments, got " << sList.size();
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                delete sp;
+
+                while( !sList.empty() )
+                {
+                    delete sList.back();
+                    sList.pop_back();
+                }
+
+                return false;
+            }
+
+            // replace the first new segment with the arc
+            delete sList.front();
+            sList.pop_front();
+            sList.push_front( sp );
+            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[0];
+            msegments.insert( ++pS0, sList.begin(), sList.end() );
+            return true;
+        }
+    }
+
+    cout << "XXX: splitting at single points\n";
+    cout << "XXX: (p1e, p2e) : (" << p1e << ", " << p2e << ")\n";
+
+    // perform the splits
+    for( int i = 0; i < 2; ++ i )
+    {
+        if( !isEnd[i] )
+        {
+            cout << "XXX: splitting, i = " << i << "\n";
+            // split here
+            iList.clear();
+            iList.push_back(pF[i]);
+            list<IGES_GEOM_SEGMENT*> sList;
+
+            if( !(*pSeg[i])->Split(iList, sList) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] could not split segment";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                cout << "Segment to be split:\n";
+                print_seg(*pSeg[i]);
+                cout << "Split point v";
+                print_point(pF[i]);
+                delete sp;
+                return false;
+            }
+
+            if( sList.size() != 1 )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] expected 1 segment only, got " << sList.size();
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                delete sp;
+
+                while( !sList.empty() )
+                {
+                    delete sList.back();
+                    sList.pop_back();
+                }
+
+                return false;
+            }
+
+            // a single new segment should have been returned; add it
+            // to the list of segments
+            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[i];
+            msegments.insert( ++pS0, sList.front() );
+        }
+    }
+
+    // either pSeg[0] or pSeg[0]-- must have an endpoint 'mend' which
+    // is equal to pf[0]; find that iterator then eradicate all
+    // subsequent entries (wrapping to begin() if necessary) until
+    // we encounter a segment whose 'mstart' equals pf[1]. Finally,
+    // insert 'sp' after the aforementioned iterator or, more
+    // conveniently, before the first segment not eradicated.
+
+    if( !PointMatches( (*pSeg[0])->mend, pF[0], 1e-8 ) )
+    {
+        if( msegments.front() == *pSeg[0] )
+            pSeg[0] = --msegments.end();
+        else
+            --pSeg[0];
+    }
+
+    if( !PointMatches( (*pSeg[0])->mend, pF[0], 1e-8 ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] expected (*pSeg[0])->mend to match pF[0]";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        delete sp;
+        return false;
+    }
+
+    list<IGES_GEOM_SEGMENT*>::iterator tSeg = pSeg[0];
+    ++tSeg;
+
+    while( true )
+    {
+        if( msegments.end() == tSeg )
+        {
+            tSeg = msegments.begin();
+
+            if( msegments.empty() )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[BUG] deleted entire outline";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                delete sp;
+                return false;
+            }
+        }
+
+        if( PointMatches( (*tSeg)->mstart, pF[1], 1e-8 ) )
+            break;
+
+        cout << "XXX: deleting segment ...\n";
+        print_seg( *tSeg );
+        delete *tSeg;
+        tSeg = msegments.erase( tSeg );
+    }
+
+    cout << "XXX: inserting segment ...\n";
+    print_seg( sp );
+    msegments.insert( tSeg, sp );
+    return true;
+#endif
+}   // opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub )
+
+
 // Merge the given closed outline with this one; to keep the
 // code simple, the following restriction is imposed:
 // the two outlines may only intersect at 2 points.
 bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 {
-    #warning TO BE IMPLEMENTED
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    cout << "XXX: ADD OUTLINE ITERATION\n";
+
+    bool res = opOutline( aOutline, error, false );
+
+    if( error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] see above messages";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    return res;
 }
 
 
 bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 {
-    cout << "XXX: ADD OUTLINE ITERATION\n";
+    cout << "XXX: ADD CIRCLE ITERATION\n";
 
     bool res = opOutline( aCircle, error, false );
 
@@ -1115,7 +2295,7 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 // the two outlines may only intersect at 2 points.
 bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 {
-    cout << "XXX: SUB OUTLINE ITERATION\n";
+    cout << "XXX: SUB CIRCLE ITERATION\n";
 
     bool res = opOutline( aCircle, error, true );
 
@@ -1138,9 +2318,21 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
 // the two outlines may only intersect at 2 points.
 bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 {
-    #warning TO BE IMPLEMENTED
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    cout << "XXX: SUB OUTLINE ITERATION\n";
+
+    bool res = opOutline( aOutline, error, true );
+
+    if( error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] see above messages";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    return res;
 }
 
 
@@ -1152,9 +2344,53 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 // performed to ensure valid geometry.
 bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_OUTLINE* aCutout, bool overlaps, bool& error )
 {
-    #warning TO BE IMPLEMENTED
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( NULL == aCutout )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] NULL pointer";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( !aCutout->IsClosed() )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] cutout is not a closed loop";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( !overlaps )
+    {
+        cout << "XXX: adding without tests\n";
+        mcutouts.push_back( aCutout );
+        return true;
+    }
+
+    cout << "XXX: checking overlap\n";
+    if( SubOutline( aCutout, error ) )
+        return true;
+    cout << "XXX: no overlap; checking for error\n";
+
+    if( error )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] could not apply cutout";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        return false;
+    }
+
+    cout << "XXX: no error; adding to list\n";
+    mcutouts.push_back( aCutout );
+    return true;
 }
 
 // Add the given circular segment as a cutout; if the segment is
@@ -1305,7 +2541,6 @@ bool IGES_GEOM_OUTLINE::GetVerticalSurface( IGES* aModel, bool& error,
             ++sOtln;
         }
     }
-
 
     return true;
 }

@@ -156,6 +156,11 @@ public:
     // + calculate the bottom-left and top-right rectangular bounds
     bool GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 );
 
+    // + calculate the midpoint along the segment and return true;
+    //   for circles the reported midpoint is the point to the right
+    //   of the center.
+    bool GetMidpoint( IGES_POINT& p0 );
+
     // + split at the given list of intersections (1 or 2 intersections only)
     // Cases:
     //   1. Circle: must have 2 points; the circle is split into 2 arcs with

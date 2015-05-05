@@ -23,10 +23,15 @@ int test_arcs( void );
 int test_lines( void );
 // take a square and add a series of circles to it
 int test_addr( void );
+// test overlap operations of generic outlines
+//   + subs: set to true to test subtraction, false for addition
+//   + primeA: set to true to test operations on Outline A (Circle),
+//             false for Outline B (square).
+int test_otln( bool subs, bool primeA );
 
 int main()
 {
-    if( 1 )
+    if( 0 )
     {
         if( test_arcs() )
         {
@@ -35,7 +40,7 @@ int main()
         }
     }
 
-    if( 1 )
+    if( 0 )
     {
         if( test_lines() )
         {
@@ -44,13 +49,43 @@ int main()
         }
     }
 
-    if( 1 )
+    if( 0 )
     {
         if( test_addr() )
         {
             cout << "[FAIL]: test_addr() encountered problems\n";
             return -1;
         }
+    }
+
+    if( 1 )
+    {
+        if( test_otln( false, true ) )
+        {
+            cout << "[FAIL]: test_otln() encountered problems adding to Outline A\n";
+            return -1;
+        }
+
+        /*
+        if( test_otln( true, true ) )
+        {
+            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
+            return -1;
+        }
+
+        if( test_otln( false, false ) )
+        {
+            cout << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
+            return -1;
+        }
+
+        if( test_otln( true, false ) )
+        {
+            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
+            return -1;
+        }
+        */
+
     }
 
     cout << "[OK]: All tests passed\n";
@@ -521,14 +556,28 @@ int test_addr( void )
     IGES_GEOM_SEGMENT* sides[4];
     IGES_POINT v[4];
 
-    v[0].x = 10.0;
-    v[0].y = 10.0;
-    v[1].x = -10.0;
-    v[1].y = 10.0;
-    v[2].x = -10.0;
-    v[2].y = -10.0;
-    v[3].x = 10.0;
-    v[3].y = -10.0;
+    if( 0 )
+    {
+        v[0].x = 10.0;
+        v[0].y = 10.0;
+        v[1].x = -10.0;
+        v[1].y = 10.0;
+        v[2].x = -10.0;
+        v[2].y = -10.0;
+        v[3].x = 10.0;
+        v[3].y = -10.0;
+    }
+    else
+    {
+        v[0].x = 10.0;
+        v[0].y = 10.0;
+        v[1].x = 10.0;
+        v[1].y = -10.0;
+        v[2].x = -10.0;
+        v[2].y = -10.0;
+        v[3].x = -10.0;
+        v[3].y = 10.0;
+    }
 
     for( int i = 0; i < 4; ++i )
         sides[i] = new IGES_GEOM_SEGMENT;
@@ -650,5 +699,166 @@ int test_addr( void )
     }
 
     model.Write( "test_oln_addr.igs", true );
+    return 0;
+}
+
+
+int test_otln( bool subs, bool primeA )
+{
+    IGES_GEOM_SEGMENT* sides[4];
+    IGES_POINT v[4];
+
+    v[0].x = 10.0;
+    v[0].y = 10.0;
+    v[1].x = -10.0;
+    v[1].y = 10.0;
+    v[2].x = -10.0;
+    v[2].y = -10.0;
+    v[3].x = 10.0;
+    v[3].y = -10.0;
+
+    for( int i = 0; i < 4; ++i )
+        sides[i] = new IGES_GEOM_SEGMENT;
+
+    sides[0]->SetParams(v[0], v[1]);
+    sides[1]->SetParams(v[1], v[2]);
+    sides[2]->SetParams(v[2], v[3]);
+    sides[3]->SetParams(v[3], v[0]);
+
+    IGES_GEOM_OUTLINE* otlnB = new IGES_GEOM_OUTLINE;
+    bool error = false;
+
+    if( !otlnB->AddSegment( sides[0], error )
+        || !otlnB->AddSegment( sides[1], error )
+        || !otlnB->AddSegment( sides[2], error )
+        || !otlnB->AddSegment( sides[3], error ) )
+    {
+        cout << "* [FAIL]: could not add segment to outline\n";
+        return -1;
+    }
+
+    if( !otlnB->IsClosed() )
+    {
+        cout << "* [FAIL]: outline is not closed\n";
+        return -1;
+    }
+
+    IGES_POINT c1[2];   // parameters for circles
+    IGES_GEOM_SEGMENT* circ = new IGES_GEOM_SEGMENT;
+    IGES_GEOM_OUTLINE* otlnA = new IGES_GEOM_OUTLINE;
+
+    // radius: 10, c(0,10)
+    if( 1 )
+    {
+        c1[0].x = 0.0;
+        c1[0].y = 10.0;
+        c1[1].x = 10.0;
+        c1[1].y = 10.0;
+    }
+    else
+    {
+        c1[0].x = 10.0;
+        c1[0].y = 10.0;
+        c1[1].x = 15.0;
+        c1[1].y = 10.0;
+    }
+
+    circ->SetParams( c1[0], c1[1], c1[1], false );
+
+    if( !otlnA->AddSegment( circ, error ) )
+    {
+        cout << "* [FAIL]: could not add a circular segment to the outline\n";
+        return -1;
+    }
+
+    if( !otlnA->IsClosed() )
+    {
+        cout << "* [FAIL]: outline is not closed\n";
+        return -1;
+    }
+
+    if( primeA )
+    {
+        if( !subs )
+        {
+            // add outline B to A
+            if( !otlnA->AddOutline( otlnB, error ) )
+            {
+                cout << "* [FAIL]: could not add an outline\n";
+                return -1;
+            }
+        }
+        else
+        {
+            // subtract outline B from A
+            if( !otlnA->SubOutline( otlnB, error ) )
+            {
+                cout << "* [FAIL]: could not subtract an outline\n";
+                return -1;
+            }
+        }
+
+        if( !otlnA->IsContiguous() )
+        {
+            cout << "* [FAIL]: outline was not contiguous\n";
+            return -1;
+        }
+
+        IGES model;
+        std::vector<IGES_ENTITY_144*> res;
+
+        if( !otlnA->GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+        {
+            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
+
+        if( subs )
+            model.Write( "test_oln_sub.igs", true );
+        else
+            model.Write( "test_oln_add.igs", true );
+    }
+    else
+    {
+        if( !subs )
+        {
+            // add outline A to B
+            if( !otlnB->AddOutline( otlnA, error ) )
+            {
+                cout << "* [FAIL]: could not add an outline\n";
+                return -1;
+            }
+        }
+        else
+        {
+            // subtract outline A from B
+            if( !otlnB->SubOutline( otlnA, error ) )
+            {
+                cout << "* [FAIL]: could not subtract an outline\n";
+                return -1;
+            }
+        }
+
+        if( !otlnB->IsContiguous() )
+        {
+            cout << "* [FAIL]: outline was not contiguous\n";
+            return -1;
+        }
+
+        IGES model;
+        std::vector<IGES_ENTITY_144*> res;
+
+        if( !otlnB->GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+        {
+            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
+
+        if( subs )
+            model.Write( "test_olnB_sub.igs", true );
+        else
+            model.Write( "test_olnB_add.igs", true );
+    }
+
     return 0;
 }

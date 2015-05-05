@@ -76,8 +76,10 @@ private:
     std::list< std::string > errors;
     bool mIsClosed;     // true if the outline is closed
     double mWinding;    // accumulator to test for CW/CCW winding
-    // operate on the outline (add/subtract)
+    // operate on the circular outline (add/subtract)
     bool opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub );
+    // operate on the generic outline (add/subtract)
+    bool opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub );
 
 protected:
     IGES_POINT mBottomLeft; // bottom left coordinate

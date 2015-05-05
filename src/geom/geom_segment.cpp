@@ -1465,6 +1465,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
     IGES_POINT m[4];    // x,y extrema of an arc
     int ne = 0;
 
+    // check if start..end encompasses (0d)
     if( ( 0.0 >= aS && 0.0 <= aE ) || ( 2.0 * M_PI >= aS && 2.0 * M_PI <= aE ) )
     {
         m[0].x = mcenter.x + mradius;
@@ -1472,6 +1473,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         ++ne;
     }
 
+    // check if start..end encompasses (90d)
     if( ( M_PI * 0.5 >= aS && M_PI * 0.5 <= aE )
         || ( 2.5 * M_PI >= aS && 2.5 * M_PI <= aE ) )
     {
@@ -1480,30 +1482,44 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         ++ne;
     }
 
+    // check if start..end encompasses (180d)
     if( M_PI >= aS && M_PI <= aE )
     {
-        m[ne].x = mcenter.x;
-        m[ne].y = mcenter.y + mradius;
+        m[ne].x = mcenter.x - mradius;
+        m[ne].y = mcenter.y;
         ++ne;
     }
 
+    // check if start..end encompasses (270d)
     if( ( -0.5 * M_PI >= aS && -0.5 * M_PI <= aE )
         || ( 1.5 * M_PI >= aS && 1.5 * M_PI <= aE ) )
     {
         m[ne].x = mcenter.x;
-        m[ne].y = mcenter.y + mradius;
+        m[ne].y = mcenter.y - mradius;
         ++ne;
     }
 
     if( mstart.x < mend.x )
+    {
         p0.x = mstart.x;
+        p1.x = mend.x;
+    }
     else
+    {
         p0.x = mend.x;
+        p1.x = mstart.x;
+    }
 
     if( mstart.y < mend.y )
+    {
         p0.y = mstart.y;
+        p1.y = mend.y;
+    }
     else
+    {
         p0.y = mend.y;
+        p1.y = mstart.y;
+    }
 
     for( int i = 0; i < ne; ++i )
     {
@@ -1518,6 +1534,45 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 
         if( m[i].y > p1.y )
             p1.y = m[i].y;
+    }
+
+    return true;
+}
+
+
+// + calculate the midpoint along the segment and return true;
+//   for circles the reported midpoint is the point to the right
+//   of the center.
+bool IGES_GEOM_SEGMENT::GetMidpoint( IGES_POINT& p0 )
+{
+    switch( msegtype )
+    {
+        case IGES_SEGTYPE_CIRCLE:
+            p0 = mcenter;
+            p0.x += mradius;
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            do
+            {
+                double ang = ( msang + meang ) * 0.5;
+                p0 = mcenter;
+                p0.x += mradius * cos( ang );
+                p0.y += mradius * sin( ang );
+            } while( 0 );
+
+            break;
+
+        case IGES_SEGTYPE_LINE:
+            p0.x = 0.5 * (mend.x - mstart.x) + mstart.x;
+            p0.y = 0.5 * (mend.y - mstart.y) + mstart.y;
+            break;
+
+        default:
+            ERRMSG << "\n + [BUG] unhandled segment type: " << msegtype << "\n";
+            return false;
+
+            break;
     }
 
     return true;

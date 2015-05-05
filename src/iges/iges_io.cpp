@@ -513,9 +513,10 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
     double ne = log(var) / 2.3025850929940457;
 
     // estimate the number of digits required to represent a number
-    // to the stated minimum; throw in an extra digit to ensure
-    // rounding errors do not result in input errors when reading a file.
-    int nc = (int)(log(vlim)/ 2.3025850929940457 + 1.00000000000001) + 1;
+    // to the stated minimum; throw in 4 extra digits to ensure
+    // rounding errors do not result in input errors when reading a file
+    // with an extent from ~2000 to 1e-8 units.
+    int nc = (int)(log(vlim)/ 2.3025850929940457 + 1.00000000000001) + 4;
     ostringstream ostr;
 
     if( nc > 16 )

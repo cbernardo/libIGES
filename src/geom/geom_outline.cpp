@@ -1540,6 +1540,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
     }
 
+    cout << "XXX: midpoint on *this segment: ";
     print_point( pT );
     bool tpIn0 = aOutline->IsInside( pT, error );
 
@@ -1595,6 +1596,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
     }
 
+    cout << "XXX: midpoint on aOutline segment: ";
     print_point( pT );
     bool tpIn1 = IsInside( pT, error );
 
@@ -1639,19 +1641,11 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     //
 
     // delete inside segments of *this
-    // note: lSegs.front() must point to the first CW
-    // segment and eSegT to the first CCW segment
+    // note: lSegs.front() must point to the first CW segment
     list<IGES_GEOM_SEGMENT*>::iterator eSegT = lSegs.front();
 
     if( tpIn0 )
     {
-        if( msegments.begin() == lSegs.front() )
-        {
-            lSegs.front() = --msegments.end();
-        }
-        else
-            --lSegs.front();
-
         while( true )
         {
             if( msegments.end() == eSegT )
@@ -1676,6 +1670,8 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
             delete *eSegT;
             eSegT = msegments.erase( eSegT );
         }
+
+        lSegs.front() = eSegT;
     }
     else
     {
@@ -1713,8 +1709,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
 
         msegments = tSegs;
-        lSegs.front() = msegments.end();
-        eSegT = msegments.begin();
+        lSegs.front() = msegments.begin();
     }
 
     // trim the applied outline
@@ -1724,10 +1719,12 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     // and eSeg0 must point to the first CCW segment
     if( ( tpIn1 && !opsub ) || ( opsub && !tpIn1 ) )
     {
+        /* XXX
         if( oSegs.front() == aOutline->msegments.begin() )
             oSegs.front() = --aOutline->msegments.end();
         else
             --oSegs.front();
+        */
 
         while( true )
         {
@@ -1754,8 +1751,12 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
             eSegO = aOutline->msegments.erase( eSegO );
         }
 
-        if( aOutline->msegments.end() == eSegO )
-            eSegO = aOutline->msegments.begin();
+        oSegs.front() = eSegO;
+
+        if( aOutline->msegments.begin() == eSegO )
+            eSegO = --aOutline->msegments.end();
+        else
+            --eSegO;
 
     }
     else
@@ -1795,8 +1796,8 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
 
         aOutline->msegments = tSegs;
-        oSegs.front() = --aOutline->msegments.end();
-        eSegO = aOutline->msegments.begin();
+        oSegs.front() = --aOutline->msegments.begin();
+        eSegO = --aOutline->msegments.end();
     }
 
     // stitch partial outlines together
@@ -1805,19 +1806,37 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         // insert the remaining segments of aOutline starting at
         // the CW-most position and with each segment reversed.
         // XXX - to be implemented
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[INFO] NOT YET IMPLEMENTED";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
+        list<IGES_GEOM_SEGMENT*>::iterator eT = oSegs.front();
+        eSegT = lSegs.front();
+
+        while( eT != aOutline->msegments.end() )
+        {
+            (*eT)->reverse();
+            msegments.insert( eSegT, *eT );
+            eT = aOutline->msegments.erase( eT );
+        }
+
+        if( !aOutline->msegments.empty() )
+        {
+            eT = aOutline->msegments.begin();
+
+            while( eT != aOutline->msegments.end() )
+            {
+                (*eT)->reverse();
+                msegments.insert( eSegT, *eT );
+                ++eT;
+            }
+
+            aOutline->msegments.clear();
+        }
+
+        return true;
     }
     else
     {
         // insert the remaining segments of aOutline starting at
         // the CCW-most position
-        list<IGES_GEOM_SEGMENT*>::iterator eT = eSegO;
+        list<IGES_GEOM_SEGMENT*>::iterator eT = oSegs.front();
         eSegT = lSegs.front();
 
         while( eT != aOutline->msegments.end() )

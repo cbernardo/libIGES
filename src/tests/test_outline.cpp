@@ -66,16 +66,15 @@ int main()
             return -1;
         }
 
-        /*
-        if( test_otln( true, true ) )
-        {
-            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
-            return -1;
-        }
-
         if( test_otln( false, false ) )
         {
             cout << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
+            return -1;
+        }
+
+        if( test_otln( true, true ) )
+        {
+            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
             return -1;
         }
 
@@ -84,7 +83,6 @@ int main()
             cout << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
             return -1;
         }
-        */
 
     }
 
@@ -814,9 +812,9 @@ int test_otln( bool subs, bool primeA )
         }
 
         if( subs )
-            model.Write( "test_oln_sub.igs", true );
+            model.Write( "test_olnA_sub.igs", true );
         else
-            model.Write( "test_oln_add.igs", true );
+            model.Write( "test_olnA_add.igs", true );
     }
     else
     {

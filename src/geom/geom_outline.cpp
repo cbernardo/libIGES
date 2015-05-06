@@ -256,14 +256,6 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     bb1.x += 5.0;
     bb1.y += 5.0;
 
-    // note: if the point is out of bounds then it is clearly not
-    // within the outline
-    if( aPoint.x < mBottomLeft.x || aPoint.y < mBottomLeft.y
-        || aPoint.x > mTopRight.x || aPoint.y > mTopRight.y )
-    {
-        return false;
-    }
-
     IGES_POINT p2;
 
     if( (aPoint.x - mBottomLeft.x) <= (mTopRight.x - aPoint.x) )
@@ -272,6 +264,8 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
         p2.x = bb1.x;
 
     p2.y = aPoint.y;
+    cout << "XXX: test point 2 ";
+    print_point( p2 );
 
     IGES_GEOM_SEGMENT ls0;
     ls0.SetParams( aPoint, p2 );
@@ -283,11 +277,16 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     IGES_INTERSECT_FLAG flag;
 
     int acc = 0;
+
     while( sSegs != eSegs )
     {
         cout << "XXX: iter " << ++acc << "\n";
+        cout << "XXX: seg\n";
+        print_seg( *sSegs );
+
         if( (*sSegs)->GetIntersections( ls0, iList, flag ) )
         {
+            cout << "XXX: " << iList.size() << " intersections\n";
             list<IGES_POINT>::iterator sL = iList.begin();
             list<IGES_POINT>::iterator eL = iList.end();
 
@@ -296,27 +295,67 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
                 // note: handle the case of a circle differently
                 if( IGES_SEGTYPE_CIRCLE == (*sSegs)->getSegType() )
                 {
+                    cout << "XXX: circle\n";
                     ++nI;
                 }
                 else
                 {
-                    if( PointMatches( *sL, (*sSegs)->getStart(), 1e-8 )
-                        || PointMatches( *sL, (*sSegs)->getEnd(), 1e-8 ) )
+                    bool isEnd0 = PointMatches( *sL, (*sSegs)->mstart, 1e-8 );
+                    bool isEnd1 = PointMatches( *sL, (*sSegs)->mend, 1e-8 );
+
+                    if( isEnd0 || isEnd1 )
                     {
                         cout << "XXX: boundary test\n";
                         (*sSegs)->GetBoundingBox( bb0, bb1 );
 
-                        /* XXX - ORIG - seems to fail in some circumstances
-                        if( bb0.y <= aPoint.y && bb1.y <= aPoint.y )
-                            ++nI;
-                        */
                         cout << "bb0: " << bb0.x << ", " << bb0.y << "\n";
                         cout << "bb1: " << bb1.x << ", " << bb1.y << "\n";
                         cout << "aPt: " << aPoint.x << ", " << aPoint.y << "\n";
-                        if( !(bb0.y > aPoint.y || bb1.y > aPoint.y ) )
+
+                        if( bb0.y <= aPoint.y && bb1.y <= aPoint.y )
                         {
                             cout << "XXX: ++nI\n";
                             ++nI;
+                        }
+                        else
+                        {
+                            // it is possible for the simple bounding box test to
+                            // fail if the endpoint is on an arc; in such cases
+                            // we must check the bounds of the adjacent curve and
+                            // increment nI is those bounds are exclusively >= aPoint.y
+                            if( IGES_SEGTYPE_ARC == (*sSegs)->getSegType() && bb0.y < aPoint.y )
+                            {
+                                cout << "XXX: cheking loop\n";
+                                list<IGES_GEOM_SEGMENT*>::iterator tSeg = sSegs;
+
+                                if( isEnd1 )
+                                {
+                                    ++tSeg;
+
+                                    if( tSeg == eSegs )
+                                        tSeg = msegments.begin();
+                                }
+                                else if ( tSeg == msegments.begin() )
+                                {
+                                    tSeg = --msegments.end();
+                                }
+                                else
+                                {
+                                    --tSeg;
+                                }
+
+                                cout << "XXX: testing alt seg\n";
+                                print_seg( *tSeg );
+
+                                (*tSeg)->GetBoundingBox( bb0, bb1 );
+
+                                if( bb0.y >= aPoint.y && bb1.y >= aPoint.y )
+                                {
+                                    cout << "XXX: ++nI in backup loop\n";
+                                    ++nI;
+                                }
+
+                            }
                         }
 
                     }
@@ -566,10 +605,6 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         error = true;
         return false;
     }
-
-    // XXX - TO BE IMPLEMENTED:
-    // Test the bounding boxes and exit if there is no overlap;
-    // this can save some computation time in a number of circumstances
 
     error = false;
     list<GEOM_INTERSECT> intersects;
@@ -970,6 +1005,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
             sList.push_front( sp );
             list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[0];
             msegments.insert( ++pS0, sList.begin(), sList.end() );
+
             return true;
         }
     }
@@ -1165,10 +1201,6 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         error = true;
         return false;
     }
-
-    // XXX - TO BE IMPLEMENTED:
-    // Test the bounding boxes and exit if there is no overlap;
-    // this can save some computation time in a number of circumstances
 
     // XXX - TO BE IMPLEMENTED:
     // in the special case of the aOutline containing a
@@ -1614,6 +1646,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     //    inside (or outside) then we have invalid geometry due
     //    to a case of 2 non-overlapping outlines coinciding at
     //    2 points.
+    cout << "XXX: In0(" << tpIn0 << "), In1(" << tpIn1 << ")\n";
 
     if( tpIn0 == tpIn1 )
     {
@@ -1719,13 +1752,6 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     // and eSeg0 must point to the first CCW segment
     if( ( tpIn1 && !opsub ) || ( opsub && !tpIn1 ) )
     {
-        /* XXX
-        if( oSegs.front() == aOutline->msegments.begin() )
-            oSegs.front() = --aOutline->msegments.end();
-        else
-            --oSegs.front();
-        */
-
         while( true )
         {
             if( aOutline->msegments.end() == eSegO )
@@ -1804,8 +1830,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     if( opsub )
     {
         // insert the remaining segments of aOutline starting at
-        // the CW-most position and with each segment reversed.
-        // XXX - to be implemented
+        // the CCW-most position and with each segment reversed.
         list<IGES_GEOM_SEGMENT*>::iterator eT = oSegs.front();
         eSegT = lSegs.front();
 
@@ -1829,6 +1854,9 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
 
             aOutline->msegments.clear();
         }
+
+        delete aOutline;
+        aOutline = NULL;
 
         return true;
     }
@@ -1857,6 +1885,9 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
 
             aOutline->msegments.clear();
         }
+
+        delete aOutline;
+        aOutline = NULL;
     }
 
     cout << "XXX: OK so far\n";
@@ -2058,7 +2089,11 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bo
 
     cout << "XXX: checking overlap\n";
     if( SubOutline( aCircle, error ) )
+    {
+        delete aCircle;
+        aCircle = NULL;
         return true;
+    }
     cout << "XXX: no overlap; checking for error\n";
 
     if( error )

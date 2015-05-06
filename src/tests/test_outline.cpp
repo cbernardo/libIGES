@@ -31,7 +31,7 @@ int test_otln( bool subs, bool primeA );
 
 int main()
 {
-    if( 0 )
+    if( 1 )
     {
         if( test_arcs() )
         {
@@ -40,7 +40,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_lines() )
         {
@@ -49,7 +49,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_addr() )
         {
@@ -60,28 +60,40 @@ int main()
 
     if( 1 )
     {
-        if( test_otln( false, true ) )
+        if( 1 )
         {
-            cout << "[FAIL]: test_otln() encountered problems adding to Outline A\n";
-            return -1;
+            if( test_otln( false, true ) )
+            {
+                cout << "[FAIL]: test_otln() encountered problems adding to Outline A\n";
+                return -1;
+            }
         }
 
-        if( test_otln( false, false ) )
+        if( 1 )
         {
-            cout << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
-            return -1;
+            if( test_otln( false, false ) )
+            {
+                cout << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
+                return -1;
+            }
         }
 
-        if( test_otln( true, true ) )
+        if( 1 )
         {
-            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
-            return -1;
+            if( test_otln( true, true ) )
+            {
+                cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
+                return -1;
+            }
         }
 
-        if( test_otln( true, false ) )
+        if( 1 )
         {
-            cout << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
-            return -1;
+            if( test_otln( true, false ) )
+            {
+                cout << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
+                return -1;
+            }
         }
 
     }
@@ -742,32 +754,66 @@ int test_otln( bool subs, bool primeA )
     }
 
     IGES_POINT c1[2];   // parameters for circles
-    IGES_GEOM_SEGMENT* circ = new IGES_GEOM_SEGMENT;
-    IGES_GEOM_OUTLINE* otlnA = new IGES_GEOM_OUTLINE;
+    IGES_GEOM_SEGMENT* circ[6];
+    IGES_GEOM_OUTLINE* otln[6];
+
+    for( int i = 0; i < 6; ++i )
+    {
+        circ[i] = new IGES_GEOM_SEGMENT;
+        otln[i] = new IGES_GEOM_OUTLINE;
+    }
+
+    IGES_GEOM_OUTLINE* otlnA = otln[0];
+
+    // create the various circular outlines
 
     // radius: 10, c(0,10)
-    if( 1 )
-    {
-        c1[0].x = 0.0;
-        c1[0].y = 10.0;
-        c1[1].x = 10.0;
-        c1[1].y = 10.0;
-    }
-    else
-    {
-        c1[0].x = 10.0;
-        c1[0].y = 10.0;
-        c1[1].x = 15.0;
-        c1[1].y = 10.0;
-    }
+    c1[0].x = 0.0;
+    c1[0].y = 10.0;
+    c1[1].x = 10.0;
+    c1[1].y = 10.0;
+    circ[0]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[0]->AddSegment( circ[0], error );
 
-    circ->SetParams( c1[0], c1[1], c1[1], false );
+    // radius: 3, c(10,10)
+    c1[0].x = 10.0;
+    c1[0].y = 10.0;
+    c1[1].x = 13.0;
+    c1[1].y = 10.0;
+    circ[1]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[1]->AddSegment( circ[1], error );
 
-    if( !otlnA->AddSegment( circ, error ) )
-    {
-        cout << "* [FAIL]: could not add a circular segment to the outline\n";
-        return -1;
-    }
+    // radius: 3, c(-10,10)
+    c1[0].x = -10.0;
+    c1[0].y = 10.0;
+    c1[1].x = -7.0;
+    c1[1].y = 10.0;
+    circ[2]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[2]->AddSegment( circ[2], error );
+
+    // radius: 3, c(10,-10)
+    c1[0].x = 10.0;
+    c1[0].y = -10.0;
+    c1[1].x = 13.0;
+    c1[1].y = -10.0;
+    circ[3]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[3]->AddSegment( circ[3], error );
+
+    // radius: 3, c(-10,-10)
+    c1[0].x = -10.0;
+    c1[0].y = -10.0;
+    c1[1].x = -7.0;
+    c1[1].y = -10.0;
+    circ[4]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[4]->AddSegment( circ[4], error );
+
+    // radius: 3, c(0,-10)
+    c1[0].x = 0.0;
+    c1[0].y = -10.0;
+    c1[1].x = 3.0;
+    c1[1].y = -10.0;
+    circ[5]->SetParams( c1[0], c1[1], c1[1], false );
+    otln[5]->AddSegment( circ[5], error );
 
     if( !otlnA->IsClosed() )
     {
@@ -785,6 +831,16 @@ int test_otln( bool subs, bool primeA )
                 cout << "* [FAIL]: could not add an outline\n";
                 return -1;
             }
+
+            // add all other outlines to A
+            for( int i = 1; i < 6; ++i )
+            {
+                if( !otlnA->AddOutline( otln[i], error ) )
+                {
+                    cout << "* [FAIL]: could not add outline " << i << "\n";
+                    return -1;
+                }
+            }
         }
         else
         {
@@ -794,6 +850,24 @@ int test_otln( bool subs, bool primeA )
                 cout << "* [FAIL]: could not subtract an outline\n";
                 return -1;
             }
+
+            // subtract next 2 outlines from A
+            for( int i = 1; i < 3; ++i )
+            {
+                if( !otlnA->SubOutline( otln[i], error ) )
+                {
+                    cout << "* [FAIL]: could not subtract outline " << i << "\n";
+                    return -1;
+                }
+            }
+
+            // destroy unused objects
+            for( int i = 3; i < 6; ++i )
+            {
+                delete otln[i];
+                otln[i] = NULL;
+            }
+
         }
 
         if( !otlnA->IsContiguous() )
@@ -811,6 +885,8 @@ int test_otln( bool subs, bool primeA )
             return -1;
         }
 
+        delete otlnA;
+
         if( subs )
             model.Write( "test_olnA_sub.igs", true );
         else
@@ -826,6 +902,17 @@ int test_otln( bool subs, bool primeA )
                 cout << "* [FAIL]: could not add an outline\n";
                 return -1;
             }
+
+            // add all other outlines to B
+            for( int i = 1; i < 6; ++i )
+            {
+                if( !otlnB->AddOutline( otln[i], error ) )
+                {
+                    cout << "* [FAIL]: could not add outline " << i << "\n";
+                    return -1;
+                }
+            }
+
         }
         else
         {
@@ -835,6 +922,17 @@ int test_otln( bool subs, bool primeA )
                 cout << "* [FAIL]: could not subtract an outline\n";
                 return -1;
             }
+
+            // subtract all other outlines from B
+            for( int i = 1; i < 6; ++i )
+            {
+                if( !otlnB->SubOutline( otln[i], error ) )
+                {
+                    cout << "* [FAIL]: could not subtract outline " << i << "\n";
+                    return -1;
+                }
+            }
+
         }
 
         if( !otlnB->IsContiguous() )
@@ -851,6 +949,8 @@ int test_otln( bool subs, bool primeA )
             cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
             return -1;
         }
+
+        delete otlnB;
 
         if( subs )
             model.Write( "test_olnB_sub.igs", true );

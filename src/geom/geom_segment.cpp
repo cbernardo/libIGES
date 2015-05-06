@@ -890,8 +890,6 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
 
     cout << "XXX: np: " << np << "\n";
 
-    // XXX - NOTE: shall we ensure CCW order on *this ?
-
     if( 0 == np )
     {
         return false;
@@ -1075,7 +1073,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         ++np;
     }
 
-    if( t1 >= 0.0 && t1 <= 1.0 )
+    if( !tangent && t1 >= 0.0 && t1 <= 1.0 )
     {
         p[np].x = t1 * lS.x + (1.0 - t1) * lE.x;
         p[np].y = t1 * lS.y + (1.0 - t1) * lE.y;
@@ -1143,8 +1141,12 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     // check if each point is on the arc
     for( int i = 0; i < np; ++i )
     {
+        // note: the endpoints are checked as well to account for discrepancies
+        // in the angle calculations which may result in false negatives.
         if( ( ang[i] >= arcSAng && ang[i] <= arcEAng )
-            || ( ( ang[i] + 2.0 * M_PI ) >= arcSAng && ( ang[i] + 2.0 * M_PI ) <= arcEAng ) )
+            || ( ( ang[i] + 2.0 * M_PI ) >= arcSAng && ( ang[i] + 2.0 * M_PI ) <= arcEAng )
+            || ( abs( p[0].x - mstart.x ) < 1e-14 && abs( p[0].y - mstart.y ) < 1e-14 )
+            || ( abs( p[0].x - mend.x ) < 1e-14 && abs( p[0].y - mend.y ) < 1e-14 ) )
         {
             pt[i] = p[i];
             ++np2;
@@ -1658,6 +1660,10 @@ void IGES_GEOM_SEGMENT::reverse( void )
             mCWArc = false;
         else
             mCWArc = true;
+
+        double tang = msang;
+        msang = meang;
+        meang = tang;
     }
 
     return;

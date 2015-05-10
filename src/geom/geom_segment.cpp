@@ -35,6 +35,43 @@
 
 using namespace std;
 
+static bool newArc100( IGES* aModel, IGES_ENTITY_100** ap )
+{
+    IGES_ENTITY* ep;
+
+    if( !aModel->NewEntity( ENT_CIRCULAR_ARC, &ep ) )
+        return false;
+
+    *ap = dynamic_cast<IGES_ENTITY_100*>( ep );
+
+    if( !(*ap) )
+    {
+        aModel->DelEntity( ep );
+        return false;
+    }
+
+    return true;
+}
+
+
+static bool newTx124( IGES* aModel, IGES_ENTITY_124** tp )
+{
+    IGES_ENTITY* ep;
+
+    if( !aModel->NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
+        return false;
+
+    *tp = dynamic_cast<IGES_ENTITY_124*>(ep);
+
+    if( !(*tp) )
+    {
+        aModel->DelEntity( ep );
+        return false;
+    }
+
+    return true;
+}
+
 
 IGES_GEOM_SEGMENT::IGES_GEOM_SEGMENT()
 {
@@ -349,15 +386,43 @@ bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-// retrieve the representation of the curve as IGES 2D primitives
+// retrieve the representation of the curve as IGES 2D primitives which
+// are suitable as a subordinate to the CPTR of a Trimmed Parametric Surface.
+// It is essential that a list of curves be returned as it is up to the
+// user to decide whether these curves shall be part of a loop consiting
+// of multiple segments.
 bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    bool ok;
+
+    switch( msegtype )
+    {
+        case IGES_SEGTYPE_LINE:
+            ok = getCurveLine( aModel, aCurves, zHeight );
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            ok = getCurveArc( aModel, aCurves, zHeight );
+            break;
+
+        case IGES_SEGTYPE_CIRCLE:
+            ok = getCurveCircle( aModel, aCurves, zHeight );
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] invalid segment type (" << msegtype << ")\n";
+            ok = false;
+            break;
+    }
+
+    return ok;
 }
 
 
-// retrieve the curve as a list of parametric curves on plane
+// retrieve the curve as a list of parametric curves on plane which arc suitable
+// as subordinates to the BPTR of a Trimmed Parametric Surface. It is up to the
+// user to determine whether these curves shall be part of a loop consisting of
+// multiple segments.
 bool IGES_GEOM_SEGMENT::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
                         double aMinX, double aMaxX, double aMinY, double aMaxY,
                         double zHeight )
@@ -2053,6 +2118,389 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
 
     if( msang > meang )
         meang += 2.0 * M_PI;
+
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
+{
+    IGES_ENTITY_100* arcs[2];
+    arcs[0] = NULL;
+    arcs[1] = NULL;
+
+    for( int i = 0; i < 2; ++i )
+    {
+        if( !newArc100( aModel, &arcs[i] ) )
+        {
+            for( int j = 0; j < i; ++j )
+                aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+            ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+            return false;
+        }
+    }
+
+    arcs[0]->zOffset = zHeight;
+    arcs[0]->xCenter = mcenter.x;
+    arcs[0]->yCenter = mcenter.y;
+    arcs[0]->xStart = mcenter.x + mradius;
+    arcs[0]->yStart = mcenter.y;
+    arcs[0]->xEnd = mcenter.x - mradius;
+    arcs[0]->yEnd = mcenter.y;
+
+    arcs[1]->zOffset = zHeight;
+    arcs[1]->xCenter = mcenter.x;
+    arcs[1]->yCenter = mcenter.y;
+    arcs[1]->xStart = mcenter.x - mradius;
+    arcs[1]->yStart = mcenter.y;
+    arcs[1]->xEnd = mcenter.x + mradius;
+    arcs[1]->yEnd = mcenter.y;
+
+    for( int i = 0; i < 2; ++i )
+    {
+        IGES_CURVE* cp = dynamic_cast<IGES_CURVE*>( arcs[i] );
+
+        if( !cp )
+        {
+            for( int j = i; j < 2; ++j )
+                aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+            ERRMSG << "\n + [BUG] could not typecast arcs to IGES_CURVE\n";
+            return false;
+        }
+
+        aCurves.push_back( cp );
+    }
+
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
+{
+    // note: we must be sensitive to whether the arc is CW or CCW
+
+    int na = 0; // number of arcs (and transforms if we have a CW arc)
+
+    IGES_ENTITY_100* arcs[3];   // the arc may consist of up to 3 segments
+    IGES_ENTITY_124* tx[3];     // for CW arcs each arc has a corresponding transform
+
+    double a0 = getStartAngle();
+    double a1 = getEndAngle();
+    IGES_POINT p0 = getStart();
+    IGES_POINT p1 = getEnd();
+
+    if( a0 >= 0.0 && a0 < M_PI )
+    {
+        if( a1 <= M_PI )
+        {
+            if( !newArc100( aModel, &arcs[0] ) )
+            {
+                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
+                return false;
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = p1.x;
+            arcs[0]->yEnd = p1.y;
+            na = 1;
+        }
+        else
+        {
+            if( a1 <= 2.0 * M_PI )
+            {
+                for( int i = 0; i < 2; ++i )
+                {
+                    if( !newArc100( aModel, &arcs[i] ) )
+                    {
+                        for( int j = 0; j < i; ++j )
+                            aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+                        ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+                        return false;
+                    }
+                }
+
+                arcs[0]->zOffset = zHeight;
+                arcs[0]->xCenter = mcenter.x;
+                arcs[0]->yCenter = mcenter.y;
+                arcs[0]->xStart = p0.x;
+                arcs[0]->yStart = p0.y;
+                arcs[0]->xEnd = mcenter.x - mradius;
+                arcs[0]->yEnd = mcenter.y;
+
+                arcs[1]->zOffset = zHeight;
+                arcs[1]->xCenter = mcenter.x;
+                arcs[1]->yCenter = mcenter.y;
+                arcs[1]->xStart = mcenter.x - mradius;
+                arcs[1]->yStart = mcenter.y;
+                arcs[1]->xEnd = p1.x;
+                arcs[1]->yEnd = p1.y;
+
+                na = 2;
+            } // M_PI < a1 <= 2*M_PI
+            else
+            {
+                for( int i = 0; i < 3; ++i )
+                {
+                    if( !newArc100( aModel, &arcs[i] ) )
+                    {
+                        for( int j = 0; j < i; ++j )
+                            aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+                        ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+                        return false;
+                    }
+                }
+
+                arcs[0]->zOffset = zHeight;
+                arcs[0]->xCenter = mcenter.x;
+                arcs[0]->yCenter = mcenter.y;
+                arcs[0]->xStart = p0.x;
+                arcs[0]->yStart = p0.y;
+                arcs[0]->xEnd = mcenter.x - mradius;
+                arcs[0]->yEnd = mcenter.y;
+
+                arcs[1]->zOffset = zHeight;
+                arcs[1]->xCenter = mcenter.x;
+                arcs[1]->yCenter = mcenter.y;
+                arcs[1]->xStart = mcenter.x - mradius;
+                arcs[1]->yStart = mcenter.y;
+                arcs[1]->xEnd = mcenter.x + mradius;
+                arcs[1]->yEnd = mcenter.y;
+
+                arcs[2]->zOffset = zHeight;
+                arcs[2]->xCenter = mcenter.x;
+                arcs[2]->yCenter = mcenter.y;
+                arcs[2]->xStart = mcenter.x + mradius;
+                arcs[2]->yStart = mcenter.y;
+                arcs[2]->xEnd = p1.x;
+                arcs[2]->yEnd = p1.y;
+
+                na = 3;
+            }   // a1 > 2*M_PI
+        }   // ( 0.0 <= a0 < M_PI )
+
+    }
+    else if( a0 == M_PI )
+    {
+        if( a1 <= 2.0 * M_PI )
+        {
+            if( !newArc100( aModel, &arcs[0] ) )
+            {
+                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
+                return false;
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = p1.x;
+            arcs[0]->yEnd = p1.y;
+            na = 1;
+        }
+        else
+        {
+            for( int i = 0; i < 2; ++i )
+            {
+                if( !newArc100( aModel, &arcs[i] ) )
+                {
+                    for( int j = 0; j < i; ++j )
+                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+                    return false;
+                }
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = mcenter.x + mradius;
+            arcs[0]->yEnd = mcenter.y;
+
+            arcs[1]->zOffset = zHeight;
+            arcs[1]->xCenter = mcenter.x;
+            arcs[1]->yCenter = mcenter.y;
+            arcs[1]->xStart = mcenter.x + mradius;
+            arcs[1]->yStart = mcenter.y;
+            arcs[1]->xEnd = p1.x;
+            arcs[1]->yEnd = p1.y;
+
+            na = 2;
+        }
+    }   // a0 == M_PI
+    else
+    {
+        if( a1 <= 0.0 )
+        {
+            if( !newArc100( aModel, &arcs[0] ) )
+            {
+                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
+                return false;
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = p1.x;
+            arcs[0]->yEnd = p1.y;
+            na = 1;
+        }
+        else if( a1 <= M_PI )
+        {
+            for( int i = 0; i < 2; ++i )
+            {
+                if( !newArc100( aModel, &arcs[i] ) )
+                {
+                    for( int j = 0; j < i; ++j )
+                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+                    return false;
+                }
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = mcenter.x + mradius;
+            arcs[0]->yEnd = mcenter.y;
+
+            arcs[1]->zOffset = zHeight;
+            arcs[1]->xCenter = mcenter.x;
+            arcs[1]->yCenter = mcenter.y;
+            arcs[1]->xStart = mcenter.x + mradius;
+            arcs[1]->yStart = mcenter.y;
+            arcs[1]->xEnd = p1.x;
+            arcs[1]->yEnd = p1.y;
+
+            na = 2;
+        }   // a0 < 0 && a1 <= M_PI
+        else
+        {
+            for( int i = 0; i < 3; ++i )
+            {
+                if( !newArc100( aModel, &arcs[i] ) )
+                {
+                    for( int j = 0; j < i; ++j )
+                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
+
+                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
+                    return false;
+                }
+            }
+
+            arcs[0]->zOffset = zHeight;
+            arcs[0]->xCenter = mcenter.x;
+            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xStart = p0.x;
+            arcs[0]->yStart = p0.y;
+            arcs[0]->xEnd = mcenter.x + mradius;
+            arcs[0]->yEnd = mcenter.y;
+
+            arcs[1]->zOffset = zHeight;
+            arcs[1]->xCenter = mcenter.x;
+            arcs[1]->yCenter = mcenter.y;
+            arcs[1]->xStart = mcenter.x + mradius;
+            arcs[1]->yStart = mcenter.y;
+            arcs[1]->xEnd = mcenter.x - mradius;
+            arcs[1]->yEnd = mcenter.y;
+
+            arcs[2]->zOffset = zHeight;
+            arcs[2]->xCenter = mcenter.x;
+            arcs[2]->yCenter = mcenter.y;
+            arcs[2]->xStart = mcenter.x - mradius;
+            arcs[2]->yStart = mcenter.y;
+            arcs[2]->xEnd = p1.x;
+            arcs[2]->yEnd = p1.y;
+
+            na = 3;
+        }   // a0 < 0 && a1 > M_PI
+    }   // a0 < 0.0
+
+    if( mCWArc )
+    {
+        // instantiate the transforms
+        for( int i = 0; i < na; ++i )
+        {
+            if( !newTx124( aModel, &tx[i] ) )
+            {
+                ERRMSG << "\n + [INFO] could not instantiate IGES transform matrix\n";
+                return false;
+            }
+
+            tx[i]->T.T.x = arcs[i]->xCenter;
+            tx[i]->T.T.z = 2.0 * zHeight;
+            tx[i]->T.R.v[0][0] = -1.0;
+            tx[i]->T.R.v[2][2] = -1.0;
+            tx[i]->SetEntityForm( 1 );
+
+            if( !arcs[i]->SetTransform( tx[i] ) )
+            {
+                ERRMSG << "\n + [INFO] could not set transform on arc\n";
+                return false;
+            }
+
+            // note: since curves appear in CCW order we must swap the order
+            for( int i = (na - 1); i > 0; --i )
+                aCurves.push_back( (IGES_CURVE*)(arcs[i]) );
+        }
+
+        return true;
+    }
+
+    for( int i = 0; i < na; ++i )
+        aCurves.push_back( (IGES_CURVE*)(arcs[i]) );
+
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
+{
+    IGES_ENTITY*     ep;
+    IGES_ENTITY_110* lp;
+    IGES_CURVE*      cp;
+
+    if( !aModel->NewEntity( ENT_CIRCULAR_ARC, &ep ) )
+    {
+        ERRMSG << "\n + [INFO] could not instantiate IGES line\n";
+        return false;
+    }
+
+    lp = dynamic_cast<IGES_ENTITY_110*>(ep);
+
+    if( !lp )
+    {
+        aModel->DelEntity( ep );
+        ERRMSG << "\n + [BUG] could not typecast IGES line\n";
+        return false;
+    }
+
+    cp = dynamic_cast<IGES_CURVE*>(ep);
+
+    if( !cp )
+    {
+        aModel->DelEntity( ep );
+        ERRMSG << "\n + [BUG] could not typecast line to IGES_CURVE\n";
+        return false;
+    }
+
+    aCurves.push_back( cp );
 
     return true;
 }

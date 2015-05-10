@@ -64,6 +64,7 @@ static void print_point( IGES_POINT p0 )
     cout << "(" << p0.x << ", " << p0.y << ")\n";
 }
 
+
 static void print_seg( IGES_GEOM_SEGMENT* seg )
 {
     cout << "      type: ";
@@ -129,6 +130,7 @@ IGES_GEOM_OUTLINE::IGES_GEOM_OUTLINE()
 {
     mIsClosed = false;
     mWinding = 0.0;
+    mBBisOK = false;
     return;
 }
 
@@ -438,6 +440,8 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
         msegments.push_back( aSegment );
         mIsClosed = true;
         aSegment->GetBoundingBox( mBottomLeft, mTopRight );
+        mBBisOK = true;
+        adjustBoundingBox();
         return true;
     }
 
@@ -468,7 +472,7 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
     }
     else
     {
-        // retrieve the initial bouning box
+        // retrieve the initial bounding box
         aSegment->GetBoundingBox( mBottomLeft, mTopRight );
     }
 
@@ -524,6 +528,8 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
 
         if( PointMatches( p0, p1, 1e-8 ) )
         {
+            mBBisOK = true;
+            adjustBoundingBox();
             mIsClosed = true;
 
             // check the special case where we have only 2 segments
@@ -573,6 +579,8 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
 // operate on the outline (add/subtract)
 bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub )
 {
+    mBBisOK = false;
+
     if( !mIsClosed )
     {
         ostringstream msg;
@@ -1168,6 +1176,8 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     //       remaining segments of *this proceeding in the normal
     //       CCW order along aOutline.
     //
+
+    mBBisOK = false;
 
     if( !mIsClosed )
     {
@@ -2205,4 +2215,201 @@ bool IGES_GEOM_OUTLINE::GetVerticalSurface( IGES* aModel, bool& error,
     }
 
     return true;
+}
+
+
+void IGES_GEOM_OUTLINE::calcBoundingBox( void )
+{
+    if( msegments.empty() || !mIsClosed )
+        return;
+
+    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+
+    IGES_POINT bb0;
+    IGES_POINT bb1;
+    (*sSeg)->GetBoundingBox( mBottomLeft, mTopRight );
+    ++sSeg;
+
+    while( sSeg != eSeg )
+    {
+        (*sSeg)->GetBoundingBox( bb0, bb1 );
+
+        if( bb0.x < mBottomLeft.x )
+            mBottomLeft.x = bb0.x;
+
+        if( bb0.y < mBottomLeft.y )
+            mBottomLeft.y = bb0.y;
+
+        if( bb1.x > mTopRight.x )
+            mTopRight.x = bb1.x;
+
+        if( bb1.y > mTopRight.y )
+            mTopRight.y = bb1.y;
+
+        ++sSeg;
+    }
+
+    mBBisOK = true;
+    adjustBoundingBox();
+    return;
+}
+
+
+void IGES_GEOM_OUTLINE::adjustBoundingBox( void )
+{
+    double minX = floor( mBottomLeft.x );
+    double maxX = ceil( mTopRight.x );
+
+    double minY = floor( mBottomLeft.y );
+    double maxY = ceil( mTopRight.y );
+
+    int dx = (int)maxX - (int)minX;
+    int dy = (int)maxY - (int)minY;
+
+    if( dx % 2 )
+        maxX += 1.0;
+
+    if( dy % 2 )
+        maxY += 1.0;
+
+    mBottomLeft.x = minX;
+    mBottomLeft.y = minY;
+    mTopRight.x = maxX;
+    mTopRight.y = maxY;
+
+    return;
+}
+
+
+// retrieve the trimmed parametric surfaces representing the
+// top and bottom planes of the board
+bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
+                      std::vector<IGES_ENTITY_144*>& aSurface,
+                      double aHeight )
+{
+    error = false;
+
+    if( !mIsClosed )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] outline is not closed";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( msegments.empty() )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] outline is empty";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    // Step 1: create the plane to be trimmed;
+    IGES_ENTITY_144* plane = getUntrimmedPlane( aModel, aHeight );
+
+    if( !plane )
+    {
+        qwerty;
+    }
+
+    // Step 2: create the outer bound (PTO); this is a Curve on Parametric Surface
+    // XXX - TO BE IMPLEMENTED
+
+    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+
+
+    while( sSeg != eSeg )
+    {
+        if( !(*sSeg)->GetVerticalSurface( aModel, aSurface, aTopZ, aBotZ ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not render a vertical surface of a segment";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        ++sSeg;
+    }
+
+    // Step 3: create the irregular cutouts (PTI); these are Curves on Parametric Surface
+    // XXX - TO BE IMPLEMENTED
+
+    // Step 4: create the circular cutouts (PTI); these are Curves on Parametric Surface
+    // XXX - TO BE IMPLEMENTED
+
+    /*
+    bool GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
+    bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
+                           double aMinX, double aMaxX, double aMinY, double aMaxY,
+                           double zHeight );
+    */
+
+}
+
+
+// create a Trimmed Parametric Surface entity with only the PTS member instantiated
+IGES_ENTITY_144* IGES_GEOM_OUTLINE::getUntrimmedPlane( IGES* aModel, double aHeight )
+{
+    double data[12];
+
+    // note: the vertex order used here ensures that X is parameterized
+    // in U (parameter 1) and Y is parameterized in V (parameter 2)
+
+    // vertex 0, bottom left
+    data[0] = mBottomLeft.x;
+    data[1] = mBottomLeft.y;
+    data[2] = aHeight;
+
+    // vertex 1, bottom right
+    data[3] = mTopRight.x;
+    data[4] = mBottomLeft.y;
+    data[5] = aHeight;
+
+    // vertex 3, top left
+    data[6] = mBottomLeft.x;
+    data[7] = mTopRight.y;
+    data[8] = aHeight;
+
+    // vertex 4, top right
+    data[9]  = mTopRight.x;
+    data[10] = mTopRight.y;
+    data[11] = aHeight.z;
+
+    int stat = 0;
+    SISLSurf* plane;
+
+    // create the NURBS representation of the surface
+    s1536( data, 2, 2, 3, 2, 0, 0, 0, 0, 2, 2, 1, 1, &plane, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified problems creating NURBS plane\n";
+            stat = 0;
+            break;
+
+        default:
+            qwerty; // - add error message to list
+            ERRMSG << "\n + [ERROR] could not create NURBS plane\n";
+            return NULL;
+            break;
+    }
+
+    // XXX - TO BE IMPLEMENTED:
+    instantiate the trimmed parametric surface
 }

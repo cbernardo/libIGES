@@ -82,6 +82,12 @@ private:
 
     void init( void );
 
+    // routines to create curves suitable as subordinates to the CPTR of
+    // a trimmed parametric surface
+    bool getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
+    bool getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
+    bool getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
+
 public: // XXX- restore to protected
     IGES_SEGTYPE getSegType( void ) const;
     double getRadius( void ) const;

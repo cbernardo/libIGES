@@ -80,6 +80,15 @@ private:
     bool opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub );
     // operate on the generic outline (add/subtract)
     bool opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub );
+    // recalculate the bounding box
+    void calcBoundingBox( void );
+    // adjust the bounding box in preparation for rendering a surface
+    void adjustBoundingBox( void );
+    bool mBBisOK;       // true if the bounding box has been calculated and
+                        // no operations have been performed on the outline
+
+   // create a Trimmed Parametric Surface entity with only the PTS member instantiated
+   IGES_ENTITY_144* getUntrimmedPlane( IGES* aModel, double aHeight );
 
 protected:
     IGES_POINT mBottomLeft; // bottom left coordinate
@@ -158,6 +167,11 @@ public:
                              std::vector<IGES_ENTITY_144*>& aSurface,
                              double aTopZ, double aBotZ );
 
+    // retrieve the trimmed parametric surfaces representing the
+    // top and bottom planes of the board
+    bool GetTrimmedPlane( IGES* aModel, bool& error,
+                          std::vector<IGES_ENTITY_144*>& aSurface,
+                          double aHeight );
 };
 
 #endif  // IGES_GEOM_OUTLINE_H

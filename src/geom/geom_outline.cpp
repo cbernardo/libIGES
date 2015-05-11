@@ -126,6 +126,44 @@ static void print_geom_intersects( const list<GEOM_INTERSECT>& aList )
 }
 
 
+static bool newEnt102( IGES* aModel, IGES_ENTITY_102** cp )
+{
+    IGES_ENTITY* ep;
+
+    if( !aModel->NewEntity( ENT_COMPOSITE_CURVE, &ep ) )
+        return false;
+
+    *cp = dynamic_cast<IGES_ENTITY_102*>( ep );
+
+    if( !(*cp) )
+    {
+        aModel->DelEntity( ep );
+        return false;
+    }
+
+    return true;
+}
+
+
+static bool newEnt142( IGES* aModel, IGES_ENTITY_142** cp )
+{
+    IGES_ENTITY* ep;
+
+    if( !aModel->NewEntity( ENT_CURVE_ON_PARAMETRIC_SURFACE, &ep ) )
+        return false;
+
+    *cp = dynamic_cast<IGES_ENTITY_142*>( ep );
+
+    if( !(*cp) )
+    {
+        aModel->DelEntity( ep );
+        return false;
+    }
+
+    return true;
+}
+
+
 IGES_GEOM_OUTLINE::IGES_GEOM_OUTLINE()
 {
     mIsClosed = false;
@@ -2317,23 +2355,55 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
 
     if( !plane )
     {
-        qwerty;
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] outline is not closed";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
     }
 
     // Step 2: create the outer bound (PTO); this is a Curve on Parametric Surface
-    // XXX - TO BE IMPLEMENTED
-
     list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
     list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+    list<IGES_CURVE*> ncurves;  // curves representing outlines in geometric representation
+    list<IGES_ENTITY_126*> bcurves; // BREP curves representing outlines
+    IGES_ENTITY_102*  ccurve[2];    // composite curve (BREP and geom representations)
 
-
-    while( sSeg != eSeg )
+    for( int i = 0; i < 2; ++i )
     {
-        if( !(*sSeg)->GetVerticalSurface( aModel, aSurface, aTopZ, aBotZ ) )
+        if( !newEnt102( aModel, &ccurve[i] ) )
         {
             ostringstream msg;
             GEOM_ERR( msg );
-            msg << "[ERROR] could not render a vertical surface of a segment";
+            msg << "[ERROR] could not create a composite curve";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+    }
+
+    while( sSeg != eSeg )
+    {
+        if( !(*sSeg)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
+            mBottomLeft.y, mTopRight.y, aHeight ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not render BREP curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        if( !(*sSeg)->GetCurves( aModel, ncurves, aHeight ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not render geometric curve on surface";
             ERRMSG << msg.str() << "\n";
             errors.push_back( msg.str() );
             error = true;
@@ -2343,19 +2413,340 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
         ++sSeg;
     }
 
+    // stuff contents of ncurves, bcurves, and isurf->GetPTS() into ENTITY 142
+    IGES_ENTITY_142* scurve;    // Curve on Surface
+
+    if( !newEnt142( aModel, &scurve ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] could not instantiate curve on surface";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    IGES_ENTITY* pts;
+    plane->GetPTS( &pts );
+    scurve->SetSPTR( pts );
+    list<IGES_ENTITY_126*>::iterator sBC = bcurves.begin();
+    list<IGES_ENTITY_126*>::iterator eBC = bcurves.end();
+
+    while( sBC != eBC )
+    {
+        if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add BREP curve to composite curve";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        ++sBC;
+    }
+
+
+    list<IGES_CURVE*>::iterator sNC = ncurves.begin();
+    list<IGES_CURVE*>::iterator eNC = ncurves.end();
+
+    while( sNC != eNC )
+    {
+        if( !ccurve[1]->AddSegment( *sNC ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add geom curve to composite curve";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        ++sNC;
+    }
+
+    if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+        || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] could not add composite curves to curve on surface";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
+    if( !plane->SetPTO( scurve ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] could not add curve on surface to trimmed surface";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
+    }
+
     // Step 3: create the irregular cutouts (PTI); these are Curves on Parametric Surface
-    // XXX - TO BE IMPLEMENTED
+    list<IGES_GEOM_OUTLINE*>::iterator sCO = mcutouts.begin();
+    list<IGES_GEOM_OUTLINE*>::iterator eCO = mcutouts.end();
+
+    while( sCO != eCO )
+    {
+        if( !newEnt142( aModel, &scurve ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not instantiate curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        bcurves.clear();
+        ncurves.clear();
+
+        for( int i = 0; i < 2; ++i )
+        {
+            if( !newEnt102( aModel, &ccurve[i] ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not create a composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+        }
+
+        sSeg = (*sCO)->msegments.begin();
+        eSeg = (*sCO)->msegments.end();
+
+        while( sSeg != eSeg )
+        {
+            if( !(*sSeg)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
+                mBottomLeft.y, mTopRight.y, aHeight ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not render BREP curve on surface";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            if( !(*sSeg)->GetCurves( aModel, ncurves, aHeight ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not render geometric curve on surface";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            ++sSeg;
+        }
+
+        scurve->SetSPTR( pts );
+        sBC = bcurves.begin();
+        eBC = bcurves.end();
+
+        while( sBC != eBC )
+        {
+            if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add BREP curve to composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            ++sBC;
+        }
+
+
+        sNC = ncurves.begin();
+        eNC = ncurves.end();
+
+        while( sNC != eNC )
+        {
+            if( !ccurve[1]->AddSegment( *sNC ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add geom curve to composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            ++sNC;
+        }
+
+        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add composite curves to curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        if( !plane->AddPTI( scurve ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add curve on surface to trimmed surface PTI list";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        ++sCO;
+    }
 
     // Step 4: create the circular cutouts (PTI); these are Curves on Parametric Surface
-    // XXX - TO BE IMPLEMENTED
+    list<IGES_GEOM_SEGMENT*>::iterator sDH = mholes.begin();
+    list<IGES_GEOM_SEGMENT*>::iterator eDH = mholes.end();
 
-    /*
-    bool GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
-    bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
-                           double aMinX, double aMaxX, double aMinY, double aMaxY,
-                           double zHeight );
-    */
+    while( sDH != eDH )
+    {
+        if( !newEnt142( aModel, &scurve ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not instantiate curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
 
+        bcurves.clear();
+        ncurves.clear();
+
+        for( int i = 0; i < 2; ++i )
+        {
+            if( !newEnt102( aModel, &ccurve[i] ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not create a composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+        }
+
+        if( !(*sDH)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
+            mBottomLeft.y, mTopRight.y, aHeight ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not render BREP curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        if( !(*sDH)->GetCurves( aModel, ncurves, aHeight ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not render geometric curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        scurve->SetSPTR( pts );
+        sBC = bcurves.begin();
+        eBC = bcurves.end();
+
+        while( sBC != eBC )
+        {
+            if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add BREP curve to composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            ++sBC;
+        }
+
+
+        sNC = ncurves.begin();
+        eNC = ncurves.end();
+
+        while( sNC != eNC )
+        {
+            if( !ccurve[1]->AddSegment( *sNC ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add geom curve to composite curve";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
+
+            ++sNC;
+        }
+
+        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add composite curves to curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        if( !plane->AddPTI( scurve ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add curve on surface to trimmed surface PTI list";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
+
+        ++sCO;
+    }
+
+    return true;
 }
 
 
@@ -2385,7 +2776,7 @@ IGES_ENTITY_144* IGES_GEOM_OUTLINE::getUntrimmedPlane( IGES* aModel, double aHei
     // vertex 4, top right
     data[9]  = mTopRight.x;
     data[10] = mTopRight.y;
-    data[11] = aHeight.z;
+    data[11] = aHeight;
 
     int stat = 0;
     SISLSurf* plane;
@@ -2400,16 +2791,114 @@ IGES_ENTITY_144* IGES_GEOM_OUTLINE::getUntrimmedPlane( IGES* aModel, double aHei
 
         case 1:
             ERRMSG << "\n + [WARNING] unspecified problems creating NURBS plane\n";
-            stat = 0;
             break;
 
         default:
-            qwerty; // - add error message to list
-            ERRMSG << "\n + [ERROR] could not create NURBS plane\n";
+            do
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not create NURBS plane";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+            } while( 0 );
+
             return NULL;
             break;
     }
 
-    // XXX - TO BE IMPLEMENTED:
-    instantiate the trimmed parametric surface
+    // create the planar NURBS surface
+    IGES_ENTITY* ep;
+    IGES_ENTITY_128* isurf;
+
+    if( !aModel->NewEntity( ENT_NURBS_SURFACE, &ep ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] could not instantiate new entity (type 128)";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        freeSurf( plane );
+        plane = NULL;
+        return NULL;
+    }
+
+    isurf = dynamic_cast<IGES_ENTITY_128*>( ep );
+    isurf->SetDependency( STAT_DEP_PHY );
+
+    if( NULL == isurf )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] cast failed on NURBS surface entity";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        aModel->DelEntity( ep );
+        freeSurf( plane );
+        plane = NULL;
+        return NULL;
+    }
+
+    // copy the NURBS surface data to isurf
+    if( !isurf->SetNURBSData( plane->in1, plane->in2, plane->ik1, plane->ik2,
+        plane->et1, plane->et2, plane->ecoef, false, false, false ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] failed to transfer data to surface entity";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        aModel->DelEntity( ep );
+        freeSurf( plane );
+        plane = NULL;
+        return NULL;
+    }
+
+    freeSurf( plane );
+    plane = NULL;
+
+    // instantiate the trimmed parametric surface entity
+    IGES_ENTITY_144* itps;
+
+    if( !aModel->NewEntity( ENT_TRIMMED_PARAMETRIC_SURFACE, &ep ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[INFO] could not instantiate new entity (type 144)";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        aModel->DelEntity( (IGES_ENTITY*)isurf );
+        return NULL;
+    }
+
+    itps = dynamic_cast<IGES_ENTITY_144*>( ep );
+
+    if( NULL == itps )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] cast failed on curve on trimmed surface entity";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        aModel->DelEntity( ep );
+        aModel->DelEntity( (IGES_ENTITY*)isurf );
+        return NULL;
+    }
+
+    itps->N1 = 1;   // surface is to be trimmed by specified entities
+
+    if( !itps->SetPTS( (IGES_ENTITY*)isurf ) )
+    {
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[BUG] failed to transfer data to parametric curve on surface";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+
+        aModel->DelEntity( (IGES_ENTITY*)isurf );
+        aModel->DelEntity( (IGES_ENTITY*)itps );
+        return NULL;
+    }
+
+    return itps;
 }

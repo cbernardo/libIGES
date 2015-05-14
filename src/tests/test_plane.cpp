@@ -23,6 +23,8 @@ using namespace std;
 
 // take one large circle with a circular cutout
 int test_cc0( void );
+// take one large circle with a small circular cutout on edge
+int test_cc1( void );
 
 // take one large circle and subtract a series of smaller circles from it.
 int test_arcs( void );
@@ -38,10 +40,22 @@ int test_otln( bool subs, bool primeA );
 
 int main()
 {
-    if( test_cc0() )
+    if( 0 )
     {
-        cout << "[FAIL]: test_cc0() encountered problems\n";
-        return -1;
+        if( test_cc0() )
+        {
+            cout << "[FAIL]: test_cc0() encountered problems\n";
+            return -1;
+        }
+    }
+
+    if( 0 )
+    {
+        if( test_cc1() )
+        {
+            cout << "[FAIL]: test_cc1() encountered problems\n";
+            return -1;
+        }
     }
 
     if( 1 )
@@ -376,10 +390,13 @@ int test_arcs( void )
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 
-    if( !otln.GetVerticalSurface( &model, error, res, 1.5, -1.5 ) )
+    if( 1 )
     {
-        cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
-        return -1;
+        if( !otln.GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
+        {
+            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
     }
 
     std::vector<IGES_ENTITY_144*> surf;
@@ -1072,5 +1089,102 @@ int test_cc0( void )
     }
 
     model.Write( "test_c-c0.igs", true );
+    return 0;
+}
+
+
+int test_cc1( void )
+{
+    IGES_GEOM_SEGMENT* seg1 = new IGES_GEOM_SEGMENT;
+    IGES_GEOM_SEGMENT* seg2 = new IGES_GEOM_SEGMENT;
+
+    IGES_POINT c1[3];   // parameters for Circle 1
+    IGES_POINT c2[3];   // parameters for Circle 2
+
+    // radius: 2, c(0,0)
+    c1[0].x = 0.0;
+    c1[0].y = 0.0;
+    c1[1].x = 2.0;
+    c1[1].y = 0.0;
+    c1[2].x = 2.0;
+    c1[2].y = 0.0;
+
+    // radius: 1, c(-2,0)
+    c2[0].x = -2.0;
+    c2[0].y = 0.0;
+    c2[1].x = -1.0;
+    c2[1].y = 0.0;
+    c2[2].x = -1.0;
+    c2[2].y = 0.0;
+
+    seg1->SetParams( c1[0], c1[1], c1[2], false );
+    seg2->SetParams( c2[0], c2[1], c2[2], false );
+
+    IGES_GEOM_OUTLINE otln;
+    IGES_GEOM_OUTLINE* otlnB = new IGES_GEOM_OUTLINE;
+    bool error = false;
+    otlnB->AddSegment( seg2, error );
+
+    if( !otln.AddSegment( seg1, error ) )
+    {
+        cout << "* [FAIL]: could not add segment to outline\n";
+        delete seg1;
+        delete seg2;
+        return -1;
+    }
+
+    if( !otln.IsClosed() )
+    {
+        cout << "* [FAIL]: outline is not closed\n";
+        delete seg2;
+        return -1;
+    }
+
+    if( !otln.AddCutout( otlnB, true, error ) )
+    {
+        cout << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
+        delete seg2;
+        return -1;
+    }
+
+    if( !otln.IsContiguous() )
+    {
+        cout << "* [FAIL]: outline was not contiguous\n";
+        return -1;
+    }
+
+    IGES model;
+    std::vector<IGES_ENTITY_144*> res;
+
+    if( 1 )
+    {
+        if( !otln.GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
+        {
+            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
+    }
+
+    std::vector<IGES_ENTITY_144*> surf;
+
+    if( 1 )
+    {
+        if( !otln.GetTrimmedPlane( &model, error, surf, BTOP )
+            || !otln.GetTrimmedPlane( &model, error, surf, BBOT ) )
+        {
+            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+            return -1;
+        }
+    }
+    else
+    {
+        if( !otln.GetTrimmedPlane( &model, error, surf, BTOP ) )
+        {
+            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+            return -1;
+        }
+    }
+
+    model.Write( "test_c-c1.igs", true );
     return 0;
 }

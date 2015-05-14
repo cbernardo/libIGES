@@ -2389,8 +2389,11 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
         }
     }
 
+    int acc = 0;
     while( sSeg != eSeg )
     {
+        cout << "XXX: adding segment #" << (++acc) << " of " << msegments.size() << "\n";
+
         if( !(*sSeg)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
             mBottomLeft.y, mTopRight.y, aHeight ) )
         {
@@ -2416,6 +2419,7 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
 
         ++sSeg;
     }
+    cout << "XXX: total curves in outline: " << bcurves.size() << "\n";
 
     // stuff contents of ncurves, bcurves, and isurf->GetPTS() into ENTITY 142
     IGES_ENTITY_142* scurve;    // Curve on Surface
@@ -2453,7 +2457,6 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
         ++sBC;
     }
 
-
     list<IGES_CURVE*>::iterator sNC = ncurves.begin();
     list<IGES_CURVE*>::iterator eNC = ncurves.end();
 
@@ -2473,16 +2476,24 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
         ++sNC;
     }
 
-    if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-        || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+    // XXX - setting BPTR
+    scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
+    scurve->CRTN = 1;
+    scurve->PREF = 1;
+
+    if( 0 )
     {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] could not add composite curves to curve on surface";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
+        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add composite curves to curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
+        }
     }
 
     if( !plane->SetPTO( scurve ) )
@@ -2500,8 +2511,10 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
     list<IGES_GEOM_OUTLINE*>::iterator sCO = mcutouts.begin();
     list<IGES_GEOM_OUTLINE*>::iterator eCO = mcutouts.end();
 
+    acc = 0;
     while( sCO != eCO )
     {
+        cout << "XXX: adding irregular cutout #" << (++acc) << "\n";
         if( !newEnt142( aModel, &scurve ) )
         {
             ostringstream msg;
@@ -2515,6 +2528,8 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
 
         bcurves.clear();
         ncurves.clear();
+        scurve->CRTN = 1;
+        scurve->PREF = 1;
 
         for( int i = 0; i < 2; ++i )
         {
@@ -2601,16 +2616,20 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
             ++sNC;
         }
 
-        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+        scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
+        if( 0 ) // XXX -
         {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add composite curves to curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
+            if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+                || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add composite curves to curve on surface";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
         }
 
         if( !plane->AddPTI( scurve ) )
@@ -2631,8 +2650,10 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
     list<IGES_GEOM_SEGMENT*>::iterator sDH = mholes.begin();
     list<IGES_GEOM_SEGMENT*>::iterator eDH = mholes.end();
 
+    acc = 0;
     while( sDH != eDH )
     {
+        cout << "XXX: adding circular cutout #" << (++acc) << "\n";
         if( !newEnt142( aModel, &scurve ) )
         {
             ostringstream msg;
@@ -2646,6 +2667,8 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
 
         bcurves.clear();
         ncurves.clear();
+        scurve->CRTN = 1;
+        scurve->PREF = 1;
 
         for( int i = 0; i < 2; ++i )
         {
@@ -2724,16 +2747,20 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
             ++sNC;
         }
 
-        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+        scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
+        if( 0 ) // XXX -
         {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add composite curves to curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
+            if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+                || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
+            {
+                ostringstream msg;
+                GEOM_ERR( msg );
+                msg << "[ERROR] could not add composite curves to curve on surface";
+                ERRMSG << msg.str() << "\n";
+                errors.push_back( msg.str() );
+                error = true;
+                return false;
+            }
         }
 
         if( !plane->AddPTI( scurve ) )

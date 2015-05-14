@@ -2232,6 +2232,8 @@ bool IGES_GEOM_SEGMENT::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aC
 
 bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
 {
+    return true;    // XXX - TEST ONLY
+    // XXX - BUG: ensure correct behavior for a CW arc
     // note: we must be sensitive to whether the arc is CW or CCW
 
     int na = 0; // number of arcs (and transforms if we have a CW arc)
@@ -2677,10 +2679,16 @@ bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurv
     {
         ptArc[0] = mstart;
         ptArc[1] = mend;
+        cout << "XXX: mstart: " << mstart.x << ", " << mstart.y << "\n";
+        cout << "XXX: mend  : " << mend.x << ", " << mend.y << "\n";
+        cout << "XXX: center: " << mcenter.x << ", " << mcenter.y << "\n";
+
+        cout << "XXX: old mstart: " << (ptArc[0].x -offX)*aScale << ", " << (ptArc[0].y -offY)*aScale << ", " << ptArc[0].z << "\n";
 
         ptArc[0].x = ( mcenter.x - ptArc[0].x ) * aScale;
         ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
         ptArc[0].z = zHeight;
+        cout << "XXX: new mstart: " << ptArc[0].x << ", " << ptArc[0].y << ", " << ptArc[0].z << "\n";
 
         ptArc[1].x = ( mcenter.x - ptArc[1].x ) * aScale;
         ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
@@ -2708,13 +2716,17 @@ bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurv
         ptArc[0] = mstart;
         ptArc[1] = mend;
 
-        ptArc[0].x = ( ( 2.0 * mcenter.x - ptArc[0].x ) - offX ) * aScale;
+        ptArc[0].x = ( ptArc[0].x - offX ) * aScale;
         ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
         ptArc[0].z = zHeight;
 
-        ptArc[1].x = ( ( 2.0 * mcenter.x - ptArc[1].x ) - offX ) * aScale;
+        ptArc[1].x = ( ptArc[1].x - offX ) * aScale;
         ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
         ptArc[1].z = zHeight;
+
+        cpt[0] = ( mcenter.x - offX ) * aScale;
+        cpt[1] = ( mcenter.y - offY ) * aScale;
+        cpt[2] = zHeight;
 
         if( sAng > M_PI )
         {

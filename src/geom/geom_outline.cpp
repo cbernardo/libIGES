@@ -2306,15 +2306,19 @@ void IGES_GEOM_OUTLINE::adjustBoundingBox( void )
     int dy = (int)maxY - (int)minY;
 
     if( dx % 2 )
-        maxX += 1.0;
+        dx += 1;
 
     if( dy % 2 )
-        maxY += 1.0;
+        dy += 1;
+
+    // Ensure that the scaling remains the same in both dimensions
+    // otherwise Curve on Surface calculations will become distorted.
+    double dv = max( dx, dy );
 
     mBottomLeft.x = minX;
     mBottomLeft.y = minY;
-    mTopRight.x = maxX;
-    mTopRight.y = maxY;
+    mTopRight.x = minX + dv;
+    mTopRight.y = minY + dv;
 
     return;
 }

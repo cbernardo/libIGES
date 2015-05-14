@@ -161,7 +161,7 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
     if( ang2 < ang1 )
         ang2 += 2.0 * M_PI;
 
-    if( ang1 < 0 )
+    if( ang1 < 0.0 )
     {
         // range of angles will be > M_PI .. < 4*M_PI
         ang1 += 2.0 * M_PI;
@@ -676,7 +676,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     iarc[0]->yEnd = arcs[2].y;
 
     iarc[1]->zOffset = bot;
-    iarc[1]->xCenter = 0;
+    iarc[1]->xCenter = 0.0;
     iarc[1]->yCenter = arcs[0].y;
     iarc[1]->xStart = arcs[0].x - arcs[2].x;
     iarc[1]->yStart = arcs[2].y;
@@ -695,7 +695,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         iarc[2]->yEnd = arcs[3].y;
 
         iarc[3]->zOffset = bot;
-        iarc[3]->xCenter = 0;
+        iarc[3]->xCenter = 0.0;
         iarc[3]->yCenter = arcs[0].y;
         iarc[3]->xStart = arcs[0].x - arcs[3].x;
         iarc[3]->yStart = arcs[3].y;
@@ -715,7 +715,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         iarc[4]->yEnd = arcs[4].y;
 
         iarc[5]->zOffset = bot;
-        iarc[5]->xCenter = 0;
+        iarc[5]->xCenter = 0.0;
         iarc[5]->yCenter = arcs[0].y;
         iarc[5]->xStart = arcs[0].x - arcs[4].x;
         iarc[5]->yStart = arcs[4].y;

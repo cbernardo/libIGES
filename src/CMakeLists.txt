@@ -115,8 +115,13 @@ add_executable( olntest
     "${LIBIGES_SOURCE_DIR}/tests/test_outline.cpp"
     )
 
+add_executable( planetest
+    "${LIBIGES_SOURCE_DIR}/tests/test_plane.cpp"
+    )
+
 target_link_libraries( readtest iges )
 target_link_libraries( mergetest iges )
 target_link_libraries( curvetest iges )
 target_link_libraries( segtest iges )
 target_link_libraries( olntest iges )
+target_link_libraries( planetest iges )

@@ -88,6 +88,18 @@ private:
     bool getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
     bool getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight );
 
+    // routines to create curves suitable as subordinates to the BPTR of
+    // a trimmed parametric surface
+    bool copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                    double offX, double offY, double aScale,
+                    double zHeight );
+    bool copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                 double offX, double offY, double aScale,
+                 double zHeight );
+    bool copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                  double offX, double offY, double aScale,
+                  double zHeight );
+
 public: // XXX- restore to protected
     IGES_SEGTYPE getSegType( void ) const;
     double getRadius( void ) const;
@@ -198,7 +210,7 @@ public:
     // 2. The plane must encompass all points in the curve or else the
     //    operation shall fail since an out-of-bounds parameter would be
     //    calculated.
-    bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
+    bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
         double aMinX, double aMaxX, double aMinY, double aMaxY,
         double zHeight );
 

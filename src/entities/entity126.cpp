@@ -637,7 +637,13 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     {
         if( !CheckNormal( tX, tY, tZ ) )
         {
-
+            ERRMSG << "\n + [INFO] bad normal\n";
+            delete [] knots;
+            knots = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
+            pdout.clear();
+            return false;
         }
 
         vnorm.x = tX;

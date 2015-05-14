@@ -77,7 +77,7 @@ bool CheckNormal( double& X, double &Y, double& Z )
 {
     double dN = X*X + Y*Y + Z*Z;
 
-    if( dN < 1e-6 )
+    if( dN < 1e-12 )
     {
         ERRMSG << "\n + [INFO] bad vector (cannot be normalized)\n";
         return false;
@@ -85,7 +85,7 @@ bool CheckNormal( double& X, double &Y, double& Z )
 
     double dV = dN - 1.0;
 
-    if( dV < -1e-6 || dV > 1e-6 )
+    if( dV < -1e-8 || dV > 1e-8 )
     {
         ERRMSG << "\n + [INFO] renormalizing unit vector\n";
         dV = sqrt(dN);

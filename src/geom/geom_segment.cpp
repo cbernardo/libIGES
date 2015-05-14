@@ -73,6 +73,25 @@ static bool newTx124( IGES* aModel, IGES_ENTITY_124** tp )
 }
 
 
+static bool newArc126( IGES* aModel, IGES_ENTITY_126** ap )
+{
+    IGES_ENTITY* ep;
+
+    if( !aModel->NewEntity( ENT_NURBS_CURVE, &ep ) )
+        return false;
+
+    *ap = dynamic_cast<IGES_ENTITY_126*>( ep );
+
+    if( !(*ap) )
+    {
+        aModel->DelEntity( ep );
+        return false;
+    }
+
+    return true;
+}
+
+
 IGES_GEOM_SEGMENT::IGES_GEOM_SEGMENT()
 {
     init();
@@ -213,6 +232,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
     return true;
 }
 
+
 double IGES_GEOM_SEGMENT::GetLength( void )
 {
     switch( msegtype )
@@ -240,6 +260,7 @@ double IGES_GEOM_SEGMENT::GetLength( void )
 
     return 0.0;
 }
+
 
 // calculate intersections with another segment (list of points)
 bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
@@ -423,12 +444,44 @@ bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves
 // as subordinates to the BPTR of a Trimmed Parametric Surface. It is up to the
 // user to determine whether these curves shall be part of a loop consisting of
 // multiple segments.
-bool IGES_GEOM_SEGMENT::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*> aCurves,
+bool IGES_GEOM_SEGMENT::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                         double aMinX, double aMaxX, double aMinY, double aMaxY,
                         double zHeight )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    double scale = 1.0 / ( aMaxX - aMinX ); // scale factor (must be same for X and Y axes)
+    bool ok;
+
+    switch( msegtype )
+    {
+        case IGES_SEGTYPE_CIRCLE:
+            ok = copCircle( aModel, aCurves, aMinX, aMinY, scale, zHeight );
+            break;
+
+        case IGES_SEGTYPE_ARC:
+            ok = copArc( aModel, aCurves, aMinX, aMinY, scale, zHeight );
+            break;
+
+        case IGES_SEGTYPE_LINE:
+            ok = copLine( aModel, aCurves, aMinX, aMinY, scale, zHeight );
+            break;
+
+        default:
+            do
+            {
+                ERRMSG << "\n + [INFO] invalid segment type: " << msegtype << "\n";
+                return false;
+            } while( 0 );
+
+            break;
+    }
+
+    if( !ok )
+    {
+        ERRMSG << "\n + [INFO] failure; see messages above\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -2502,5 +2555,435 @@ bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCur
 
     aCurves.push_back( cp );
 
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                                   double offX, double offY, double aScale,
+                                   double zHeight )
+{
+    IGES_ENTITY_126* cp[2];
+
+    for( int i = 0; i < 2; ++ i )
+    {
+        if( !newArc126( aModel, &cp[i] ) )
+        {
+            for( int j = 0; j < i; ++j )
+                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+            ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
+            return false;
+        }
+    }
+
+    double axis[3] = { 0.0, 0.0, 1.0 }; // normal to the plane of the arc
+    double startp[3];
+    double centrp[3];
+    centrp[0] = ( mcenter.x - offX ) * aScale;
+    centrp[1] = ( mcenter.y - offY ) * aScale;
+    centrp[2] = zHeight;
+    SISLCurve* pCurve[2] = { NULL, NULL };
+    int stat = 0;
+
+    for( int i = 0; i < 2; ++i )
+    {
+        if( 0 == i )
+        {
+            startp[0] = centrp[0] + mradius * aScale;
+            startp[1] = centrp[1];
+            startp[2] = centrp[2];
+        }
+        else
+        {
+            startp[0] = centrp[0] - mradius * aScale;
+            startp[1] = centrp[1];
+            startp[2] = centrp[2];
+        }
+
+        s1303( startp, 1e-8, M_PI, centrp, axis, 3, &pCurve[i], &stat );
+
+        switch( stat )
+        {
+            case 0:
+                break;
+
+            case 1:
+                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS arc\n";
+                stat = 0;
+                break;
+
+            default:
+                for( int j = 0; j < i; ++j )
+                    freeCurve( pCurve[j] );
+
+                for( int j = 0; j < 2; ++j )
+                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+                ERRMSG << "\n + [ERROR] could not create NURBS arc\n";
+                return false;
+                break;
+        }
+    }
+
+    for( int i = 0; i < 2; ++i )
+    {
+        if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
+            pCurve[i]->ecoef, false ) )
+        {
+            for( int j = 0; j < 2; ++j )
+            {
+                freeCurve( pCurve[j] );
+                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+            }
+
+            ERRMSG << "\n + [WARNING] problems setting data in NURBS arc\n";
+            return false;
+        }
+    }
+
+    for( int i = 0; i < 2; ++i )
+    {
+        freeCurve( pCurve[i] );
+        aCurves.push_back( cp[i] );
+    }
+
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                                double offX, double offY, double aScale,
+                                double zHeight )
+{
+    IGES_ENTITY_126* cp[3]; // we may have up to 3 entities to describe a single arc
+    IGES_ENTITY_124* tx[3]; // each arc segment must have a Transform if the arc is CW
+
+    for( int i = 0; i < 3; ++i )
+    {
+        cp[i] = NULL;
+        tx[i] = NULL;
+    }
+
+    double sAng;
+    double eAng;
+    IGES_POINT ptArc[2];    // start and end point of the arc; contingent on direction
+    IGES_POINT ptC;         // true center point; required for calculations for CW arcs
+    double angles[3];       // up to 3 subtended angles
+    double spt[3][3];       // start points for each angle
+    double cpt[3];          // center point for all angles
+
+    if( mCWArc )
+    {
+        ptArc[0] = mstart;
+        ptArc[1] = mend;
+
+        ptArc[0].x = ( mcenter.x - ptArc[0].x ) * aScale;
+        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
+        ptArc[0].z = zHeight;
+
+        ptArc[1].x = ( mcenter.x - ptArc[1].x ) * aScale;
+        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
+        ptArc[1].z = zHeight;
+
+        cpt[0] = 0.0;
+        cpt[1] = ( mcenter.y - offY ) * aScale;
+        cpt[2] = zHeight;
+
+        ptC = mcenter;
+        ptC.x = ( ptC.x - offX ) * aScale;
+        ptC.y = ( ptC.y - offY ) * aScale;
+        ptC.z = zHeight;
+
+        sAng = atan2( ptArc[0].y - cpt[1], ptArc[0].x );
+        eAng = atan2( ptArc[1].y - cpt[1], ptArc[1].x );
+
+        if( eAng < sAng )
+            eAng += 2.0 * M_PI;
+    }
+    else
+    {
+        sAng = msang;
+        eAng = meang;
+        ptArc[0] = mstart;
+        ptArc[1] = mend;
+
+        ptArc[0].x = ( ( 2.0 * mcenter.x - ptArc[0].x ) - offX ) * aScale;
+        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
+        ptArc[0].z = zHeight;
+
+        ptArc[1].x = ( ( 2.0 * mcenter.x - ptArc[1].x ) - offX ) * aScale;
+        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
+        ptArc[1].z = zHeight;
+
+        if( sAng > M_PI )
+        {
+            sAng -= 2.0 * M_PI;
+            eAng -= 2.0 * M_PI;
+        }
+    }
+
+    int na = 0; // number of arcs in the curve
+    spt[0][0] = ptArc[0].x;
+    spt[0][1] = ptArc[0].y;
+    spt[0][2] = ptArc[0].z;
+
+    if( sAng < 0.0 )
+    {
+        // range of angles will be > -M_PI .. < 2*M_PI
+        if( eAng <= 0.0 )
+        {
+            angles[0] = eAng - sAng;
+            na = 1;
+        }
+        else
+        {
+            angles[0] = -sAng;
+
+            spt[1][0] = cpt[0] + mradius * aScale;
+            spt[1][1] = cpt[1];
+            spt[1][2] = cpt[2];
+
+            if( eAng <= M_PI )
+            {
+                angles[1] = eAng;
+                na = 2;
+            }
+            else
+            {
+                angles[1] = M_PI;
+                angles[2] = eAng - M_PI;
+                spt[2][0] = cpt[0] - mradius * aScale;
+                spt[2][1] = cpt[1];
+                spt[2][2] = cpt[2];
+                na = 3;
+            }
+        }
+    }
+    else
+    {
+        // range of angles will be >= 0 .. < 3*M_PI
+        if( eAng <= M_PI || ( sAng >= M_PI && eAng <= 2.0 * M_PI ) )
+        {
+            angles[0] = eAng - sAng;
+            na = 1;
+        }
+        else
+        {
+            if( sAng < M_PI )
+            {
+                // CASE: sAng < M_PI && eAng > M_PI
+                angles[0] = M_PI - sAng;
+                spt[1][0] = cpt[0] - mradius * aScale;
+                spt[1][1] = cpt[1];
+                spt[1][2] = cpt[2];
+
+                if( eAng <= 2.0 * M_PI )
+                {
+                    angles[1] = eAng - M_PI;
+                    na = 2;
+                }
+                else
+                {
+                    angles[1] = M_PI;
+                    angles[2] = eAng - 2.0 * M_PI;
+                    spt[1][0] = cpt[0] + mradius * aScale;
+                    spt[1][1] = cpt[1];
+                    spt[1][2] = cpt[2];
+                    na = 3;
+                }
+            }
+            else
+            {
+                // CASE: sAng == M_PI && eAng > 2.0 * M_PI
+                if( eAng <= 2.0 * M_PI )
+                {
+                    angles[0] = eAng - sAng;
+                    na = 1;
+                }
+                else
+                {
+                    angles[0] = 2.0 * M_PI - sAng;
+                    angles[1] = eAng - 2.0 * M_PI;
+                    na = 2;
+                }
+            }
+        }
+    }
+
+    for( int i = 0; i < na; ++ i )
+    {
+        if( !newArc126( aModel, &cp[i] ) )
+        {
+            for( int j = 0; j < i; ++j )
+            {
+                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+                if( tx[j] )
+                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
+
+            }
+
+            ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
+            return false;
+        }
+
+        if( mCWArc )
+        {
+            if( !newTx124( aModel, &tx[i] ) )
+            {
+                for( int j = 0; j < i; ++j )
+                {
+                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+                    if( tx[j] )
+                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
+
+                }
+
+                aModel->DelEntity( (IGES_ENTITY*)(cp[i]) );
+                ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
+                return false;
+            }
+            else
+            {
+                tx[i]->T.T.x = ptC.x;
+                tx[i]->T.T.z = 2.0 * zHeight;
+                tx[i]->T.R.v[0][0] = -1.0;
+                tx[i]->T.R.v[2][2] = -1.0;
+                tx[i]->SetEntityForm( 1 );
+                cp[i]->SetTransform( tx[i] );
+            }
+        }
+    }
+
+    double axis[3] = { 0.0, 0.0, 1.0 }; // normal to the plane of the arc
+    double startp[3];
+    SISLCurve* pCurve[3] = { NULL, NULL, NULL };
+    int stat = 0;
+
+    // set up the NURBS data
+    for( int i = 0; i < na; ++i )
+    {
+        startp[0] = spt[i][0];
+        startp[1] = spt[i][1];
+        startp[2] = spt[i][2];
+
+        s1303( startp, 1e-8, angles[i], cpt, axis, 3, &pCurve[i], &stat );
+
+        switch( stat )
+        {
+            case 0:
+                break;
+
+            case 1:
+                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS arc\n";
+                stat = 0;
+                break;
+
+            default:
+                for( int j = 0; j < i; ++j )
+                    freeCurve( pCurve[j] );
+
+                for( int j = 0; j < na; ++j )
+                {
+                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+                    if( tx[j] )
+                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
+
+                }
+
+                ERRMSG << "\n + [ERROR] could not create NURBS arc\n";
+                return false;
+                break;
+        }
+    }
+
+    for( int i = 0; i < na; ++i )
+    {
+        if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
+            pCurve[i]->ecoef, false ) )
+        {
+            for( int j = 0; j < na; ++j )
+            {
+                if( pCurve[j] )
+                    freeCurve( pCurve[j] );
+
+                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
+
+                if( tx[j] )
+                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
+
+            }
+
+            ERRMSG << "\n + [WARNING] problems setting data in NURBS arc\n";
+            return false;
+        }
+    }
+
+    for( int i = 0; i < na; ++i )
+    {
+        freeCurve( pCurve[i] );
+        aCurves.push_back( cp[i] );
+    }
+
+    return true;
+}
+
+
+bool IGES_GEOM_SEGMENT::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+                                 double offX, double offY, double aScale,
+                                 double zHeight )
+{
+    IGES_ENTITY_126* cp;
+
+    if( !newArc126( aModel, &cp ) )
+    {
+        ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
+        return false;
+    }
+
+    double startp[3];
+    double endp[3];
+    SISLCurve* pCurve = NULL;
+
+    startp[0] = (mstart.x - offX) * aScale;
+    startp[1] = (mstart.y - offY) * aScale;
+    startp[2] = zHeight;
+    endp[0] = (mend.x - offX) * aScale;
+    endp[1] = (mend.y - offY) * aScale;
+    endp[2] = zHeight;
+
+    double epar = 1e-8;
+    int stat = 0;
+    s1602( startp, endp, 2, 3, 0.0, &epar, &pCurve, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified problems creating NURBS curve\n";
+            stat = 0;
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] could not create NURBS curve\n";
+            return false;
+            break;
+    }
+
+    if( !cp->SetNURBSData( pCurve->in, pCurve->ik, pCurve->et, pCurve->ecoef, false ) )
+    {
+        ERRMSG << "\n + [WARNING] problems setting data in NURBS curve\n";
+        aModel->DelEntity( (IGES_ENTITY*)cp );
+        freeCurve( pCurve );
+        return false;
+    }
+
+    freeCurve( pCurve );
+    aCurves.push_back( cp );
     return true;
 }

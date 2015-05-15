@@ -69,7 +69,6 @@ private:
 protected:
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
     // note: IGES specifies knots, weights, and control points
@@ -95,7 +94,8 @@ protected:
 public:
     IGES_ENTITY_126( IGES* aParent );
     ~IGES_ENTITY_126();
-
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    
     // virtual functions inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

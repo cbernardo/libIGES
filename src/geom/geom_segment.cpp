@@ -2232,19 +2232,35 @@ bool IGES_GEOM_SEGMENT::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aC
 
 bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
 {
-    return true;    // XXX - TEST ONLY
-    // XXX - BUG: ensure correct behavior for a CW arc
-    // note: we must be sensitive to whether the arc is CW or CCW
-
     int na = 0; // number of arcs (and transforms if we have a CW arc)
 
     IGES_ENTITY_100* arcs[3];   // the arc may consist of up to 3 segments
     IGES_ENTITY_124* tx[3];     // for CW arcs each arc has a corresponding transform
 
-    double a0 = getStartAngle();
-    double a1 = getEndAngle();
-    IGES_POINT p0 = getStart();
-    IGES_POINT p1 = getEnd();
+    double a0;
+    double a1;
+    IGES_POINT p0 = mstart;
+    IGES_POINT p1 = mend;
+    IGES_POINT pc = mcenter;
+
+    if( mCWArc )
+    {
+        p0.x = mcenter.x - p0.x;
+        p1.x = mcenter.x - p1.x;
+        pc.x = 0.0;
+
+        a0 = atan2( p0.y - pc.y, p0.x );
+        a1 = atan2( p1.y - pc.y, p1.x );
+
+        if( a1 < a0 )
+            a1 += 2.0 * M_PI;
+
+    }
+    else
+    {
+        a0 = msang;
+        a1 = meang;
+    }
 
     if( a0 >= 0.0 && a0 < M_PI )
     {
@@ -2257,8 +2273,8 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
             arcs[0]->xEnd = p1.x;
@@ -2282,18 +2298,18 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
                 }
 
                 arcs[0]->zOffset = zHeight;
-                arcs[0]->xCenter = mcenter.x;
-                arcs[0]->yCenter = mcenter.y;
+                arcs[0]->xCenter = pc.x;
+                arcs[0]->yCenter = pc.y;
                 arcs[0]->xStart = p0.x;
                 arcs[0]->yStart = p0.y;
-                arcs[0]->xEnd = mcenter.x - mradius;
-                arcs[0]->yEnd = mcenter.y;
+                arcs[0]->xEnd = pc.x - mradius;
+                arcs[0]->yEnd = pc.y;
 
                 arcs[1]->zOffset = zHeight;
-                arcs[1]->xCenter = mcenter.x;
-                arcs[1]->yCenter = mcenter.y;
-                arcs[1]->xStart = mcenter.x - mradius;
-                arcs[1]->yStart = mcenter.y;
+                arcs[1]->xCenter = pc.x;
+                arcs[1]->yCenter = pc.y;
+                arcs[1]->xStart = pc.x - mradius;
+                arcs[1]->yStart = pc.y;
                 arcs[1]->xEnd = p1.x;
                 arcs[1]->yEnd = p1.y;
 
@@ -2314,26 +2330,26 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
                 }
 
                 arcs[0]->zOffset = zHeight;
-                arcs[0]->xCenter = mcenter.x;
-                arcs[0]->yCenter = mcenter.y;
+                arcs[0]->xCenter = pc.x;
+                arcs[0]->yCenter = pc.y;
                 arcs[0]->xStart = p0.x;
                 arcs[0]->yStart = p0.y;
-                arcs[0]->xEnd = mcenter.x - mradius;
-                arcs[0]->yEnd = mcenter.y;
+                arcs[0]->xEnd = pc.x - mradius;
+                arcs[0]->yEnd = pc.y;
 
                 arcs[1]->zOffset = zHeight;
-                arcs[1]->xCenter = mcenter.x;
-                arcs[1]->yCenter = mcenter.y;
-                arcs[1]->xStart = mcenter.x - mradius;
-                arcs[1]->yStart = mcenter.y;
-                arcs[1]->xEnd = mcenter.x + mradius;
-                arcs[1]->yEnd = mcenter.y;
+                arcs[1]->xCenter = pc.x;
+                arcs[1]->yCenter = pc.y;
+                arcs[1]->xStart = pc.x - mradius;
+                arcs[1]->yStart = pc.y;
+                arcs[1]->xEnd = pc.x + mradius;
+                arcs[1]->yEnd = pc.y;
 
                 arcs[2]->zOffset = zHeight;
-                arcs[2]->xCenter = mcenter.x;
-                arcs[2]->yCenter = mcenter.y;
-                arcs[2]->xStart = mcenter.x + mradius;
-                arcs[2]->yStart = mcenter.y;
+                arcs[2]->xCenter = pc.x;
+                arcs[2]->yCenter = pc.y;
+                arcs[2]->xStart = pc.x + mradius;
+                arcs[2]->yStart = pc.y;
                 arcs[2]->xEnd = p1.x;
                 arcs[2]->yEnd = p1.y;
 
@@ -2353,8 +2369,8 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
             arcs[0]->xEnd = p1.x;
@@ -2376,18 +2392,18 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = mcenter.x + mradius;
-            arcs[0]->yEnd = mcenter.y;
+            arcs[0]->xEnd = pc.x + mradius;
+            arcs[0]->yEnd = pc.y;
 
             arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = mcenter.x;
-            arcs[1]->yCenter = mcenter.y;
-            arcs[1]->xStart = mcenter.x + mradius;
-            arcs[1]->yStart = mcenter.y;
+            arcs[1]->xCenter = pc.x;
+            arcs[1]->yCenter = pc.y;
+            arcs[1]->xStart = pc.x + mradius;
+            arcs[1]->yStart = pc.y;
             arcs[1]->xEnd = p1.x;
             arcs[1]->yEnd = p1.y;
 
@@ -2405,8 +2421,8 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
             arcs[0]->xEnd = p1.x;
@@ -2428,18 +2444,18 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = mcenter.x + mradius;
-            arcs[0]->yEnd = mcenter.y;
+            arcs[0]->xEnd = pc.x + mradius;
+            arcs[0]->yEnd = pc.y;
 
             arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = mcenter.x;
-            arcs[1]->yCenter = mcenter.y;
-            arcs[1]->xStart = mcenter.x + mradius;
-            arcs[1]->yStart = mcenter.y;
+            arcs[1]->xCenter = pc.x;
+            arcs[1]->yCenter = pc.y;
+            arcs[1]->xStart = pc.x + mradius;
+            arcs[1]->yStart = pc.y;
             arcs[1]->xEnd = p1.x;
             arcs[1]->yEnd = p1.y;
 
@@ -2460,26 +2476,26 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
             }
 
             arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = mcenter.x;
-            arcs[0]->yCenter = mcenter.y;
+            arcs[0]->xCenter = pc.x;
+            arcs[0]->yCenter = pc.y;
             arcs[0]->xStart = p0.x;
             arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = mcenter.x + mradius;
-            arcs[0]->yEnd = mcenter.y;
+            arcs[0]->xEnd = pc.x + mradius;
+            arcs[0]->yEnd = pc.y;
 
             arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = mcenter.x;
-            arcs[1]->yCenter = mcenter.y;
-            arcs[1]->xStart = mcenter.x + mradius;
-            arcs[1]->yStart = mcenter.y;
-            arcs[1]->xEnd = mcenter.x - mradius;
-            arcs[1]->yEnd = mcenter.y;
+            arcs[1]->xCenter = pc.x;
+            arcs[1]->yCenter = pc.y;
+            arcs[1]->xStart = pc.x + mradius;
+            arcs[1]->yStart = pc.y;
+            arcs[1]->xEnd = pc.x - mradius;
+            arcs[1]->yEnd = pc.y;
 
             arcs[2]->zOffset = zHeight;
-            arcs[2]->xCenter = mcenter.x;
-            arcs[2]->yCenter = mcenter.y;
-            arcs[2]->xStart = mcenter.x - mradius;
-            arcs[2]->yStart = mcenter.y;
+            arcs[2]->xCenter = pc.x;
+            arcs[2]->yCenter = pc.y;
+            arcs[2]->xStart = pc.x - mradius;
+            arcs[2]->yStart = pc.y;
             arcs[2]->xEnd = p1.x;
             arcs[2]->yEnd = p1.y;
 
@@ -2498,7 +2514,7 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
                 return false;
             }
 
-            tx[i]->T.T.x = arcs[i]->xCenter;
+            tx[i]->T.T.x = mcenter.x;
             tx[i]->T.T.z = 2.0 * zHeight;
             tx[i]->T.R.v[0][0] = -1.0;
             tx[i]->T.R.v[2][2] = -1.0;
@@ -2509,13 +2525,7 @@ bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurv
                 ERRMSG << "\n + [INFO] could not set transform on arc\n";
                 return false;
             }
-
-            // note: since curves appear in CCW order we must swap the order
-            for( int i = (na - 1); i > 0; --i )
-                aCurves.push_back( (IGES_CURVE*)(arcs[i]) );
         }
-
-        return true;
     }
 
     for( int i = 0; i < na; ++i )
@@ -2531,7 +2541,7 @@ bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCur
     IGES_ENTITY_110* lp;
     IGES_CURVE*      cp;
 
-    if( !aModel->NewEntity( ENT_CIRCULAR_ARC, &ep ) )
+    if( !aModel->NewEntity( ENT_LINE, &ep ) )
     {
         ERRMSG << "\n + [INFO] could not instantiate IGES line\n";
         return false;
@@ -2546,6 +2556,13 @@ bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCur
         return false;
     }
 
+    lp->X1 = mstart.x;
+    lp->Y1 = mstart.y;
+    lp->Z1 = zHeight;
+    lp->X2 = mend.x;
+    lp->Y2 = mend.y;
+    lp->Z2 = zHeight;
+
     cp = dynamic_cast<IGES_CURVE*>(ep);
 
     if( !cp )
@@ -2556,7 +2573,6 @@ bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCur
     }
 
     aCurves.push_back( cp );
-
     return true;
 }
 
@@ -2799,9 +2815,9 @@ bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurv
                 {
                     angles[1] = M_PI;
                     angles[2] = eAng - 2.0 * M_PI;
-                    spt[1][0] = cpt[0] + mradius * aScale;
-                    spt[1][1] = cpt[1];
-                    spt[1][2] = cpt[2];
+                    spt[2][0] = cpt[0] + mradius * aScale;
+                    spt[2][1] = cpt[1];
+                    spt[2][2] = cpt[2];
                     na = 3;
                 }
             }
@@ -2817,6 +2833,9 @@ bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurv
                 {
                     angles[0] = 2.0 * M_PI - sAng;
                     angles[1] = eAng - 2.0 * M_PI;
+                    spt[1][0] = cpt[0] + mradius * aScale;
+                    spt[1][1] = cpt[1];
+                    spt[1][2] = cpt[2];
                     na = 2;
                 }
             }
@@ -2967,7 +2986,7 @@ bool IGES_GEOM_SEGMENT::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCur
     endp[1] = (mend.y - offY) * aScale;
     endp[2] = zHeight;
 
-    double epar = 1e-8;
+    double epar;
     int stat = 0;
     s1602( startp, endp, 2, 3, 0.0, &epar, &pCurve, &stat );
 

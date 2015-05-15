@@ -68,14 +68,14 @@ protected:
     std::list<IGES_ENTITY_142*>PTI; // inner cutouts
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
 public:
     IGES_ENTITY_144( IGES* aParent );
     ~IGES_ENTITY_144();
-
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

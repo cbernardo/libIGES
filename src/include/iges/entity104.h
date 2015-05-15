@@ -64,13 +64,13 @@ class IGES_ENTITY_104 : public IGES_CURVE
 protected:
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
     // XXX - TO BE IMPLEMENTED
 
 public:
     // Inherited virtual functions
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
     virtual bool AddReference(IGES_ENTITY* aParentEntity);

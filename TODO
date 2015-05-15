@@ -38,7 +38,15 @@ Curve on Surface (E142).
    have been established; this will ensure that ancestors can be
    correctly traversed.
 
-7. Caveats:
+7. [BUG] On reading a file E102::Associate() may fail if the referenced
+   curve has an associated transform and has not invoked Associate().
+   To fix this requires setting an "assoc" flag of some sort and all
+   entities whose Associate() routines rely on subentities being
+   correctly associated must invoke Associate() on those entities
+   before invoking any other routines on them.
+
+**** GENERAL ****
+Caveats:
 	To keep the code as simple as possible a number of constraints
    are applied. Without enforcing various constraints we would have to
    add substantial code which would make this library more like a full

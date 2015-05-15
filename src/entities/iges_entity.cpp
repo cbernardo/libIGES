@@ -43,6 +43,9 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
     // first sequence number of this Directory Entry (0: default = invalid)
     sequenceNumber = 0;
 
+    // flag to indicate if associate() has been invoked
+    massoc = false;
+
     // Entity Type, default = NULL Entity
     entityType = ENT_NULL;
 
@@ -121,9 +124,7 @@ IGES_ENTITY::~IGES_ENTITY()
         while( rbeg != rend )
         {
             if( !(*rbeg)->Unlink( this ) )
-            {
                 ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
-            }
 
             ++rbeg;
         }
@@ -314,7 +315,10 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
     while( bref != eref )
     {
         if( aParentEntity == *bref )
-            return true;
+        {
+            ERRMSG << "\n + [BUG] requested duplicate entry\n";
+            return false;
+        }
 
         ++bref;
     }
@@ -399,6 +403,9 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
     // entities to ensure that there is no data entry for
     // parameters which do not apply. For example, most
     // entities must have 0 for the 'structure' parameter.
+
+    if( massoc )
+        return true;
 
     bool ok = true;
     int idx;
@@ -915,6 +922,9 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
         ++bext;
     }
 
+    if( ok )
+        massoc = true;
+
     return ok;
 }   // associate()
 
@@ -930,6 +940,8 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
     // Read in the basic DE data only; it is the responsibility of
     // the individual entities to impose any further checks on
     // data integrity
+
+    massoc = false;
 
     if( !aRecord )
     {

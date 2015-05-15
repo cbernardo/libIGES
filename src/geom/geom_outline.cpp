@@ -2325,12 +2325,14 @@ void IGES_GEOM_OUTLINE::adjustBoundingBox( void )
 
 
 // retrieve the trimmed parametric surfaces representing the
-// top and bottom planes of the board
+// top or bottom plane of the board
 bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
                       std::vector<IGES_ENTITY_144*>& aSurface,
                       double aHeight )
 {
     error = false;
+
+    calcBoundingBox();
 
     if( !mIsClosed )
     {
@@ -2476,24 +2478,19 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
         ++sNC;
     }
 
-    // XXX - setting BPTR
-    scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
     scurve->CRTN = 1;
     scurve->PREF = 1;
 
-    if( 0 )
+    if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+        || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
     {
-        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add composite curves to curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
+        ostringstream msg;
+        GEOM_ERR( msg );
+        msg << "[ERROR] could not add composite curves to curve on surface";
+        ERRMSG << msg.str() << "\n";
+        errors.push_back( msg.str() );
+        error = true;
+        return false;
     }
 
     if( !plane->SetPTO( scurve ) )
@@ -2616,20 +2613,16 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
             ++sNC;
         }
 
-        scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
-        if( 0 ) // XXX -
+        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
         {
-            if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-                || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add composite curves to curve on surface";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add composite curves to curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
         }
 
         if( !plane->AddPTI( scurve ) )
@@ -2747,20 +2740,16 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
             ++sNC;
         }
 
-        scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] ); // XXX - TEST ONLY
-        if( 0 ) // XXX -
+        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
+            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
         {
-            if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-                || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add composite curves to curve on surface";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not add composite curves to curve on surface";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            error = true;
+            return false;
         }
 
         if( !plane->AddPTI( scurve ) )
@@ -2774,7 +2763,7 @@ bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
             return false;
         }
 
-        ++sCO;
+        ++sDH;
     }
 
     return true;

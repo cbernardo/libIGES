@@ -49,7 +49,6 @@ class IGES_ENTITY_408 : public IGES_ENTITY
 protected:
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
@@ -59,6 +58,7 @@ protected:
 public:
     IGES_ENTITY_408( IGES* aParent );
     virtual ~IGES_ENTITY_408();
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
 
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );

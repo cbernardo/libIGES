@@ -53,14 +53,14 @@ class IGES_ENTITY_314 : public IGES_ENTITY
 protected:
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
 public:
     IGES_ENTITY_314( IGES* aParent );
     virtual ~IGES_ENTITY_314();
-
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

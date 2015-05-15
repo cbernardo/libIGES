@@ -59,7 +59,8 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
         {
             if( !((IGES_ENTITY*)(*rbeg))->DelReference( this ) )
             {
-                ERRMSG << "\n + [BUG] could not delete reference from a child entity\n";
+                ERRMSG << "\n + [BUG] could not delete reference from a child entity (type ";
+                cerr << ((IGES_ENTITY*)(*rbeg))->GetEntityType() << ")\n";
             }
 
             ++rbeg;
@@ -149,6 +150,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         else
         {
             curves.push_back( cp );
+            ((*entities)[iEnt])->associate( entities );
         }
 
         ++bcur;
@@ -399,7 +401,7 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
             if( sp != curves.begin() && sp != (--(curves.end())) )
                 clear_all = true;
 
-            curves.erase( sp );
+            sp = curves.erase( sp );
             break;
         }
 
@@ -409,13 +411,15 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
     if( clear_all )
     {
         sp = curves.begin();
-        sp = curves.end();
+        ep = curves.end();
 
         while( sp != ep )
         {
             (*sp)->DelReference( this );
             ++sp;
         }
+
+        curves.clear();
     }
 
     return true;

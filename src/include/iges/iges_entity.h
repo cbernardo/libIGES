@@ -82,10 +82,7 @@ protected:
 
     friend class IGES;
     int sequenceNumber;     // first sequence number of this Directory Entry
-
-    // associate: associate pointers with other entities after reading all data; retrictions on types
-    //            must be enforced to ensure data integrity and software stability
-    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
+    bool massoc;            // set true after associate() is invoked
 
     // format(&index): prepare data for writing; Parameter Data is formatted using the given index
     //                 and DE items are updated; each Entity must have been previously assigned a
@@ -110,6 +107,10 @@ public:
     IGES_ENTITY(IGES* aParent);
     virtual ~IGES_ENTITY();
 
+    // associate: associate pointers with other entities after reading all data; retrictions on types
+    //            must be enforced to ensure data integrity and software stability
+    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
+    
     // Routines to manage reference deletion
 
     /// remove a child entity from the parent's list

@@ -40,7 +40,7 @@ int test_otln( bool subs, bool primeA );
 
 int main()
 {
-    if( 0 )
+    if( 1 )
     {
         if( test_cc0() )
         {
@@ -49,7 +49,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_cc1() )
         {
@@ -67,7 +67,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_lines() )
         {
@@ -76,7 +76,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( test_addr() )
         {
@@ -85,7 +85,7 @@ int main()
         }
     }
 
-    if( 0 )
+    if( 1 )
     {
         if( 1 )
         {
@@ -178,10 +178,9 @@ int test_arcs( void )
         return -1;
     }
 
-    seg2 = new IGES_GEOM_SEGMENT;
-
     if( 1 )
     {
+        seg2 = new IGES_GEOM_SEGMENT;
         // radius: 1, c(+2,0)
         c2[0].x = 2.0;
         c2[0].y = 0.0;
@@ -381,6 +380,22 @@ int test_arcs( void )
         }
     }
 
+    seg2 = new IGES_GEOM_SEGMENT;
+    // radius: 0.3, c(-0.75,0.75)
+    c2[0].x = -0.75;
+    c2[0].y = 0.75;
+    c2[1].x = -0.6;
+    c2[1].y = 0.75;
+    c2[2].x = -0.6;
+    c2[2].y = 0.75;
+    seg2->SetParams( c2[0], c2[1], c2[2], false );
+
+    if( !otln.AddCutout( seg2, true, error ) )
+    {
+        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        return -1;
+    }
+
     if( !otln.IsContiguous() )
     {
         cout << "* [FAIL]: outline was not contiguous\n";
@@ -458,7 +473,7 @@ int test_lines( void )
     if( 1 )
     {
         // nibble out 8 bits
-        IGES_GEOM_SEGMENT circ;
+        IGES_GEOM_SEGMENT* circ = new IGES_GEOM_SEGMENT;
 
         // radius: 0.5, c(10,10)
         c1[0].x = 10.0;
@@ -466,9 +481,9 @@ int test_lines( void )
         c1[1].x = 10.5;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -480,9 +495,10 @@ int test_lines( void )
         c1[1].x = 1.0;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -494,9 +510,10 @@ int test_lines( void )
         c1[1].x = -8.5;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -508,9 +525,10 @@ int test_lines( void )
         c1[1].x = -8;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -522,9 +540,10 @@ int test_lines( void )
         c1[1].x = -7.5;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -536,9 +555,10 @@ int test_lines( void )
         c1[1].x = 3.0;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -550,9 +570,10 @@ int test_lines( void )
         c1[1].x = 13.5;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -564,9 +585,10 @@ int test_lines( void )
         c1[1].x = 14.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -598,13 +620,22 @@ int test_lines( void )
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 
-    if( !otln.GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+    if( !otln.GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
     {
         cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
         return -1;
     }
 
-    model.Write( "test_oln_lines.igs", true );
+    std::vector<IGES_ENTITY_144*> surf;
+
+    if( !otln.GetTrimmedPlane( &model, error, surf, BTOP )
+        || !otln.GetTrimmedPlane( &model, error, surf, BBOT ) )
+    {
+        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        return -1;
+    }
+
+    model.Write( "test_clines.igs", true );
     return 0;
 }
 
@@ -664,10 +695,12 @@ int test_addr( void )
     }
 
     IGES_POINT c1[2];   // parameters for circles
-    IGES_GEOM_SEGMENT circ;
+    IGES_GEOM_SEGMENT* circ;
 
     if( 1 )
     {
+        circ = new IGES_GEOM_SEGMENT;
+
         // add an equally wide circle to the top part
 
         // radius: 10, c(0,10)
@@ -676,9 +709,9 @@ int test_addr( void )
         c1[1].x = 10.0;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -687,6 +720,8 @@ int test_addr( void )
 
     if( 1 )
     {
+        circ = new IGES_GEOM_SEGMENT;
+
         // add an equally wide circle to the LHS but protruding slightly;
         // the case of an equally wide circle which is slightly sunken
         // is prohibited by the 2-point intersection constraint so we
@@ -697,9 +732,9 @@ int test_addr( void )
         c1[1].x = -2.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -714,9 +749,10 @@ int test_addr( void )
         c1[1].x = 0.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -732,9 +768,10 @@ int test_addr( void )
         c1[1].x = 15.0;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new IGES_GEOM_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -750,13 +787,22 @@ int test_addr( void )
     IGES model;
     std::vector<IGES_ENTITY_144*> res;
 
-    if( !otln.GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+    if( !otln.GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
     {
         cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
         return -1;
     }
 
-    model.Write( "test_oln_addr.igs", true );
+    std::vector<IGES_ENTITY_144*> surf;
+
+    if( !otln.GetTrimmedPlane( &model, error, surf, BTOP )
+        || !otln.GetTrimmedPlane( &model, error, surf, BBOT ) )
+    {
+        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        return -1;
+    }
+
+    model.Write( "test_caddr.igs", true );
     return 0;
 }
 
@@ -927,18 +973,27 @@ int test_otln( bool subs, bool primeA )
         IGES model;
         std::vector<IGES_ENTITY_144*> res;
 
-        if( !otlnA->GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+        if( !otlnA->GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
         {
             cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
+
+        std::vector<IGES_ENTITY_144*> surf;
+
+        if( !otlnA->GetTrimmedPlane( &model, error, surf, BTOP )
+            || !otlnA->GetTrimmedPlane( &model, error, surf, BBOT ) )
+        {
+            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
         }
 
         delete otlnA;
 
         if( subs )
-            model.Write( "test_olnA_sub.igs", true );
+            model.Write( "test_cA_sub.igs", true );
         else
-            model.Write( "test_olnA_add.igs", true );
+            model.Write( "test_cA_add.igs", true );
     }
     else
     {
@@ -992,18 +1047,27 @@ int test_otln( bool subs, bool primeA )
         IGES model;
         std::vector<IGES_ENTITY_144*> res;
 
-        if( !otlnB->GetVerticalSurface( &model, error, res, 0.8, -0.8 ) )
+        if( !otlnB->GetVerticalSurface( &model, error, res, BTOP, BBOT ) )
         {
             cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            return -1;
+        }
+
+        std::vector<IGES_ENTITY_144*> surf;
+
+        if( !otlnB->GetTrimmedPlane( &model, error, surf, BTOP )
+            || !otlnB->GetTrimmedPlane( &model, error, surf, BBOT ) )
+        {
+            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
         }
 
         delete otlnB;
 
         if( subs )
-            model.Write( "test_olnB_sub.igs", true );
+            model.Write( "test_cB_sub.igs", true );
         else
-            model.Write( "test_olnB_add.igs", true );
+            model.Write( "test_cB_add.igs", true );
     }
 
     return 0;
@@ -1167,22 +1231,11 @@ int test_cc1( void )
 
     std::vector<IGES_ENTITY_144*> surf;
 
-    if( 1 )
+    if( !otln.GetTrimmedPlane( &model, error, surf, BTOP )
+        || !otln.GetTrimmedPlane( &model, error, surf, BBOT ) )
     {
-        if( !otln.GetTrimmedPlane( &model, error, surf, BTOP )
-            || !otln.GetTrimmedPlane( &model, error, surf, BBOT ) )
-        {
-            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
-            return -1;
-        }
-    }
-    else
-    {
-        if( !otln.GetTrimmedPlane( &model, error, surf, BTOP ) )
-        {
-            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
-            return -1;
-        }
+        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        return -1;
     }
 
     model.Write( "test_c-c1.igs", true );

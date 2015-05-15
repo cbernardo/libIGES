@@ -808,13 +808,8 @@ bool IGES_ENTITY_126::GetStartPoint( IGES_POINT& pt, bool xform )
     pt.y = vals[1];
     pt.z = vals[2];
 
-    cout << "XXX: (raw point): " << pt.x << ", " << pt.y << ", " << pt.z << "\n";
-
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
-
-    if( xform )
-        cout << "XXX: (new point): " << pt.x << ", " << pt.y << ", " << pt.z << "\n";
 
     return true;
 }

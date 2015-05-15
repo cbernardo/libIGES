@@ -168,7 +168,7 @@ public:
                              double aTopZ, double aBotZ );
 
     // retrieve the trimmed parametric surfaces representing the
-    // top and bottom planes of the board
+    // top or bottom plane of the board
     bool GetTrimmedPlane( IGES* aModel, bool& error,
                           std::vector<IGES_ENTITY_144*>& aSurface,
                           double aHeight );

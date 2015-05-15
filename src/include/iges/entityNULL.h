@@ -61,13 +61,13 @@ protected:
 
     friend class IGES;
     void setEntityType( int aEntityID );
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
 public:
     IGES_ENTITY_NULL( IGES* aParent );
     virtual ~IGES_ENTITY_NULL();
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
 
     int GetTrueEntityType(void)
     {

@@ -55,13 +55,13 @@ class IGES_CURVE : public IGES_ENTITY
 protected:
 
     // members inherited from IGES_ENTITY
-    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
     virtual bool format( int &index ) = 0;
     virtual bool rescale( double sf ) = 0;
 
 public:
     IGES_CURVE( IGES* aParent );
     virtual ~IGES_CURVE();
+    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
 
     // specialized members of this class
     // methods required of parameterized curve entities

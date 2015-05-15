@@ -503,14 +503,27 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 
     double vlim = var / minRes;
 
-    if( vlim < -1.0 )
+    if( vlim < 0.0 )
         vlim = -vlim;
 
     if( vlim < 10.0 )
         vlim = 10.0;
 
     // estimate the exponent size
-    double ne = log(var) / 2.3025850929940457;
+    double ne = var;
+
+    if( ne < 0.0 )
+        ne = -ne;
+
+    if( ne < 1e-8 )
+    {
+        ne = 1.0;
+        var = 0.0;
+    }
+    else
+    {
+        ne = log(ne) / 2.3025850929940457;
+    }
 
     // estimate the number of digits required to represent a number
     // to the stated minimum; throw in 4 extra digits to ensure

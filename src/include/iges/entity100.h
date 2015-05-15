@@ -52,7 +52,6 @@ class IGES_ENTITY_100 : public IGES_CURVE
 protected:
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
@@ -64,6 +63,7 @@ protected:
 public:
     IGES_ENTITY_100( IGES* aParent );
     virtual ~IGES_ENTITY_100();
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
 
     // Inherited from IGES_CURVE
     virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );

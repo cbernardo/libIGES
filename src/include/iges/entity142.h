@@ -61,14 +61,14 @@ protected:
     IGES_ENTITY* CPTR;
 
     friend class IGES;
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
 public:
     IGES_ENTITY_142( IGES* aParent );
     ~IGES_ENTITY_142();
-
+    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

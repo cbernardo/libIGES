@@ -119,7 +119,7 @@ public:
     virtual bool IsOrphaned( void ) = 0;
 
     // Add/DelReference is needed for management of StatusNumber
-    virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
+    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate ) = 0;
     virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
     size_t       GetNRefs( void );
     int          GetDESequence( void );

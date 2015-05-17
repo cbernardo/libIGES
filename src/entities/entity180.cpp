@@ -134,6 +134,7 @@ bool IGES_ENTITY_180::Associate( std::vector<IGES_ENTITY*>* entities )
     int sEnt = (int)entities->size();
     int iEnt;
     int tEnt;
+    bool dup = false;
 
     while( sn != en )
     {
@@ -154,11 +155,18 @@ bool IGES_ENTITY_180::Associate( std::vector<IGES_ENTITY*>* entities )
 
                 (*sn)->pEnt = (*entities)[iEnt];
 
-                if( !(*entities)[iEnt]->AddReference( this ) )
+                if( !(*entities)[iEnt]->AddReference( this, dup ) )
                 {
                     ERRMSG << "\n + [INFO] unable to add reference to child entity\n";
                     return false;
                 }
+
+                if( dup )
+                {
+                    ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+                    return false;
+                }
+
             }
             else
             {
@@ -325,9 +333,9 @@ bool IGES_ENTITY_180::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_180::IGES_ENTITY_180::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_180::IGES_ENTITY_180::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -582,9 +590,17 @@ bool IGES_ENTITY_180::AddArg( IGES_ENTITY* aOperand )
         return false;
     }
 
-    if( !aOperand->AddReference( this ) )
+    bool dup = false;
+
+    if( !aOperand->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [ERROR] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
         return false;
     }
 

@@ -131,10 +131,13 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
             continue;
         }
 
-        if( !(*entities)[iEnt]->AddReference( this ) )
+        bool dup = false;
+
+        if( !(*entities)[iEnt]->AddReference( this, dup ) )
         {
             ERRMSG << "\n + [INFO] failed to add reference to child\n";
             cerr << "+ Entity type: ";
+
             if ( (*entities)[iEnt]->GetEntityType() == 0 )
             {
                 cerr << "NULL/";
@@ -145,12 +148,17 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
             {
                 cerr << ((*entities)[iEnt]->GetEntityType()) << "\n";
             }
+
             ok = false;
         }
-        else
+        else if( !dup )
         {
             curves.push_back( cp );
             ((*entities)[iEnt])->Associate( entities );
+        }
+        else
+        {
+            ERRMSG << "\n + [BUG] duplicate curve entry added to composite curve\n";
         }
 
         ++bcur;
@@ -438,7 +446,7 @@ bool IGES_ENTITY_102::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_102::IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_102::IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -456,7 +464,7 @@ bool IGES_ENTITY_102::IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity 
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -737,20 +745,24 @@ bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
         return false;
     }
 
-    if( !aSegment->AddReference( this ) )
+    bool dup = false;
+
+    if( !aSegment->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [ERROR] could not add reference\n";
         return false;
     }
 
-    if( !aSegment->SetDependency( STAT_DEP_PHY ) )
+    if( !dup )
     {
-        ERRMSG << "\n + [WARNING] could not set physical dependency on Entity #";
-        cerr << aSegment->GetEntityType() << "\n";
-    }
+        if( !aSegment->SetDependency( STAT_DEP_PHY ) )
+        {
+            ERRMSG << "\n + [WARNING] could not set physical dependency on Entity #";
+            cerr << aSegment->GetEntityType() << "\n";
+        }
 
-    curves.push_back( aSegment );
-    aSegment->SetDependency( STAT_DEP_PHY );
+        curves.push_back( aSegment );
+    }
 
     return true;
 }

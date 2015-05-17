@@ -3,7 +3,7 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 100: Circle, Section 4.3, p.66+ (94+)
+ * Description: IGES Entity 104: Conic Arc, Section 4.5, p.74+ (102+)
  *
  * This file is part of libIGES.
  *
@@ -240,9 +240,9 @@ bool IGES_ENTITY_104::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_104::IGES_ENTITY_104::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_104::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 

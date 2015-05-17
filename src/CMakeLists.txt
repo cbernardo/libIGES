@@ -83,6 +83,7 @@ add_library( iges STATIC
     "${SRC_ENT}/entity308.cpp"
     "${SRC_ENT}/entity314.cpp"
     "${SRC_ENT}/entity408.cpp"
+    "${SRC_ENT}/entity502.cpp"
     "${SRC_IGS}/iges_io.cpp"
     "${SRC_IGS}/iges.cpp"
     "${SRC_IGS}/iges_elements.cpp"

@@ -291,8 +291,10 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
+    isDuplicate = false;
+
     if( !aParentEntity )
     {
         ERRMSG << "\n + [BUG] NULL pointer passed for aParentEntity\n";
@@ -316,8 +318,8 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
     {
         if( aParentEntity == *bref )
         {
-            ERRMSG << "\n + [BUG] requested duplicate entry\n";
-            return false;
+            isDuplicate = true;
+            return true;
         }
 
         ++bref;
@@ -330,7 +332,10 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity )
     while( bref != eref )
     {
         if( aParentEntity == *bref )
+        {
+            isDuplicate = true;
             return true;
+        }
 
         ++bref;
     }
@@ -410,6 +415,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
     bool ok = true;
     int idx;
     int tEnt;
+    bool dup = false;
 
     if( structure > 0 )
     {
@@ -427,7 +433,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pStructure->AddReference( this ) )
+            if( !pStructure->AddReference( this, dup ) )
             {
                 if( pStructure->GetEntityType() != 0 )
                 {
@@ -456,6 +462,13 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 pStructure = NULL;
             }
 
+            if( dup )
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pStructure = NULL;
+                return false;
+            }
+
         }
         else
         {
@@ -481,7 +494,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLineFontPattern->AddReference( this ) )
+            if( !pLineFontPattern->AddReference( this, dup ) )
             {
                 if( pLineFontPattern->GetEntityType() != 0 )
                 {
@@ -509,7 +522,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pLineFontPattern = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pLineFontPattern->GetEntityType();
 
@@ -521,6 +534,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pLineFontPattern = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pLineFontPattern = NULL;
+                return false;
             }
         }
         else
@@ -547,7 +566,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLevel->AddReference( this ) )
+            if( !pLevel->AddReference( this, dup ) )
             {
                 if( pLevel->GetEntityType() != 0 )
                 {
@@ -575,7 +594,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pLevel = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pLevel->GetEntityType();
                 int eForm = pLevel->GetEntityForm();
@@ -587,6 +606,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pLevel = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pLevel = NULL;
+                return false;
             }
         }
         else
@@ -613,7 +638,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pView->AddReference( this ) )
+            if( !pView->AddReference( this, dup ) )
             {
                 if( pView->GetEntityType() != 0 )
                 {
@@ -641,7 +666,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pView = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pView->GetEntityType();
                 int eForm = pView->GetEntityForm();
@@ -654,6 +679,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pView = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pView = NULL;
+                return false;
             }
         }
         else
@@ -687,7 +718,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pTransform->AddReference( this ) )
+            if( !pTransform->AddReference( this, dup ) )
             {
                 if( pTransform->GetEntityType() != 0 )
                 {
@@ -715,7 +746,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pTransform = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pTransform->GetEntityType();
 
@@ -726,6 +757,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pTransform = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pTransform = NULL;
+                return false;
             }
         }
         else
@@ -752,7 +789,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLabelAssoc->AddReference( this ) )
+            if( !pLabelAssoc->AddReference( this, dup ) )
             {
                 if( pLabelAssoc->GetEntityType() != 0 )
                 {
@@ -780,7 +817,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pLabelAssoc = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pLabelAssoc->GetEntityType();
                 int eForm = pLabelAssoc->GetEntityForm();
@@ -792,6 +829,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pLabelAssoc = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pLabelAssoc = NULL;
+                return false;
             }
         }
         else
@@ -818,7 +861,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pColor->AddReference( this ) )
+            if( !pColor->AddReference( this, dup ) )
             {
                 if( pColor->GetEntityType() != 0 )
                 {
@@ -846,7 +889,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 
                 pColor = NULL;
             }
-            else
+            else if( !dup )
             {
                 int eType = pColor->GetEntityType();
 
@@ -857,6 +900,12 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                     pColor = NULL;
                     ok = false;
                 }
+            }
+            else
+            {
+                ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                pColor = NULL;
+                return false;
             }
         }
         else
@@ -889,14 +938,20 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
             {
                 case ENT_GENERAL_NOTE:
                 case ENT_TEXT_DISPLAY_TEMPLATE:
-                    if( !(*entities)[iEnt]->AddReference( this ) )
+                    if( !(*entities)[iEnt]->AddReference( this, dup ) )
                     {
                         ERRMSG << "\n + [INFO] failed to add reference to child\n";
                         ok = false;
                     }
-                    else
+                    else if( !dup )
                     {
                         extras.push_back( (*entities)[iEnt] );
+                    }
+                    else
+                    {
+                        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+                        ok = false;
+                        break;
                     }
 
                     break;
@@ -1874,9 +1929,17 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
         return false;
     }
 
-    if( !aPattern->AddReference( this ) )
+    bool dup = false;
+
+    if( !aPattern->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
         return false;
     }
 
@@ -1965,9 +2028,17 @@ bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
         return false;
     }
 
-    if( !aLevel->AddReference( this ) )
+    bool dup = false;
+
+    if( !aLevel->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
         return false;
     }
 
@@ -2015,9 +2086,17 @@ bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
         return false;
     }
 
-    if( !aView->AddReference( this ) )
+    bool dup = false;
+
+    if( !aView->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
         return false;
     }
 
@@ -2072,10 +2151,19 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
         return false;
     }
 
-    if( !pTransform->AddReference( this ) )
+    bool dup = false;
+
+    if( !pTransform->AddReference( this, dup ) )
     {
         pTransform = NULL;
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
+        pTransform = NULL;
         return false;
     }
 
@@ -2127,9 +2215,17 @@ bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
         return false;
     }
 
-    if( !aLabelAssoc->AddReference( this ) )
+    bool dup = false;
+
+    if( !aLabelAssoc->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
         return false;
     }
 
@@ -2220,9 +2316,17 @@ bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
         return false;
     }
 
-    if( !aColor->AddReference( this ) )
+    bool dup = false;
+
+    if( !aColor->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: duplicate entity added\n";
         return false;
     }
 
@@ -2642,11 +2746,18 @@ bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
         return false;
     }
 
+    bool dup = false;
+
     if( eType != 402 )
     {
-        if( !aEntity->AddReference( this ) )
+        if( !aEntity->AddReference( this, dup ) )
         {
             ERRMSG << "\n + [info] could not add reference to specified entity.\n";
+            return false;
+        }
+        else if( dup )
+        {
+            ERRMSG << "\n + [BUG]: duplicate entity added\n";
             return false;
         }
     }

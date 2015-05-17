@@ -124,6 +124,7 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
     }
 
     int iEnt;
+    bool dup = false;
 
     if( iPTS )
     {
@@ -145,10 +146,18 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !PTS->AddReference( this ) )
+        if( !PTS->AddReference( this, dup ) )
         {
             PTS = NULL;
             ERRMSG << "\n + [INFO] could not associate surface entity with DE " << PTS << "\n";
+            iPTI.clear();
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            PTS = NULL;
             iPTI.clear();
             return false;
         }
@@ -181,10 +190,18 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !PTO->AddReference( this ) )
+        if( !PTO->AddReference( this, dup ) )
         {
             PTO = NULL;
             ERRMSG << "\n + [INFO] could not associate outline entity with DE " << iPTO << "\n";
+            iPTI.clear();
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            PTO = NULL;
             iPTI.clear();
             return false;
         }
@@ -231,9 +248,17 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !ep->AddReference( this ) )
+        if( !ep->AddReference( this, dup ) )
         {
             ERRMSG << "\n + [INFO] could not associate cutout entity with DE " << iDE << "\n";
+            iPTI.clear();
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+            PTS = NULL;
             iPTI.clear();
             return false;
         }
@@ -409,7 +434,7 @@ bool IGES_ENTITY_144::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -440,7 +465,7 @@ bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity )
         }
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -654,8 +679,17 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
         return false;
     }
 
-    if( !PTS->AddReference( this ) )
+    bool dup = false;
+
+    if( !PTS->AddReference( this, dup ) )
     {
+        PTS = NULL;
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
         PTS = NULL;
         return false;
     }
@@ -687,8 +721,17 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
     if( NULL == aPtr )
         return true;
 
-    if( !PTO->AddReference( this ) )
+    bool dup = false;
+
+    if( !PTO->AddReference( this, dup ) )
     {
+        PTO = NULL;
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
         PTO = NULL;
         return false;
     }
@@ -727,9 +770,17 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
         ++bref;
     }
 
-    if( !aPtr->AddReference( this ) )
+    bool dup = false;
+
+    if( !aPtr->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [INFO] [BUG] could not add child reference\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
         return false;
     }
 

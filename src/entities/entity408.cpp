@@ -77,6 +77,8 @@ bool IGES_ENTITY_408::Associate( std::vector<IGES_ENTITY*>* entities )
         pStructure = NULL;
     }
 
+    bool dup = false;
+
     if( iDE )
     {
         if( (iDE & 1) == 0 || iDE < 0 || iDE > 9999997 )
@@ -101,12 +103,19 @@ bool IGES_ENTITY_408::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !DE->AddReference( this ) )
+        if( !DE->AddReference( this, dup ) )
         {
             DE = NULL;
             ERRMSG << "\n + [INFO] could not add reference to Subfigure Definition (" << iDE << ")\n";
             return false;
         }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            return false;
+        }
+
     }
 
     return true;
@@ -235,7 +244,8 @@ bool IGES_ENTITY_408::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_408::IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_408::IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity,
+                                                     bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -249,7 +259,7 @@ bool IGES_ENTITY_408::IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity 
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -434,10 +444,19 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
         return false;
     }
 
-    if( !DE->AddReference( this ) )
+    bool dup = false;
+
+    if( !DE->AddReference( this, dup ) )
     {
         DE = NULL;
         ERRMSG << "\n + [INFO] could not add child entity reference\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        DE = NULL;
         return false;
     }
 

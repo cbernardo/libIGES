@@ -776,6 +776,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_408( this );
             break;
 
+        case ENT_VERTEX:
+            ep = new IGES_ENTITY_502( this );
+            break;
+
         default:
             ep = new IGES_ENTITY_NULL( this );
             ((IGES_ENTITY_NULL*)ep)->setEntityType( aEntityType );

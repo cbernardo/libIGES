@@ -93,9 +93,17 @@ bool IGES_ENTITY_164::Associate( std::vector<IGES_ENTITY*>* entities )
         return false;
     }
 
-    if( !(*entities)[iEnt]->AddReference( this ) )
+    bool dup = false;
+
+    if( !(*entities)[iEnt]->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [INFO] could not establish reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
         return false;
     }
 
@@ -238,7 +246,7 @@ bool IGES_ENTITY_164::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_164::IGES_ENTITY_164::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_164::IGES_ENTITY_164::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -252,7 +260,7 @@ bool IGES_ENTITY_164::IGES_ENTITY_164::AddReference( IGES_ENTITY* aParentEntity 
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -476,10 +484,19 @@ bool IGES_ENTITY_164::SetClosedCurve( IGES_CURVE* aCurve )
 
     PTR = aCurve;
 
-    if( !PTR->AddReference( this ) )
+    bool dup = false;
+
+    if( !PTR->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [ERROR] could not register association with closed curve\n";
         PTR = NULL; // necessary to prevent segfaults
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        PTR = NULL;
         return false;
     }
 

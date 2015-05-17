@@ -100,7 +100,7 @@ public:
     // members inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
     virtual bool IsOrphaned( void ) = 0;
-    virtual bool AddReference( IGES_ENTITY* aParentEntity ) = 0;
+    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate ) = 0;
     virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;

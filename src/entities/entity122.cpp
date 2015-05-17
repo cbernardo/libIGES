@@ -99,7 +99,9 @@ bool IGES_ENTITY_122::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !DE->AddReference( this ) )
+        bool dup = false;
+
+        if( !DE->AddReference( this, dup ) )
         {
             DE = NULL;
             ERRMSG << "\n + [INFO] could not add reference to directrix curve entity (" << iDE << ")\n";
@@ -234,7 +236,7 @@ bool IGES_ENTITY_122::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_122::IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_122::IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -248,7 +250,7 @@ bool IGES_ENTITY_122::IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity 
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -402,8 +404,16 @@ bool IGES_ENTITY_122::SetDE( IGES_CURVE* aPtr )
         DE = NULL;
     }
 
-    if( !aPtr->AddReference( this ) )
+    bool dup = false;
+
+    if( !aPtr->AddReference( this, dup ) )
         return false;
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        return false;
+    }
 
     DE = aPtr;
     DE->SetDependency( STAT_DEP_PHY );

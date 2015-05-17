@@ -75,6 +75,7 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
     }
 
     int iEnt;
+    bool dup = false;
 
     if( iSPTR )
     {
@@ -88,10 +89,17 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         SPTR = (*entities)[iEnt];
 
-        if( !SPTR->AddReference( this ) )
+        if( !SPTR->AddReference( this, dup ) )
         {
             SPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate surface entity with DE " << iSPTR << "\n";
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            SPTR = NULL;
             return false;
         }
 
@@ -114,10 +122,17 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         BPTR = (*entities)[iEnt];
 
-        if( !BPTR->AddReference( this ) )
+        if( !BPTR->AddReference( this, dup ) )
         {
             BPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate boundary entity with DE " << iBPTR << "\n";
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            BPTR = NULL;
             return false;
         }
 
@@ -139,10 +154,17 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         CPTR = (*entities)[iEnt];
 
-        if( !CPTR->AddReference( this ) )
+        if( !CPTR->AddReference( this, dup ) )
         {
             CPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate bounding curve entity with DE " << iCPTR << "\n";
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            CPTR = NULL;
             return false;
         }
 
@@ -307,7 +329,7 @@ bool IGES_ENTITY_142::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_142::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_142::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -321,7 +343,7 @@ bool IGES_ENTITY_142::AddReference( IGES_ENTITY* aParentEntity )
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -542,10 +564,19 @@ bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
     if( NULL == SPTR )
         return true;
 
-    if( !SPTR->AddReference( this ) )
+    bool dup;
+
+    if( !SPTR->AddReference( this, dup ) )
     {
         SPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        SPTR = NULL;
         return false;
     }
 
@@ -576,10 +607,19 @@ bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
     if( NULL == BPTR )
         return true;
 
-    if( !BPTR->AddReference( this ) )
+    bool dup = false;
+
+    if( !BPTR->AddReference( this, dup ) )
     {
         BPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        BPTR = NULL;
         return false;
     }
 
@@ -610,10 +650,19 @@ bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
     if( NULL == CPTR )
         return true;
 
-    if( !CPTR->AddReference( this ) )
+    bool dup = false;
+
+    if( !CPTR->AddReference( this, dup ) )
     {
         CPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        CPTR = NULL;
         return false;
     }
 

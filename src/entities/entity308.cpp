@@ -77,6 +77,7 @@ bool IGES_ENTITY_308::Associate( std::vector<IGES_ENTITY*>* entities )
     IGES_ENTITY* ep;
     std::list<int>::iterator sDE = iDE.begin();
     std::list<int>::iterator eDE = iDE.end();
+    bool dup = false;
 
     while( sDE != eDE )
     {
@@ -100,9 +101,16 @@ bool IGES_ENTITY_308::Associate( std::vector<IGES_ENTITY*>* entities )
 
         ep = (*entities)[iEnt];
 
-        if( !ep->AddReference( this ) )
+        if( !ep->AddReference( this, dup ) )
         {
             ERRMSG << "\n + [INFO] could not associate entity with DE " << tDE << "\n";
+            iDE.clear();
+            return false;
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
             iDE.clear();
             return false;
         }
@@ -252,7 +260,7 @@ bool IGES_ENTITY_308::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_308::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_308::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {
@@ -277,7 +285,7 @@ bool IGES_ENTITY_308::AddReference( IGES_ENTITY* aParentEntity )
         }
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -520,9 +528,17 @@ bool IGES_ENTITY_308::AddDE( IGES_ENTITY* aPtr )
         ++bref;
     }
 
-    if( !aPtr->AddReference( this ) )
+    bool dup = false;
+
+    if( !aPtr->AddReference( this, dup ) )
     {
         ERRMSG << "\n + [INFO] [BUG] could not add child reference\n";
+        return false;
+    }
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
         return false;
     }
 

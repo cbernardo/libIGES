@@ -17,9 +17,9 @@ Curve on Surface (E142).
 4. [FIXED] [URGENT] Bug in IGES_POINT; 'p0 = p1 - p2' returns the wrong result
 
 5. To load Molex model 473460001.igs support is required for entities:
-    + Type 104: Conic Arc
+    + [DONE] Type 104: Conic Arc
     + Type 186: Manifold Solid B-REP
-    + Type 502: Vertex List
+    + [DONE] Type 502: Vertex List
     + Type 504: Edge List
     + Type 508: Loop
     + Type 510: Face
@@ -38,12 +38,18 @@ Curve on Surface (E142).
    have been established; this will ensure that ancestors can be
    correctly traversed.
 
-7. [BUG] On reading a file E102::Associate() may fail if the referenced
+7. [FIXED]
+   [BUG] On reading a file E102::Associate() may fail if the referenced
    curve has an associated transform and has not invoked Associate().
    To fix this requires setting an "assoc" flag of some sort and all
    entities whose Associate() routines rely on subentities being
    correctly associated must invoke Associate() on those entities
    before invoking any other routines on them.
+
+8. [BUG] When AddReference() is called, the function returns TRUE
+   when an entry is a duplicate. The invoking routine should not
+   push the Child Entity onto its list a second time or we may
+   have data corruption.
 
 **** GENERAL ****
 Caveats:

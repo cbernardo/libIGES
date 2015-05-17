@@ -99,7 +99,7 @@ public:
     // virtual functions inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
-    virtual bool AddReference( IGES_ENTITY* aParentEntity );
+    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
     virtual bool DelReference( IGES_ENTITY* aParentEntity );
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );

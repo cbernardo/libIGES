@@ -193,7 +193,7 @@ bool IGES_ENTITY_NULL::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     // note: Add Reference will be called by any parent entities;
     // returning false notifies those entities that this item

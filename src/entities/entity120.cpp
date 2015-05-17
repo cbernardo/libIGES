@@ -67,7 +67,8 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
     }
 
     int iEnt;
-
+    bool dup = false;
+    
     if( iL )
     {
         iEnt = iL >> 1;
@@ -95,10 +96,17 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !L->AddReference( this ) )
+        if( !L->AddReference( this, dup ) )
         {
             L = NULL;
             ERRMSG << "\n + [INFO] could not associate line entity with DE " << iL << "\n";
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            L = NULL;
+            return false;
         }
     }
 
@@ -120,10 +128,17 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !C->AddReference( this ) )
+        if( !C->AddReference( this, dup ) )
         {
             C = NULL;
             ERRMSG << "\n + [INFO] could not associate curve (generatrix) with DE " << iC << "\n";
+        }
+
+        if( dup )
+        {
+            ERRMSG << "\n + [CORRUPT FILE]: adding duplicate entry\n";
+            C = NULL;
+            return false;
         }
     }
 
@@ -256,9 +271,9 @@ bool IGES_ENTITY_120::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_120::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_120::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -441,8 +456,16 @@ bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
         L = NULL;
     }
 
-    if( !aCurve->AddReference( this ) )
+    bool dup = false;
+
+    if( !aCurve->AddReference( this, dup ) )
         return false;
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        return false;
+    }
 
     L = aCurve;
     L->SetDependency( STAT_DEP_PHY );
@@ -489,8 +512,16 @@ bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
         C = NULL;
     }
 
-    if( !aCurve->AddReference( this ) )
+    bool dup = false;
+
+    if( !aCurve->AddReference( this, dup ) )
         return false;
+
+    if( dup )
+    {
+        ERRMSG << "\n + [BUG]: adding duplicate entry\n";
+        return false;
+    }
 
     C = aCurve;
     C->SetDependency( STAT_DEP_PHY );

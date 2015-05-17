@@ -65,14 +65,14 @@ public:
     // Inherited virtual functions
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
-    virtual bool AddReference(IGES_ENTITY* aParentEntity);
-    virtual bool DelReference(IGES_ENTITY* aParentEntity);
+    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
+    virtual bool DelReference( IGES_ENTITY* aParentEntity );
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
-    virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // XXX - TO BE IMPLEMENTED
 

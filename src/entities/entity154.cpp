@@ -182,9 +182,9 @@ bool IGES_ENTITY_154::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_154::IGES_ENTITY_154::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_154::IGES_ENTITY_154::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
-    return IGES_ENTITY::AddReference( aParentEntity );
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 

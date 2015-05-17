@@ -74,7 +74,8 @@ bool IGES_ENTITY_TEMP::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_TEMP::IGES_ENTITY_TEMP::AddReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_TEMP::IGES_ENTITY_TEMP::AddReference( IGES_ENTITY* aParentEntity,
+                                                       bool& isDuplicate )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";

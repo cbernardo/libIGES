@@ -61,7 +61,7 @@ protected:
 public:
     IGES_CURVE( IGES* aParent );
     virtual ~IGES_CURVE();
-    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
+    virtual bool Associate(std::vector<IGES_ENTITY*>* entities) = 0;
 
     // specialized members of this class
     // methods required of parameterized curve entities

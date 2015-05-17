@@ -68,6 +68,7 @@ add_library( iges STATIC
     "${SRC_ENT}/entityNULL.cpp"
     "${SRC_ENT}/entity100.cpp"
     "${SRC_ENT}/entity102.cpp"
+    "${SRC_ENT}/entity104.cpp"
     "${SRC_ENT}/entity110.cpp"
     "${SRC_ENT}/entity120.cpp"
     "${SRC_ENT}/entity122.cpp"
@@ -88,7 +89,6 @@ add_library( iges STATIC
     "${SRC_IGS}/iges_helpers.cpp"
     "${SRC_GEOM}/geom_wall.cpp"
     "${SRC_GEOM}/geom_cylinder.cpp"
-    "${SRC_GEOM}/geom_plane.cpp"
     "${SRC_GEOM}/geom_segment.cpp"
     "${SRC_GEOM}/geom_outline.cpp"
     )

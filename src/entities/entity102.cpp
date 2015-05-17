@@ -73,9 +73,9 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 }
 
 
-bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
 {
-    if( !IGES_ENTITY::associate( entities ) )
+    if( !IGES_ENTITY::Associate( entities ) )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         return false;
@@ -150,7 +150,7 @@ bool IGES_ENTITY_102::associate( std::vector<IGES_ENTITY*>* entities )
         else
         {
             curves.push_back( cp );
-            ((*entities)[iEnt])->associate( entities );
+            ((*entities)[iEnt])->Associate( entities );
         }
 
         ++bcur;

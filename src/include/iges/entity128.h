@@ -108,8 +108,8 @@ protected:
 public:
     IGES_ENTITY_128( IGES* aParent );
     ~IGES_ENTITY_128();
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
-    
+    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
+
     // virtual functions inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );

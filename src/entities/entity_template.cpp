@@ -33,7 +33,7 @@
 using namespace std;
 
 
-bool IGES_ENTITY_TEMP::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_TEMP::Associate( std::vector<IGES_ENTITY*>* entities )
 {
     // XXX - TO BE IMPLEMENTED
     ERRMSG << "\n + [WARNING] TO BE IMPLEMENTED\n";

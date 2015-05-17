@@ -162,13 +162,13 @@ void IGES_ENTITY_NULL::setEntityType( int aEntityID )
 }
 
 
-bool IGES_ENTITY_NULL::associate(std::vector<IGES_ENTITY*>* entities)
+bool IGES_ENTITY_NULL::Associate(std::vector<IGES_ENTITY*>* entities)
 {
     // Since a NULL entity knows nothing of the Parameter Data,
     // the only associations which can be formed are the ones
     // provided by the base class implementation of associate().
 
-    if( !IGES_ENTITY::associate( entities ) )
+    if( !IGES_ENTITY::Associate( entities ) )
     {
         ERRMSG << "\n + [INFO] association failed; see messages above\n";
         return false;

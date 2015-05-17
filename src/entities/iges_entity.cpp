@@ -385,7 +385,7 @@ bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
 }
 
 
-bool IGES_ENTITY::associate(std::vector<IGES_ENTITY*>* entities)
+bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
 {
     // All entities must read in the following:
     //

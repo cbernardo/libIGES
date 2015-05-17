@@ -89,7 +89,7 @@ protected:
 public:
     IGES_ENTITY_102( IGES* aParent );
     virtual ~IGES_ENTITY_102();
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
 
     // method for adding items to this compound curve
     bool AddSegment( IGES_CURVE* aSegment );

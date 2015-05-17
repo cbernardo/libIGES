@@ -498,7 +498,7 @@ bool IGES::Read( const char* aFileName )
 
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( !entities[iEnt]->associate( &entities ) )
+        if( !entities[iEnt]->Associate( &entities ) )
         {
             ERRMSG << "\n + [INFO] could not establish file associations\n";
             return false;
@@ -710,6 +710,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
     {
         case ENT_CIRCULAR_ARC:
             ep = new IGES_ENTITY_100( this );
+            break;
+
+        case ENT_CONIC_ARC:
+            ep = new IGES_ENTITY_104( this );
             break;
 
         case ENT_COMPOSITE_CURVE:

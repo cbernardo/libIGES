@@ -61,16 +61,37 @@
 
 class IGES_ENTITY_104 : public IGES_CURVE
 {
+private:
+    int getForm();
+    bool getPtEllipse( IGES_POINT& pt0, double var );
+    bool getPtHyperbola( IGES_POINT& pt0, double var );
+    bool getPtParabola( IGES_POINT& pt0, double var );
+
 protected:
 
     friend class IGES;
     virtual bool format( int &index );
     virtual bool rescale( double sf );
-    // XXX - TO BE IMPLEMENTED
 
 public:
-    // Inherited virtual functions
-    virtual bool associate( std::vector<IGES_ENTITY*>* entities );
+    IGES_ENTITY_104( IGES* aParent );
+    virtual ~IGES_ENTITY_104();
+
+    // public variables
+    double A;
+    double B;
+    double C;
+    double D;
+    double E;
+    double F;
+    double ZT;
+    double X1;
+    double Y1;
+    double X2;
+    double Y2;
+
+    // Inherited from IGES_ENTITY
+    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
     virtual bool Unlink( IGES_ENTITY* aChild );
     virtual bool IsOrphaned( void );
     virtual bool AddReference(IGES_ENTITY* aParentEntity);
@@ -78,12 +99,16 @@ public:
     virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    // XXX - TO BE IMPLEMENTED
-
+    // Inherited from IGES_CURVE
+    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_104_H

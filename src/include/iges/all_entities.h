@@ -28,6 +28,7 @@
 #include <entityNULL.h>
 #include <entity100.h>
 #include <entity102.h>
+#include <entity104.h>
 #include <entity110.h>
 #include <entity120.h>
 #include <entity122.h>

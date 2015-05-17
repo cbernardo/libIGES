@@ -49,9 +49,9 @@ IGES_ENTITY_314::~IGES_ENTITY_314()
 }
 
 
-bool IGES_ENTITY_314::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_314::Associate( std::vector<IGES_ENTITY*>* entities )
 {
-    if( !IGES_ENTITY::associate( entities ) )
+    if( !IGES_ENTITY::Associate( entities ) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;

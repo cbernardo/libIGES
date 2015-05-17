@@ -66,9 +66,9 @@ IGES_ENTITY_142::~IGES_ENTITY_142()
 }
 
 
-bool IGES_ENTITY_142::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 {
-    if( !IGES_ENTITY::associate( entities ) )
+    if( !IGES_ENTITY::Associate( entities ) )
     {
         ERRMSG << "\n + [INFO] could not register associations\n";
         return false;

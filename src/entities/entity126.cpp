@@ -71,9 +71,9 @@ IGES_ENTITY_126::~IGES_ENTITY_126()
 }
 
 
-bool IGES_ENTITY_126::associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_126::Associate( std::vector<IGES_ENTITY*>* entities )
 {
-    if( !IGES_ENTITY::associate( entities ) )
+    if( !IGES_ENTITY::Associate( entities ) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;
@@ -306,7 +306,8 @@ bool IGES_ENTITY_126::rescale( double sf )
     // Surface (BPTR to Entity 144). Ideally we should be able to traverse
     // the ancestors of this NURBS curve and decide whether or not it
     // makes sense to scale the control points.
-    //return true;
+    // If a Curve on Surface is scaled, only the Z values should be
+    // scaled
     return true;
 
     if( NULL == coeffs )

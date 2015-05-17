@@ -109,8 +109,8 @@ public:
 
     // associate: associate pointers with other entities after reading all data; retrictions on types
     //            must be enforced to ensure data integrity and software stability
-    virtual bool associate(std::vector<IGES_ENTITY*>* entities) = 0;
-    
+    virtual bool Associate(std::vector<IGES_ENTITY*>* entities) = 0;
+
     // Routines to manage reference deletion
 
     /// remove a child entity from the parent's list

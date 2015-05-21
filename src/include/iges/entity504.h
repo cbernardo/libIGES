@@ -68,6 +68,7 @@ struct EDGE_DEIDX
     }
 };
 
+
 struct EDGE_DATA
 {
     IGES_ENTITY* curv;
@@ -86,8 +87,17 @@ struct EDGE_DATA
     }
 };
 
+
 class IGES_ENTITY_504 : public IGES_ENTITY
 {
+private:
+    // add a parent reference to a curve and ensure that it is not a duplicate
+    bool addCurve( IGES_ENTITY* aCurve );
+    // add a parent reference to a Vertex List and maintain a reference count
+    bool addVertexList( IGES_ENTITY_502* aVertexList );
+    // decrement a Vertex List's reference count and delete references if appropriate
+    bool delVertexList( IGES_ENTITY_502* aVertexList, bool aFlagAll );
+
 protected:
 
     friend class IGES;
@@ -115,10 +125,17 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
-
+    // parameters not supported by the specification:
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
+    
     // functions unique to E504
     std::vector<EDGE_DATA>* GetEdges( void );
-    void AddEdge( IGES_ENTITY* aCurve, IGES_ENTITY_502* aSVP, int aSV,
+    bool AddEdge( IGES_ENTITY* aCurve, IGES_ENTITY_502* aSVP, int aSV,
                   IGES_ENTITY_502* aTVP, int aTV );
 };
 

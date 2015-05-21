@@ -784,6 +784,18 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_504( this );
             break;
 
+        case ENT_LOOP:
+            ep = new IGES_ENTITY_508( this );
+            break;
+
+        case ENT_FACE:
+            ep = new IGES_ENTITY_510( this );
+            break;
+
+        case ENT_SHELL:
+            ep = new IGES_ENTITY_514( this );
+            break;
+
         default:
             ep = new IGES_ENTITY_NULL( this );
             ((IGES_ENTITY_NULL*)ep)->setEntityType( aEntityType );
@@ -1478,7 +1490,7 @@ bool IGES::readPD( IGES_RECORD& rec, std::ifstream& file )
     {
         if( !(*sEnt)->ReadPD( file, nPDSecLines ) )
         {
-            ERRMSG << "\n + [INFO] could not read parameter data for Entity[";
+            ERRMSG << "\n + [INFO] could not read parameter data for Entity[PD:";
             cerr << i << "]\n";
             return false;
         }

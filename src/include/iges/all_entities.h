@@ -45,5 +45,8 @@
 #include <entity408.h>
 #include <entity502.h>
 #include <entity504.h>
+#include <entity508.h>
+#include <entity510.h>
+#include <entity514.h>
 
 #endif  // ALL_ENTITIES_H

@@ -20,7 +20,7 @@ Curve on Surface (E142).
     + [DONE] Type 104: Conic Arc
     + Type 186: Manifold Solid B-REP
     + [DONE] Type 502: Vertex List
-    + Type 504: Edge List
+    + [DONE] Type 504: Edge List
     + Type 508: Loop
     + Type 510: Face
     + Type 514: Shell

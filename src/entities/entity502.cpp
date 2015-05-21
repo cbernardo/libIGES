@@ -356,9 +356,15 @@ bool IGES_ENTITY_502::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-std::vector<IGES_POINT>* IGES_ENTITY_502::GetVertices( void )
+const std::vector<IGES_POINT>* IGES_ENTITY_502::GetVertices( void )
 {
     return &vertices;
+}
+
+
+size_t IGES_ENTITY_502::GetNVertices( void )
+{
+    return vertices.size();
 }
 
 
@@ -366,4 +372,46 @@ void IGES_ENTITY_502::AddVertex( IGES_POINT aPoint )
 {
     vertices.push_back( aPoint );
     return;
+}
+
+
+bool IGES_ENTITY_502::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_502::SetLineFontPattern( IGES_ENTITY* aPattern )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_502::SetView( IGES_ENTITY* aView )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_502::SetColor( IGES_COLOR aColor )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_502::SetColor( IGES_ENTITY* aColor )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
+}
+
+
+bool IGES_ENTITY_502::SetLineWeightNum( int aLineWeight )
+{
+    ERRMSG << "\n + [BUG]: parameter not supported by this entity\n";
+    return false;
 }

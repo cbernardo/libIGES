@@ -1,9 +1,9 @@
 /*
- * file: entity502.h
+ * file: entity514.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 502: Vertex List, Section 4.147, p.586+ (614+)
+ * Description: IGES Entity 514: Shell, Section 4.151, p.595+ (623+)
  *
  * This file is part of libIGES.
  *
@@ -22,15 +22,19 @@
  *
  */
 
-#ifndef ENTITY_502_H
-#define ENTITY_502_H
+#ifndef ENTITY_514_H
+#define ENTITY_514_H
 
 #include <iges_entity.h>
 
 // NOTE:
 // The associated parameter data are:
-// + N: Int: number of vertices in the list
-// + P(n): Real[3]: X, Y, Z of points in real space
+// + N: Int: number of edge tuples
+// + CURV(n): Int: DE to curve entity (100, 102, 104, 106/(11,12,63), 110, 112, 126, 130)
+// + SVP(n): Int: DE of Vertex Entity (E502-1) for start vertex
+// + SV(n): Int: List Index of Vertex in SVP(n) for start vertex
+// + TVP(n): Int: DE of Vertex Entity (E502-1) for terminate vertex
+// + TV(n): Int: List Index of Vertex in TVP(n) for terminate vertex
 //
 // Forms:
 //  1: Vertex List
@@ -44,7 +48,9 @@
 // + Color number
 //
 
-class IGES_ENTITY_502 : public IGES_ENTITY
+class IGES_ENTITY_510;
+
+class IGES_ENTITY_514 : public IGES_ENTITY
 {
 protected:
 
@@ -52,11 +58,12 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::vector<IGES_POINT> vertices;
+    std::list<std::pair<int, bool> > ifaces;                // DE and OFlag for faces
+    std::list<std::pair<IGES_ENTITY_510*, bool> > mfaces;   // faces of the shell
 
 public:
-    IGES_ENTITY_502( IGES* aParent );
-    virtual ~IGES_ENTITY_502();
+    IGES_ENTITY_514( IGES* aParent );
+    virtual ~IGES_ENTITY_514();
 
     // Inherited virtual functions
     virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
@@ -68,8 +75,6 @@ public:
     virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetTransform( IGES_ENTITY* aTransform );
     virtual bool SetEntityForm( int aForm );
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     // parameters not supported by the specification:
     virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
     virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
@@ -78,10 +83,8 @@ public:
     virtual bool SetColor( IGES_ENTITY* aColor );
     virtual bool SetLineWeightNum( int aLineWeight );
 
-    // functions unique to E502
-    const std::vector<IGES_POINT>* GetVertices( void );
-    size_t GetNVertices( void );
-    void AddVertex( IGES_POINT aPoint );
+    // functions unique to E514
+    // XXX - TO BE IMPLEMENTED
 };
 
-#endif  // ENTITY_502_H
+#endif  // ENTITY_514_H

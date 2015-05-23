@@ -338,6 +338,8 @@ bool IGES_ENTITY_504::IsOrphaned( void )
 
 bool IGES_ENTITY_504::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
+    isDuplicate = false;
+
     // check for circular refs
     if( this == aParentEntity )
     {

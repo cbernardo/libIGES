@@ -50,7 +50,6 @@ struct LOOP_DEIDX
     int  data;      // (DE index) pointer to E502 (vertex list) or E504 (edge list)
     int  idx;           // index into E502 or E504
     bool orientFlag;    // boundary curve orientation flag
-    int  nPCurves;      // number of associated curves in parameter space (may be 0)
     // list of (DE index to) curves in parameter space and associated orientation
     std::list< std::pair<bool, int> > pcurves;
 
@@ -60,7 +59,6 @@ struct LOOP_DEIDX
         data = 0;
         idx = 0;
         orientFlag = true;
-        nPCurves = 0;
     }
 };
 
@@ -88,12 +86,15 @@ class IGES_ENTITY_508 : public IGES_ENTITY
 private:
     // add a parent reference to a Vertex or Edge list entity and maintain a refcount
     bool addEdge( IGES_ENTITY* aEdge );
-    // decrement refcount and release entity if appropriate
-    bool delEdge( IGES_ENTITY* aEdge );
+    // decrement refcount and release entity if appropriate; aFlagAll indicates
+    // that all LOOP_DATA structures containing this edge and their associated
+    // PCurves should be released
+    bool delEdge( IGES_ENTITY* aEdge, bool aFlagAll );
     // add a parent reference to a parameter space curve and ensure no duplicates
     bool addPCurve( IGES_ENTITY* aCurve );
-    // delete parent reference from the given parameter space curve
-    bool delPCurve( IGES_ENTITY* aCurve );
+    // delete parent reference from the given parameter space curve and delete
+    // the associated edge instance if required
+    bool delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge );
 
 protected:
 

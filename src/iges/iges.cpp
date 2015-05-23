@@ -764,6 +764,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_180( this );
             break;
 
+        case ENT_MANIFOLD_SOLID_BREP:
+            ep = new IGES_ENTITY_186( this );
+            break;
+
         case ENT_SUBFIGURE_DEFINITION:
             ep = new IGES_ENTITY_308( this );
             break;

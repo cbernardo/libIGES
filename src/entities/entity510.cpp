@@ -59,6 +59,9 @@ IGES_ENTITY_510::~IGES_ENTITY_510()
 
 bool IGES_ENTITY_510::Associate( std::vector<IGES_ENTITY*>* entities )
 {
+#warning TO BE IMPLEMENTED
+    return true;
+
     // XXX - TO BE IMPLEMENTED
     return false;
 }
@@ -66,6 +69,7 @@ bool IGES_ENTITY_510::Associate( std::vector<IGES_ENTITY*>* entities )
 
 bool IGES_ENTITY_510::format( int &index )
 {
+    #warning TO BE IMPLEMENTED
     // XXX - TO BE IMPLEMENTED
     return false;
 }
@@ -80,6 +84,8 @@ bool IGES_ENTITY_510::rescale( double sf )
 
 bool IGES_ENTITY_510::Unlink( IGES_ENTITY* aChildEntity )
 {
+    #warning TO BE IMPLEMENTED
+    return true;
     // XXX - TO BE IMPLEMENTED
     return false;
 }
@@ -96,6 +102,8 @@ bool IGES_ENTITY_510::IsOrphaned( void )
 
 bool IGES_ENTITY_510::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
+#warning TO BE IMPLEMENTED
+    return true;
     // XXX - TO BE IMPLEMENTED
     return false;
 }
@@ -136,6 +144,15 @@ bool IGES_ENTITY_510::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 
 bool IGES_ENTITY_510::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
+    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    {
+        ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
+        pdout.clear();
+        return false;
+    }
+#warning TO BE IMPLEMENTED
+    return true;
+
     // XXX - TO BE IMPLEMENTED
     return false;
 }

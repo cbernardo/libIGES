@@ -197,6 +197,15 @@ bool IGES_ENTITY_502::IsOrphaned( void )
 
 bool IGES_ENTITY_502::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
+    isDuplicate = false;
+
+    // check for circular refs
+    if( this == aParentEntity )
+    {
+        ERRMSG << "\n + [BUG] self-reference requested\n";
+        return false;
+    }
+
     return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 

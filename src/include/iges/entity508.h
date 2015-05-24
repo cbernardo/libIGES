@@ -89,12 +89,12 @@ private:
     // decrement refcount and release entity if appropriate; aFlagAll indicates
     // that all LOOP_DATA structures containing this edge and their associated
     // PCurves should be released
-    bool delEdge( IGES_ENTITY* aEdge, bool aFlagAll );
+    bool delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnlink );
     // add a parent reference to a parameter space curve and ensure no duplicates
     bool addPCurve( IGES_ENTITY* aCurve );
     // delete parent reference from the given parameter space curve and delete
     // the associated edge instance if required
-    bool delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge );
+    bool delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aFlagUnlink );
 
 protected:
 

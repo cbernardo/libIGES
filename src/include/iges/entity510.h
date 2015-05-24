@@ -52,6 +52,9 @@ class IGES_ENTITY_508;
 
 class IGES_ENTITY_510 : public IGES_ENTITY
 {
+private:
+    bool checkSurfType( IGES_ENTITY* aEnt );
+
 protected:
 
     friend class IGES;
@@ -61,6 +64,7 @@ protected:
     std::list<int> iloops;              // DE to loops bounding the face
     std::list<IGES_ENTITY_508*> mloops; // loops bounding the face
     IGES_ENTITY* msurface;
+    int mDEsurf;
     bool mOuterLoopFlag;                // Outer loop flag 'OF'
 
 public:

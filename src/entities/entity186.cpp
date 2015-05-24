@@ -54,26 +54,225 @@ IGES_ENTITY_186::IGES_ENTITY_186( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_186::~IGES_ENTITY_186()
 {
-    // XXX - TO BE IMPLEMENTED
+    if( mshell )
+        mshell->DelReference( this );
+
+    list<pair<IGES_ENTITY_514*, bool> >::iterator sV = mvoids.begin();
+    list<pair<IGES_ENTITY_514*, bool> >::iterator eV = mvoids.end();
+
+    while( sV != eV )
+    {
+        sV->first->DelReference( this );
+        ++sV;
+    }
+
+    mvoids.clear();
     return;
 }
 
 
 bool IGES_ENTITY_186::Associate( std::vector<IGES_ENTITY*>* entities )
 {
-#warning TO BE IMPLEMENTED
+    if( !IGES_ENTITY::Associate( entities ) )
+    {
+        ERRMSG << "\n + [INFO] could not establish associations\n";
+        ivoids.clear();
+        return false;
+    }
+
+    if( 0 >= mDEshell )
+    {
+        ERRMSG << "\n + [INFO] invalid outer shell DE\n";
+        ivoids.clear();
+        return false;
+    }
+
+    int iEnt = mDEshell >> 1;
+
+    if( iEnt >= (int)entities->size() )
+    {
+        ERRMSG << "\n + [INFO] invalid DE (" << mDEshell;
+        cerr << "), list size is " << entities->size() << "\n";
+        ivoids.clear();
+        return false;
+    }
+
+    if( ENT_SHELL != (*entities)[iEnt]->GetEntityType() )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid entity for outer shell (Type: ";
+        cerr << (*entities)[iEnt]->GetEntityType() << ")\n";
+        ivoids.clear();
+        return false;
+    }
+
+    if( 1 != (*entities)[iEnt]->GetEntityForm() )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid entity form for outer shell (Form: ";
+        cerr << (*entities)[iEnt]->GetEntityForm() << ")\n";
+        ivoids.clear();
+        return false;
+    }
+
+    mshell = (IGES_ENTITY_514*)((*entities)[iEnt]);
+    bool dup = false;
+
+    if( !mshell->AddReference( this, dup ) )
+    {
+        ERRMSG << "\n + [INFO] could not add reference to outer shell entity\n";
+        mshell = NULL;
+        ivoids.clear();
+        return false;
+    }
+
+    list<pair<int, bool> >::iterator sV = ivoids.begin();
+    list<pair<int, bool> >::iterator eV = ivoids.end();
+    IGES_ENTITY* ep;
+
+    while( sV != eV )
+    {
+        iEnt = sV->first >> 1;
+
+        if( iEnt >= (int)entities->size() )
+        {
+            ERRMSG << "\n + [INFO] invalid DE for void (" << sV->first;
+            cerr << "), list size is " << entities->size() << "\n";
+            ivoids.clear();
+            return false;
+        }
+
+        ep = (*entities)[iEnt];
+
+        if( ENT_SHELL != ep->GetEntityType() )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid entity for void shell (Type: ";
+            cerr << ep->GetEntityType() << ")\n";
+            ivoids.clear();
+            return false;
+        }
+
+        if( 1 != ep->GetEntityForm() )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid entity form for void shell (Form: ";
+            cerr << ep->GetEntityForm() << ")\n";
+            ivoids.clear();
+            return false;
+        }
+
+        if( !ep->AddReference( this, dup ) )
+        {
+            ERRMSG << "\n + [INFO] could not add reference void shell\n";
+            ivoids.clear();
+            return false;
+        }
+
+        mvoids.push_back( pair<IGES_ENTITY_514*, bool>( (IGES_ENTITY_514*)ep, sV->second ) );
+        ++sV;
+    }
+
+    ivoids.clear();
     return true;
-    // XXX - TO BE IMPLEMENTED
-    return false;
 }
 
 
 bool IGES_ENTITY_186::format( int &index )
 {
-#warning TO BE IMPLEMENTED
+    pdout.clear();
+    iExtras.clear();
+
+    if( index < 1 || index > 9999997 )
+    {
+        ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
+        return false;
+    }
+
+    if( !mshell )
+    {
+        ERRMSG << "\n + [INFO] no valid shell\n";
+        return false;
+    }
+
+    parameterData = index;
+
+    if( !parent )
+    {
+        ERRMSG << "\n + [INFO] method invoked with no parent IGES object\n";
+        return false;
+    }
+
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    ostringstream ostr;
+    ostr << entityType << pd;
+    ostr << mshell->GetDESequence() << pd;
+
+    if( mSOF )
+        ostr << "1" << pd;
+    else
+        ostr << "0" << pd;
+
+    string fStr = ostr.str();
+    string tStr;
+
+    if( mvoids.empty() )
+    {
+        ostr.str("");
+
+        if( extras.empty() )
+            ostr << "0" << rd;
+        else
+            ostr << "0" << pd;
+
+        tStr = ostr.str();
+        AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+    }
+
+    list<pair<IGES_ENTITY_514*, bool> >::iterator sV = mvoids.begin();
+    list<pair<IGES_ENTITY_514*, bool> >::iterator eV = mvoids.end();
+    list<pair<IGES_ENTITY_514*, bool> >::iterator iV = --(mvoids.end());
+
+    while( sV != eV )
+    {
+        ostr.str("");
+        ostr << sV->first->GetDESequence() << pd;
+        tStr = ostr.str();
+        AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+        ostr.str("");
+
+        if( sV->second )
+            ostr << "1";
+        else
+            ostr << "0";
+
+        if( sV == iV && extras.empty() )
+            ostr << rd;
+        else
+            ostr << pd;
+
+        tStr = ostr.str();
+        AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+        ++sV;
+    }
+
+    if( !extras.empty() && !formatExtraParams( fStr, index, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] could not format optional parameters\n";
+        pdout.clear();
+        iExtras.clear();
+        return false;
+    }
+
+    if( !formatComments( index ) )
+    {
+        ERRMSG << "\n + [INFO] could not format comments\n";
+        pdout.clear();
+        return false;
+    }
+
+    paramLineCount = index - parameterData;
+
     return true;
-    // XXX - TO BE IMPLEMENTED
-    return false;
 }
 
 
@@ -86,9 +285,30 @@ bool IGES_ENTITY_186::rescale( double sf )
 
 bool IGES_ENTITY_186::Unlink( IGES_ENTITY* aChildEntity )
 {
-#warning TO BE IMPLEMENTED
-    return true;
-    // XXX - TO BE IMPLEMENTED
+    if( IGES_ENTITY::Unlink( aChildEntity ) )
+        return true;
+
+    if( aChildEntity == mshell )
+    {
+        mshell = NULL;
+        return true;
+    }
+
+
+    list<pair<IGES_ENTITY_514*, bool> >::iterator sV = mvoids.begin();
+    list<pair<IGES_ENTITY_514*, bool> >::iterator eV = mvoids.end();
+
+    while( sV != eV )
+    {
+        if( aChildEntity == sV->first )
+        {
+            mvoids.erase( sV );
+            return true;
+        }
+
+        ++sV;
+    }
+
     return false;
 }
 
@@ -104,10 +324,16 @@ bool IGES_ENTITY_186::IsOrphaned( void )
 
 bool IGES_ENTITY_186::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
-#warning TO BE IMPLEMENTED
-    return true;
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( !aParentEntity )
+    {
+        ERRMSG << "\n + [BUG] NULL pointer passed to method\n";
+        return false;
+    }
+
+    // NOTE: TO BE IMPLEMENTED:
+    // Checks for circular references have been omitted
+
+    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
 }
 
 
@@ -142,15 +368,142 @@ bool IGES_ENTITY_186::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 {
     if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
     {
-        ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
+        ERRMSG << "\n + [INFO] could not read data for MSBO Entity\n";
         pdout.clear();
         return false;
     }
-#warning TO BE IMPLEMENTED
-    return true;
 
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    int idx;
+    bool eor = false;
+    char pd = parent->globalData.pdelim;
+    char rd = parent->globalData.rdelim;
+
+    idx = pdout.find( pd );
+
+    if( idx < 1 || idx > 8 )
+    {
+        ERRMSG << "\n + [BAD FILE] strange index for first parameter delimeter (";
+        cerr << idx << ")\n";
+        pdout.clear();
+        return false;
+    }
+
+    ++idx;
+
+    // DE to the outer shell entity
+    if( !ParseInt( pdout, idx, mDEshell, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the shell entity DE\n";
+        pdout.clear();
+        return false;
+    }
+
+    if( mDEshell < 1 || mDEshell > 9999997 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] invalid DE to shell entity (" << mDEshell<< ")\n";
+        pdout.clear();
+        return false;
+    }
+
+    int tmpI;
+
+    if( !ParseInt( pdout, idx, tmpI, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the shell SOF\n";
+        pdout.clear();
+        return false;
+    }
+
+    if( tmpI < 0 || tmpI > 1 )
+    {
+        ERRMSG << "\n + [CORRUPT FILE] bad SOF value for outer shell (" << tmpI << ")\n";
+        pdout.clear();
+        return false;
+    }
+
+    if( 1 == tmpI )
+        mSOF = true;
+    else
+        mSOF = false;
+
+    int nS; // number of shells in the MSBO
+
+    if( !ParseInt( pdout, idx, nS, eor, pd, rd ) )
+    {
+        ERRMSG << "\n + [INFO] couldn't read the number of void shells\n";
+        pdout.clear();
+        return false;
+    }
+
+    if( nS < 0 )
+    {
+        ERRMSG << "\n + [INFO] invalid number of void shells: " << nS << "\n";
+        pdout.clear();
+        return false;
+    }
+
+    int tmpJ;
+
+    for( int i = 0; i < nS; ++i )
+    {
+        if( !ParseInt( pdout, idx, tmpI, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read void DE\n";
+            ivoids.clear();
+            pdout.clear();
+            return false;
+        }
+
+        if( tmpI < 1 || tmpI > 9999997 )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] invalid DE to void (" << tmpI << ")\n";
+            ivoids.clear();
+            pdout.clear();
+            return false;
+        }
+
+        if( !ParseInt( pdout, idx, tmpJ, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read the VOF\n";
+            ivoids.clear();
+            pdout.clear();
+            return false;
+        }
+
+        if( tmpJ < 0 || tmpJ > 1 )
+        {
+            ERRMSG << "\n + [CORRUPT FILE] bad VOF value (" << tmpJ << ")\n";
+            ivoids.clear();
+            pdout.clear();
+            return false;
+        }
+
+        if( 1 == tmpJ )
+            ivoids.push_back( pair<int, bool>( tmpI, true ) );
+        else
+            ivoids.push_back( pair<int, bool>( tmpI, false ) );
+
+    }
+
+    if( !eor && !readExtraParams( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
+        pdout.clear();
+        return false;
+    }
+
+    if( !readComments( idx ) )
+    {
+        ERRMSG << "\n + [BAD FILE] could not read extra comments\n";
+        pdout.clear();
+        return false;
+    }
+
+    pdout.clear();
+
+    // note: this entity never performs scaling
+
+    return true;
 }
 
 

@@ -58,7 +58,10 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
     while( sE != eE )
     {
         if( sE->curv )
+        {
+            ERRMSG << "\nXXX + [INFO] deleting ref to curve entity " << sE->curv << "\n";
             sE->curv->DelReference( this );
+        }
 
         ++sE;
     }
@@ -266,6 +269,9 @@ bool IGES_ENTITY_504::rescale( double sf )
 
 bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
 {
+    if( IGES_ENTITY::Unlink( aChildEntity ) )
+        return true;
+
     int eType = aChildEntity->GetEntityType();
     list<EDGE_DATA>::iterator sE = edges.begin();
     list<EDGE_DATA>::iterator eE = edges.end();
@@ -589,7 +595,7 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
         return false;
     }
 
-    if( aSV < 0 || aSV >= (int)aSVP->GetNVertices() )
+    if( aSV < 1 || aSV > (int)aSVP->GetNVertices() )
     {
         aCurve->DelReference( this );
         delVertexList( aSVP, false );
@@ -599,7 +605,7 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
         return false;
     }
 
-    if( aTV < 0 || aTV >= (int)aTVP->GetNVertices() )
+    if( aTV < 1 || aTV > (int)aTVP->GetNVertices() )
     {
         aCurve->DelReference( this );
         delVertexList( aSVP, false );

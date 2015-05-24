@@ -46,18 +46,37 @@ IGES_ENTITY_508::IGES_ENTITY_508( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_508::~IGES_ENTITY_508()
 {
+    // unlink all PS curves
     list<LOOP_DATA>::iterator sF = edges.begin();
     list<LOOP_DATA>::iterator eF = edges.end();
 
     while( sF != eF )
     {
-        if( sF->data )
-            delEdge( sF->data, false );
+        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
+        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+
+        while( sP != eP )
+        {
+            sP->second->Unlink( this );
+            ++sP;
+        }
 
         ++sF;
     }
 
     edges.clear();
+
+    // unlink the edge entities
+    list<pair<IGES_ENTITY*, int> >::iterator sE = redges.begin();
+    list<pair<IGES_ENTITY*, int> >::iterator eE = redges.end();
+
+    while( sE != eE )
+    {
+        sE->first->Unlink( this );
+        ++sE;
+    }
+
+    redges.clear();
     return;
 }
 
@@ -288,12 +307,26 @@ bool IGES_ENTITY_508::rescale( double sf )
 
 bool IGES_ENTITY_508::Unlink( IGES_ENTITY* aChildEntity )
 {
+    if( IGES_ENTITY::Unlink( aChildEntity ) )
+        return true;
+
     int eType = aChildEntity->GetEntityType();
 
     if( ENT_VERTEX == eType || ENT_EDGE == eType )
-        return delEdge( aChildEntity, true );
+    {
+        if( delEdge( aChildEntity, true, true ) )
+            return true;
 
-    return delPCurve( aChildEntity, true );
+        ERRMSG << "\n +[BUG] failed to unlink edge entity from E508\n";
+        return false;
+    }
+
+    if( delPCurve( aChildEntity, true, true ) )
+        return true;
+
+    ERRMSG << "\n +[BUG] failed to unlink entity " << aChildEntity->GetEntityType();
+    cerr << " from E508\n";
+    return false;
 }
 
 
@@ -659,7 +692,7 @@ bool IGES_ENTITY_508::addEdge( IGES_ENTITY* aEdge )
 // decrement refcount and release entity if appropriate; aFlagAll indicates
 // that all LOOP_DATA structures containing this edge and their associated
 // PCurves should be released
-bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll )
+bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnlink )
 {
     bool ok = false;    // flag indicates true if the entity has been matched
 
@@ -674,10 +707,11 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll )
         {
             ok = true;
 
-            if( aFlagAll || (--sE->second == 0) )
-            {
+            if( !aFlagUnlink )
                 ep->DelReference( this );
 
+            if( aFlagAll || (--sE->second == 0) )
+            {
                 list<LOOP_DATA>::iterator sF = edges.begin();
                 list<LOOP_DATA>::iterator eF = edges.end();
 
@@ -690,7 +724,7 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll )
 
                         while( sP != eP )
                         {
-                            delPCurve( sP->second, false );
+                            delPCurve( sP->second, false, false );
                             ++sP;
                         }
 
@@ -700,6 +734,9 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll )
 
                     ++sF;
                 }
+
+                sE = redges.erase( sE );
+                continue;
             }   // deleted last reference
         }   // found entity to delete
 
@@ -754,7 +791,7 @@ bool IGES_ENTITY_508::addPCurve( IGES_ENTITY* aCurve )
 
 
 // delete parent reference from the given parameter space curve
-bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge )
+bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aFlagUnlink )
 {
     list<LOOP_DATA>::iterator sF = edges.begin();
     list<LOOP_DATA>::iterator eF = edges.end();
@@ -776,11 +813,13 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge )
                         sF->pcurves.pop_front();
                     }
 
-                    delEdge( sF->data, false );
+                    delEdge( sF->data, false, false );
                 }
                 else
                 {
-                    sP->second->DelReference( this );
+                    if( !aFlagUnlink )
+                        sP->second->DelReference( this );
+
                     sF->pcurves.erase( sP );
                 }
 

@@ -181,8 +181,7 @@ bool IGES_ENTITY_502::rescale( double sf )
 
 bool IGES_ENTITY_502::Unlink( IGES_ENTITY* aChildEntity )
 {
-    ERRMSG << "\n + [BUG] Unlink() invoked on Entity 502 (Vertex List)\n";
-    return false;
+    return IGES_ENTITY::Unlink( aChildEntity );
 }
 
 

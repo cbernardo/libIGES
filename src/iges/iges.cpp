@@ -2294,17 +2294,21 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     // iterate through the list of entities and store lists of
     // + (a) top level Entity 144 (Trimmed Parametric Surfaces)
     // + (b) top level Entity 408 (Singular Subfigure Instance)
+    // + (c) Manifold Solid B-Rep Objects (Entity 186)
     // If (b) is present then items in the list are to be stuffed
     // into an Entity 308 (Subfigure Definition), otherwise if (a)
     // exists then all entities within must be placed in an
-    // Entity 308. If neither (a) nor (b) exist then the export
-    // operation must return TRUE but the Entity308 handle must be NULL.
+    // Entity 308, else if (c) exists all entities within must be
+    // places in an Entity 308. If neither (a), (b), nor (c) exist
+    // then the export operation must return TRUE but the Entity308
+    // handle must be NULL.
     //
     // Set *packagedEntity to equal our new subassembly (Entity 308)
     //
 
     list<IGES_ENTITY*> tplist;
     list<IGES_ENTITY*> sslist;
+    list<IGES_ENTITY*> brlist;
     int tEnt;
     size_t nRefs;
 
@@ -2329,9 +2333,13 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
 
             sslist.push_back( entities[i] );
         }
+        else if( tEnt == ENT_MANIFOLD_SOLID_BREP )
+        {
+            brlist.push_back( entities[i] );
+        }
     }
 
-    if( tplist.empty() && sslist.empty() )
+    if( tplist.empty() && sslist.empty() && brlist.empty() )
         return true;
 
     IGES_ENTITY* ep;
@@ -2380,7 +2388,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
             ++sEnt;
         }
     }
-    else
+    else if( !tplist.empty() )
     {
         sEnt = tplist.begin();
         eEnt = tplist.end();
@@ -2391,6 +2399,27 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
             {
                 ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
                 sEnt = tplist.begin();
+
+                while( p308->DelDE( *sEnt ) && sEnt != eEnt );
+
+                newParent->DelEntity( ep );
+                return false;
+            }
+
+            ++sEnt;
+        }
+    }
+    else
+    {
+        sEnt = brlist.begin();
+        eEnt = brlist.end();
+
+        while( sEnt != eEnt )
+        {
+            if( !p308->AddDE( *sEnt ) )
+            {
+                ERRMSG << "\n + [INFO] could not transfer MSBO entity to Subfigure Definition\n";
+                sEnt = brlist.begin();
 
                 while( p308->DelDE( *sEnt ) && sEnt != eEnt );
 

@@ -17,10 +17,6 @@ using namespace std;
 #define BTOP (0.8)
 #define BBOT (-0.8)
 
-// NOTE: Until full outline manipulation code is implemented
-// we will only be able to add or subtract circles from any
-// given outline.
-
 // take one large circle with a circular cutout
 int test_cc0( void );
 // take one large circle with a small circular cutout on edge

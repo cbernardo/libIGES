@@ -1,8 +1,16 @@
-8 Feb 2015
+24 May 2015
+Updates:
+  + The code is now capable of creating bare PCB models
+  + The "mergetest" test program can now create assemblies
+    with Manifold Solid B-Rep Objects which means output
+    from more MCAD systems (including Pro-E) are now
+    supported.
+  + In principle the code now has all features required
+    to create a PCB assembly with a correct PCB model
+    and component models as provided by various sources.
 
-This is a work in progress; the aim is to create an implementation
-of the IGESv6 specification which is suitable for use in the KiCad
-project to create a board model and assembly model.
+  Next step: Verify PCB model generation by converting
+  IDFv2 or IDFv3 files to an IGES assembly.
 
 6 May 2015
 
@@ -21,3 +29,10 @@ See the output of the "olntest" test program to see the results
 of the boundary manipulation code. At the moment the code can
 generate the vertical sides of the PCB; the code to generate
 the top and bottom planes of the PCB are next on the agenda.
+
+8 Feb 2015
+
+This is a work in progress; the aim is to create an implementation
+of the IGESv6 specification which is suitable for use in the KiCad
+project to create a board model and assembly model.
+

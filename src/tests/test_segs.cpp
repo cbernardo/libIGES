@@ -9,47 +9,47 @@
 #include <iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
-#include <geom_segment.h>
+#include <mcad_segment.h>
 
 using namespace std;
 
-void print_flag( IGES_INTERSECT_FLAG flag )
+void print_flag( MCAD_INTERSECT_FLAG flag )
 {
     switch( flag )
     {
-        case IGES_IFLAG_NONE:
+        case MCAD_IFLAG_NONE:
             cout << "[flag: none]";
             break;
 
-        case IGES_IFLAG_ENDPOINT:
+        case MCAD_IFLAG_ENDPOINT:
             cout << "[flag: endpoint]";
             break;
 
-        case IGES_IFLAG_TANGENT:
+        case MCAD_IFLAG_TANGENT:
             cout << "[flag: tangent]";
             break;
 
-        case IGES_IFLAG_EDGE:
+        case MCAD_IFLAG_EDGE:
             cout << "[flag: edge]";
             break;
 
-        case IGES_IFLAG_INSIDE:
+        case MCAD_IFLAG_INSIDE:
             cout << "[flag: inside]";
             break;
 
-        case IGES_IFLAG_ENCIRCLES:
+        case MCAD_IFLAG_ENCIRCLES:
             cout << "[flag: encircles]";
             break;
 
-        case IGES_IFLAG_OUTSIDE:
+        case MCAD_IFLAG_OUTSIDE:
             cout << "[flag: outside]";
             break;
 
-        case IGES_IFLAG_IDENT:
+        case MCAD_IFLAG_IDENT:
             cout << "[flag: identical]";
             break;
 
-        case IGES_IFLAG_MULTIEDGE:
+        case MCAD_IFLAG_MULTIEDGE:
             cout << "[flag: multiedge]";
             break;
 
@@ -70,7 +70,7 @@ void testArcSeg( void );
 // test arcs on arcs
 void testArcs( void );
 // print "  [OK]:" or "  [FAIL]:" depending on whether or not the flags match
-void checkFlags( IGES_INTERSECT_FLAG f1, IGES_INTERSECT_FLAG f2 )
+void checkFlags( MCAD_INTERSECT_FLAG f1, MCAD_INTERSECT_FLAG f2 )
 {
     if( f1 != f2 )
         cout << "  [FAIL]: ";
@@ -90,8 +90,8 @@ int main()
 
 void testCircles( void )
 {
-    IGES_GEOM_SEGMENT seg1;
-    IGES_GEOM_SEGMENT seg2;
+    MCAD_SEGMENT seg1;
+    MCAD_SEGMENT seg2;
 
     IGES_POINT c1[3];   // parameters for Circle 1
     IGES_POINT c2[3];   // parameters for Circle 2
@@ -118,12 +118,12 @@ void testCircles( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expect invalid geometry: tangent
-    IGES_INTERSECT_FLAG flag;
+    MCAD_INTERSECT_FLAG flag;
     std::list<IGES_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -148,7 +148,7 @@ void testCircles( void )
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_ENCIRCLES );
+        checkFlags( flag, MCAD_IFLAG_ENCIRCLES );
         cout << "[expected failure: encircles] ";
         print_flag( flag );
         cout << "\n";
@@ -173,7 +173,7 @@ void testCircles( void )
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_INSIDE );
+        checkFlags( flag, MCAD_IFLAG_INSIDE );
         cout << "[expected failure: inside] ";
         print_flag( flag );
         cout << "\n";
@@ -198,7 +198,7 @@ void testCircles( void )
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_NONE );
+        checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
         print_flag( flag );
         cout << "\n";
@@ -229,7 +229,7 @@ void testCircles( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_NONE );
+        checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "found intersections at:\n";
         cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
         cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
@@ -243,8 +243,8 @@ void testCircles( void )
 // test intersecting circles and line segments
 void testCircleSeg( void )
 {
-    IGES_GEOM_SEGMENT seg1;
-    IGES_GEOM_SEGMENT seg2;
+    MCAD_SEGMENT seg1;
+    MCAD_SEGMENT seg2;
 
     IGES_POINT c1[3];   // parameters for Circle 1
     IGES_POINT l1[2];   // parameters for Line 1
@@ -269,12 +269,12 @@ void testCircleSeg( void )
     seg2.SetParams( l1[0], l1[1] );
 
     // expect invalid geometry: tangent
-    IGES_INTERSECT_FLAG flag;
+    MCAD_INTERSECT_FLAG flag;
     std::list<IGES_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -292,7 +292,7 @@ void testCircleSeg( void )
 
     if( !seg2.GetIntersections( seg1, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -324,7 +324,7 @@ void testCircleSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << " expected single endpoint (67.5994, 67.5994) ";
             print_flag( flag );
             cout << "\n  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
@@ -351,7 +351,7 @@ void testCircleSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_NONE );
+            checkFlags( flag, MCAD_IFLAG_NONE );
             cout << "expected 2 points (67.5994, 67.5994), (-67.5994, -67.5994)\n";
             cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
             cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
@@ -366,8 +366,8 @@ void testCircleSeg( void )
 // test arcs and line segments
 void testArcSeg( void )
 {
-    IGES_GEOM_SEGMENT seg1;
-    IGES_GEOM_SEGMENT seg2;
+    MCAD_SEGMENT seg1;
+    MCAD_SEGMENT seg2;
 
     IGES_POINT c1[3];   // parameters for Arc 1
     IGES_POINT l1[2];   // parameters for Line 1
@@ -392,12 +392,12 @@ void testArcSeg( void )
     seg2.SetParams( l1[0], l1[1] );
 
     // expect invalid geometry: tangent
-    IGES_INTERSECT_FLAG flag;
+    MCAD_INTERSECT_FLAG flag;
     std::list<IGES_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -419,7 +419,7 @@ void testArcSeg( void )
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -440,7 +440,7 @@ void testArcSeg( void )
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_NONE );
+        checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
         print_flag( flag );
         cout << "\n";
@@ -471,7 +471,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -500,7 +500,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -530,7 +530,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -560,7 +560,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -590,7 +590,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -619,7 +619,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -647,7 +647,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_NONE );
+            checkFlags( flag, MCAD_IFLAG_NONE );
             cout << "[expected flag: none] ";
             print_flag( flag );
             cout << "\n";
@@ -675,7 +675,7 @@ void testArcSeg( void )
         }
         else
         {
-            checkFlags( flag, IGES_IFLAG_ENDPOINT );
+            checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
@@ -691,8 +691,8 @@ void testArcSeg( void )
 // test arcs on arcs
 void testArcs( void )
 {
-    IGES_GEOM_SEGMENT seg1;
-    IGES_GEOM_SEGMENT seg2;
+    MCAD_SEGMENT seg1;
+    MCAD_SEGMENT seg2;
 
     IGES_POINT c1[3];   // parameters for Arc 1
     IGES_POINT c2[3];   // parameters for Arc 2
@@ -717,12 +717,12 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expect invalid geometry: tangent
-    IGES_INTERSECT_FLAG flag;
+    MCAD_INTERSECT_FLAG flag;
     std::list<IGES_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_TANGENT );
+        checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
         print_flag( flag );
         cout << "\n";
@@ -747,7 +747,7 @@ void testArcs( void )
     // expected result: no intersection. no flags set
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
-        checkFlags( flag, IGES_IFLAG_NONE );
+        checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
         print_flag( flag );
         cout << "\n";
@@ -770,7 +770,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_EDGE );
+        checkFlags( flag, MCAD_IFLAG_EDGE );
         cout << "[expected flag: edge] ";
         print_flag( flag );
         cout << "\n";
@@ -807,7 +807,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_EDGE );
+        checkFlags( flag, MCAD_IFLAG_EDGE );
         cout << "[expected flag: edge] ";
         print_flag( flag );
         cout << "\n";
@@ -844,7 +844,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_ENDPOINT );
+        checkFlags( flag, MCAD_IFLAG_ENDPOINT );
         cout << "[expected success with flag: endpoint] ";
         print_flag( flag );
         cout << "\n";
@@ -882,7 +882,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_OUTSIDE );
+        checkFlags( flag, MCAD_IFLAG_OUTSIDE );
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";
@@ -904,7 +904,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_INSIDE );
+        checkFlags( flag, MCAD_IFLAG_INSIDE );
         cout << "[expected success with flag: inside] ";
         print_flag( flag );
         cout << "\n";
@@ -934,7 +934,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_OUTSIDE );
+        checkFlags( flag, MCAD_IFLAG_OUTSIDE );
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";
@@ -957,7 +957,7 @@ void testArcs( void )
     }
     else
     {
-        checkFlags( flag, IGES_IFLAG_OUTSIDE );
+        checkFlags( flag, MCAD_IFLAG_OUTSIDE );
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";

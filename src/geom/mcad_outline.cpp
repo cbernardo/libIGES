@@ -1,5 +1,5 @@
 /*
- * file: geom_outline.cpp
+ * file: mcad_outline.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -27,13 +27,10 @@
 
 #include <sstream>
 #include <cmath>
-#include <iges.h>
 #include <error_macros.h>
 #include <iges_helpers.h>
-#include <geom_segment.h>
-#include <geom_wall.h>
-#include <geom_cylinder.h>
-#include <geom_outline.h>
+#include <mcad_segment.h>
+#include <mcad_outline.h>
 
 using namespace std;
 
@@ -43,64 +40,48 @@ using namespace std;
 } while( 0 )
 
 
-struct GEOM_INTERSECT
-{
-    IGES_POINT vertex;
-    IGES_GEOM_SEGMENT* segA;    // pointer to the segment operated upon
-    IGES_GEOM_SEGMENT* segB;    // pointer to the segment modifying segA
-    std::list<IGES_GEOM_SEGMENT*>::iterator iSegA;  // iterator to the segment operated upon
-    std::list<IGES_GEOM_SEGMENT*>::iterator iSegB;  // iterator to the segment operation's argument, else = iSegA
-
-    GEOM_INTERSECT()
-    {
-        segA = NULL;
-        segB = NULL;
-    }
-};
-
-
-static void print_point( IGES_POINT p0 )
+void MCAD_OUTLINE::PrintPoint( IGES_POINT p0 )
 {
     cout << "(" << p0.x << ", " << p0.y << ")\n";
 }
 
 
-static void print_seg( IGES_GEOM_SEGMENT* seg )
+void MCAD_OUTLINE::PrintSeg( MCAD_SEGMENT* seg )
 {
     cout << "      type: ";
 
-    switch( seg->getSegType() )
+    switch( seg->GetSegType() )
     {
-        case IGES_SEGTYPE_NONE:
+        case MCAD_SEGTYPE_NONE:
             cout << "NONE\n";
             break;
 
-        case IGES_SEGTYPE_ARC:
+        case MCAD_SEGTYPE_ARC:
             cout << "ARC\n";
             cout << "            c";
-            print_point( seg->getCenter() );
+            PrintPoint( seg->GetCenter() );
             cout << "            s";
-            print_point( seg->getStart() );
+            PrintPoint( seg->GetStart() );
             cout << "            e";
-            print_point( seg->getEnd() );
-            cout << "            cw: " << seg->isArcCW() << "\n";
+            PrintPoint( seg->GetEnd() );
+            cout << "            cw: " << seg->IsCW() << "\n";
             cout << "            ang_start/ang_end: ";
-            cout << seg->getStartAngle() << ", " << seg->getEndAngle() << "\n";
+            cout << seg->GetStartAngle() << ", " << seg->GetEndAngle() << "\n";
             break;
 
-        case IGES_SEGTYPE_CIRCLE:
+        case MCAD_SEGTYPE_CIRCLE:
             cout << "CIRCLE\n";
             cout << "            c";
-            print_point( seg->getCenter() );
-            cout << "            r:" << seg->getRadius();
+            PrintPoint( seg->GetCenter() );
+            cout << "            r:" << seg->GetRadius();
             break;
 
-        case IGES_SEGTYPE_LINE:
+        case MCAD_SEGTYPE_LINE:
             cout << "LINE\n";
             cout << "            s";
-            print_point( seg->getStart() );
+            PrintPoint( seg->GetStart() );
             cout << "            e";
-            print_point( seg->getEnd() );
+            PrintPoint( seg->GetEnd() );
             break;
 
         default:
@@ -110,61 +91,23 @@ static void print_seg( IGES_GEOM_SEGMENT* seg )
 }
 
 
-static void print_geom_intersects( const list<GEOM_INTERSECT>& aList )
+void MCAD_OUTLINE::PrintGeomIntersects( const list<MCAD_INTERSECT>& aList )
 {
-    list<GEOM_INTERSECT>::const_iterator sL = aList.begin();
-    list<GEOM_INTERSECT>::const_iterator eL = aList.end();
+    list<MCAD_INTERSECT>::const_iterator sL = aList.begin();
+    list<MCAD_INTERSECT>::const_iterator eL = aList.end();
 
     while( sL != eL )
     {
-        cerr << "** GEOM_INTERSECT\n";
+        cerr << "** MCAD_INTERSECT\n";
         cerr << "   point(" << sL->vertex.x << ", " << sL->vertex.y << ")\n";
         cerr << "   segA: " << sL->segA << "\n";
-        print_seg( sL->segA );
+        PrintSeg( sL->segA );
         ++sL;
     }
 }
 
 
-static bool newEnt102( IGES* aModel, IGES_ENTITY_102** cp )
-{
-    IGES_ENTITY* ep;
-
-    if( !aModel->NewEntity( ENT_COMPOSITE_CURVE, &ep ) )
-        return false;
-
-    *cp = dynamic_cast<IGES_ENTITY_102*>( ep );
-
-    if( !(*cp) )
-    {
-        aModel->DelEntity( ep );
-        return false;
-    }
-
-    return true;
-}
-
-
-static bool newEnt142( IGES* aModel, IGES_ENTITY_142** cp )
-{
-    IGES_ENTITY* ep;
-
-    if( !aModel->NewEntity( ENT_CURVE_ON_PARAMETRIC_SURFACE, &ep ) )
-        return false;
-
-    *cp = dynamic_cast<IGES_ENTITY_142*>( ep );
-
-    if( !(*cp) )
-    {
-        aModel->DelEntity( ep );
-        return false;
-    }
-
-    return true;
-}
-
-
-IGES_GEOM_OUTLINE::IGES_GEOM_OUTLINE()
+MCAD_OUTLINE::MCAD_OUTLINE()
 {
     mIsClosed = false;
     mWinding = 0.0;
@@ -173,7 +116,7 @@ IGES_GEOM_OUTLINE::IGES_GEOM_OUTLINE()
 }
 
 
-IGES_GEOM_OUTLINE::~IGES_GEOM_OUTLINE()
+MCAD_OUTLINE::~MCAD_OUTLINE()
 {
     while( !msegments.empty() )
     {
@@ -198,14 +141,14 @@ IGES_GEOM_OUTLINE::~IGES_GEOM_OUTLINE()
 
 
 // Retrieve the error stack
-const std::list< std::string >* IGES_GEOM_OUTLINE::GetErrors( void )
+const std::list< std::string >* MCAD_OUTLINE::GetErrors( void )
 {
     return &errors;
 }
 
 
 // Clear the error stack
-void IGES_GEOM_OUTLINE::ClearErrors( void )
+void MCAD_OUTLINE::ClearErrors( void )
 {
     errors.clear();
     return;
@@ -213,14 +156,14 @@ void IGES_GEOM_OUTLINE::ClearErrors( void )
 
 
 // Returns 'true' if the outline is closed
-bool IGES_GEOM_OUTLINE::IsClosed( void )
+bool MCAD_OUTLINE::IsClosed( void )
 {
     return mIsClosed;
 }
 
 
 // Returns 'true' if the (closed) outline is contiguous
-bool IGES_GEOM_OUTLINE::IsContiguous( void )
+bool MCAD_OUTLINE::IsContiguous( void )
 {
     if( msegments.empty() )
     {
@@ -234,11 +177,11 @@ bool IGES_GEOM_OUTLINE::IsContiguous( void )
         return false;
     }
 
-    list<IGES_GEOM_SEGMENT*>::iterator sO = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eO = msegments.end();
-    list<IGES_GEOM_SEGMENT*>::iterator pO = --msegments.end();
+    list<MCAD_SEGMENT*>::iterator sO = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator eO = msegments.end();
+    list<MCAD_SEGMENT*>::iterator pO = --msegments.end();
 
-    if( IGES_SEGTYPE_CIRCLE == (*sO)->getSegType() )
+    if( MCAD_SEGTYPE_CIRCLE == (*sO)->GetSegType() )
         return true;
 
     int acc = 0;
@@ -265,7 +208,7 @@ bool IGES_GEOM_OUTLINE::IsContiguous( void )
 
 
 // Returns 'true' if the point is on or inside this outline
-bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
+bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 {
     // always fail if the outline is not closed
     if( !mIsClosed )
@@ -305,16 +248,16 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 
     p2.y = aPoint.y;
     cout << "XXX: test point 2 ";
-    print_point( p2 );
+    PrintPoint( p2 );
 
-    IGES_GEOM_SEGMENT ls0;
+    MCAD_SEGMENT ls0;
     ls0.SetParams( aPoint, p2 );
     int nI = 0; // number of intersections with the outline
 
-    list<IGES_GEOM_SEGMENT*>::iterator sSegs = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSegs = msegments.end();
+    list<MCAD_SEGMENT*>::iterator sSegs = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator eSegs = msegments.end();
     list<IGES_POINT> iList;
-    IGES_INTERSECT_FLAG flag;
+    MCAD_INTERSECT_FLAG flag;
 
     int acc = 0;
 
@@ -322,7 +265,7 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     {
         cout << "XXX: iter " << ++acc << "\n";
         cout << "XXX: seg\n";
-        print_seg( *sSegs );
+        PrintSeg( *sSegs );
 
         if( (*sSegs)->GetIntersections( ls0, iList, flag ) )
         {
@@ -333,7 +276,7 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
             while( sL != eL )
             {
                 // note: handle the case of a circle differently
-                if( IGES_SEGTYPE_CIRCLE == (*sSegs)->getSegType() )
+                if( MCAD_SEGTYPE_CIRCLE == (*sSegs)->GetSegType() )
                 {
                     cout << "XXX: circle\n";
                     ++nI;
@@ -363,10 +306,10 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
                             // fail if the endpoint is on an arc; in such cases
                             // we must check the bounds of the adjacent curve and
                             // increment nI is those bounds are exclusively >= aPoint.y
-                            if( IGES_SEGTYPE_ARC == (*sSegs)->getSegType() && bb0.y < aPoint.y )
+                            if( MCAD_SEGTYPE_ARC == (*sSegs)->GetSegType() && bb0.y < aPoint.y )
                             {
                                 cout << "XXX: cheking loop\n";
-                                list<IGES_GEOM_SEGMENT*>::iterator tSeg = sSegs;
+                                list<MCAD_SEGMENT*>::iterator tSeg = sSegs;
 
                                 if( isEnd1 )
                                 {
@@ -385,7 +328,7 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
                                 }
 
                                 cout << "XXX: testing alt seg\n";
-                                print_seg( *tSeg );
+                                PrintSeg( *tSeg );
 
                                 (*tSeg)->GetBoundingBox( bb0, bb1 );
 
@@ -425,7 +368,7 @@ bool IGES_GEOM_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 // Add a segment to this outline; the user must ensure that
 // the outline is closed before performing any other type
 // of operation.
-bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
+bool MCAD_OUTLINE::AddSegment( MCAD_SEGMENT* aSegment, bool& error )
 {
     if( NULL == aSegment )
     {
@@ -438,7 +381,7 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
         return false;
     }
 
-    if( IGES_SEGTYPE_NONE == aSegment->getSegType() )
+    if( MCAD_SEGTYPE_NONE == aSegment->GetSegType() )
     {
         ostringstream msg;
         GEOM_ERR( msg );
@@ -462,7 +405,7 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
 
     error = false;
 
-    if( IGES_SEGTYPE_CIRCLE == aSegment->getSegType() )
+    if( MCAD_SEGTYPE_CIRCLE == aSegment->GetSegType() )
     {
         if( !msegments.empty() )
         {
@@ -483,12 +426,12 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
         return true;
     }
 
-    // note: do not use getStart(), getEnd() as those functions
+    // note: do not use GetStart(), GetEnd() as those functions
     // ensure CCW order on an arc whereas mstart, mend ensure
     // actual endpoint order
     IGES_POINT p0;
     IGES_POINT p1;
-    IGES_GEOM_SEGMENT* pseg;
+    MCAD_SEGMENT* pseg;
 
     if( !msegments.empty() )
     {
@@ -519,13 +462,13 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
     // calculate winding based on area of the curve;
     // in this case mWinding > 0 = CW
     pseg = msegments.back();
-    // note: do not use getStart(), getEnd() as those functions
+    // note: do not use GetStart(), GetEnd() as those functions
     // ensure CCW order on an arc whereas mstart, mend ensure
     // actual endpoint order
     p0 = pseg->mend;
     p1 = pseg->mstart;
 
-    if( IGES_SEGTYPE_ARC == pseg->getSegType() )
+    if( MCAD_SEGTYPE_ARC == pseg->GetSegType() )
     {
         // To ensure correct winding calculations involving
         // arcs we must take the midpoint of the arc and
@@ -573,8 +516,8 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
             // check the special case where we have only 2 segments
             if( msegments.size() == 2 )
             {
-                IGES_GEOM_SEGMENT* sp0;
-                IGES_GEOM_SEGMENT* sp1;
+                MCAD_SEGMENT* sp0;
+                MCAD_SEGMENT* sp1;
 
                 // the 2 segments are either both arcs or an arc and a line
                 sp0 = msegments.front();
@@ -592,9 +535,9 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
                 if( mWinding > 0.0 )
                 {
                     // reverse everything
-                    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
-                    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
-                    list<IGES_GEOM_SEGMENT*> tsegs;
+                    list<MCAD_SEGMENT*>::iterator sSeg = msegments.begin();
+                    list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
+                    list<MCAD_SEGMENT*> tsegs;
 
                     while( sSeg != eSeg )
                     {
@@ -615,7 +558,7 @@ bool IGES_GEOM_OUTLINE::AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error )
 }
 
 // operate on the outline (add/subtract)
-bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub )
+bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 {
     mBBisOK = false;
 
@@ -641,7 +584,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         return false;
     }
 
-    if( IGES_SEGTYPE_CIRCLE != aCircle->getSegType() )
+    if( MCAD_SEGTYPE_CIRCLE != aCircle->GetSegType() )
     {
         ostringstream msg;
         GEOM_ERR( msg );
@@ -653,25 +596,25 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
     }
 
     error = false;
-    list<GEOM_INTERSECT> intersects;
+    list<MCAD_INTERSECT> intersects;
     list<IGES_POINT> iList;
-    list<IGES_GEOM_SEGMENT*>::iterator iSeg = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
-    IGES_INTERSECT_FLAG flag;
+    list<MCAD_SEGMENT*>::iterator iSeg = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
+    MCAD_INTERSECT_FLAG flag;
 
     int acc = 1;    // XXX - DEBUG
     while( iSeg != eSeg )
     {
-        flag = IGES_IFLAG_NONE;
+        flag = MCAD_IFLAG_NONE;
         iList.clear();
 
         if( (*iSeg)->GetIntersections( *aCircle, iList, flag ) )
         {
             cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
-            print_seg(*iSeg);
+            PrintSeg(*iSeg);
 
-            if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag
-                && IGES_IFLAG_TANGENT != flag )
+            if( MCAD_IFLAG_NONE != flag && MCAD_IFLAG_ENDPOINT != flag
+                && MCAD_IFLAG_TANGENT != flag )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );
@@ -689,10 +632,10 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
 
             while( iPts != ePts )
             {
-                GEOM_INTERSECT gi;
+                MCAD_INTERSECT gi;
                 gi.vertex = *iPts;
                 cout << "XXX: v";
-                print_point( *iPts );
+                PrintPoint( *iPts );
                 gi.segA = *iSeg;
                 gi.segB = aCircle;
                 gi.iSegA = iSeg;
@@ -703,7 +646,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         }
         else
         {
-            if( IGES_IFLAG_NONE != flag )
+            if( MCAD_IFLAG_NONE != flag )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );
@@ -731,11 +674,11 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         return false;
 
     iList.clear();
-    list<list<IGES_GEOM_SEGMENT*>::iterator> lSegs;
+    list<list<MCAD_SEGMENT*>::iterator> lSegs;
 
     // compute the number of unique intersecting points:
-    list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
-    list<GEOM_INTERSECT>::iterator eIn = intersects.end();
+    list<MCAD_INTERSECT>::iterator iIn = intersects.begin();
+    list<MCAD_INTERSECT>::iterator eIn = intersects.end();
 
     while( iIn != eIn )
     {
@@ -780,7 +723,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         error = true;
-        print_geom_intersects( intersects );
+        PrintGeomIntersects( intersects );
         return false;
     }
 
@@ -791,21 +734,21 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
     do
     {
         // check for endpoints
-        list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
-        list<GEOM_INTERSECT>::iterator eIn = intersects.end();
+        list<MCAD_INTERSECT>::iterator iIn = intersects.begin();
+        list<MCAD_INTERSECT>::iterator eIn = intersects.end();
 
         while( iIn != eIn )
         {
-            if( iIn->segA->getSegType() != IGES_SEGTYPE_CIRCLE )
+            if( iIn->segA->GetSegType() != MCAD_SEGTYPE_CIRCLE )
             {
-                if( !p1e && ( PointMatches( iList.front(), iIn->segA->getStart(), 1e-8 )
-                    || PointMatches( iList.front(), iIn->segA->getEnd(), 1e-8 ) ) )
+                if( !p1e && ( PointMatches( iList.front(), iIn->segA->GetStart(), 1e-8 )
+                    || PointMatches( iList.front(), iIn->segA->GetEnd(), 1e-8 ) ) )
                 {
                     p1e = true;
                 }
 
-                if( !p2e && ( PointMatches( iList.back(), iIn->segA->getStart(), 1e-8 )
-                    || PointMatches( iList.back(), iIn->segA->getEnd(), 1e-8 ) ) )
+                if( !p2e && ( PointMatches( iList.back(), iIn->segA->GetStart(), 1e-8 )
+                    || PointMatches( iList.back(), iIn->segA->GetEnd(), 1e-8 ) ) )
                 {
                     p2e = true;
                 }
@@ -887,26 +830,26 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
     {
         cout << "XXX: (POINT INSIDE)\n";
         cout << "c";
-        print_point(p0);
+        PrintPoint(p0);
         cout << "s";
-        print_point(iList.front());
+        PrintPoint(iList.front());
         cout << "e";
-        print_point(iList.back());
+        PrintPoint(iList.back());
     }
     else
     {
         cout << "XXX: (POINT OUTSIDE)\n";
         cout << "c";
-        print_point(p0);
+        PrintPoint(p0);
         cout << "s";
-        print_point(iList.front());
+        PrintPoint(iList.front());
         cout << "e";
-        print_point(iList.back());
+        PrintPoint(iList.back());
     }
 
     IGES_POINT pF[2];   // final point order
     bool isEnd[2];      // indicates if pF[n] is an endpoint
-    list<IGES_GEOM_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
+    list<MCAD_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
 
     // note: The OUT(/IN) segment must be put in CCW(/CW) order and
     // its endpoints shall split the appropriate outline
@@ -951,7 +894,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         pSeg[1] = lSegs.back();
     }
 
-    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+    MCAD_SEGMENT* sp = new MCAD_SEGMENT;
 
     if( !sp->SetParams( p0, pF[0], pF[1], opsub ) )
     {
@@ -962,22 +905,22 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         errors.push_back( msg.str() );
         error = true;
         cout << "  c";
-        print_point( p0 );
+        PrintPoint( p0 );
         cout << "  s";
-        print_point( pF[0] );
+        PrintPoint( pF[0] );
         cout << "  e";
-        print_point( pF[1] );
+        PrintPoint( pF[1] );
         delete sp;
         return false;
     }
 
-    if( msegments.front()->getSegType() == IGES_SEGTYPE_CIRCLE )
+    if( msegments.front()->GetSegType() == MCAD_SEGTYPE_CIRCLE )
     {
         // Special case: this outline is currently a circle
         iList.clear();
         iList.push_back(pF[0]);
         iList.push_back(pF[1]);
-        list<IGES_GEOM_SEGMENT*> sList;
+        list<MCAD_SEGMENT*> sList;
 
         if( !(*pSeg[0])->Split(iList, sList) )
         {
@@ -1012,7 +955,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
             iList.clear();
             iList.push_back(pF[0]);
             iList.push_back(pF[1]);
-            list<IGES_GEOM_SEGMENT*> sList;
+            list<MCAD_SEGMENT*> sList;
 
             if( !(*pSeg[0])->Split(iList, sList) )
             {
@@ -1049,7 +992,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
             delete sList.front();
             sList.pop_front();
             sList.push_front( sp );
-            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[0];
+            list<MCAD_SEGMENT*>::iterator pS0 = pSeg[0];
             msegments.insert( ++pS0, sList.begin(), sList.end() );
 
             return true;
@@ -1068,7 +1011,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
             // split here
             iList.clear();
             iList.push_back(pF[i]);
-            list<IGES_GEOM_SEGMENT*> sList;
+            list<MCAD_SEGMENT*> sList;
 
             if( !(*pSeg[i])->Split(iList, sList) )
             {
@@ -1079,9 +1022,9 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
                 errors.push_back( msg.str() );
                 error = true;
                 cout << "Segment to be split:\n";
-                print_seg(*pSeg[i]);
+                PrintSeg(*pSeg[i]);
                 cout << "Split point v";
-                print_point(pF[i]);
+                PrintPoint(pF[i]);
                 delete sp;
                 return false;
             }
@@ -1107,7 +1050,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
 
             // a single new segment should have been returned; add it
             // to the list of segments
-            list<IGES_GEOM_SEGMENT*>::iterator pS0 = pSeg[i];
+            list<MCAD_SEGMENT*>::iterator pS0 = pSeg[i];
             msegments.insert( ++pS0, sList.front() );
         }
     }
@@ -1139,7 +1082,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
         return false;
     }
 
-    list<IGES_GEOM_SEGMENT*>::iterator tSeg = pSeg[0];
+    list<MCAD_SEGMENT*>::iterator tSeg = pSeg[0];
     ++tSeg;
 
     while( true )
@@ -1165,20 +1108,20 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool
             break;
 
         cout << "XXX: deleting segment ...\n";
-        print_seg( *tSeg );
+        PrintSeg( *tSeg );
         delete *tSeg;
         tSeg = msegments.erase( tSeg );
     }
 
     cout << "XXX: inserting segment ...\n";
-    print_seg( sp );
+    PrintSeg( sp );
     msegments.insert( tSeg, sp );
     return true;
-}   // opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub )
+}   // opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
 
 // operate on the generic outline (add/subtract)
-bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub )
+bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
 {
     // Implementation:
     // a. Determine intersection points on *this and aOutline
@@ -1256,30 +1199,30 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     // if successful then destroy the aOutline container.
 
     error = false;
-    list<GEOM_INTERSECT> intersects;
+    list<MCAD_INTERSECT> intersects;
     list<IGES_POINT> iList;
-    list<IGES_GEOM_SEGMENT*>::iterator iSeg = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
-    IGES_INTERSECT_FLAG flag;
+    list<MCAD_SEGMENT*>::iterator iSeg = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
+    MCAD_INTERSECT_FLAG flag;
 
     int acc = 1;    // XXX - DEBUG
     while( iSeg != eSeg )
     {
-        flag = IGES_IFLAG_NONE;
+        flag = MCAD_IFLAG_NONE;
         iList.clear();
 
-        list<IGES_GEOM_SEGMENT*>::iterator sO = aOutline->msegments.begin();
-        list<IGES_GEOM_SEGMENT*>::iterator eO = aOutline->msegments.end();
+        list<MCAD_SEGMENT*>::iterator sO = aOutline->msegments.begin();
+        list<MCAD_SEGMENT*>::iterator eO = aOutline->msegments.end();
 
         while( sO != eO )
         {
             if( (*iSeg)->GetIntersections( **sO, iList, flag ) )
             {
                 cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
-                print_seg(*iSeg);
+                PrintSeg(*iSeg);
 
-                if( IGES_IFLAG_NONE != flag && IGES_IFLAG_ENDPOINT != flag
-                    && IGES_IFLAG_TANGENT != flag )
+                if( MCAD_IFLAG_NONE != flag && MCAD_IFLAG_ENDPOINT != flag
+                    && MCAD_IFLAG_TANGENT != flag )
                 {
                     ostringstream msg;
                     GEOM_ERR( msg );
@@ -1297,10 +1240,10 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
 
                 while( iPts != ePts )
                 {
-                    GEOM_INTERSECT gi;
+                    MCAD_INTERSECT gi;
                     gi.vertex = *iPts;
                     cout << "XXX: v";
-                    print_point( *iPts );
+                    PrintPoint( *iPts );
                     gi.segA = *iSeg;
                     gi.segB = *sO;
                     gi.iSegA = iSeg;
@@ -1311,7 +1254,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
             }
             else
             {
-                if( IGES_IFLAG_NONE != flag )
+                if( MCAD_IFLAG_NONE != flag )
                 {
                     ostringstream msg;
                     GEOM_ERR( msg );
@@ -1342,12 +1285,12 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         return false;
 
     iList.clear();
-    list<list<IGES_GEOM_SEGMENT*>::iterator> lSegs;
-    list<list<IGES_GEOM_SEGMENT*>::iterator> oSegs;
+    list<list<MCAD_SEGMENT*>::iterator> lSegs;
+    list<list<MCAD_SEGMENT*>::iterator> oSegs;
 
     // compute the number of unique intersecting points:
-    list<GEOM_INTERSECT>::iterator iIn = intersects.begin();
-    list<GEOM_INTERSECT>::iterator eIn = intersects.end();
+    list<MCAD_INTERSECT>::iterator iIn = intersects.begin();
+    list<MCAD_INTERSECT>::iterator eIn = intersects.end();
 
     while( iIn != eIn )
     {
@@ -1394,7 +1337,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         error = true;
-        print_geom_intersects( intersects );
+        PrintGeomIntersects( intersects );
         return false;
     }
 
@@ -1402,14 +1345,14 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     bool p1e = false;   // set to true if Point 1 is an endpoint
     bool p2e = false;   // set to true if Point 2 is an endpoint
 
-    if( ( IGES_SEGTYPE_CIRCLE != (*lSegs.front())->getSegType() )
+    if( ( MCAD_SEGTYPE_CIRCLE != (*lSegs.front())->GetSegType() )
         && ( PointMatches( iList.front(), (*lSegs.front())->mstart, 1e-8 )
         || PointMatches( iList.front(), (*lSegs.front())->mend, 1e-8 ) ) )
     {
         p1e = true;
     }
 
-    if( ( IGES_SEGTYPE_CIRCLE != (*lSegs.back())->getSegType() )
+    if( ( MCAD_SEGTYPE_CIRCLE != (*lSegs.back())->GetSegType() )
         && ( PointMatches( iList.back(), (*lSegs.back())->mstart, 1e-8 )
         || PointMatches( iList.back(), (*lSegs.back())->mend, 1e-8 ) ) )
     {
@@ -1420,7 +1363,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // we are splitting a single entity at 2 points
         cout << "XXX: splitting at 2 points\n";
-        list<IGES_GEOM_SEGMENT*> sList;
+        list<MCAD_SEGMENT*> sList;
 
         if( !(*lSegs.front())->Split(iList, sList) )
         {
@@ -1434,9 +1377,9 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
 
         cout << "XXX: old nsegs: " << msegments.size() << "\n";
-        list<IGES_GEOM_SEGMENT*>::iterator sSL = sList.begin();
-        list<IGES_GEOM_SEGMENT*>::iterator eSL = sList.end();
-        list<IGES_GEOM_SEGMENT*>::iterator ps0 = lSegs.front();
+        list<MCAD_SEGMENT*>::iterator sSL = sList.begin();
+        list<MCAD_SEGMENT*>::iterator eSL = sList.end();
+        list<MCAD_SEGMENT*>::iterator ps0 = lSegs.front();
         msegments.insert( ++ps0, sSL, eSL );
         cout << "XXX: new nsegs: " << msegments.size() << "\n";
     }
@@ -1444,20 +1387,20 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // we are splitting individual entities at single points
         cout << "XXX: splitting at single points\n";
-        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
-        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
+        list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
+        list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
         list<IGES_POINT>::iterator iPts = iList.begin();
         list<IGES_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {
-            IGES_GEOM_SEGMENT* pSeg = **sSegs;
+            MCAD_SEGMENT* pSeg = **sSegs;
 
             if( !PointMatches( *iPts, pSeg->mstart, 1e-8 )
                 && !PointMatches( *iPts, pSeg->mend, 1e-8 ) )
             {
                 // this is not an endpoint; split the entity
-                list<IGES_GEOM_SEGMENT*> sList;
+                list<MCAD_SEGMENT*> sList;
                 list<IGES_POINT> pl;
                 pl.push_back( *iPts );
 
@@ -1473,7 +1416,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
                 }
 
                 cout << "XXX: old nsegs: " << msegments.size() << "\n";
-                list<IGES_GEOM_SEGMENT*>::iterator ps0 = *sSegs;
+                list<MCAD_SEGMENT*>::iterator ps0 = *sSegs;
                 msegments.insert( ++ps0, sList.front() );
                 cout << "XXX: new nsegs: " << msegments.size() << "\n";
             }
@@ -1487,14 +1430,14 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     p1e = false;
     p2e = false;
 
-    if( ( IGES_SEGTYPE_CIRCLE != (*oSegs.front())->getSegType() )
+    if( ( MCAD_SEGTYPE_CIRCLE != (*oSegs.front())->GetSegType() )
         && ( PointMatches( iList.front(), (*oSegs.front())->mstart, 1e-8 )
         || PointMatches( iList.front(), (*oSegs.front())->mend, 1e-8 ) ) )
     {
         p1e = true;
     }
 
-    if( ( IGES_SEGTYPE_CIRCLE != (*oSegs.back())->getSegType() )
+    if( ( MCAD_SEGTYPE_CIRCLE != (*oSegs.back())->GetSegType() )
         && ( PointMatches( iList.back(), (*oSegs.back())->mstart, 1e-8 )
         || PointMatches( iList.back(), (*oSegs.back())->mend, 1e-8 ) ) )
     {
@@ -1505,7 +1448,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // we are splitting a single entity at 2 points
         cout << "XXX: splitting aOutline at 2 points\n";
-        list<IGES_GEOM_SEGMENT*> sList;
+        list<MCAD_SEGMENT*> sList;
 
         if( !(*oSegs.front())->Split(iList, sList) )
         {
@@ -1519,9 +1462,9 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
         }
 
         cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
-        list<IGES_GEOM_SEGMENT*>::iterator sSL = sList.begin();
-        list<IGES_GEOM_SEGMENT*>::iterator eSL = sList.end();
-        list<IGES_GEOM_SEGMENT*>::iterator ps0 = oSegs.front();
+        list<MCAD_SEGMENT*>::iterator sSL = sList.begin();
+        list<MCAD_SEGMENT*>::iterator eSL = sList.end();
+        list<MCAD_SEGMENT*>::iterator ps0 = oSegs.front();
         aOutline->msegments.insert( ++ps0, sSL, eSL );
         cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
     }
@@ -1529,20 +1472,20 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // we are splitting individual entities at single points
         cout << "XXX: splitting aOutline at single points\n";
-        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
-        list<list<IGES_GEOM_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
+        list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
+        list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
         list<IGES_POINT>::iterator iPts = iList.begin();
         list<IGES_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {
-            IGES_GEOM_SEGMENT* pSeg = **sSegs;
+            MCAD_SEGMENT* pSeg = **sSegs;
 
             if( !PointMatches( *iPts, pSeg->mstart, 1e-8 )
                 && !PointMatches( *iPts, pSeg->mend, 1e-8 ) )
             {
                 // this is not an endpoint; split the entity
-                list<IGES_GEOM_SEGMENT*> sList;
+                list<MCAD_SEGMENT*> sList;
                 list<IGES_POINT> pl;
                 pl.push_back( *iPts );
 
@@ -1558,7 +1501,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
                 }
 
                 cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
-                list<IGES_GEOM_SEGMENT*>::iterator ps0 = *sSegs;
+                list<MCAD_SEGMENT*>::iterator ps0 = *sSegs;
                 aOutline->msegments.insert( ++ps0, sList.front() );
                 cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
             }
@@ -1585,7 +1528,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
     else
     {
-        list<IGES_GEOM_SEGMENT*>::iterator sSL = lSegs.front();
+        list<MCAD_SEGMENT*>::iterator sSL = lSegs.front();
         ++sSL;
 
         if( sSL == msegments.end() )
@@ -1621,7 +1564,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
 
     cout << "XXX: midpoint on *this segment: ";
-    print_point( pT );
+    PrintPoint( pT );
     bool tpIn0 = aOutline->IsInside( pT, error );
 
     if( !tpIn0 && error )
@@ -1641,7 +1584,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
     else
     {
-        list<IGES_GEOM_SEGMENT*>::iterator sSL = oSegs.front();
+        list<MCAD_SEGMENT*>::iterator sSL = oSegs.front();
         ++sSL;
 
         if( sSL == aOutline->msegments.end() )
@@ -1677,7 +1620,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
 
     cout << "XXX: midpoint on aOutline segment: ";
-    print_point( pT );
+    PrintPoint( pT );
     bool tpIn1 = IsInside( pT, error );
 
     if( !tpIn1 && error )
@@ -1723,7 +1666,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
 
     // delete inside segments of *this
     // note: lSegs.front() must point to the first CW segment
-    list<IGES_GEOM_SEGMENT*>::iterator eSegT = lSegs.front();
+    list<MCAD_SEGMENT*>::iterator eSegT = lSegs.front();
 
     if( tpIn0 )
     {
@@ -1756,7 +1699,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
     else
     {
-        list<IGES_GEOM_SEGMENT*> tSegs;
+        list<MCAD_SEGMENT*> tSegs;
 
         while( true )
         {
@@ -1794,7 +1737,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
 
     // trim the applied outline
-    list<IGES_GEOM_SEGMENT*>::iterator eSegO = oSegs.front();
+    list<MCAD_SEGMENT*>::iterator eSegO = oSegs.front();
 
     // note: oSegs.front() must point to the first CW segment
     // and eSeg0 must point to the first CCW segment
@@ -1836,7 +1779,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     else
     {
         // store elements starting at oSegs.front()
-        list<IGES_GEOM_SEGMENT*> tSegs;
+        list<MCAD_SEGMENT*> tSegs;
 
         while( true )
         {
@@ -1879,7 +1822,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // insert the remaining segments of aOutline starting at
         // the CCW-most position and with each segment reversed.
-        list<IGES_GEOM_SEGMENT*>::iterator eT = oSegs.front();
+        list<MCAD_SEGMENT*>::iterator eT = oSegs.front();
         eSegT = lSegs.front();
 
         while( eT != aOutline->msegments.end() )
@@ -1912,7 +1855,7 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     {
         // insert the remaining segments of aOutline starting at
         // the CCW-most position
-        list<IGES_GEOM_SEGMENT*>::iterator eT = oSegs.front();
+        list<MCAD_SEGMENT*>::iterator eT = oSegs.front();
         eSegT = lSegs.front();
 
         while( eT != aOutline->msegments.end() )
@@ -1939,24 +1882,24 @@ bool IGES_GEOM_OUTLINE::opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, boo
     }
 
     cout << "XXX: OK so far\n";
-    list<IGES_GEOM_SEGMENT*>::iterator zzS = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator zzE = msegments.end();
+    list<MCAD_SEGMENT*>::iterator zzS = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator zzE = msegments.end();
     int q = 0;
     while( zzS != zzE )
     {
         cout << "SEG #" << q++ << "\n";
-        print_seg(*zzS);
+        PrintSeg(*zzS);
         ++zzS;
     }
 
     return true;
-}   // opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub )
+}   // opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
 
 
 // Merge the given closed outline with this one; to keep the
 // code simple, the following restriction is imposed:
 // the two outlines may only intersect at 2 points.
-bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
+bool MCAD_OUTLINE::AddOutline( MCAD_OUTLINE* aOutline, bool& error )
 {
     cout << "XXX: ADD OUTLINE ITERATION\n";
 
@@ -1976,7 +1919,7 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 }
 
 
-bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
+bool MCAD_OUTLINE::AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 {
     cout << "XXX: ADD CIRCLE ITERATION\n";
 
@@ -1993,13 +1936,13 @@ bool IGES_GEOM_OUTLINE::AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     }
 
     return res;
-}   // AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
+}   // AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 
 
 // Subtract the given circular segment from this outline; to keep the
 // code simple, the following restriction is imposed:
 // the two outlines may only intersect at 2 points.
-bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
+bool MCAD_OUTLINE::SubOutline( MCAD_SEGMENT* aCircle, bool& error )
 {
     cout << "XXX: SUB CIRCLE ITERATION\n";
 
@@ -2016,13 +1959,13 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
     }
 
     return res;
-}   // SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error )
+}   // SubOutline( MCAD_SEGMENT* aCircle, bool& error )
 
 
 // Subtract the given outline from this one; to keep the
 // code simple, the following restriction is imposed:
 // the two outlines may only intersect at 2 points.
-bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
+bool MCAD_OUTLINE::SubOutline( MCAD_OUTLINE* aOutline, bool& error )
 {
     cout << "XXX: SUB OUTLINE ITERATION\n";
 
@@ -2048,7 +1991,7 @@ bool IGES_GEOM_OUTLINE::SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error )
 // does not know whether the outline overlaps or not, then the
 // overlaps flag must be set to 'true' to ensure that checks are
 // performed to ensure valid geometry.
-bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_OUTLINE* aCutout, bool overlaps, bool& error )
+bool MCAD_OUTLINE::AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error )
 {
     if( NULL == aCutout )
     {
@@ -2104,7 +2047,7 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_OUTLINE* aCutout, bool overlaps, bo
 // otherwise it must be set to 'true'. If the function succeeds it
 // will manage the given segment; if the function returns false
 // then it is the caller's responsibility to dispose of the object.
-bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bool& error )
+bool MCAD_OUTLINE::AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error )
 {
     if( NULL == aCircle )
     {
@@ -2117,7 +2060,7 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bo
         return false;
     }
 
-    if( IGES_SEGTYPE_CIRCLE != aCircle->getSegType() )
+    if( MCAD_SEGTYPE_CIRCLE != aCircle->GetSegType() )
     {
         ostringstream msg;
         GEOM_ERR( msg );
@@ -2159,110 +2102,14 @@ bool IGES_GEOM_OUTLINE::AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bo
     return true;
 }
 
-// retrieve trimmed parametric surfaces representing vertical sides
-// of the main outline and all cutouts
-bool IGES_GEOM_OUTLINE::GetVerticalSurface( IGES* aModel, bool& error,
-                                            std::vector<IGES_ENTITY_144*>& aSurface,
-                                            double aTopZ, double aBotZ )
-{
-    error = false;
 
-    if( !mIsClosed )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] outline is not closed";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    if( msegments.empty() )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] outline is empty";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
-
-    while( sSeg != eSeg )
-    {
-        if( !(*sSeg)->GetVerticalSurface( aModel, aSurface, aTopZ, aBotZ ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not render a vertical surface of a segment";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sSeg;
-    }
-
-    if( !mholes.empty() )
-    {
-        sSeg = mholes.begin();
-        eSeg = mholes.end();
-
-        while( sSeg != eSeg )
-        {
-            if( !(*sSeg)->GetVerticalSurface( aModel, aSurface, aTopZ, aBotZ ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not render a vertical surface of a hole";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sSeg;
-        }
-    }
-
-    if( !mcutouts.empty() )
-    {
-        list<IGES_GEOM_OUTLINE*>::iterator sOtln = mcutouts.begin();
-        list<IGES_GEOM_OUTLINE*>::iterator eOtln = mcutouts.end();
-
-        while( sOtln != eOtln )
-        {
-            if( !(*sOtln)->GetVerticalSurface( aModel, error, aSurface, aTopZ, aBotZ ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not render a vertical surface of a cutout";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sOtln;
-        }
-    }
-
-    return true;
-}
-
-
-void IGES_GEOM_OUTLINE::calcBoundingBox( void )
+void MCAD_OUTLINE::calcBoundingBox( void )
 {
     if( msegments.empty() || !mIsClosed )
         return;
 
-    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
+    list<MCAD_SEGMENT*>::iterator sSeg = msegments.begin();
+    list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
 
     IGES_POINT bb0;
     IGES_POINT bb1;
@@ -2294,7 +2141,7 @@ void IGES_GEOM_OUTLINE::calcBoundingBox( void )
 }
 
 
-void IGES_GEOM_OUTLINE::adjustBoundingBox( void )
+void MCAD_OUTLINE::adjustBoundingBox( void )
 {
     double minX = floor( mBottomLeft.x );
     double maxX = ceil( mTopRight.x );
@@ -2324,601 +2171,19 @@ void IGES_GEOM_OUTLINE::adjustBoundingBox( void )
 }
 
 
-// retrieve the trimmed parametric surfaces representing the
-// top or bottom plane of the board
-bool IGES_GEOM_OUTLINE::GetTrimmedPlane( IGES* aModel, bool& error,
-                      std::vector<IGES_ENTITY_144*>& aSurface,
-                      double aHeight )
+std::list<MCAD_SEGMENT*>* MCAD_OUTLINE::GetSegments( void )
 {
-    error = false;
-
-    calcBoundingBox();
-
-    if( !mIsClosed )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] outline is not closed";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    if( msegments.empty() )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] outline is empty";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    // Step 1: create the plane to be trimmed;
-    IGES_ENTITY_144* plane = getUntrimmedPlane( aModel, aHeight );
-
-    if( !plane )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] outline is not closed";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    // Step 2: create the outer bound (PTO); this is a Curve on Parametric Surface
-    list<IGES_GEOM_SEGMENT*>::iterator sSeg = msegments.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eSeg = msegments.end();
-    list<IGES_CURVE*> ncurves;  // curves representing outlines in geometric representation
-    list<IGES_ENTITY_126*> bcurves; // BREP curves representing outlines
-    IGES_ENTITY_102*  ccurve[2];    // composite curve (BREP and geom representations)
-
-    for( int i = 0; i < 2; ++i )
-    {
-        if( !newEnt102( aModel, &ccurve[i] ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not create a composite curve";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-    }
-
-    int acc = 0;
-    while( sSeg != eSeg )
-    {
-        cout << "XXX: adding segment #" << (++acc) << " of " << msegments.size() << "\n";
-
-        if( !(*sSeg)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-            mBottomLeft.y, mTopRight.y, aHeight ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not render BREP curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        if( !(*sSeg)->GetCurves( aModel, ncurves, aHeight ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not render geometric curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sSeg;
-    }
-    cout << "XXX: total curves in outline: " << bcurves.size() << "\n";
-
-    // stuff contents of ncurves, bcurves, and isurf->GetPTS() into ENTITY 142
-    IGES_ENTITY_142* scurve;    // Curve on Surface
-
-    if( !newEnt142( aModel, &scurve ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] could not instantiate curve on surface";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    IGES_ENTITY* pts;
-    plane->GetPTS( &pts );
-    scurve->SetSPTR( pts );
-    list<IGES_ENTITY_126*>::iterator sBC = bcurves.begin();
-    list<IGES_ENTITY_126*>::iterator eBC = bcurves.end();
-
-    while( sBC != eBC )
-    {
-        if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add BREP curve to composite curve";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sBC;
-    }
-
-    list<IGES_CURVE*>::iterator sNC = ncurves.begin();
-    list<IGES_CURVE*>::iterator eNC = ncurves.end();
-
-    while( sNC != eNC )
-    {
-        if( !ccurve[1]->AddSegment( *sNC ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add geom curve to composite curve";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sNC;
-    }
-
-    scurve->CRTN = 1;
-    scurve->PREF = 1;
-
-    if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-        || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] could not add composite curves to curve on surface";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    if( !plane->SetPTO( scurve ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[ERROR] could not add curve on surface to trimmed surface";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        error = true;
-        return false;
-    }
-
-    // Step 3: create the irregular cutouts (PTI); these are Curves on Parametric Surface
-    list<IGES_GEOM_OUTLINE*>::iterator sCO = mcutouts.begin();
-    list<IGES_GEOM_OUTLINE*>::iterator eCO = mcutouts.end();
-
-    acc = 0;
-    while( sCO != eCO )
-    {
-        cout << "XXX: adding irregular cutout #" << (++acc) << "\n";
-        if( !newEnt142( aModel, &scurve ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not instantiate curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        bcurves.clear();
-        ncurves.clear();
-        scurve->CRTN = 1;
-        scurve->PREF = 1;
-
-        for( int i = 0; i < 2; ++i )
-        {
-            if( !newEnt102( aModel, &ccurve[i] ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not create a composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-        }
-
-        sSeg = (*sCO)->msegments.begin();
-        eSeg = (*sCO)->msegments.end();
-
-        while( sSeg != eSeg )
-        {
-            if( !(*sSeg)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-                mBottomLeft.y, mTopRight.y, aHeight ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not render BREP curve on surface";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            if( !(*sSeg)->GetCurves( aModel, ncurves, aHeight ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not render geometric curve on surface";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sSeg;
-        }
-
-        scurve->SetSPTR( pts );
-        sBC = bcurves.begin();
-        eBC = bcurves.end();
-
-        while( sBC != eBC )
-        {
-            if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add BREP curve to composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sBC;
-        }
-
-
-        sNC = ncurves.begin();
-        eNC = ncurves.end();
-
-        while( sNC != eNC )
-        {
-            if( !ccurve[1]->AddSegment( *sNC ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add geom curve to composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sNC;
-        }
-
-        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add composite curves to curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        if( !plane->AddPTI( scurve ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add curve on surface to trimmed surface PTI list";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sCO;
-    }
-
-    // Step 4: create the circular cutouts (PTI); these are Curves on Parametric Surface
-    list<IGES_GEOM_SEGMENT*>::iterator sDH = mholes.begin();
-    list<IGES_GEOM_SEGMENT*>::iterator eDH = mholes.end();
-
-    acc = 0;
-    while( sDH != eDH )
-    {
-        cout << "XXX: adding circular cutout #" << (++acc) << "\n";
-        if( !newEnt142( aModel, &scurve ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not instantiate curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        bcurves.clear();
-        ncurves.clear();
-        scurve->CRTN = 1;
-        scurve->PREF = 1;
-
-        for( int i = 0; i < 2; ++i )
-        {
-            if( !newEnt102( aModel, &ccurve[i] ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not create a composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-        }
-
-        if( !(*sDH)->GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-            mBottomLeft.y, mTopRight.y, aHeight ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not render BREP curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        if( !(*sDH)->GetCurves( aModel, ncurves, aHeight ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not render geometric curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        scurve->SetSPTR( pts );
-        sBC = bcurves.begin();
-        eBC = bcurves.end();
-
-        while( sBC != eBC )
-        {
-            if( !ccurve[0]->AddSegment( (IGES_CURVE*)(*sBC) ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add BREP curve to composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sBC;
-        }
-
-
-        sNC = ncurves.begin();
-        eNC = ncurves.end();
-
-        while( sNC != eNC )
-        {
-            if( !ccurve[1]->AddSegment( *sNC ) )
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not add geom curve to composite curve";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-                error = true;
-                return false;
-            }
-
-            ++sNC;
-        }
-
-        if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
-            || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add composite curves to curve on surface";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        if( !plane->AddPTI( scurve ) )
-        {
-            ostringstream msg;
-            GEOM_ERR( msg );
-            msg << "[ERROR] could not add curve on surface to trimmed surface PTI list";
-            ERRMSG << msg.str() << "\n";
-            errors.push_back( msg.str() );
-            error = true;
-            return false;
-        }
-
-        ++sDH;
-    }
-
-    return true;
+    return &msegments;
 }
 
 
-// create a Trimmed Parametric Surface entity with only the PTS member instantiated
-IGES_ENTITY_144* IGES_GEOM_OUTLINE::getUntrimmedPlane( IGES* aModel, double aHeight )
+std::list<MCAD_OUTLINE*>* MCAD_OUTLINE::GetCutouts( void )
 {
-    double data[12];
+    return &mcutouts;
+}
 
-    // note: the vertex order used here ensures that X is parameterized
-    // in U (parameter 1) and Y is parameterized in V (parameter 2)
 
-    // vertex 0, bottom left
-    data[0] = mBottomLeft.x;
-    data[1] = mBottomLeft.y;
-    data[2] = aHeight;
-
-    // vertex 1, bottom right
-    data[3] = mTopRight.x;
-    data[4] = mBottomLeft.y;
-    data[5] = aHeight;
-
-    // vertex 3, top left
-    data[6] = mBottomLeft.x;
-    data[7] = mTopRight.y;
-    data[8] = aHeight;
-
-    // vertex 4, top right
-    data[9]  = mTopRight.x;
-    data[10] = mTopRight.y;
-    data[11] = aHeight;
-
-    int stat = 0;
-    SISLSurf* plane;
-
-    // create the NURBS representation of the surface
-    s1536( data, 2, 2, 3, 2, 0, 0, 0, 0, 2, 2, 1, 1, &plane, &stat );
-
-    switch( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified problems creating NURBS plane\n";
-            break;
-
-        default:
-            do
-            {
-                ostringstream msg;
-                GEOM_ERR( msg );
-                msg << "[ERROR] could not create NURBS plane";
-                ERRMSG << msg.str() << "\n";
-                errors.push_back( msg.str() );
-            } while( 0 );
-
-            return NULL;
-            break;
-    }
-
-    // create the planar NURBS surface
-    IGES_ENTITY* ep;
-    IGES_ENTITY_128* isurf;
-
-    if( !aModel->NewEntity( ENT_NURBS_SURFACE, &ep ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[INFO] could not instantiate new entity (type 128)";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        freeSurf( plane );
-        plane = NULL;
-        return NULL;
-    }
-
-    isurf = dynamic_cast<IGES_ENTITY_128*>( ep );
-    isurf->SetDependency( STAT_DEP_PHY );
-
-    if( NULL == isurf )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[BUG] cast failed on NURBS surface entity";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        aModel->DelEntity( ep );
-        freeSurf( plane );
-        plane = NULL;
-        return NULL;
-    }
-
-    // copy the NURBS surface data to isurf
-    if( !isurf->SetNURBSData( plane->in1, plane->in2, plane->ik1, plane->ik2,
-        plane->et1, plane->et2, plane->ecoef, false, false, false ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[BUG] failed to transfer data to surface entity";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        aModel->DelEntity( ep );
-        freeSurf( plane );
-        plane = NULL;
-        return NULL;
-    }
-
-    freeSurf( plane );
-    plane = NULL;
-
-    // instantiate the trimmed parametric surface entity
-    IGES_ENTITY_144* itps;
-
-    if( !aModel->NewEntity( ENT_TRIMMED_PARAMETRIC_SURFACE, &ep ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[INFO] could not instantiate new entity (type 144)";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        aModel->DelEntity( (IGES_ENTITY*)isurf );
-        return NULL;
-    }
-
-    itps = dynamic_cast<IGES_ENTITY_144*>( ep );
-
-    if( NULL == itps )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[BUG] cast failed on curve on trimmed surface entity";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-        aModel->DelEntity( ep );
-        aModel->DelEntity( (IGES_ENTITY*)isurf );
-        return NULL;
-    }
-
-    itps->N1 = 1;   // surface is to be trimmed by specified entities
-
-    if( !itps->SetPTS( (IGES_ENTITY*)isurf ) )
-    {
-        ostringstream msg;
-        GEOM_ERR( msg );
-        msg << "[BUG] failed to transfer data to parametric curve on surface";
-        ERRMSG << msg.str() << "\n";
-        errors.push_back( msg.str() );
-
-        aModel->DelEntity( (IGES_ENTITY*)isurf );
-        aModel->DelEntity( (IGES_ENTITY*)itps );
-        return NULL;
-    }
-
-    return itps;
+std::list<MCAD_SEGMENT*>* MCAD_OUTLINE::GetDrillHoles( void )
+{
+    return &mholes;
 }

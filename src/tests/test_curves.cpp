@@ -16,17 +16,27 @@
  *    perform complex manipulations and ultimately
  *    generate a trimmed surface representing the top and
  *    bottom of the PCB.
+ *
+ * Note: This test predates the refactored MCAD_SEGMENT,
+ * formerly IGES_GEOM_SEGMENT, and requires the duplicate
+ * implementation of GetSegmentWall() to permit testing
+ * without instantiating an IGES_GEOM_OUTLINE object.
  */
 
+#include <cmath>
 #include <iostream>
+#include <error_macros.h>
 #include <iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
-#include <geom_segment.h>
+#include <mcad_segment.h>
 
 using namespace std;
 
 int test_cyl_wall( void );
+
+bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
+                     double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment );
 
 int main()
 {
@@ -48,16 +58,16 @@ int main()
     p[4].y = -3.0;
 
     std::vector<IGES_ENTITY_144*> res;
-    IGES_GEOM_SEGMENT seg;
+    MCAD_SEGMENT seg;
     // wall1, seg 1/3
     seg.SetParams( p[0], p[1] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall1, seg 2/3
     seg.SetParams( p[2], p[3], p[1], arcDir );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall1, seg 3/3
     seg.SetParams( p[4], p[3] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
 
     // WALL 2
     p[0].x = 3.0;  // < line
@@ -72,13 +82,13 @@ int main()
     p[4].y = 3.0;
     // wall2, seg 1/3
     seg.SetParams( p[0], p[1] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall2, seg 2/3
     seg.SetParams( p[2], p[3], p[1], arcDir );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall2, seg 3/3
     seg.SetParams( p[4], p[3] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
 
     // WALL 3
     p[0].x = 3.0;  // < line
@@ -93,13 +103,13 @@ int main()
     p[4].y = 3.0;
     // wall3, seg 1/3
     seg.SetParams( p[0], p[1] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall3, seg 2/3
     seg.SetParams( p[2], p[3], p[1], arcDir );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall3, seg 3/3
     seg.SetParams( p[4], p[3] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
 
     // WALL 4
     p[0].x = -3.0;  // < line
@@ -114,13 +124,13 @@ int main()
     p[4].y = -3.0;
     // wall4, seg 1/3
     seg.SetParams( p[0], p[1] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall4, seg 2/3
     seg.SetParams( p[2], p[3], p[1], arcDir );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
     // wall4, seg 3/3
     seg.SetParams( p[4], p[3] );
-    seg.GetVerticalSurface( &model, res, 1.5, -1.5 );
+    GetSegmentWall( &model, res, 1.5, -1.5, &seg );
 
     model.Write( "test_segs.igs", true );
 
@@ -246,4 +256,90 @@ int test_cyl_wall( void )
     model.Write( "test_cyl_wall.igs", true );
 
     return 0;
+}
+
+bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
+                     double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment )
+{
+    if( !aModel )
+    {
+        ERRMSG << "\n + [ERROR] null pointer passed for IGES model\n";
+        return false;
+    }
+
+    if( abs( aTopZ - aBotZ ) < 1e-6 )
+    {
+        ERRMSG << "\n + [ERROR] degenerate surface\n";
+        return false;
+    }
+
+    if( !aSegment->GetSegType() )
+    {
+        ERRMSG << "\n + [ERROR] no model data to work with\n";
+        return false;
+    }
+
+    bool ok = false;
+
+    switch( aSegment->GetSegType() )
+    {
+        case MCAD_SEGTYPE_CIRCLE:
+        case MCAD_SEGTYPE_ARC:
+            do
+            {
+                IGES_GEOM_CYLINDER cyl;
+
+                /* XXX - Original; restore if there are problems
+                 *                if( !aSegment->IsCW() )
+                 *                {
+                 *                    cyl.SetParams( aSegment->GetCenter(), aSegment->GetMStart(),
+                 *                                   aSegment->GetMEnd() );
+            }
+            else
+            {
+            cyl.SetParams( aSegment->GetCenter(), aSegment->GetMEnd(),
+            aSegment->GetMStart() );
+            }
+            */
+
+                cyl.SetParams( aSegment->GetCenter(), aSegment->GetStart(),
+                               aSegment->GetEnd() );
+
+                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, aSurface );
+            } while( 0 );
+
+            break;
+
+        default:
+            do
+            {
+                IGES_GEOM_WALL wall;
+                IGES_POINT p0 = aSegment->GetMStart();
+                p0.z = aTopZ;
+                IGES_POINT p1 = aSegment->GetMEnd();
+                p1.z = aTopZ;
+                IGES_POINT p2 = aSegment->GetMEnd();
+                p2.z = aBotZ;
+                IGES_POINT p3 = aSegment->GetMStart();
+                p3.z = aBotZ;
+                wall.SetParams( p0, p1, p2, p3 );
+                IGES_ENTITY_144* ep = wall.Instantiate( aModel );
+
+                if( NULL == ep )
+                {
+                    ERRMSG << "\n + [ERROR] could not create solid model feature\n";
+                    ok = false;
+                }
+                else
+                {
+                    aSurface.push_back( ep );
+                    ok = true;
+                }
+
+            } while( 0 );
+
+            break;
+    }
+
+    return ok;
 }

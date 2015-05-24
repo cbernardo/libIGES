@@ -1,6 +1,6 @@
 /*
  * Description:
- *  This is a test suite for the IGES_GEOM_OUTLINE class
+ *  This is a test suite for the IGES_GEOM_PCB class
  */
 
 #include <iostream>
@@ -8,8 +8,8 @@
 #include <iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
-#include <geom_segment.h>
-#include <geom_outline.h>
+#include <mcad_segment.h>
+#include <iges_geom_pcb.h>
 
 using namespace std;
 
@@ -105,8 +105,8 @@ int main()
 
 int test_arcs( void )
 {
-    IGES_GEOM_SEGMENT* seg1 = new IGES_GEOM_SEGMENT;
-    IGES_GEOM_SEGMENT seg2;
+    MCAD_SEGMENT* seg1 = new MCAD_SEGMENT;
+    MCAD_SEGMENT* seg2 = new MCAD_SEGMENT;
 
     IGES_POINT c1[3];   // parameters for Circle 1
     IGES_POINT c2[3];   // parameters for Circle 2
@@ -128,9 +128,9 @@ int test_arcs( void )
     c2[2].y = 0.0;
 
     seg1->SetParams( c1[0], c1[1], c1[2], false );
-    seg2.SetParams( c2[0], c2[1], c2[2], false );
+    seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-    IGES_GEOM_OUTLINE otln;
+    IGES_GEOM_PCB otln;
     bool error = false;
 
     if( !otln.AddSegment( seg1, error ) )
@@ -145,7 +145,7 @@ int test_arcs( void )
         return -1;
     }
 
-    if( !otln.SubOutline( &seg2, error ) )
+    if( !otln.SubOutline( seg2, error ) )
     {
         cout << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
         return -1;
@@ -160,9 +160,10 @@ int test_arcs( void )
         c2[1].y = 0.0;
         c2[2].x = 3.0;
         c2[2].y = 0.0;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.AddCutout( &seg2, true, error ) )
+        if( !otln.AddCutout( seg2, true, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -175,9 +176,10 @@ int test_arcs( void )
         c2[1].y = 2.0;
         c2[2].x = 1.0;
         c2[2].y = 2.0;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.AddCutout( &seg2, true, error ) )
+        if( !otln.AddCutout( seg2, true, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -190,9 +192,10 @@ int test_arcs( void )
         c2[1].y = -2.0;
         c2[2].x = 1.0;
         c2[2].y = -2.0;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.AddCutout( &seg2, true, error ) )
+        if( !otln.AddCutout( seg2, true, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -208,9 +211,10 @@ int test_arcs( void )
         c2[1].y = 0.0;
         c2[2].x = -0.8;
         c2[2].y = 0.0;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.SubOutline( &seg2, error ) )
+        if( !otln.SubOutline( seg2, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -226,9 +230,10 @@ int test_arcs( void )
         c2[1].y = 0.968246;
         c2[2].x = -1.25;
         c2[2].y = 0.968246;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.AddCutout( &seg2, true, error ) )
+        if( !otln.AddCutout( seg2, true, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -244,9 +249,10 @@ int test_arcs( void )
         c2[1].y = c2[0].y;
         c2[2].x = c2[1].x;
         c2[2].y = c2[0].y;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.AddCutout( &seg2, true, error ) )
+        if( !otln.AddCutout( seg2, true, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -256,43 +262,46 @@ int test_arcs( void )
     if( 1 )
     {
         // ensure that we apply a cutout which concides with endpoints on the outline
-        IGES_GEOM_SEGMENT s0;
+        MCAD_SEGMENT* s0 = new MCAD_SEGMENT;
         c2[0].x = 0.0;
         c2[0].y = 0.0;
         c2[1].x = 2.0;
         c2[1].y = 0.0;
         c2[2].x = 2.0;
         c2[2].y = 0.0;
-        s0.SetParams( c2[0], c2[1], c2[2], false );
+        s0->SetParams( c2[0], c2[1], c2[2], false );
 
-        IGES_GEOM_SEGMENT s1;
+        MCAD_SEGMENT* s1 = new MCAD_SEGMENT;
         c2[0].x = 0.0;
         c2[0].y = -2.0;
         c2[1].x = 1.0;
         c2[1].y = -2.0;
         c2[2].x = 1.0;
         c2[2].y = -2.0;
-        s1.SetParams( c2[0], c2[1], c2[2], false );
+        s1->SetParams( c2[0], c2[1], c2[2], false );
 
         std::list<IGES_POINT> iList;
-        IGES_INTERSECT_FLAG flag;
-        s0.GetIntersections( s1, iList, flag );
+        MCAD_INTERSECT_FLAG flag;
+        s0->GetIntersections( *s1, iList, flag );
 
         c2[0].x = 0.0;
         c2[0].y = -1.2;
-        s1.SetParams( c2[0], iList.front(), iList.front(), false );
+        s1->SetParams( c2[0], iList.front(), iList.front(), false );
 
-        if( !otln.SubOutline( &s1, error ) )
+        if( !otln.SubOutline( s1, error ) )
         {
             cout << "* [FAIL]: could not add a cutout which intersects endpoints, error: " << error << "\n";
+            delete s0;
+            delete s1;
             return -1;
         }
 
+        delete s0;
     }
 
     if( 1 )
     {
-        IGES_GEOM_SEGMENT* seg3 = new IGES_GEOM_SEGMENT;
+        MCAD_SEGMENT* seg3 = new MCAD_SEGMENT;
         // radius: 0.5, c(0,0)
         c2[0].x = 0.0;
         c2[0].y = 0.0;
@@ -318,9 +327,10 @@ int test_arcs( void )
         c2[1].y = 0.5;
         c2[2].x = 0.2;
         c2[2].y = 0.5;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.SubOutline( &seg2, error ) )
+        if( !otln.SubOutline( seg2, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -336,9 +346,10 @@ int test_arcs( void )
         c2[1].y = c2[0].y;
         c2[2].x = c2[1].x;
         c2[2].y = c2[1].y;
-        seg2.SetParams( c2[0], c2[1], c2[2], false );
+        seg2 = new MCAD_SEGMENT;
+        seg2->SetParams( c2[0], c2[1], c2[2], false );
 
-        if( !otln.SubOutline( &seg2, error ) )
+        if( !otln.SubOutline( seg2, error ) )
         {
             cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
@@ -367,7 +378,7 @@ int test_arcs( void )
 
 int test_lines( void )
 {
-    IGES_GEOM_SEGMENT* sides[4];
+    MCAD_SEGMENT* sides[4];
     IGES_POINT v[4];
 
     v[0].x = 10.0;
@@ -380,14 +391,14 @@ int test_lines( void )
     v[3].y = -10.0;
 
     for( int i = 0; i < 4; ++i )
-        sides[i] = new IGES_GEOM_SEGMENT;
+        sides[i] = new MCAD_SEGMENT;
 
     sides[0]->SetParams(v[0], v[1]);
     sides[1]->SetParams(v[1], v[2]);
     sides[2]->SetParams(v[2], v[3]);
     sides[3]->SetParams(v[3], v[0]);
 
-    IGES_GEOM_OUTLINE otln;
+    IGES_GEOM_PCB otln;
     bool error = false;
 
     if( !otln.AddSegment( sides[0], error )
@@ -410,7 +421,7 @@ int test_lines( void )
     if( 1 )
     {
         // nibble out 8 bits
-        IGES_GEOM_SEGMENT circ;
+        MCAD_SEGMENT circ;
 
         // radius: 0.5, c(10,10)
         c1[0].x = 10.0;
@@ -525,7 +536,7 @@ int test_lines( void )
         }
     }
 
-    IGES_GEOM_SEGMENT* hole = new IGES_GEOM_SEGMENT;
+    MCAD_SEGMENT* hole = new MCAD_SEGMENT;
 
     // radius: 4.5, c(0,0)
     c1[0].x = 0.0;
@@ -563,7 +574,7 @@ int test_lines( void )
 
 int test_addr( void )
 {
-    IGES_GEOM_SEGMENT* sides[4];
+    MCAD_SEGMENT* sides[4];
     IGES_POINT v[4];
 
     if( 0 )
@@ -590,14 +601,14 @@ int test_addr( void )
     }
 
     for( int i = 0; i < 4; ++i )
-        sides[i] = new IGES_GEOM_SEGMENT;
+        sides[i] = new MCAD_SEGMENT;
 
     sides[0]->SetParams(v[0], v[1]);
     sides[1]->SetParams(v[1], v[2]);
     sides[2]->SetParams(v[2], v[3]);
     sides[3]->SetParams(v[3], v[0]);
 
-    IGES_GEOM_OUTLINE otln;
+    IGES_GEOM_PCB otln;
     bool error = false;
 
     if( !otln.AddSegment( sides[0], error )
@@ -616,7 +627,7 @@ int test_addr( void )
     }
 
     IGES_POINT c1[2];   // parameters for circles
-    IGES_GEOM_SEGMENT circ;
+    MCAD_SEGMENT circ;
 
     if( 1 )
     {
@@ -715,7 +726,7 @@ int test_addr( void )
 
 int test_otln( bool subs, bool primeA )
 {
-    IGES_GEOM_SEGMENT* sides[4];
+    MCAD_SEGMENT* sides[4];
     IGES_POINT v[4];
 
     v[0].x = 10.0;
@@ -728,14 +739,14 @@ int test_otln( bool subs, bool primeA )
     v[3].y = -10.0;
 
     for( int i = 0; i < 4; ++i )
-        sides[i] = new IGES_GEOM_SEGMENT;
+        sides[i] = new MCAD_SEGMENT;
 
     sides[0]->SetParams(v[0], v[1]);
     sides[1]->SetParams(v[1], v[2]);
     sides[2]->SetParams(v[2], v[3]);
     sides[3]->SetParams(v[3], v[0]);
 
-    IGES_GEOM_OUTLINE* otlnB = new IGES_GEOM_OUTLINE;
+    IGES_GEOM_PCB* otlnB = new IGES_GEOM_PCB;
     bool error = false;
 
     if( !otlnB->AddSegment( sides[0], error )
@@ -754,16 +765,16 @@ int test_otln( bool subs, bool primeA )
     }
 
     IGES_POINT c1[2];   // parameters for circles
-    IGES_GEOM_SEGMENT* circ[6];
-    IGES_GEOM_OUTLINE* otln[6];
+    MCAD_SEGMENT* circ[6];
+    IGES_GEOM_PCB* otln[6];
 
     for( int i = 0; i < 6; ++i )
     {
-        circ[i] = new IGES_GEOM_SEGMENT;
-        otln[i] = new IGES_GEOM_OUTLINE;
+        circ[i] = new MCAD_SEGMENT;
+        otln[i] = new IGES_GEOM_PCB;
     }
 
-    IGES_GEOM_OUTLINE* otlnA = otln[0];
+    IGES_GEOM_PCB* otlnA = otln[0];
 
     // create the various circular outlines
 

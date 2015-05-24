@@ -1,5 +1,5 @@
 /*
- * file: geom_segment.cpp
+ * file: mcad_segment.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -26,87 +26,27 @@
  */
 
 #include <cmath>
-#include <iges.h>
 #include <error_macros.h>
+#include <mcad_segment.h>
 #include <iges_helpers.h>
-#include <geom_segment.h>
-#include <geom_wall.h>
-#include <geom_cylinder.h>
 
 using namespace std;
 
-static bool newArc100( IGES* aModel, IGES_ENTITY_100** ap )
-{
-    IGES_ENTITY* ep;
-
-    if( !aModel->NewEntity( ENT_CIRCULAR_ARC, &ep ) )
-        return false;
-
-    *ap = dynamic_cast<IGES_ENTITY_100*>( ep );
-
-    if( !(*ap) )
-    {
-        aModel->DelEntity( ep );
-        return false;
-    }
-
-    return true;
-}
-
-
-static bool newTx124( IGES* aModel, IGES_ENTITY_124** tp )
-{
-    IGES_ENTITY* ep;
-
-    if( !aModel->NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
-        return false;
-
-    *tp = dynamic_cast<IGES_ENTITY_124*>(ep);
-
-    if( !(*tp) )
-    {
-        aModel->DelEntity( ep );
-        return false;
-    }
-
-    return true;
-}
-
-
-static bool newArc126( IGES* aModel, IGES_ENTITY_126** ap )
-{
-    IGES_ENTITY* ep;
-
-    if( !aModel->NewEntity( ENT_NURBS_CURVE, &ep ) )
-        return false;
-
-    *ap = dynamic_cast<IGES_ENTITY_126*>( ep );
-
-    if( !(*ap) )
-    {
-        aModel->DelEntity( ep );
-        return false;
-    }
-
-    return true;
-}
-
-
-IGES_GEOM_SEGMENT::IGES_GEOM_SEGMENT()
+MCAD_SEGMENT::MCAD_SEGMENT()
 {
     init();
 }
 
 
-IGES_GEOM_SEGMENT::~IGES_GEOM_SEGMENT()
+MCAD_SEGMENT::~MCAD_SEGMENT()
 {
     return;
 }
 
 
-void IGES_GEOM_SEGMENT::init( void )
+void MCAD_SEGMENT::init( void )
 {
-    msegtype = IGES_SEGTYPE_NONE;
+    msegtype = MCAD_SEGTYPE_NONE;
     mCWArc = false;
     mradius = 0.0;
     msang = 0.0;
@@ -129,7 +69,7 @@ void IGES_GEOM_SEGMENT::init( void )
 
 
 // set the parameters for a line
-bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
+bool MCAD_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 {
     init();
 
@@ -147,7 +87,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 
     mstart = aStart;
     mend = aEnd;
-    msegtype = IGES_SEGTYPE_LINE;
+    msegtype = MCAD_SEGTYPE_LINE;
     return true;
 }
 
@@ -155,8 +95,8 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 // set the parameters for an arc; the parameters must be specified such that
 // the arc is traced in a counterclockwise direction as viewed from a positive
 // Z location.
-bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
-                                   IGES_POINT aEnd, bool isCW )
+bool MCAD_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
+                              IGES_POINT aEnd, bool isCW )
 {
     init();
 
@@ -182,7 +122,7 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
 
     if( PointMatches( aStart, aEnd, 1e-8 ) )
     {
-        msegtype = IGES_SEGTYPE_CIRCLE;
+        msegtype = MCAD_SEGTYPE_CIRCLE;
         mcenter = aCenter;
         mstart = mcenter;
         mstart.x += mradius;
@@ -226,26 +166,26 @@ bool IGES_GEOM_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
 
     mstart = aStart;
     mend = aEnd;
-    msegtype = IGES_SEGTYPE_ARC;
+    msegtype = MCAD_SEGTYPE_ARC;
     mCWArc = isCW;
 
     return true;
 }
 
 
-double IGES_GEOM_SEGMENT::GetLength( void )
+double MCAD_SEGMENT::GetLength( void )
 {
     switch( msegtype )
     {
-        case IGES_SEGTYPE_CIRCLE:
+        case MCAD_SEGTYPE_CIRCLE:
             return 2.0 * M_PI * mradius;
             break;
 
-        case IGES_SEGTYPE_ARC:
-            return (getEndAngle() - getStartAngle()) * mradius;
+        case MCAD_SEGTYPE_ARC:
+            return (GetEndAngle() - GetStartAngle()) * mradius;
             break;
 
-        case IGES_SEGTYPE_LINE:
+        case MCAD_SEGTYPE_LINE:
             do
             {
                 double dx = mend.x - mstart.x;
@@ -263,22 +203,22 @@ double IGES_GEOM_SEGMENT::GetLength( void )
 
 
 // calculate intersections with another segment (list of points)
-bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
+bool MCAD_SEGMENT::GetIntersections( const MCAD_SEGMENT& aSegment,
                                           std::list<IGES_POINT>& aIntersectList,
-                                          IGES_INTERSECT_FLAG& flags )
+                                          MCAD_INTERSECT_FLAG& flags )
 {
-    flags = IGES_IFLAG_NONE;
+    flags = MCAD_IFLAG_NONE;
 
-    if( IGES_SEGTYPE_NONE == msegtype )
+    if( MCAD_SEGTYPE_NONE == msegtype )
     {
         ERRMSG << "\n + [ERROR] no data in segment\n";
         return false;
     }
 
     // cases to check for:
-    // a. circles are identical (bad geometry, return IGES_IFLAG_IDENT)
+    // a. circles are identical (bad geometry, return MCAD_IFLAG_IDENT)
     // b. *this is inside aSegment and both entities are circles
-    //    (bad geometry, return IGES_IFLAG_INSIDE)
+    //    (bad geometry, return MCAD_IFLAG_INSIDE)
     // c. *this surrounds aSegment and both entities are circles
 
     // cases to evaluate:
@@ -291,37 +231,37 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
     // g. line, arc
     // h. line, line
     // i. arc, arc
-    IGES_SEGTYPE oSegType = aSegment.getSegType();
+    MCAD_SEGTYPE oSegType = aSegment.GetSegType();
 
-    if( IGES_SEGTYPE_NONE == oSegType )
+    if( MCAD_SEGTYPE_NONE == oSegType )
     {
         ERRMSG << "\n + [ERROR] no data in second segment\n";
         return false;
     }
 
     // *this is a circle and it may intersect with a circle, arc, or line
-    if( IGES_SEGTYPE_CIRCLE == msegtype )
+    if( MCAD_SEGTYPE_CIRCLE == msegtype )
     {
-        if( IGES_SEGTYPE_CIRCLE == oSegType )
+        if( MCAD_SEGTYPE_CIRCLE == oSegType )
             return checkCircles( aSegment, aIntersectList, flags );
 
-        if( IGES_SEGTYPE_ARC == oSegType )
+        if( MCAD_SEGTYPE_ARC == oSegType )
             return checkArcs(  aSegment, aIntersectList, flags );
 
         return checkArcLine(  aSegment, aIntersectList, flags );
     }
 
     // *this is an arc and it may intersect with a line, arc, or circle
-    if( IGES_SEGTYPE_ARC == msegtype )
+    if( MCAD_SEGTYPE_ARC == msegtype )
     {
-        if( IGES_SEGTYPE_LINE == oSegType )
+        if( MCAD_SEGTYPE_LINE == oSegType )
             return checkArcLine(  aSegment, aIntersectList, flags );
 
         return checkArcs(  aSegment, aIntersectList, flags );
     }
 
     // *this is a line and it may intersect with a line, arc or circle
-    if( IGES_SEGTYPE_LINE == oSegType )
+    if( MCAD_SEGTYPE_LINE == oSegType )
         return checkLines(  aSegment, aIntersectList, flags );
 
     return checkArcLine( aSegment, aIntersectList, flags );
@@ -329,10 +269,10 @@ bool IGES_GEOM_SEGMENT::GetIntersections( const IGES_GEOM_SEGMENT& aSegment,
 
 
 // split at the given list of intersections (1 or 2 intersections only)
-bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
-                               std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+bool MCAD_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
+                          std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
-    if( IGES_SEGTYPE_NONE == msegtype )
+    if( MCAD_SEGTYPE_NONE == msegtype )
     {
         ERRMSG << "\n [BUG]: splitting a non-defined segment\n";
         return false;
@@ -354,7 +294,7 @@ bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
             break;
     }
 
-    if( IGES_SEGTYPE_CIRCLE != msegtype )
+    if( MCAD_SEGTYPE_CIRCLE != msegtype )
     {
         list<IGES_POINT>::iterator sP = aIntersectList.begin();
         list<IGES_POINT>::iterator eP = aIntersectList.end();
@@ -379,15 +319,15 @@ bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
 
     switch( msegtype )
     {
-        case IGES_SEGTYPE_LINE:
+        case MCAD_SEGTYPE_LINE:
             ok = splitLine( aIntersectList, aNewSegmentList );
             break;
 
-        case IGES_SEGTYPE_ARC:
+        case MCAD_SEGTYPE_ARC:
             ok = splitArc( aIntersectList, aNewSegmentList );
             break;
 
-        case IGES_SEGTYPE_CIRCLE:
+        case MCAD_SEGTYPE_CIRCLE:
             ok = splitCircle( aIntersectList, aNewSegmentList );
             break;
 
@@ -407,162 +347,7 @@ bool IGES_GEOM_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-// retrieve the representation of the curve as IGES 2D primitives which
-// are suitable as a subordinate to the CPTR of a Trimmed Parametric Surface.
-// It is essential that a list of curves be returned as it is up to the
-// user to decide whether these curves shall be part of a loop consiting
-// of multiple segments.
-bool IGES_GEOM_SEGMENT::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
-{
-    bool ok;
-
-    switch( msegtype )
-    {
-        case IGES_SEGTYPE_LINE:
-            ok = getCurveLine( aModel, aCurves, zHeight );
-            break;
-
-        case IGES_SEGTYPE_ARC:
-            ok = getCurveArc( aModel, aCurves, zHeight );
-            break;
-
-        case IGES_SEGTYPE_CIRCLE:
-            ok = getCurveCircle( aModel, aCurves, zHeight );
-            break;
-
-        default:
-            ERRMSG << "\n + [ERROR] invalid segment type (" << msegtype << ")\n";
-            ok = false;
-            break;
-    }
-
-    return ok;
-}
-
-
-// retrieve the curve as a list of parametric curves on plane which arc suitable
-// as subordinates to the BPTR of a Trimmed Parametric Surface. It is up to the
-// user to determine whether these curves shall be part of a loop consisting of
-// multiple segments.
-bool IGES_GEOM_SEGMENT::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                        double aMinX, double aMaxX, double aMinY, double aMaxY,
-                        double zHeight )
-{
-    double scale = 1.0 / ( aMaxX - aMinX ); // scale factor (must be same for X and Y axes)
-    bool ok;
-
-    switch( msegtype )
-    {
-        case IGES_SEGTYPE_CIRCLE:
-            ok = copCircle( aModel, aCurves, aMinX, aMinY, scale, zHeight );
-            break;
-
-        case IGES_SEGTYPE_ARC:
-            ok = copArc( aModel, aCurves, aMinX, aMinY, scale, zHeight );
-            break;
-
-        case IGES_SEGTYPE_LINE:
-            ok = copLine( aModel, aCurves, aMinX, aMinY, scale, zHeight );
-            break;
-
-        default:
-            do
-            {
-                ERRMSG << "\n + [INFO] invalid segment type: " << msegtype << "\n";
-                return false;
-            } while( 0 );
-
-            break;
-    }
-
-    if( !ok )
-    {
-        ERRMSG << "\n + [INFO] failure; see messages above\n";
-        return false;
-    }
-
-    return true;
-}
-
-
-// retrieve a trimmed parametric surface representing a vertical side
-bool IGES_GEOM_SEGMENT::GetVerticalSurface( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
-                            double aTopZ, double aBotZ )
-{
-    if( !aModel )
-    {
-        ERRMSG << "\n + [ERROR] null pointer passed for IGES model\n";
-        return false;
-    }
-
-    if( abs( aTopZ - aBotZ ) < 1e-6 )
-    {
-        ERRMSG << "\n + [ERROR] degenerate surface\n";
-        return false;
-    }
-
-    if( !msegtype )
-    {
-        ERRMSG << "\n + [ERROR] no model data to work with\n";
-        return false;
-    }
-
-    bool ok = false;
-
-    switch( msegtype )
-    {
-        case IGES_SEGTYPE_CIRCLE:
-        case IGES_SEGTYPE_ARC:
-            do
-            {
-                IGES_GEOM_CYLINDER cyl;
-
-                if( !mCWArc )
-                    cyl.SetParams( mcenter, mstart, mend );
-                else
-                    cyl.SetParams( mcenter, mend, mstart );
-
-                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, aSurface );
-            } while( 0 );
-
-            break;
-
-        default:
-            do
-            {
-                IGES_GEOM_WALL wall;
-                IGES_POINT p0 = mstart;
-                p0.z = aTopZ;
-                IGES_POINT p1 = mend;
-                p1.z = aTopZ;
-                IGES_POINT p2 = mend;
-                p2.z = aBotZ;
-                IGES_POINT p3 = mstart;
-                p3.z = aBotZ;
-                wall.SetParams( p0, p1, p2, p3 );
-                IGES_ENTITY_144* ep = wall.Instantiate( aModel );
-
-                if( NULL == ep )
-                {
-                    ERRMSG << "\n + [ERROR] could not create solid model feature\n";
-                    ok = false;
-                }
-                else
-                {
-                    aSurface.push_back( ep );
-                    ok = true;
-                }
-
-            } while( 0 );
-
-            break;
-    }
-
-    return ok;
-}
-
-
-void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d,
+void MCAD_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d,
     IGES_POINT& p1, IGES_POINT& p2 )
 {
     // note: given distance d between 2 circle centers
@@ -622,11 +407,12 @@ void IGES_GEOM_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d
 
 
 // check case where both segments are circles
-bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
-    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+bool MCAD_SEGMENT::checkCircles( const MCAD_SEGMENT& aSegment,
+                                 std::list<IGES_POINT>& aIntersectList,
+                                 MCAD_INTERSECT_FLAG& flags )
 {
-    IGES_POINT c2 = aSegment.getCenter();
-    double r2 = aSegment.getRadius();
+    IGES_POINT c2 = aSegment.GetCenter();
+    double r2 = aSegment.GetRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
     double d= sqrt( dx*dx + dy*dy );
@@ -641,13 +427,13 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
     if ( PointMatches( mcenter, c2, 1e-3 )
         && abs( mradius - r2 ) < 1e-3 )
     {
-        flags = IGES_IFLAG_IDENT;
+        flags = MCAD_IFLAG_IDENT;
         return false;
     }
 
     if( abs( d - mradius - r2 ) < 0.001 )
     {
-        flags = IGES_IFLAG_TANGENT;
+        flags = MCAD_IFLAG_TANGENT;
         return false;
     }
 
@@ -656,14 +442,14 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
         // check if aSegment is inside this circle
         if( d <= (mradius - r2) )
         {
-            flags = IGES_IFLAG_ENCIRCLES;
+            flags = MCAD_IFLAG_ENCIRCLES;
             return false;
         }
 
         // check if this circle is inside aSegment
         if( d <= (r2 - mradius) )
         {
-            flags = IGES_IFLAG_INSIDE;
+            flags = MCAD_IFLAG_INSIDE;
             return false;
         }
     }
@@ -680,18 +466,19 @@ bool IGES_GEOM_SEGMENT::checkCircles( const IGES_GEOM_SEGMENT& aSegment,
 
 
 // check case where both segments are arcs (one may be a circle)
-bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
-    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
+                              std::list<IGES_POINT>& aIntersectList,
+                              MCAD_INTERSECT_FLAG& flags )
 {
-    IGES_POINT c2 = aSegment.getCenter();
-    double r2 = aSegment.getRadius();
+    IGES_POINT c2 = aSegment.GetCenter();
+    double r2 = aSegment.GetRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
     double d = sqrt( dx*dx + dy*dy );
-    double a0 = getStartAngle();
-    double a1 = getEndAngle();
-    double b0 = aSegment.getStartAngle();
-    double b1 = aSegment.getEndAngle();
+    double a0 = GetStartAngle();
+    double a1 = GetEndAngle();
+    double b0 = aSegment.GetStartAngle();
+    double b1 = aSegment.GetEndAngle();
 
 #warning TO BE IMPLEMENTED
     // XXX - we may have a condition where we have 2 edge overlaps;
@@ -726,7 +513,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             tang1 += 2.0 * M_PI;
 
         if( tang0 >= a0 && tang0 <= a1 && tang1 >= b0 && tang1 <= b1 )
-            flags = IGES_IFLAG_TANGENT;
+            flags = MCAD_IFLAG_TANGENT;
 
         return false;
     }
@@ -736,24 +523,24 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         && abs( mradius - r2 ) < 1e-3 )
     {
         // there may be an intersection along an edge
-        if( IGES_SEGTYPE_CIRCLE == msegtype )
+        if( MCAD_SEGTYPE_CIRCLE == msegtype )
         {
-            aIntersectList.push_back( aSegment.getStart() );
-            aIntersectList.push_back( aSegment.getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( aSegment.GetStart() );
+            aIntersectList.push_back( aSegment.GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
-        if( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
+        if( MCAD_SEGTYPE_CIRCLE == aSegment.GetSegType() )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
         // Special case: arcs only intersect at their endpoints;
-        // we must return the endpoints with the flag IGES_IFLAG_ENDPOINT
+        // we must return the endpoints with the flag MCAD_IFLAG_ENDPOINT
         // possible sub-cases:
         // b1 == a0, b0 == a1 - 2*M_PI
         // a1 == b0, a0 == b1 - 2*M_PI
@@ -764,9 +551,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             || (abs(b0 - a1) < 1e-8 && abs(b1 -a0 - 2.0*M_PI) < 1e-8)
             || (abs(a0 - b1) < 1e-8 && abs(a1 -b0 - 2.0*M_PI) < 1e-8) )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( getEnd() );
-            flags = IGES_IFLAG_ENDPOINT;
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( GetEnd() );
+            flags = MCAD_IFLAG_ENDPOINT;
             return true;
         }
 
@@ -778,9 +565,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             || ((b0 + 2.0*M_PI) >= a0 && (b1 + 2.0*M_PI) <= a1)
             || ((b0 - 2.0*M_PI) >= a0 && (b1 - 2.0*M_PI) <= a1) )
         {
-            aIntersectList.push_back( aSegment.getStart() );
-            aIntersectList.push_back( aSegment.getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( aSegment.GetStart() );
+            aIntersectList.push_back( aSegment.GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
@@ -788,9 +575,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             || (a0 >= (b0 + 2.0*M_PI) && a1 <= (b1 + 2.0*M_PI))
             || (a0 >= (b0 - 2.0*M_PI) && a1 <= (b1 - 2.0*M_PI)) )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
@@ -798,9 +585,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         if( (b0 <= a0 && b1 >= a0 && b1 <= a1)
             || ((b0 - 2.0*M_PI) <= a0 && (b1 - 2.0*M_PI) >= a0 && (b1 - 2.0*M_PI) <= a1) )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( aSegment.getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( aSegment.GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
@@ -809,9 +596,9 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
             || ((b0 + 2.0*M_PI) >= a0 && (b0 + 2.0*M_PI) <= a1 && (b1 + 2.0*M_PI) >= a1)
             || ((b0 - 2.0*M_PI) >= a0 && (b0 - 2.0*M_PI) <= a1 && (b1 - 2.0*M_PI) >= a1) )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( aSegment.getEnd() );
-            flags = IGES_IFLAG_EDGE;
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( aSegment.GetEnd() );
+            flags = MCAD_IFLAG_EDGE;
             return true;
         }
 
@@ -819,31 +606,31 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     }
 
     // Special cases: arcs only intersect at their endpoints
-    // 1. aSegment->radius < *this->radius : return flag IGES_IFLAG_OUTSIDE; this
+    // 1. aSegment->radius < *this->radius : return flag MCAD_IFLAG_OUTSIDE; this
     //    return value can be used by the calling routine to determine whether
     //    nothing should be done (subtracting) or *this arc should be replaced
     //    by aSegment (adding) provided aSegment has no non-endpoint intersections
     //    with all other members of the outline.
     // 2. aSegment->radius > *this->radius and a point halfway along *this
-    //    arc is inside aSegment : return flag IGES_IFLAG_INSIDE. For a subtractive
+    //    arc is inside aSegment : return flag MCAD_IFLAG_INSIDE. For a subtractive
     //    case, the calling routine can take the flag value to indicate that *this
     //    arc must be replaced by aSegment provided there are absolutely no other
     //    intersections in the outline which are not endpoints. For an additive case
     //    nothing is to be done
     // 3. aSegment->radius > *this->radius and a point halfway along *this
-    //    arc is outside aSegment : return flag IGES_IFLAG_OUTSIDE
+    //    arc is outside aSegment : return flag MCAD_IFLAG_OUTSIDE
 
 
-    if( IGES_SEGTYPE_ARC == msegtype && IGES_SEGTYPE_ARC == aSegment.getSegType() )
+    if( MCAD_SEGTYPE_ARC == msegtype && MCAD_SEGTYPE_ARC == aSegment.GetSegType() )
     {
         // special case: arcs intersect only at the endpoints
-        if( ( PointMatches( getStart(), aSegment.getStart(), 1e-3 )
-            && PointMatches( getEnd(), aSegment.getEnd(), 1e-3 ) )
-            || (PointMatches( getStart(), aSegment.getEnd(), 1e-3 )
-            && PointMatches( getEnd(), aSegment.getStart(), 1e-3 ) ) )
+        if( ( PointMatches( GetStart(), aSegment.GetStart(), 1e-3 )
+            && PointMatches( GetEnd(), aSegment.GetEnd(), 1e-3 ) )
+            || (PointMatches( GetStart(), aSegment.GetEnd(), 1e-3 )
+            && PointMatches( GetEnd(), aSegment.GetStart(), 1e-3 ) ) )
         {
-            aIntersectList.push_back( getStart() );
-            aIntersectList.push_back( getEnd() );
+            aIntersectList.push_back( GetStart() );
+            aIntersectList.push_back( GetEnd() );
 
             if( r2 > mradius )
             {
@@ -858,12 +645,12 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
 
                 if( mrad < r2 )
                 {
-                    flags = IGES_IFLAG_INSIDE;
+                    flags = MCAD_IFLAG_INSIDE;
                     return true;
                 }
             }
 
-            flags = IGES_IFLAG_OUTSIDE;
+            flags = MCAD_IFLAG_OUTSIDE;
             return true;
         }
     }
@@ -888,7 +675,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
     isOnArc[0] = 0;
     isOnArc[1] = 0;
 
-    if ( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
+    if ( MCAD_SEGTYPE_CIRCLE == aSegment.GetSegType() )
     {
         ++isOnArc[0];
         ++isOnArc[1];
@@ -936,7 +723,7 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
         }
     }
 
-    if( IGES_SEGTYPE_CIRCLE == msegtype )
+    if( MCAD_SEGTYPE_CIRCLE == msegtype )
     {
         cout << "XXX: *this is a circle, ++isOnArc\n";
         ++isOnArc[0];
@@ -1044,10 +831,11 @@ bool IGES_GEOM_SEGMENT::checkArcs( const IGES_GEOM_SEGMENT& aSegment,
 
 
 // check case where one segment is an arc and one a line
-bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
-    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
+                                 std::list<IGES_POINT>& aIntersectList,
+                                 MCAD_INTERSECT_FLAG& flags )
 {
-    flags = IGES_IFLAG_NONE;
+    flags = MCAD_IFLAG_NONE;
 
     // retrieve parameters of the arc and line segment
     IGES_POINT arcC;
@@ -1061,35 +849,35 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
     IGES_POINT lS;
     IGES_POINT lE;
 
-    if( IGES_SEGTYPE_ARC == msegtype || IGES_SEGTYPE_CIRCLE == msegtype )
+    if( MCAD_SEGTYPE_ARC == msegtype || MCAD_SEGTYPE_CIRCLE == msegtype )
     {
-        if( IGES_SEGTYPE_CIRCLE == msegtype )
+        if( MCAD_SEGTYPE_CIRCLE == msegtype )
             arcCircle = true;
 
-        arcSAng = getStartAngle();
-        arcEAng = getEndAngle();
+        arcSAng = GetStartAngle();
+        arcEAng = GetEndAngle();
         arcR = mradius;
         arcC = mcenter;
         arcS = mstart;
         arcE = mend;
 
-        lS = aSegment.getStart();
-        lE = aSegment.getEnd();
+        lS = aSegment.GetStart();
+        lE = aSegment.GetEnd();
     }
     else
     {
-        if( IGES_SEGTYPE_CIRCLE == aSegment.getSegType() )
+        if( MCAD_SEGTYPE_CIRCLE == aSegment.GetSegType() )
             arcCircle = true;
 
-        arcSAng = aSegment.getStartAngle();
-        arcEAng = aSegment.getEndAngle();
-        arcR = aSegment.getRadius();
-        arcC = aSegment.getCenter();
-        arcS = aSegment.getStart();
-        arcE = aSegment.getEnd();
+        arcSAng = aSegment.GetStartAngle();
+        arcEAng = aSegment.GetEndAngle();
+        arcR = aSegment.GetRadius();
+        arcC = aSegment.GetCenter();
+        arcS = aSegment.GetStart();
+        arcE = aSegment.GetEnd();
 
-        lS = getStart();
-        lE = getEnd();
+        lS = GetStart();
+        lE = GetEnd();
     }
 
     // Step 1: the line segment must be parameterized:
@@ -1144,7 +932,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
             if( t < 0.0 || t > 1.0 )
                 return false;
 
-            flags = IGES_IFLAG_TANGENT;
+            flags = MCAD_IFLAG_TANGENT;
             IGES_POINT p;
             p.x = t * lS.x + (1.0 - t) * lE.x;
             p.y = t * lS.y + (1.0 - t) * lE.y;
@@ -1174,7 +962,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
     int np = 0;
     IGES_POINT p[2];
-    IGES_INTERSECT_FLAG f[2];
+    MCAD_INTERSECT_FLAG f[2];
 
     if( t0 >= 0.0 && t0 <= 1.0 )
     {
@@ -1184,9 +972,9 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         if( ( ( PointMatches( p[0], arcS, 1e-8 ) || PointMatches( p[0], arcE, 1e-8 ) )
             && !arcCircle )
             || abs( t0 ) < 1e-8 || abs( t0 - 1.0 ) < 1e-8 )
-            f[0] = IGES_IFLAG_ENDPOINT;
+            f[0] = MCAD_IFLAG_ENDPOINT;
         else
-            f[0] = IGES_IFLAG_NONE;
+            f[0] = MCAD_IFLAG_NONE;
 
         ++np;
     }
@@ -1199,9 +987,9 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         if( ( ( PointMatches( p[np], arcS, 1e-8 ) || PointMatches( p[np], arcE, 1e-8 ) )
             && !arcCircle )
             || abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8 )
-            f[np] = IGES_IFLAG_ENDPOINT;
+            f[np] = MCAD_IFLAG_ENDPOINT;
         else
-            f[np] = IGES_IFLAG_NONE;
+            f[np] = MCAD_IFLAG_NONE;
 
         ++np;
     }
@@ -1223,8 +1011,8 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
             return true;
         }
 
-        if( IGES_IFLAG_ENDPOINT == f[0] || IGES_IFLAG_ENDPOINT == f[1] )
-            flags = IGES_IFLAG_ENDPOINT;
+        if( MCAD_IFLAG_ENDPOINT == f[0] || MCAD_IFLAG_ENDPOINT == f[1] )
+            flags = MCAD_IFLAG_ENDPOINT;
 
         bool swap = false; // set to true if p[0], p[1] must be swapped
 
@@ -1276,7 +1064,7 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
     if( tangent )
     {
-        flags = IGES_IFLAG_TANGENT;
+        flags = MCAD_IFLAG_TANGENT;
         aIntersectList.push_back( pt[0] );
         return true;
     }
@@ -1288,8 +1076,8 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
         return true;
     }
 
-    if( IGES_IFLAG_ENDPOINT == f[0] || IGES_IFLAG_ENDPOINT == f[1] )
-        flags = IGES_IFLAG_ENDPOINT;
+    if( MCAD_IFLAG_ENDPOINT == f[0] || MCAD_IFLAG_ENDPOINT == f[1] )
+        flags = MCAD_IFLAG_ENDPOINT;
 
     // determine point order on the arc
     if( ang[0] < arcSAng )
@@ -1314,16 +1102,17 @@ bool IGES_GEOM_SEGMENT::checkArcLine( const IGES_GEOM_SEGMENT& aSegment,
 
 
 // check case where both segments are lines
-bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
-    std::list<IGES_POINT>& aIntersectList, IGES_INTERSECT_FLAG& flags )
+bool MCAD_SEGMENT::checkLines( const MCAD_SEGMENT& aSegment,
+                               std::list<IGES_POINT>& aIntersectList,
+                               MCAD_INTERSECT_FLAG& flags )
 {
-    if( IGES_SEGTYPE_NONE == msegtype || IGES_SEGTYPE_NONE == aSegment.getSegType() )
+    if( MCAD_SEGTYPE_NONE == msegtype || MCAD_SEGTYPE_NONE == aSegment.GetSegType() )
     {
         ERRMSG << "\n + [ERROR] one of the segments has no data\n";
         return false;
     }
 
-    flags = IGES_IFLAG_NONE;
+    flags = MCAD_IFLAG_NONE;
 
     // Step 1: line segment parameterization:
     // X(t) = t(X2 - X1) + X1
@@ -1352,8 +1141,8 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
 
     double XA1 = mend.x - mstart.x;
     double YA1 = mend.y - mstart.y;
-    IGES_POINT p0 = aSegment.getStart();
-    IGES_POINT p1 = aSegment.getEnd();
+    IGES_POINT p0 = aSegment.GetStart();
+    IGES_POINT p1 = aSegment.GetEnd();
     double XA2 = p1.x - p0.x;
     double YA2 = p1.y - p0.y;
 
@@ -1425,7 +1214,7 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
         if( !s0i && !e0i && !s1i && !e1i )
             return false;
 
-        flags = IGES_IFLAG_EDGE;
+        flags = MCAD_IFLAG_EDGE;
 
         if( s0i && e0i )
         {
@@ -1506,7 +1295,7 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
 
         if( abs( t1 ) < 1e-8 || abs( t1 - 1.0 ) < 1e-8
             || abs( t2 ) < 1e-8 || abs( t2 - 1.0 ) < 1e-8 )
-            flags = IGES_IFLAG_ENDPOINT;
+            flags = MCAD_IFLAG_ENDPOINT;
 
         return true;
     }
@@ -1516,14 +1305,14 @@ bool IGES_GEOM_SEGMENT::checkLines( const IGES_GEOM_SEGMENT& aSegment,
 
 
 // calculate the bottom-left and top-right rectangular bounds
-bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
+bool MCAD_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 {
-    if( IGES_SEGTYPE_NONE == msegtype )
+    if( MCAD_SEGTYPE_NONE == msegtype )
     {
         return false;
     }
 
-    if( IGES_SEGTYPE_LINE == msegtype )
+    if( MCAD_SEGTYPE_LINE == msegtype )
     {
         if( abs( mstart.x - mend.x ) < 1e-8 )
         {
@@ -1567,7 +1356,7 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
         return true;
     }   // if line segment
 
-    if( IGES_SEGTYPE_CIRCLE == msegtype )
+    if( MCAD_SEGTYPE_CIRCLE == msegtype )
     {
         p0.x = mcenter.x - mradius;
         p1.x = mcenter.x + mradius;
@@ -1579,8 +1368,8 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
     }
 
     // bounds of an arc
-    double aS = getStartAngle();
-    double aE = getEndAngle();
+    double aS = GetStartAngle();
+    double aE = GetEndAngle();
 
     IGES_POINT m[4];    // x,y extrema of an arc
     int ne = 0;
@@ -1663,16 +1452,16 @@ bool IGES_GEOM_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 // + calculate the midpoint along the segment and return true;
 //   for circles the reported midpoint is the point to the right
 //   of the center.
-bool IGES_GEOM_SEGMENT::GetMidpoint( IGES_POINT& p0 )
+bool MCAD_SEGMENT::GetMidpoint( IGES_POINT& p0 )
 {
     switch( msegtype )
     {
-        case IGES_SEGTYPE_CIRCLE:
+        case MCAD_SEGTYPE_CIRCLE:
             p0 = mcenter;
             p0.x += mradius;
             break;
 
-        case IGES_SEGTYPE_ARC:
+        case MCAD_SEGTYPE_ARC:
             do
             {
                 double ang = ( msang + meang ) * 0.5;
@@ -1683,7 +1472,7 @@ bool IGES_GEOM_SEGMENT::GetMidpoint( IGES_POINT& p0 )
 
             break;
 
-        case IGES_SEGTYPE_LINE:
+        case MCAD_SEGTYPE_LINE:
             p0.x = 0.5 * (mend.x - mstart.x) + mstart.x;
             p0.y = 0.5 * (mend.y - mstart.y) + mstart.y;
             break;
@@ -1699,19 +1488,19 @@ bool IGES_GEOM_SEGMENT::GetMidpoint( IGES_POINT& p0 )
 }
 
 
-IGES_SEGTYPE IGES_GEOM_SEGMENT::getSegType( void ) const
+MCAD_SEGTYPE MCAD_SEGMENT::GetSegType( void ) const
 {
     return msegtype;
 }
 
 
-double IGES_GEOM_SEGMENT::getRadius( void ) const
+double MCAD_SEGMENT::GetRadius( void ) const
 {
     return mradius;
 }
 
 
-double IGES_GEOM_SEGMENT::getStartAngle( void ) const
+double MCAD_SEGMENT::GetStartAngle( void ) const
 {
     if( mCWArc )
         return meang;
@@ -1720,7 +1509,7 @@ double IGES_GEOM_SEGMENT::getStartAngle( void ) const
 }
 
 
-double IGES_GEOM_SEGMENT::getEndAngle( void ) const
+double MCAD_SEGMENT::GetEndAngle( void ) const
 {
     if( mCWArc )
         return msang;
@@ -1729,19 +1518,25 @@ double IGES_GEOM_SEGMENT::getEndAngle( void ) const
 }
 
 
-bool IGES_GEOM_SEGMENT::isArcCW( void ) const
+double MCAD_SEGMENT::GetMSAngle( void ) const
 {
-    return mCWArc;
+    return msang;
 }
 
 
-IGES_POINT IGES_GEOM_SEGMENT::getCenter( void ) const
+double MCAD_SEGMENT::GetMEAngle( void ) const
+{
+    return meang;
+}
+
+
+IGES_POINT MCAD_SEGMENT::GetCenter( void ) const
 {
     return mcenter;
 }
 
 
-IGES_POINT IGES_GEOM_SEGMENT::getStart( void ) const
+IGES_POINT MCAD_SEGMENT::GetStart( void ) const
 {
     // ensure that the start/end points given
     // describe a CCW arc
@@ -1752,7 +1547,13 @@ IGES_POINT IGES_GEOM_SEGMENT::getStart( void ) const
 }
 
 
-IGES_POINT IGES_GEOM_SEGMENT::getEnd( void ) const
+IGES_POINT MCAD_SEGMENT::GetMStart( void ) const
+{
+    return mstart;
+}
+
+
+IGES_POINT MCAD_SEGMENT::GetEnd( void ) const
 {
     // ensure that the start/end points given
     // describe a CCW arc
@@ -1762,17 +1563,24 @@ IGES_POINT IGES_GEOM_SEGMENT::getEnd( void ) const
     return mend;
 }
 
-// reverse the point order if applicable
-void IGES_GEOM_SEGMENT::reverse( void )
+
+IGES_POINT MCAD_SEGMENT::GetMEnd( void ) const
 {
-    if( IGES_SEGTYPE_NONE == msegtype || IGES_SEGTYPE_CIRCLE == msegtype )
+    return mend;
+}
+
+
+// reverse the point order if applicable
+void MCAD_SEGMENT::reverse( void )
+{
+    if( MCAD_SEGTYPE_NONE == msegtype || MCAD_SEGTYPE_CIRCLE == msegtype )
         return;
 
     IGES_POINT tmp = mstart;
     mstart = mend;
     mend = tmp;
 
-    if( IGES_SEGTYPE_ARC == msegtype )
+    if( MCAD_SEGTYPE_ARC == msegtype )
     {
         if( mCWArc )
             mCWArc = false;
@@ -1787,8 +1595,8 @@ void IGES_GEOM_SEGMENT::reverse( void )
     return;
 }
 
-bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
-                std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
+                              std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     if( aIntersectList.empty() )
     {
@@ -1891,7 +1699,7 @@ bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
         ++sPL;
     }
 
-    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+    MCAD_SEGMENT* sp = new MCAD_SEGMENT;
     IGES_POINT p0;
 
     if( 1 == np )
@@ -1924,7 +1732,7 @@ bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
     aNewSegmentList.push_back( sp );
 
     // create and set up the second segment
-    sp = new IGES_GEOM_SEGMENT;
+    sp = new MCAD_SEGMENT;
     sp->SetParams( p1, mend );
     aNewSegmentList.push_back( sp );
 
@@ -1934,8 +1742,8 @@ bool IGES_GEOM_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
-               std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
+                             std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     IGES_POINT p0 = aIntersectList.front();
     double dx = p0.x - mcenter.x;
@@ -1951,16 +1759,16 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
 
     double a0 = atan2( dy, dx );
 
-    if( a0 < getStartAngle() )
+    if( a0 < GetStartAngle() )
         a0 += 2.0 * M_PI;
 
-    if( a0 > getEndAngle() )
+    if( a0 > GetEndAngle() )
     {
         ERRMSG << "\n + [ERROR] p0 is not on the arc\n";
         return false;
     }
 
-    IGES_GEOM_SEGMENT* sp;
+    MCAD_SEGMENT* sp;
 
     if( 1 == aIntersectList.size() )
     {
@@ -1977,13 +1785,13 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
         cout << mradius << ", CW: " << mCWArc << "]\n";
 
         // create the new arc
-        sp = new IGES_GEOM_SEGMENT;
+        sp = new MCAD_SEGMENT;
         sp->mstart = p0;
         sp->mend = mend;
         sp->msang = a0;
         sp->meang = meang;
         sp->mCWArc = mCWArc;
-        sp->msegtype = IGES_SEGTYPE_ARC;
+        sp->msegtype = MCAD_SEGTYPE_ARC;
         sp->mradius = mradius;
         sp->mcenter = mcenter;
         aNewSegmentList.push_back( sp );
@@ -2010,10 +1818,10 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
 
     double a1 = atan2( dy, dx );
 
-    if( a1 < getStartAngle() )
+    if( a1 < GetStartAngle() )
         a1 += 2.0 * M_PI;
 
-    if( a1 > getEndAngle() )
+    if( a1 > GetEndAngle() )
     {
         ERRMSG << "\n + [ERROR] p1 is not on the arc\n";
         return false;
@@ -2064,25 +1872,25 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
     cout << mradius << ", CW: " << mCWArc << "]\n";
 
     // create the first of 2 new arcs
-    sp = new IGES_GEOM_SEGMENT;
+    sp = new MCAD_SEGMENT;
     sp->mstart = p0;
     sp->mend = p1;
     sp->msang = a0;
     sp->meang = a1;
     sp->mCWArc = mCWArc;
-    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->msegtype = MCAD_SEGTYPE_ARC;
     sp->mradius = mradius;
     sp->mcenter = mcenter;
     aNewSegmentList.push_back( sp );
 
     // create the second of 2 new arcs
-    sp = new IGES_GEOM_SEGMENT;
+    sp = new MCAD_SEGMENT;
     sp->mstart = p1;
     sp->mend = mend;
     sp->msang = a1;
     sp->meang = meang;
     sp->mCWArc = mCWArc;
-    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->msegtype = MCAD_SEGTYPE_ARC;
     sp->mradius = mradius;
     sp->mcenter = mcenter;
     aNewSegmentList.push_back( sp );
@@ -2095,8 +1903,8 @@ bool IGES_GEOM_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
-                  std::list<IGES_GEOM_SEGMENT*>& aNewSegmentList )
+bool MCAD_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
+                                std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     if( aIntersectList.size() != 2 )
     {
@@ -2137,7 +1945,7 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
 
     double a1 = atan2( dy, dx );
 
-    IGES_GEOM_SEGMENT* sp = new IGES_GEOM_SEGMENT;
+    MCAD_SEGMENT* sp = new MCAD_SEGMENT;
 
     if( !sp )
     {
@@ -2147,7 +1955,7 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
 
     // explicitly assign values for the new arc; this saves
     // some computation time over SetParams()
-    sp->msegtype = IGES_SEGTYPE_ARC;
+    sp->msegtype = MCAD_SEGTYPE_ARC;
     sp->mcenter = mcenter;
     sp->mstart = p0;
     sp->mend = p1;
@@ -2164,7 +1972,7 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
     // The preserved section of the circle runs CCW from p1 to p0
     mstart = p1;
     mend = p0;
-    msegtype = IGES_SEGTYPE_ARC;
+    msegtype = MCAD_SEGTYPE_ARC;
     mCWArc = false;
     msang = a1;
     meang = a0;
@@ -2172,849 +1980,5 @@ bool IGES_GEOM_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
     if( msang > meang )
         meang += 2.0 * M_PI;
 
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
-{
-    IGES_ENTITY_100* arcs[2];
-    arcs[0] = NULL;
-    arcs[1] = NULL;
-
-    for( int i = 0; i < 2; ++i )
-    {
-        if( !newArc100( aModel, &arcs[i] ) )
-        {
-            for( int j = 0; j < i; ++j )
-                aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-            ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-            return false;
-        }
-    }
-
-    arcs[0]->zOffset = zHeight;
-    arcs[0]->xCenter = mcenter.x;
-    arcs[0]->yCenter = mcenter.y;
-    arcs[0]->xStart = mcenter.x + mradius;
-    arcs[0]->yStart = mcenter.y;
-    arcs[0]->xEnd = mcenter.x - mradius;
-    arcs[0]->yEnd = mcenter.y;
-
-    arcs[1]->zOffset = zHeight;
-    arcs[1]->xCenter = mcenter.x;
-    arcs[1]->yCenter = mcenter.y;
-    arcs[1]->xStart = mcenter.x - mradius;
-    arcs[1]->yStart = mcenter.y;
-    arcs[1]->xEnd = mcenter.x + mradius;
-    arcs[1]->yEnd = mcenter.y;
-
-    for( int i = 0; i < 2; ++i )
-    {
-        IGES_CURVE* cp = dynamic_cast<IGES_CURVE*>( arcs[i] );
-
-        if( !cp )
-        {
-            for( int j = i; j < 2; ++j )
-                aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-            ERRMSG << "\n + [BUG] could not typecast arcs to IGES_CURVE\n";
-            return false;
-        }
-
-        aCurves.push_back( cp );
-    }
-
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
-{
-    int na = 0; // number of arcs (and transforms if we have a CW arc)
-
-    IGES_ENTITY_100* arcs[3];   // the arc may consist of up to 3 segments
-    IGES_ENTITY_124* tx[3];     // for CW arcs each arc has a corresponding transform
-
-    double a0;
-    double a1;
-    IGES_POINT p0 = mstart;
-    IGES_POINT p1 = mend;
-    IGES_POINT pc = mcenter;
-
-    if( mCWArc )
-    {
-        p0.x = mcenter.x - p0.x;
-        p1.x = mcenter.x - p1.x;
-        pc.x = 0.0;
-
-        a0 = atan2( p0.y - pc.y, p0.x );
-        a1 = atan2( p1.y - pc.y, p1.x );
-
-        if( a1 < a0 )
-            a1 += 2.0 * M_PI;
-
-    }
-    else
-    {
-        a0 = msang;
-        a1 = meang;
-    }
-
-    if( a0 >= 0.0 && a0 < M_PI )
-    {
-        if( a1 <= M_PI )
-        {
-            if( !newArc100( aModel, &arcs[0] ) )
-            {
-                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
-                return false;
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = p1.x;
-            arcs[0]->yEnd = p1.y;
-            na = 1;
-        }
-        else
-        {
-            if( a1 <= 2.0 * M_PI )
-            {
-                for( int i = 0; i < 2; ++i )
-                {
-                    if( !newArc100( aModel, &arcs[i] ) )
-                    {
-                        for( int j = 0; j < i; ++j )
-                            aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-                        ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-                        return false;
-                    }
-                }
-
-                arcs[0]->zOffset = zHeight;
-                arcs[0]->xCenter = pc.x;
-                arcs[0]->yCenter = pc.y;
-                arcs[0]->xStart = p0.x;
-                arcs[0]->yStart = p0.y;
-                arcs[0]->xEnd = pc.x - mradius;
-                arcs[0]->yEnd = pc.y;
-
-                arcs[1]->zOffset = zHeight;
-                arcs[1]->xCenter = pc.x;
-                arcs[1]->yCenter = pc.y;
-                arcs[1]->xStart = pc.x - mradius;
-                arcs[1]->yStart = pc.y;
-                arcs[1]->xEnd = p1.x;
-                arcs[1]->yEnd = p1.y;
-
-                na = 2;
-            } // M_PI < a1 <= 2*M_PI
-            else
-            {
-                for( int i = 0; i < 3; ++i )
-                {
-                    if( !newArc100( aModel, &arcs[i] ) )
-                    {
-                        for( int j = 0; j < i; ++j )
-                            aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-                        ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-                        return false;
-                    }
-                }
-
-                arcs[0]->zOffset = zHeight;
-                arcs[0]->xCenter = pc.x;
-                arcs[0]->yCenter = pc.y;
-                arcs[0]->xStart = p0.x;
-                arcs[0]->yStart = p0.y;
-                arcs[0]->xEnd = pc.x - mradius;
-                arcs[0]->yEnd = pc.y;
-
-                arcs[1]->zOffset = zHeight;
-                arcs[1]->xCenter = pc.x;
-                arcs[1]->yCenter = pc.y;
-                arcs[1]->xStart = pc.x - mradius;
-                arcs[1]->yStart = pc.y;
-                arcs[1]->xEnd = pc.x + mradius;
-                arcs[1]->yEnd = pc.y;
-
-                arcs[2]->zOffset = zHeight;
-                arcs[2]->xCenter = pc.x;
-                arcs[2]->yCenter = pc.y;
-                arcs[2]->xStart = pc.x + mradius;
-                arcs[2]->yStart = pc.y;
-                arcs[2]->xEnd = p1.x;
-                arcs[2]->yEnd = p1.y;
-
-                na = 3;
-            }   // a1 > 2*M_PI
-        }   // ( 0.0 <= a0 < M_PI )
-
-    }
-    else if( a0 == M_PI )
-    {
-        if( a1 <= 2.0 * M_PI )
-        {
-            if( !newArc100( aModel, &arcs[0] ) )
-            {
-                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
-                return false;
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = p1.x;
-            arcs[0]->yEnd = p1.y;
-            na = 1;
-        }
-        else
-        {
-            for( int i = 0; i < 2; ++i )
-            {
-                if( !newArc100( aModel, &arcs[i] ) )
-                {
-                    for( int j = 0; j < i; ++j )
-                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-                    return false;
-                }
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = pc.x + mradius;
-            arcs[0]->yEnd = pc.y;
-
-            arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = pc.x;
-            arcs[1]->yCenter = pc.y;
-            arcs[1]->xStart = pc.x + mradius;
-            arcs[1]->yStart = pc.y;
-            arcs[1]->xEnd = p1.x;
-            arcs[1]->yEnd = p1.y;
-
-            na = 2;
-        }
-    }   // a0 == M_PI
-    else
-    {
-        if( a1 <= 0.0 )
-        {
-            if( !newArc100( aModel, &arcs[0] ) )
-            {
-                ERRMSG << "\n + [INFO] could not instantiate IGES arc\n";
-                return false;
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = p1.x;
-            arcs[0]->yEnd = p1.y;
-            na = 1;
-        }
-        else if( a1 <= M_PI )
-        {
-            for( int i = 0; i < 2; ++i )
-            {
-                if( !newArc100( aModel, &arcs[i] ) )
-                {
-                    for( int j = 0; j < i; ++j )
-                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-                    return false;
-                }
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = pc.x + mradius;
-            arcs[0]->yEnd = pc.y;
-
-            arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = pc.x;
-            arcs[1]->yCenter = pc.y;
-            arcs[1]->xStart = pc.x + mradius;
-            arcs[1]->yStart = pc.y;
-            arcs[1]->xEnd = p1.x;
-            arcs[1]->yEnd = p1.y;
-
-            na = 2;
-        }   // a0 < 0 && a1 <= M_PI
-        else
-        {
-            for( int i = 0; i < 3; ++i )
-            {
-                if( !newArc100( aModel, &arcs[i] ) )
-                {
-                    for( int j = 0; j < i; ++j )
-                        aModel->DelEntity( (IGES_ENTITY*)arcs[j] );
-
-                    ERRMSG << "\n + [INFO] could not create circular arc #" << i << "\n";
-                    return false;
-                }
-            }
-
-            arcs[0]->zOffset = zHeight;
-            arcs[0]->xCenter = pc.x;
-            arcs[0]->yCenter = pc.y;
-            arcs[0]->xStart = p0.x;
-            arcs[0]->yStart = p0.y;
-            arcs[0]->xEnd = pc.x + mradius;
-            arcs[0]->yEnd = pc.y;
-
-            arcs[1]->zOffset = zHeight;
-            arcs[1]->xCenter = pc.x;
-            arcs[1]->yCenter = pc.y;
-            arcs[1]->xStart = pc.x + mradius;
-            arcs[1]->yStart = pc.y;
-            arcs[1]->xEnd = pc.x - mradius;
-            arcs[1]->yEnd = pc.y;
-
-            arcs[2]->zOffset = zHeight;
-            arcs[2]->xCenter = pc.x;
-            arcs[2]->yCenter = pc.y;
-            arcs[2]->xStart = pc.x - mradius;
-            arcs[2]->yStart = pc.y;
-            arcs[2]->xEnd = p1.x;
-            arcs[2]->yEnd = p1.y;
-
-            na = 3;
-        }   // a0 < 0 && a1 > M_PI
-    }   // a0 < 0.0
-
-    if( mCWArc )
-    {
-        // instantiate the transforms
-        for( int i = 0; i < na; ++i )
-        {
-            if( !newTx124( aModel, &tx[i] ) )
-            {
-                ERRMSG << "\n + [INFO] could not instantiate IGES transform matrix\n";
-                return false;
-            }
-
-            tx[i]->T.T.x = mcenter.x;
-            tx[i]->T.T.z = 2.0 * zHeight;
-            tx[i]->T.R.v[0][0] = -1.0;
-            tx[i]->T.R.v[2][2] = -1.0;
-            tx[i]->SetEntityForm( 1 );
-
-            if( !arcs[i]->SetTransform( tx[i] ) )
-            {
-                ERRMSG << "\n + [INFO] could not set transform on arc\n";
-                return false;
-            }
-        }
-    }
-
-    for( int i = 0; i < na; ++i )
-        aCurves.push_back( (IGES_CURVE*)(arcs[i]) );
-
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves, double zHeight )
-{
-    IGES_ENTITY*     ep;
-    IGES_ENTITY_110* lp;
-    IGES_CURVE*      cp;
-
-    if( !aModel->NewEntity( ENT_LINE, &ep ) )
-    {
-        ERRMSG << "\n + [INFO] could not instantiate IGES line\n";
-        return false;
-    }
-
-    lp = dynamic_cast<IGES_ENTITY_110*>(ep);
-
-    if( !lp )
-    {
-        aModel->DelEntity( ep );
-        ERRMSG << "\n + [BUG] could not typecast IGES line\n";
-        return false;
-    }
-
-    lp->X1 = mstart.x;
-    lp->Y1 = mstart.y;
-    lp->Z1 = zHeight;
-    lp->X2 = mend.x;
-    lp->Y2 = mend.y;
-    lp->Z2 = zHeight;
-
-    cp = dynamic_cast<IGES_CURVE*>(ep);
-
-    if( !cp )
-    {
-        aModel->DelEntity( ep );
-        ERRMSG << "\n + [BUG] could not typecast line to IGES_CURVE\n";
-        return false;
-    }
-
-    aCurves.push_back( cp );
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                                   double offX, double offY, double aScale,
-                                   double zHeight )
-{
-    IGES_ENTITY_126* cp[2];
-
-    for( int i = 0; i < 2; ++ i )
-    {
-        if( !newArc126( aModel, &cp[i] ) )
-        {
-            for( int j = 0; j < i; ++j )
-                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-            ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
-            return false;
-        }
-    }
-
-    double axis[3] = { 0.0, 0.0, 1.0 }; // normal to the plane of the arc
-    double startp[3];
-    double centrp[3];
-    centrp[0] = ( mcenter.x - offX ) * aScale;
-    centrp[1] = ( mcenter.y - offY ) * aScale;
-    centrp[2] = zHeight;
-    SISLCurve* pCurve[2] = { NULL, NULL };
-    int stat = 0;
-
-    for( int i = 0; i < 2; ++i )
-    {
-        if( 0 == i )
-        {
-            startp[0] = centrp[0] + mradius * aScale;
-            startp[1] = centrp[1];
-            startp[2] = centrp[2];
-        }
-        else
-        {
-            startp[0] = centrp[0] - mradius * aScale;
-            startp[1] = centrp[1];
-            startp[2] = centrp[2];
-        }
-
-        s1303( startp, 1e-8, M_PI, centrp, axis, 3, &pCurve[i], &stat );
-
-        switch( stat )
-        {
-            case 0:
-                break;
-
-            case 1:
-                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS arc\n";
-                stat = 0;
-                break;
-
-            default:
-                for( int j = 0; j < i; ++j )
-                    freeCurve( pCurve[j] );
-
-                for( int j = 0; j < 2; ++j )
-                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                ERRMSG << "\n + [ERROR] could not create NURBS arc\n";
-                return false;
-                break;
-        }
-    }
-
-    for( int i = 0; i < 2; ++i )
-    {
-        if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
-            pCurve[i]->ecoef, false ) )
-        {
-            for( int j = 0; j < 2; ++j )
-            {
-                freeCurve( pCurve[j] );
-                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-            }
-
-            ERRMSG << "\n + [WARNING] problems setting data in NURBS arc\n";
-            return false;
-        }
-    }
-
-    for( int i = 0; i < 2; ++i )
-    {
-        freeCurve( pCurve[i] );
-        aCurves.push_back( cp[i] );
-    }
-
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                                double offX, double offY, double aScale,
-                                double zHeight )
-{
-    IGES_ENTITY_126* cp[3]; // we may have up to 3 entities to describe a single arc
-    IGES_ENTITY_124* tx[3]; // each arc segment must have a Transform if the arc is CW
-
-    for( int i = 0; i < 3; ++i )
-    {
-        cp[i] = NULL;
-        tx[i] = NULL;
-    }
-
-    double sAng;
-    double eAng;
-    IGES_POINT ptArc[2];    // start and end point of the arc; contingent on direction
-    IGES_POINT ptC;         // true center point; required for calculations for CW arcs
-    double angles[3];       // up to 3 subtended angles
-    double spt[3][3];       // start points for each angle
-    double cpt[3];          // center point for all angles
-
-    if( mCWArc )
-    {
-        ptArc[0] = mstart;
-        ptArc[1] = mend;
-        cout << "XXX: mstart: " << mstart.x << ", " << mstart.y << "\n";
-        cout << "XXX: mend  : " << mend.x << ", " << mend.y << "\n";
-        cout << "XXX: center: " << mcenter.x << ", " << mcenter.y << "\n";
-
-        cout << "XXX: old mstart: " << (ptArc[0].x -offX)*aScale << ", " << (ptArc[0].y -offY)*aScale << ", " << ptArc[0].z << "\n";
-
-        ptArc[0].x = ( mcenter.x - ptArc[0].x ) * aScale;
-        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
-        ptArc[0].z = zHeight;
-        cout << "XXX: new mstart: " << ptArc[0].x << ", " << ptArc[0].y << ", " << ptArc[0].z << "\n";
-
-        ptArc[1].x = ( mcenter.x - ptArc[1].x ) * aScale;
-        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
-        ptArc[1].z = zHeight;
-
-        cpt[0] = 0.0;
-        cpt[1] = ( mcenter.y - offY ) * aScale;
-        cpt[2] = zHeight;
-
-        ptC = mcenter;
-        ptC.x = ( ptC.x - offX ) * aScale;
-        ptC.y = ( ptC.y - offY ) * aScale;
-        ptC.z = zHeight;
-
-        sAng = atan2( ptArc[0].y - cpt[1], ptArc[0].x );
-        eAng = atan2( ptArc[1].y - cpt[1], ptArc[1].x );
-
-        if( eAng < sAng )
-            eAng += 2.0 * M_PI;
-    }
-    else
-    {
-        sAng = msang;
-        eAng = meang;
-        ptArc[0] = mstart;
-        ptArc[1] = mend;
-
-        ptArc[0].x = ( ptArc[0].x - offX ) * aScale;
-        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
-        ptArc[0].z = zHeight;
-
-        ptArc[1].x = ( ptArc[1].x - offX ) * aScale;
-        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
-        ptArc[1].z = zHeight;
-
-        cpt[0] = ( mcenter.x - offX ) * aScale;
-        cpt[1] = ( mcenter.y - offY ) * aScale;
-        cpt[2] = zHeight;
-
-        if( sAng > M_PI )
-        {
-            sAng -= 2.0 * M_PI;
-            eAng -= 2.0 * M_PI;
-        }
-    }
-
-    int na = 0; // number of arcs in the curve
-    spt[0][0] = ptArc[0].x;
-    spt[0][1] = ptArc[0].y;
-    spt[0][2] = ptArc[0].z;
-
-    if( sAng < 0.0 )
-    {
-        // range of angles will be > -M_PI .. < 2*M_PI
-        if( eAng <= 0.0 )
-        {
-            angles[0] = eAng - sAng;
-            na = 1;
-        }
-        else
-        {
-            angles[0] = -sAng;
-
-            spt[1][0] = cpt[0] + mradius * aScale;
-            spt[1][1] = cpt[1];
-            spt[1][2] = cpt[2];
-
-            if( eAng <= M_PI )
-            {
-                angles[1] = eAng;
-                na = 2;
-            }
-            else
-            {
-                angles[1] = M_PI;
-                angles[2] = eAng - M_PI;
-                spt[2][0] = cpt[0] - mradius * aScale;
-                spt[2][1] = cpt[1];
-                spt[2][2] = cpt[2];
-                na = 3;
-            }
-        }
-    }
-    else
-    {
-        // range of angles will be >= 0 .. < 3*M_PI
-        if( eAng <= M_PI || ( sAng >= M_PI && eAng <= 2.0 * M_PI ) )
-        {
-            angles[0] = eAng - sAng;
-            na = 1;
-        }
-        else
-        {
-            if( sAng < M_PI )
-            {
-                // CASE: sAng < M_PI && eAng > M_PI
-                angles[0] = M_PI - sAng;
-                spt[1][0] = cpt[0] - mradius * aScale;
-                spt[1][1] = cpt[1];
-                spt[1][2] = cpt[2];
-
-                if( eAng <= 2.0 * M_PI )
-                {
-                    angles[1] = eAng - M_PI;
-                    na = 2;
-                }
-                else
-                {
-                    angles[1] = M_PI;
-                    angles[2] = eAng - 2.0 * M_PI;
-                    spt[2][0] = cpt[0] + mradius * aScale;
-                    spt[2][1] = cpt[1];
-                    spt[2][2] = cpt[2];
-                    na = 3;
-                }
-            }
-            else
-            {
-                // CASE: sAng == M_PI && eAng > 2.0 * M_PI
-                if( eAng <= 2.0 * M_PI )
-                {
-                    angles[0] = eAng - sAng;
-                    na = 1;
-                }
-                else
-                {
-                    angles[0] = 2.0 * M_PI - sAng;
-                    angles[1] = eAng - 2.0 * M_PI;
-                    spt[1][0] = cpt[0] + mradius * aScale;
-                    spt[1][1] = cpt[1];
-                    spt[1][2] = cpt[2];
-                    na = 2;
-                }
-            }
-        }
-    }
-
-    for( int i = 0; i < na; ++ i )
-    {
-        if( !newArc126( aModel, &cp[i] ) )
-        {
-            for( int j = 0; j < i; ++j )
-            {
-                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                if( tx[j] )
-                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-            }
-
-            ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
-            return false;
-        }
-
-        if( mCWArc )
-        {
-            if( !newTx124( aModel, &tx[i] ) )
-            {
-                for( int j = 0; j < i; ++j )
-                {
-                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                    if( tx[j] )
-                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-                }
-
-                aModel->DelEntity( (IGES_ENTITY*)(cp[i]) );
-                ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
-                return false;
-            }
-            else
-            {
-                tx[i]->T.T.x = ptC.x;
-                tx[i]->T.T.z = 2.0 * zHeight;
-                tx[i]->T.R.v[0][0] = -1.0;
-                tx[i]->T.R.v[2][2] = -1.0;
-                tx[i]->SetEntityForm( 1 );
-                cp[i]->SetTransform( tx[i] );
-            }
-        }
-    }
-
-    double axis[3] = { 0.0, 0.0, 1.0 }; // normal to the plane of the arc
-    double startp[3];
-    SISLCurve* pCurve[3] = { NULL, NULL, NULL };
-    int stat = 0;
-
-    // set up the NURBS data
-    for( int i = 0; i < na; ++i )
-    {
-        startp[0] = spt[i][0];
-        startp[1] = spt[i][1];
-        startp[2] = spt[i][2];
-
-        s1303( startp, 1e-8, angles[i], cpt, axis, 3, &pCurve[i], &stat );
-
-        switch( stat )
-        {
-            case 0:
-                break;
-
-            case 1:
-                ERRMSG << "\n + [WARNING] unspecified problems creating NURBS arc\n";
-                stat = 0;
-                break;
-
-            default:
-                for( int j = 0; j < i; ++j )
-                    freeCurve( pCurve[j] );
-
-                for( int j = 0; j < na; ++j )
-                {
-                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                    if( tx[j] )
-                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-                }
-
-                ERRMSG << "\n + [ERROR] could not create NURBS arc\n";
-                return false;
-                break;
-        }
-    }
-
-    for( int i = 0; i < na; ++i )
-    {
-        if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
-            pCurve[i]->ecoef, false ) )
-        {
-            for( int j = 0; j < na; ++j )
-            {
-                if( pCurve[j] )
-                    freeCurve( pCurve[j] );
-
-                aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                if( tx[j] )
-                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-            }
-
-            ERRMSG << "\n + [WARNING] problems setting data in NURBS arc\n";
-            return false;
-        }
-    }
-
-    for( int i = 0; i < na; ++i )
-    {
-        freeCurve( pCurve[i] );
-        aCurves.push_back( cp[i] );
-    }
-
-    return true;
-}
-
-
-bool IGES_GEOM_SEGMENT::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                                 double offX, double offY, double aScale,
-                                 double zHeight )
-{
-    IGES_ENTITY_126* cp;
-
-    if( !newArc126( aModel, &cp ) )
-    {
-        ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
-        return false;
-    }
-
-    double startp[3];
-    double endp[3];
-    SISLCurve* pCurve = NULL;
-
-    startp[0] = (mstart.x - offX) * aScale;
-    startp[1] = (mstart.y - offY) * aScale;
-    startp[2] = zHeight;
-    endp[0] = (mend.x - offX) * aScale;
-    endp[1] = (mend.y - offY) * aScale;
-    endp[2] = zHeight;
-
-    double epar;
-    int stat = 0;
-    s1602( startp, endp, 2, 3, 0.0, &epar, &pCurve, &stat );
-
-    switch( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified problems creating NURBS curve\n";
-            stat = 0;
-            break;
-
-        default:
-            ERRMSG << "\n + [ERROR] could not create NURBS curve\n";
-            return false;
-            break;
-    }
-
-    if( !cp->SetNURBSData( pCurve->in, pCurve->ik, pCurve->et, pCurve->ecoef, false ) )
-    {
-        ERRMSG << "\n + [WARNING] problems setting data in NURBS curve\n";
-        aModel->DelEntity( (IGES_ENTITY*)cp );
-        freeCurve( pCurve );
-        return false;
-    }
-
-    freeCurve( pCurve );
-    aCurves.push_back( cp );
     return true;
 }

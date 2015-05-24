@@ -95,8 +95,9 @@ add_library( iges STATIC
     "${SRC_IGS}/iges_helpers.cpp"
     "${SRC_GEOM}/geom_wall.cpp"
     "${SRC_GEOM}/geom_cylinder.cpp"
-    "${SRC_GEOM}/geom_segment.cpp"
-    "${SRC_GEOM}/geom_outline.cpp"
+    "${SRC_GEOM}/iges_geom_pcb.cpp"
+    "${SRC_GEOM}/mcad_segment.cpp"
+    "${SRC_GEOM}/mcad_outline.cpp"
     )
 
 target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )

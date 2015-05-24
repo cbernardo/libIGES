@@ -1,5 +1,5 @@
 /*
- * file: geom_outline.h
+ * file: mcad_outline.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -62,24 +62,39 @@
  *   dividing the offending cutout into at least 2 separate bodies.
  */
 
-#ifndef IGES_GEOM_OUTLINE_H
-#define IGES_GEOM_OUTLINE_H
+#ifndef MCAD_OUTLINE_H
+#define MCAD_OUTLINE_H
 
 #include <list>
 #include <string>
 
-class IGES_GEOM_SEGMENT;
+class MCAD_SEGMENT;
 
-class IGES_GEOM_OUTLINE
+struct MCAD_INTERSECT
 {
-private:
+    IGES_POINT vertex;
+    MCAD_SEGMENT* segA;     // pointer to the segment operated upon
+    MCAD_SEGMENT* segB;     // pointer to the segment modifying segA
+    std::list<MCAD_SEGMENT*>::iterator iSegA;   // iterator to the segment operated upon
+    std::list<MCAD_SEGMENT*>::iterator iSegB;   // iterator to the segment operation's argument, else = iSegA
+
+    MCAD_INTERSECT()
+    {
+        segA = NULL;
+        segB = NULL;
+    }
+};
+
+class MCAD_OUTLINE
+{
+protected:
     std::list< std::string > errors;
     bool mIsClosed;     // true if the outline is closed
     double mWinding;    // accumulator to test for CW/CCW winding
     // operate on the circular outline (add/subtract)
-    bool opOutline( IGES_GEOM_SEGMENT* aCircle, bool& error, bool opsub );
+    bool opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub );
     // operate on the generic outline (add/subtract)
-    bool opOutline( IGES_GEOM_OUTLINE* aOutline, bool& error, bool opsub );
+    bool opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub );
     // recalculate the bounding box
     void calcBoundingBox( void );
     // adjust the bounding box in preparation for rendering a surface
@@ -87,19 +102,19 @@ private:
     bool mBBisOK;       // true if the bounding box has been calculated and
                         // no operations have been performed on the outline
 
-   // create a Trimmed Parametric Surface entity with only the PTS member instantiated
-   IGES_ENTITY_144* getUntrimmedPlane( IGES* aModel, double aHeight );
-
-protected:
     IGES_POINT mBottomLeft; // bottom left coordinate
     IGES_POINT mTopRight;   // top right coordinate of bounding box
-    std::list<IGES_GEOM_SEGMENT*> msegments;    // list of segments
-    std::list<IGES_GEOM_OUTLINE*> mcutouts;     // list of non-overlapping cutouts
-    std::list<IGES_GEOM_SEGMENT*> mholes;       // list of non-overlapping holes
+    std::list<MCAD_SEGMENT*> msegments; // list of segments
+    std::list<MCAD_OUTLINE*> mcutouts;  // list of non-overlapping cutouts
+    std::list<MCAD_SEGMENT*> mholes;    // list of non-overlapping holes
 
 public:
-    IGES_GEOM_OUTLINE();
-    ~IGES_GEOM_OUTLINE();
+    MCAD_OUTLINE();
+    virtual ~MCAD_OUTLINE();
+
+    std::list<MCAD_SEGMENT*>* GetSegments( void );
+    std::list<MCAD_OUTLINE*>* GetCutouts( void );
+    std::list<MCAD_SEGMENT*>* GetDrillHoles( void );
 
     // Retrieve the error stack
     const std::list< std::string >* GetErrors( void );
@@ -119,25 +134,25 @@ public:
     // Add a segment to this outline; the user must ensure that
     // the outline is closed before performing any other type
     // of operation.
-    bool AddSegment( IGES_GEOM_SEGMENT* aSegment, bool& error );
+    bool AddSegment( MCAD_SEGMENT* aSegment, bool& error );
 
     // Merge the given closed outline with this one; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
-    bool AddOutline( IGES_GEOM_OUTLINE* aOutline, bool& error );
+    bool AddOutline( MCAD_OUTLINE* aOutline, bool& error );
 
     // Merge the given circle with this outline
-    bool AddOutline( IGES_GEOM_SEGMENT* aCircle, bool& error );
+    bool AddOutline( MCAD_SEGMENT* aCircle, bool& error );
 
     // Subtract the given outline from this one; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
-    bool SubOutline( IGES_GEOM_OUTLINE* aOutline, bool& error );
+    bool SubOutline( MCAD_OUTLINE* aOutline, bool& error );
 
     // Subtract the given circular segment from this outline; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
-    bool SubOutline( IGES_GEOM_SEGMENT* aCircle, bool& error );
+    bool SubOutline( MCAD_SEGMENT* aCircle, bool& error );
 
     // Add the given cutout in preparation for exporting a solid model.
     // If the cutout is known to be non-overlapping then the 'overlaps'
@@ -150,7 +165,7 @@ public:
     // of the cutout object. It is the caller's responsibility to
     // ensure that the cutouts do not overlap with any other cutouts,
     // otherwise the geometry will be invalid.
-    bool AddCutout( IGES_GEOM_OUTLINE* aCutout, bool overlaps, bool& error );
+    bool AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error );
 
     // Add the given circular segment as a cutout; if the segment is
     // known to be non-overlapping then 'overlaps' may be set to 'false',
@@ -159,19 +174,13 @@ public:
     // then it is the caller's responsibility to dispose of the object.
     // It is the caller's responsibility to ensure that the cutouts do not
     // overlap with any other cutouts, otherwise the geometry will be invalid.
-    bool AddCutout( IGES_GEOM_SEGMENT* aCircle, bool overlaps, bool& error );
+    bool AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error );
 
-    // retrieve trimmed parametric surfaces representing vertical sides
-    // of the main outline and all cutouts
-    bool GetVerticalSurface( IGES* aModel, bool& error,
-                             std::vector<IGES_ENTITY_144*>& aSurface,
-                             double aTopZ, double aBotZ );
+    // print routines for testing/debugging
+    void PrintPoint( IGES_POINT p0 );
+    void PrintSeg( MCAD_SEGMENT* seg );
+    void PrintGeomIntersects( const std::list<MCAD_INTERSECT>& aList );
 
-    // retrieve the trimmed parametric surfaces representing the
-    // top or bottom plane of the board
-    bool GetTrimmedPlane( IGES* aModel, bool& error,
-                          std::vector<IGES_ENTITY_144*>& aSurface,
-                          double aHeight );
 };
 
-#endif  // IGES_GEOM_OUTLINE_H
+#endif  // MCAD_OUTLINE_H

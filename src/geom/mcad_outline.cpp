@@ -1847,8 +1847,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
 
         delete aOutline;
-        aOutline = NULL;
-
         return true;
     }
     else
@@ -1878,7 +1876,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
 
         delete aOutline;
-        aOutline = NULL;
     }
 
     cout << "XXX: OK so far\n";
@@ -1935,6 +1932,9 @@ bool MCAD_OUTLINE::AddOutline( MCAD_SEGMENT* aCircle, bool& error )
         return false;
     }
 
+    if( res )
+        delete aCircle;
+
     return res;
 }   // AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 
@@ -1957,6 +1957,9 @@ bool MCAD_OUTLINE::SubOutline( MCAD_SEGMENT* aCircle, bool& error )
         errors.push_back( msg.str() );
         return false;
     }
+
+    if( res )
+        delete aCircle;
 
     return res;
 }   // SubOutline( MCAD_SEGMENT* aCircle, bool& error )

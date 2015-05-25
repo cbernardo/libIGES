@@ -79,8 +79,11 @@ bool CheckNormal( double& X, double &Y, double& Z )
 
     if( dN < 1e-12 )
     {
-        ERRMSG << "\n + [INFO] bad vector (cannot be normalized)\n";
-        return false;
+        ERRMSG << "\n + [INFO] bad vector (cannot be normalized); reverting to z-normal\n";
+        X = 0.0;
+        Y = 0.0;
+        Z = 1.0;
+        return true;
     }
 
     double dV = dN - 1.0;

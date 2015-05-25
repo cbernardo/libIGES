@@ -353,8 +353,9 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     MCAD_POINT p0( xCenter, yCenter, 0.0 );
     MCAD_POINT p1( xStart, yStart, 0.0 );
     MCAD_POINT p2( xEnd, yEnd, 0.0 );
-
-    double uir = parent->globalData.minResolution;
+    // note: relax the resolution criteria to allow more permissive
+    // acceptance of files
+    double uir = 2.0 * parent->globalData.minResolution;
 
     if( PointMatches( p0, p1, uir ) )
     {
@@ -365,10 +366,6 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 
     p1 = p1 - p0;
     p2 = p2 - p0;
-    uir *= uir * 3.0;
-
-    if( uir < 1e-8 )
-        uir = 1e-8;
 
     double d1 = p1.x*p1.x + p1.y*p1.y;
     double d2 = p2.x*p2.x + p2.y*p2.y;

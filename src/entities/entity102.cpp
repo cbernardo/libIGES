@@ -257,6 +257,10 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
                 ok = false;
             }
 
+            // note: print a warning rather than halting on a mismatch; the case of
+            // parameter curves make strict matching difficult, for example a parameter
+            // curve on a surface of revolution will have start/end points
+            // (0, 0)/(PI, 0)
             if( !PointMatches(p1, p2, dN) )
             {
                 ERRMSG << "\n + [INFO] sequencing condition not met for Curve Entity\n";
@@ -275,7 +279,6 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
                     }
                 }
 
-                ok = false;
             }
 
         }

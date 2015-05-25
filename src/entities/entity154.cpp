@@ -27,7 +27,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <entity124.h>
 #include <entity154.h>
 

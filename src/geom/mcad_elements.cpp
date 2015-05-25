@@ -1,5 +1,5 @@
 /*
- * file: iges_elements.cpp
+ * file: mcad_elements.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -24,9 +24,9 @@
 
 
 #include <cstring>
-#include <iges_elements.h>
+#include <mcad_elements.h>
 
-IGES_POINT::IGES_POINT()
+MCAD_POINT::MCAD_POINT()
 {
     x = 0.0;
     y = 0.0;
@@ -35,7 +35,7 @@ IGES_POINT::IGES_POINT()
 }
 
 
-IGES_POINT::IGES_POINT( const IGES_POINT& p )
+MCAD_POINT::MCAD_POINT( const MCAD_POINT& p )
 {
     x = p.x;
     y = p.y;
@@ -44,23 +44,23 @@ IGES_POINT::IGES_POINT( const IGES_POINT& p )
 }
 
 
-IGES_POINT::IGES_POINT( const double x, const double y, const double z )
+MCAD_POINT::MCAD_POINT( const double x, const double y, const double z )
 {
-    IGES_POINT::x = x;
-    IGES_POINT::y = y;
-    IGES_POINT::z = z;
+    MCAD_POINT::x = x;
+    MCAD_POINT::y = y;
+    MCAD_POINT::z = z;
     return;
 }
 
 
-IGES_POINT& IGES_POINT::operator*=( const double scalar )
+MCAD_POINT& MCAD_POINT::operator*=( const double scalar )
 {
     *this = *this * scalar;
     return *this;
 }
 
 
-IGES_POINT& IGES_POINT::operator+=( const IGES_POINT& v )
+MCAD_POINT& MCAD_POINT::operator+=( const MCAD_POINT& v )
 {
     x += v.x;
     y += v.y;
@@ -69,9 +69,9 @@ IGES_POINT& IGES_POINT::operator+=( const IGES_POINT& v )
 }
 
 
-IGES_POINT const IGES_POINT::operator+( const IGES_POINT& v )
+MCAD_POINT const MCAD_POINT::operator+( const MCAD_POINT& v )
 {
-    IGES_POINT p( *this );
+    MCAD_POINT p( *this );
     p.x += v.x;
     p.y += v.y;
     p.z += v.z;
@@ -83,7 +83,7 @@ IGES_POINT const IGES_POINT::operator+( const IGES_POINT& v )
 // NOTE: p1 -= p2 seems to produce a different rounding
 // error than p1 = p1 - p2 and the error is large
 // enough to cause nearness tests to fail.
-IGES_POINT& IGES_POINT::operator-=( const IGES_POINT& v )
+MCAD_POINT& MCAD_POINT::operator-=( const MCAD_POINT& v )
 {
     x = x - v.x;
     y = y - v.y;
@@ -92,9 +92,9 @@ IGES_POINT& IGES_POINT::operator-=( const IGES_POINT& v )
     return *this;
 }
 
-IGES_POINT operator*( const IGES_POINT& v, const double scalar )
+MCAD_POINT operator*( const MCAD_POINT& v, const double scalar )
 {
-    IGES_POINT pt;
+    MCAD_POINT pt;
     pt.x = v.x * scalar;
     pt.y = v.y * scalar;
     pt.z = v.z * scalar;
@@ -102,22 +102,22 @@ IGES_POINT operator*( const IGES_POINT& v, const double scalar )
 }
 
 
-IGES_POINT operator*( const double scalar, const IGES_POINT& v )
+MCAD_POINT operator*( const double scalar, const MCAD_POINT& v )
 {
     return v * scalar;
 }
 
 
 // pX = p0 - p1
-IGES_POINT operator-( const IGES_POINT& p0, const IGES_POINT& p1 )
+MCAD_POINT operator-( const MCAD_POINT& p0, const MCAD_POINT& p1 )
 {
-    IGES_POINT px = p0;
+    MCAD_POINT px = p0;
     px -= p1;
     return px;
 }
 
 
-IGES_MATRIX::IGES_MATRIX()
+MCAD_MATRIX::MCAD_MATRIX()
 {
     memset( v, 0, sizeof(v) );
 
@@ -129,7 +129,7 @@ IGES_MATRIX::IGES_MATRIX()
 }
 
 
-IGES_MATRIX::IGES_MATRIX( const IGES_MATRIX& m )
+MCAD_MATRIX::MCAD_MATRIX( const MCAD_MATRIX& m )
 {
     for( int i = 0; i < 3; ++i )
     {
@@ -139,20 +139,20 @@ IGES_MATRIX::IGES_MATRIX( const IGES_MATRIX& m )
 }
 
 
-IGES_MATRIX& IGES_MATRIX::operator*=( double scalar )
+MCAD_MATRIX& MCAD_MATRIX::operator*=( double scalar )
 {
     *this = *this * scalar;
     return *this;
 }
 
-IGES_MATRIX& IGES_MATRIX::operator*=( const IGES_MATRIX& m )
+MCAD_MATRIX& MCAD_MATRIX::operator*=( const MCAD_MATRIX& m )
 {
     *this = *this * m;
     return *this;
 }
 
 
-IGES_MATRIX& IGES_MATRIX::operator+=( const IGES_MATRIX& m )
+MCAD_MATRIX& MCAD_MATRIX::operator+=( const MCAD_MATRIX& m )
 {
     for( int i = 0; i < 3; ++i )
     {
@@ -164,9 +164,9 @@ IGES_MATRIX& IGES_MATRIX::operator+=( const IGES_MATRIX& m )
 }
 
 
-IGES_MATRIX  IGES_MATRIX::operator+( const IGES_MATRIX& m )
+MCAD_MATRIX  MCAD_MATRIX::operator+( const MCAD_MATRIX& m )
 {
-    IGES_MATRIX tmp;
+    MCAD_MATRIX tmp;
 
     for( int i = 0; i < 3; ++i )
     {
@@ -178,7 +178,7 @@ IGES_MATRIX  IGES_MATRIX::operator+( const IGES_MATRIX& m )
 }
 
 
-IGES_MATRIX& IGES_MATRIX::operator-=( const IGES_MATRIX& m )
+MCAD_MATRIX& MCAD_MATRIX::operator-=( const MCAD_MATRIX& m )
 {
     for( int i = 0; i < 3; ++i )
     {
@@ -190,9 +190,9 @@ IGES_MATRIX& IGES_MATRIX::operator-=( const IGES_MATRIX& m )
 }
 
 
-IGES_MATRIX IGES_MATRIX::operator-( const IGES_MATRIX& m )
+MCAD_MATRIX MCAD_MATRIX::operator-( const MCAD_MATRIX& m )
 {
-    IGES_MATRIX tmp;
+    MCAD_MATRIX tmp;
 
     for( int i = 0; i < 3; ++i )
     {
@@ -204,9 +204,9 @@ IGES_MATRIX IGES_MATRIX::operator-( const IGES_MATRIX& m )
 }
 
 
-IGES_POINT operator*( const IGES_MATRIX& m, const IGES_POINT& v )
+MCAD_POINT operator*( const MCAD_MATRIX& m, const MCAD_POINT& v )
 {
-    IGES_POINT pt;
+    MCAD_POINT pt;
     pt.x = m.v[0][0] * v.x + m.v[0][1] * v.y + m.v[0][2] * v.z;
     pt.y = m.v[1][0] * v.x + m.v[1][1] * v.y + m.v[1][2] * v.z;
     pt.z = m.v[2][0] * v.x + m.v[2][1] * v.y + m.v[2][2] * v.z;
@@ -215,9 +215,9 @@ IGES_POINT operator*( const IGES_MATRIX& m, const IGES_POINT& v )
 }
 
 
-IGES_MATRIX operator*( const IGES_MATRIX& m, const IGES_MATRIX& n )
+MCAD_MATRIX operator*( const MCAD_MATRIX& m, const MCAD_MATRIX& n )
 {
-    IGES_MATRIX tmp;
+    MCAD_MATRIX tmp;
 
     // First row
     tmp.v[0][0] = m.v[0][0] * n.v[0][0] + m.v[0][1] * n.v[1][0]
@@ -253,9 +253,9 @@ IGES_MATRIX operator*( const IGES_MATRIX& m, const IGES_MATRIX& n )
 }
 
 
-IGES_MATRIX operator*( const IGES_MATRIX& m, double scalar )
+MCAD_MATRIX operator*( const MCAD_MATRIX& m, double scalar )
 {
-    IGES_MATRIX tmp;
+    MCAD_MATRIX tmp;
 
     for( int i = 0; i < 3; ++i )
     {
@@ -267,18 +267,18 @@ IGES_MATRIX operator*( const IGES_MATRIX& m, double scalar )
 }
 
 
-IGES_MATRIX operator*( double scalar, const IGES_MATRIX& m )
+MCAD_MATRIX operator*( double scalar, const MCAD_MATRIX& m )
 {
     return m * scalar;
 }
 
 
-IGES_TRANSFORM::IGES_TRANSFORM()
+MCAD_TRANSFORM::MCAD_TRANSFORM()
 {
     return;
 }
 
-IGES_TRANSFORM::IGES_TRANSFORM( const IGES_TRANSFORM& t )
+MCAD_TRANSFORM::MCAD_TRANSFORM( const MCAD_TRANSFORM& t )
 {
     R = t.R;
     T = t.T;
@@ -286,7 +286,7 @@ IGES_TRANSFORM::IGES_TRANSFORM( const IGES_TRANSFORM& t )
 }
 
 
-IGES_TRANSFORM::IGES_TRANSFORM( const IGES_MATRIX& m, const IGES_POINT& v )
+MCAD_TRANSFORM::MCAD_TRANSFORM( const MCAD_MATRIX& m, const MCAD_POINT& v )
 {
     R = m;
     T = v;
@@ -294,7 +294,7 @@ IGES_TRANSFORM::IGES_TRANSFORM( const IGES_MATRIX& m, const IGES_POINT& v )
 }
 
 
-IGES_TRANSFORM& IGES_TRANSFORM::operator*=(const IGES_TRANSFORM& m)
+MCAD_TRANSFORM& MCAD_TRANSFORM::operator*=(const MCAD_TRANSFORM& m)
 {
     T = R * m.T + T;
     R = R * m.R;
@@ -302,7 +302,7 @@ IGES_TRANSFORM& IGES_TRANSFORM::operator*=(const IGES_TRANSFORM& m)
 }
 
 
-IGES_TRANSFORM& IGES_TRANSFORM::operator*=(const double scalar)
+MCAD_TRANSFORM& MCAD_TRANSFORM::operator*=(const double scalar)
 {
     R *= scalar;
     T *= scalar;
@@ -310,18 +310,18 @@ IGES_TRANSFORM& IGES_TRANSFORM::operator*=(const double scalar)
 }
 
 // scalar * TX
-IGES_TRANSFORM operator*( const double scalar, const IGES_TRANSFORM& m )
+MCAD_TRANSFORM operator*( const double scalar, const MCAD_TRANSFORM& m )
 {
-    IGES_TRANSFORM v( m );
+    MCAD_TRANSFORM v( m );
     v *= scalar;
     return v;
 }
 
 
 // TX0 * TX1
-IGES_TRANSFORM operator*( const IGES_TRANSFORM& m, const IGES_TRANSFORM& n )
+MCAD_TRANSFORM operator*( const MCAD_TRANSFORM& m, const MCAD_TRANSFORM& n )
 {
-    IGES_TRANSFORM v( m );
+    MCAD_TRANSFORM v( m );
     v *= n;
 
     return v;
@@ -329,9 +329,9 @@ IGES_TRANSFORM operator*( const IGES_TRANSFORM& m, const IGES_TRANSFORM& n )
 
 
 // TX * V (perform a transform + offset)
-IGES_POINT operator*( const IGES_TRANSFORM& m, const IGES_POINT& v  )
+MCAD_POINT operator*( const MCAD_TRANSFORM& m, const MCAD_POINT& v  )
 {
-    IGES_POINT p = (m.R * v) + m.T;
+    MCAD_POINT p = (m.R * v) + m.T;
 
     return p;
 }

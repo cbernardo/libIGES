@@ -29,7 +29,7 @@
 #include <cmath>
 #include <iges.h>
 #include <error_macros.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <mcad_segment.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
@@ -1018,13 +1018,13 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
             do
             {
                 IGES_GEOM_WALL wall;
-                IGES_POINT p0 = aSegment->GetMStart();
+                MCAD_POINT p0 = aSegment->GetMStart();
                 p0.z = aTopZ;
-                IGES_POINT p1 = aSegment->GetMEnd();
+                MCAD_POINT p1 = aSegment->GetMEnd();
                 p1.z = aTopZ;
-                IGES_POINT p2 = aSegment->GetMEnd();
+                MCAD_POINT p2 = aSegment->GetMEnd();
                 p2.z = aBotZ;
-                IGES_POINT p3 = aSegment->GetMStart();
+                MCAD_POINT p3 = aSegment->GetMStart();
                 p3.z = aBotZ;
                 wall.SetParams( p0, p1, p2, p3 );
                 IGES_ENTITY_144* ep = wall.Instantiate( aModel );
@@ -1068,7 +1068,7 @@ bool IGES_GEOM_PCB::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurve
         }
     }
 
-    IGES_POINT mcenter = aSegment->GetCenter();
+    MCAD_POINT mcenter = aSegment->GetCenter();
     double mradius = aSegment->GetRadius();
 
     arcs[0]->zOffset = zHeight;
@@ -1118,10 +1118,10 @@ bool IGES_GEOM_PCB::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
     double a0;
     double a1;
     double mradius = aSegment->GetRadius();
-    IGES_POINT p0 = aSegment->GetMStart();
-    IGES_POINT p1 = aSegment->GetMEnd();
-    IGES_POINT pc = aSegment->GetCenter();
-    IGES_POINT mcenter = pc;
+    MCAD_POINT p0 = aSegment->GetMStart();
+    MCAD_POINT p1 = aSegment->GetMEnd();
+    MCAD_POINT pc = aSegment->GetCenter();
+    MCAD_POINT mcenter = pc;
 
     if( aSegment->IsCW() )
     {
@@ -1437,8 +1437,8 @@ bool IGES_GEOM_PCB::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
         return false;
     }
 
-    IGES_POINT mstart = aSegment->GetMStart();
-    IGES_POINT mend = aSegment->GetMEnd();
+    MCAD_POINT mstart = aSegment->GetMStart();
+    MCAD_POINT mend = aSegment->GetMEnd();
 
     lp->X1 = mstart.x;
     lp->Y1 = mstart.y;
@@ -1479,7 +1479,7 @@ bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurve
         }
     }
 
-    IGES_POINT mcenter = aSegment->GetCenter();
+    MCAD_POINT mcenter = aSegment->GetCenter();
     double mradius = aSegment->GetRadius();
     double axis[3] = { 0.0, 0.0, 1.0 }; // normal to the plane of the arc
     double startp[3];
@@ -1569,15 +1569,15 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
         tx[i] = NULL;
     }
 
-    IGES_POINT mstart = aSegment->GetMStart();
-    IGES_POINT mend = aSegment->GetMEnd();
-    IGES_POINT mcenter = aSegment->GetCenter();
+    MCAD_POINT mstart = aSegment->GetMStart();
+    MCAD_POINT mend = aSegment->GetMEnd();
+    MCAD_POINT mcenter = aSegment->GetCenter();
     double mradius = aSegment->GetRadius();
 
     double sAng;
     double eAng;
-    IGES_POINT ptArc[2];    // start and end point of the arc; contingent on direction
-    IGES_POINT ptC;         // true center point; required for calculations for CW arcs
+    MCAD_POINT ptArc[2];    // start and end point of the arc; contingent on direction
+    MCAD_POINT ptC;         // true center point; required for calculations for CW arcs
     double angles[3];       // up to 3 subtended angles
     double spt[3][3];       // start points for each angle
     double cpt[3];          // center point for all angles
@@ -1866,8 +1866,8 @@ bool IGES_GEOM_PCB::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
         return false;
     }
 
-    IGES_POINT mstart = aSegment->GetMStart();
-    IGES_POINT mend = aSegment->GetMEnd();
+    MCAD_POINT mstart = aSegment->GetMStart();
+    MCAD_POINT mend = aSegment->GetMEnd();
 
     double startp[3];
     double endp[3];

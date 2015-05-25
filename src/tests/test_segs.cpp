@@ -93,8 +93,8 @@ void testCircles( void )
     MCAD_SEGMENT seg1;
     MCAD_SEGMENT seg2;
 
-    IGES_POINT c1[3];   // parameters for Circle 1
-    IGES_POINT c2[3];   // parameters for Circle 2
+    MCAD_POINT c1[3];   // parameters for Circle 1
+    MCAD_POINT c2[3];   // parameters for Circle 2
 
     cout << "* Test: tangent circles\n";
 
@@ -119,7 +119,7 @@ void testCircles( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<IGES_POINT> ilist;
+    std::list<MCAD_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
@@ -246,8 +246,8 @@ void testCircleSeg( void )
     MCAD_SEGMENT seg1;
     MCAD_SEGMENT seg2;
 
-    IGES_POINT c1[3];   // parameters for Circle 1
-    IGES_POINT l1[2];   // parameters for Line 1
+    MCAD_POINT c1[3];   // parameters for Circle 1
+    MCAD_POINT l1[2];   // parameters for Line 1
 
     cout << "* Test: tangent to circle (C1, L1)\n";
 
@@ -270,7 +270,7 @@ void testCircleSeg( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<IGES_POINT> ilist;
+    std::list<MCAD_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
@@ -369,8 +369,8 @@ void testArcSeg( void )
     MCAD_SEGMENT seg1;
     MCAD_SEGMENT seg2;
 
-    IGES_POINT c1[3];   // parameters for Arc 1
-    IGES_POINT l1[2];   // parameters for Line 1
+    MCAD_POINT c1[3];   // parameters for Arc 1
+    MCAD_POINT l1[2];   // parameters for Line 1
 
     cout << "* Test: vertical tangent to arc (A1, L1)\n";
 
@@ -393,7 +393,7 @@ void testArcSeg( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<IGES_POINT> ilist;
+    std::list<MCAD_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {
@@ -694,8 +694,8 @@ void testArcs( void )
     MCAD_SEGMENT seg1;
     MCAD_SEGMENT seg2;
 
-    IGES_POINT c1[3];   // parameters for Arc 1
-    IGES_POINT c2[3];   // parameters for Arc 2
+    MCAD_POINT c1[3];   // parameters for Arc 1
+    MCAD_POINT c2[3];   // parameters for Arc 2
 
     cout << "* Test: tangent intersecting arcs\n";
 
@@ -718,7 +718,7 @@ void testArcs( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<IGES_POINT> ilist;
+    std::list<MCAD_POINT> ilist;
 
     if( !seg1.GetIntersections( seg2, ilist, flag ) )
     {

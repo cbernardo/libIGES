@@ -473,9 +473,9 @@ bool IGES_ENTITY_124::SetLineWeightNum( int aLineWeight )
 
 
 // retrieves the overall transform matrix
-IGES_TRANSFORM IGES_ENTITY_124::GetTransformMatrix( void )
+MCAD_TRANSFORM IGES_ENTITY_124::GetTransformMatrix( void )
 {
-    IGES_TRANSFORM V;
+    MCAD_TRANSFORM V;
 
     // note: as per spec, any referenced Transforms are applied later
     if( pTransform )

@@ -27,7 +27,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <entity100.h>
 #include <entity124.h>
 
@@ -350,9 +350,9 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     // however if we discover that some MCAD software produces
     // coordinates which cannot meet these criteria so we must assume
     // that everything is OK
-    IGES_POINT p0( xCenter, yCenter, 0.0 );
-    IGES_POINT p1( xStart, yStart, 0.0 );
-    IGES_POINT p2( xEnd, yEnd, 0.0 );
+    MCAD_POINT p0( xCenter, yCenter, 0.0 );
+    MCAD_POINT p1( xStart, yStart, 0.0 );
+    MCAD_POINT p2( xEnd, yEnd, 0.0 );
 
     double uir = parent->globalData.minResolution;
 
@@ -418,7 +418,7 @@ bool IGES_ENTITY_100::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_100::GetStartPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_100::GetStartPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = xStart;
     pt.y = yStart;
@@ -431,7 +431,7 @@ bool IGES_ENTITY_100::GetStartPoint( IGES_POINT& pt, bool xform )
 }
 
 
-bool IGES_ENTITY_100::GetEndPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_100::GetEndPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = xEnd;
     pt.y = yEnd;
@@ -452,9 +452,9 @@ int IGES_ENTITY_100::GetNSegments( void )
 
 bool IGES_ENTITY_100::IsClosed( void )
 {
-    IGES_POINT p0( xCenter, yCenter, 0.0 );
-    IGES_POINT p1( xStart, yStart, 0.0 );
-    IGES_POINT p2( xEnd, yEnd, 0.0 );
+    MCAD_POINT p0( xCenter, yCenter, 0.0 );
+    MCAD_POINT p1( xStart, yStart, 0.0 );
+    MCAD_POINT p2( xEnd, yEnd, 0.0 );
 
     double rm = 0.001;
 
@@ -484,7 +484,7 @@ IGES_CURVE* IGES_ENTITY_100::GetCurve( int index )
 }
 
 
-bool IGES_ENTITY_100::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+bool IGES_ENTITY_100::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
 {
     if( 1 !=nSeg )
     {
@@ -507,8 +507,8 @@ bool IGES_ENTITY_100::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
     if( var < uir || (1.0 - var) < uir )
     {
         bool fullCircle = false;
-        IGES_POINT p0( xStart, yStart, 0.0 );
-        IGES_POINT p1( xEnd, yEnd, 0.0 );
+        MCAD_POINT p0( xStart, yStart, 0.0 );
+        MCAD_POINT p1( xEnd, yEnd, 0.0 );
 
         if( PointMatches( p0, p1, uir ) )
             fullCircle = true;
@@ -538,7 +538,7 @@ bool IGES_ENTITY_100::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
     double dx = xCenter + cos(ang) * radius;
     double dy = yCenter + sin(ang) * radius;
 
-    IGES_POINT pt0( dx, dy, zOffset );
+    MCAD_POINT pt0( dx, dy, zOffset );
 
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt0;

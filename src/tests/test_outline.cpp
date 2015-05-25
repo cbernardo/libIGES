@@ -13,10 +13,6 @@
 
 using namespace std;
 
-// NOTE: Until full outline manipulation code is implemented
-// we will only be able to add or subtract circles from any
-// given outline.
-
 // take one large circle and subtract a series of smaller circles from it.
 int test_arcs( void );
 // take a square and subtract a series of circles from it.
@@ -108,8 +104,8 @@ int test_arcs( void )
     MCAD_SEGMENT* seg1 = new MCAD_SEGMENT;
     MCAD_SEGMENT* seg2 = new MCAD_SEGMENT;
 
-    IGES_POINT c1[3];   // parameters for Circle 1
-    IGES_POINT c2[3];   // parameters for Circle 2
+    MCAD_POINT c1[3];   // parameters for Circle 1
+    MCAD_POINT c2[3];   // parameters for Circle 2
 
     // radius: 2, c(0,0)
     c1[0].x = 0.0;
@@ -280,7 +276,7 @@ int test_arcs( void )
         c2[2].y = -2.0;
         s1->SetParams( c2[0], c2[1], c2[2], false );
 
-        std::list<IGES_POINT> iList;
+        std::list<MCAD_POINT> iList;
         MCAD_INTERSECT_FLAG flag;
         s0->GetIntersections( *s1, iList, flag );
 
@@ -379,7 +375,7 @@ int test_arcs( void )
 int test_lines( void )
 {
     MCAD_SEGMENT* sides[4];
-    IGES_POINT v[4];
+    MCAD_POINT v[4];
 
     v[0].x = 10.0;
     v[0].y = 10.0;
@@ -416,7 +412,7 @@ int test_lines( void )
         return -1;
     }
 
-    IGES_POINT c1[2];   // parameters for circles
+    MCAD_POINT c1[2];   // parameters for circles
 
     if( 1 )
     {
@@ -575,7 +571,7 @@ int test_lines( void )
 int test_addr( void )
 {
     MCAD_SEGMENT* sides[4];
-    IGES_POINT v[4];
+    MCAD_POINT v[4];
 
     if( 0 )
     {
@@ -626,7 +622,7 @@ int test_addr( void )
         return -1;
     }
 
-    IGES_POINT c1[2];   // parameters for circles
+    MCAD_POINT c1[2];   // parameters for circles
     MCAD_SEGMENT circ;
 
     if( 1 )
@@ -727,7 +723,7 @@ int test_addr( void )
 int test_otln( bool subs, bool primeA )
 {
     MCAD_SEGMENT* sides[4];
-    IGES_POINT v[4];
+    MCAD_POINT v[4];
 
     v[0].x = 10.0;
     v[0].y = 10.0;
@@ -764,7 +760,7 @@ int test_otln( bool subs, bool primeA )
         return -1;
     }
 
-    IGES_POINT c1[2];   // parameters for circles
+    MCAD_POINT c1[2];   // parameters for circles
     MCAD_SEGMENT* circ[6];
     IGES_GEOM_PCB* otln[6];
 

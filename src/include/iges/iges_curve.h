@@ -44,7 +44,7 @@
 
 #include <iges_base.h>
 #include <iges_entity.h>
-#include <iges_elements.h>
+#include <mcad_elements.h>
 
 class IGES;             // Overarching data structure and parent to all entities
 struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
@@ -77,9 +77,9 @@ public:
     // return the specified curve object by index
     virtual IGES_CURVE* GetCurve( int index ) = 0;
     // return the start point of this curve object (normally transformed)
-    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true ) = 0;
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true ) = 0;
     // return the end point of this curve object (normally transformed)
-    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true ) = 0;
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true ) = 0;
     // return the number of segments within the curve; for
     // composite curves this may be the same as GetNCurves
     // but in the case of piece-wise linear collections this would
@@ -95,7 +95,7 @@ public:
     // interpolated value; composite curves shall return false; a
     // composite curve can be identified by a non-zero return
     // from GetNCurves()
-    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
 
     // members inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild ) = 0;

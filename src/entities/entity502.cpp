@@ -88,8 +88,8 @@ bool IGES_ENTITY_502::format( int &index )
     string fStr = ostr.str();
     string tStr;
 
-    vector<IGES_POINT>::iterator sV = vertices.begin();
-    vector<IGES_POINT>::iterator eV = --vertices.end();
+    vector<MCAD_POINT>::iterator sV = vertices.begin();
+    vector<MCAD_POINT>::iterator eV = --vertices.end();
     double vals[3];
     int acc = 0;
 
@@ -166,8 +166,8 @@ bool IGES_ENTITY_502::rescale( double sf )
     if( vertices.empty() )
         return true;
 
-    vector<IGES_POINT>::iterator sV = vertices.begin();
-    vector<IGES_POINT>::iterator eV = vertices.end();
+    vector<MCAD_POINT>::iterator sV = vertices.begin();
+    vector<MCAD_POINT>::iterator eV = vertices.end();
 
     while( sV != eV )
     {
@@ -285,7 +285,7 @@ bool IGES_ENTITY_502::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    IGES_POINT p0;
+    MCAD_POINT p0;
     double* pp[3] = { &p0.x, &p0.y, &p0.z };
 
     for( int i = 0; i < nV; ++i )
@@ -364,7 +364,7 @@ bool IGES_ENTITY_502::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-const std::vector<IGES_POINT>* IGES_ENTITY_502::GetVertices( void )
+const std::vector<MCAD_POINT>* IGES_ENTITY_502::GetVertices( void )
 {
     return &vertices;
 }
@@ -376,7 +376,7 @@ size_t IGES_ENTITY_502::GetNVertices( void )
 }
 
 
-void IGES_ENTITY_502::AddVertex( IGES_POINT aPoint )
+void IGES_ENTITY_502::AddVertex( MCAD_POINT aPoint )
 {
     vertices.push_back( aPoint );
     return;

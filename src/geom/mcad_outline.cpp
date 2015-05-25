@@ -28,7 +28,7 @@
 #include <sstream>
 #include <cmath>
 #include <error_macros.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <mcad_segment.h>
 #include <mcad_outline.h>
 
@@ -40,7 +40,7 @@ using namespace std;
 } while( 0 )
 
 
-void MCAD_OUTLINE::PrintPoint( IGES_POINT p0 )
+void MCAD_OUTLINE::PrintPoint( MCAD_POINT p0 )
 {
     cout << "(" << p0.x << ", " << p0.y << ")\n";
 }
@@ -208,7 +208,7 @@ bool MCAD_OUTLINE::IsContiguous( void )
 
 
 // Returns 'true' if the point is on or inside this outline
-bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
+bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
 {
     // always fail if the outline is not closed
     if( !mIsClosed )
@@ -230,8 +230,8 @@ bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     //    are <= aPoint.y.
     // 3. odd nodes = inside, even nodes = outside
 
-    IGES_POINT bb0 = mBottomLeft;
-    IGES_POINT bb1 = mTopRight;
+    MCAD_POINT bb0 = mBottomLeft;
+    MCAD_POINT bb1 = mTopRight;
 
     // expand the limits to ensure non-zero segment lengths in all cases
     bb0.x -= 5.0;
@@ -239,7 +239,7 @@ bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
     bb1.x += 5.0;
     bb1.y += 5.0;
 
-    IGES_POINT p2;
+    MCAD_POINT p2;
 
     if( (aPoint.x - mBottomLeft.x) <= (mTopRight.x - aPoint.x) )
         p2.x = bb0.x;
@@ -256,7 +256,7 @@ bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
 
     list<MCAD_SEGMENT*>::iterator sSegs = msegments.begin();
     list<MCAD_SEGMENT*>::iterator eSegs = msegments.end();
-    list<IGES_POINT> iList;
+    list<MCAD_POINT> iList;
     MCAD_INTERSECT_FLAG flag;
 
     int acc = 0;
@@ -270,8 +270,8 @@ bool MCAD_OUTLINE::IsInside( IGES_POINT aPoint, bool& error )
         if( (*sSegs)->GetIntersections( ls0, iList, flag ) )
         {
             cout << "XXX: " << iList.size() << " intersections\n";
-            list<IGES_POINT>::iterator sL = iList.begin();
-            list<IGES_POINT>::iterator eL = iList.end();
+            list<MCAD_POINT>::iterator sL = iList.begin();
+            list<MCAD_POINT>::iterator eL = iList.end();
 
             while( sL != eL )
             {
@@ -429,8 +429,8 @@ bool MCAD_OUTLINE::AddSegment( MCAD_SEGMENT* aSegment, bool& error )
     // note: do not use GetStart(), GetEnd() as those functions
     // ensure CCW order on an arc whereas mstart, mend ensure
     // actual endpoint order
-    IGES_POINT p0;
-    IGES_POINT p1;
+    MCAD_POINT p0;
+    MCAD_POINT p1;
     MCAD_SEGMENT* pseg;
 
     if( !msegments.empty() )
@@ -473,7 +473,7 @@ bool MCAD_OUTLINE::AddSegment( MCAD_SEGMENT* aSegment, bool& error )
         // To ensure correct winding calculations involving
         // arcs we must take the midpoint of the arc and
         // calculate the winding based on 2 segments.
-        IGES_POINT p2;
+        MCAD_POINT p2;
         pseg->GetMidpoint( p2 );
 
         mWinding += ( p0.x - p2.x ) * ( p0.y + p2.y );
@@ -487,8 +487,8 @@ bool MCAD_OUTLINE::AddSegment( MCAD_SEGMENT* aSegment, bool& error )
     if( msegments.size() > 1 )
     {
         // adjust the bounding box
-        IGES_POINT bb0;
-        IGES_POINT bb1;
+        MCAD_POINT bb0;
+        MCAD_POINT bb1;
 
         aSegment->GetBoundingBox( bb0, bb1 );
 
@@ -597,7 +597,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
     error = false;
     list<MCAD_INTERSECT> intersects;
-    list<IGES_POINT> iList;
+    list<MCAD_POINT> iList;
     list<MCAD_SEGMENT*>::iterator iSeg = msegments.begin();
     list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
     MCAD_INTERSECT_FLAG flag;
@@ -625,8 +625,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
                 return false;
             }
 
-            std::list<IGES_POINT>::iterator iPts = iList.begin();
-            std::list<IGES_POINT>::iterator ePts = iList.end();
+            std::list<MCAD_POINT>::iterator iPts = iList.begin();
+            std::list<MCAD_POINT>::iterator ePts = iList.end();
 
             cout << "XXX: iList has " << iList.size() << " intersections\n";
 
@@ -689,8 +689,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         }
         else
         {
-            std::list<IGES_POINT>::iterator iPts = iList.begin();
-            std::list<IGES_POINT>::iterator ePts = iList.end();
+            std::list<MCAD_POINT>::iterator iPts = iList.begin();
+            std::list<MCAD_POINT>::iterator ePts = iList.end();
             bool isUnique = true;
 
             while( iPts != ePts )
@@ -760,8 +760,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
     // we can adjust the entity using the given circle; determine which section of the
     // circle is outside (add) or inside (subtract) the outline
-    IGES_POINT p0 = aCircle->mcenter;
-    IGES_POINT p1 = iList.front();
+    MCAD_POINT p0 = aCircle->mcenter;
+    MCAD_POINT p1 = iList.front();
 
     double a1 = atan2( p1.y - p0.y, p1.x - p0.x );
     p1 = iList.back();
@@ -772,7 +772,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
     double a3 = (a1 + a2) / 2.0;
 
-    IGES_POINT pX;  // a point midway along the 2nd CCW section of the circle
+    MCAD_POINT pX;  // a point midway along the 2nd CCW section of the circle
     pX.x = p0.x + aCircle->mradius * cos( a3 );
     pX.y = p0.y + aCircle->mradius * sin( a3 );
 
@@ -847,7 +847,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         PrintPoint(iList.back());
     }
 
-    IGES_POINT pF[2];   // final point order
+    MCAD_POINT pF[2];   // final point order
     bool isEnd[2];      // indicates if pF[n] is an endpoint
     list<MCAD_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
 
@@ -1200,7 +1200,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
 
     error = false;
     list<MCAD_INTERSECT> intersects;
-    list<IGES_POINT> iList;
+    list<MCAD_POINT> iList;
     list<MCAD_SEGMENT*>::iterator iSeg = msegments.begin();
     list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
     MCAD_INTERSECT_FLAG flag;
@@ -1233,8 +1233,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
                     return false;
                 }
 
-                std::list<IGES_POINT>::iterator iPts = iList.begin();
-                std::list<IGES_POINT>::iterator ePts = iList.end();
+                std::list<MCAD_POINT>::iterator iPts = iList.begin();
+                std::list<MCAD_POINT>::iterator ePts = iList.end();
 
                 cout << "XXX: iList has " << iList.size() << " intersections\n";
 
@@ -1302,8 +1302,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
         else
         {
-            std::list<IGES_POINT>::iterator iPts = iList.begin();
-            std::list<IGES_POINT>::iterator ePts = iList.end();
+            std::list<MCAD_POINT>::iterator iPts = iList.begin();
+            std::list<MCAD_POINT>::iterator ePts = iList.end();
             bool isUnique = true;
 
             while( iPts != ePts )
@@ -1389,8 +1389,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         cout << "XXX: splitting at single points\n";
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
-        list<IGES_POINT>::iterator iPts = iList.begin();
-        list<IGES_POINT>::iterator ePts = iList.end();
+        list<MCAD_POINT>::iterator iPts = iList.begin();
+        list<MCAD_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {
@@ -1401,7 +1401,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
             {
                 // this is not an endpoint; split the entity
                 list<MCAD_SEGMENT*> sList;
-                list<IGES_POINT> pl;
+                list<MCAD_POINT> pl;
                 pl.push_back( *iPts );
 
                 if( !pSeg->Split(pl, sList) )
@@ -1474,8 +1474,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         cout << "XXX: splitting aOutline at single points\n";
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
-        list<IGES_POINT>::iterator iPts = iList.begin();
-        list<IGES_POINT>::iterator ePts = iList.end();
+        list<MCAD_POINT>::iterator iPts = iList.begin();
+        list<MCAD_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {
@@ -1486,7 +1486,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
             {
                 // this is not an endpoint; split the entity
                 list<MCAD_SEGMENT*> sList;
-                list<IGES_POINT> pl;
+                list<MCAD_POINT> pl;
                 pl.push_back( *iPts );
 
                 if( !pSeg->Split(pl, sList) )
@@ -1518,7 +1518,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     //    associated with the split point and determine whether
     //    it is inside or outside *this.
 
-    IGES_POINT pT;  // test point to use in determining if a segment is
+    MCAD_POINT pT;  // test point to use in determining if a segment is
                     // inside or outside a closed region
 
     // test if CCW point from the split point on *this is in or out
@@ -2111,8 +2111,8 @@ void MCAD_OUTLINE::calcBoundingBox( void )
     list<MCAD_SEGMENT*>::iterator sSeg = msegments.begin();
     list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
 
-    IGES_POINT bb0;
-    IGES_POINT bb1;
+    MCAD_POINT bb0;
+    MCAD_POINT bb1;
     (*sSeg)->GetBoundingBox( mBottomLeft, mTopRight );
     ++sSeg;
 

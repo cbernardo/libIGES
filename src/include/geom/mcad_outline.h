@@ -72,7 +72,7 @@ class MCAD_SEGMENT;
 
 struct MCAD_INTERSECT
 {
-    IGES_POINT vertex;
+    MCAD_POINT vertex;
     MCAD_SEGMENT* segA;     // pointer to the segment operated upon
     MCAD_SEGMENT* segB;     // pointer to the segment modifying segA
     std::list<MCAD_SEGMENT*>::iterator iSegA;   // iterator to the segment operated upon
@@ -102,8 +102,8 @@ protected:
     bool mBBisOK;       // true if the bounding box has been calculated and
                         // no operations have been performed on the outline
 
-    IGES_POINT mBottomLeft; // bottom left coordinate
-    IGES_POINT mTopRight;   // top right coordinate of bounding box
+    MCAD_POINT mBottomLeft; // bottom left coordinate
+    MCAD_POINT mTopRight;   // top right coordinate of bounding box
     std::list<MCAD_SEGMENT*> msegments; // list of segments
     std::list<MCAD_OUTLINE*> mcutouts;  // list of non-overlapping cutouts
     std::list<MCAD_SEGMENT*> mholes;    // list of non-overlapping holes
@@ -129,7 +129,7 @@ public:
     bool IsContiguous( void );
 
     // Returns 'true' if the point is on or inside this outline
-    bool IsInside( IGES_POINT aPoint, bool& error );
+    bool IsInside( MCAD_POINT aPoint, bool& error );
 
     // Add a segment to this outline; the user must ensure that
     // the outline is closed before performing any other type
@@ -177,7 +177,7 @@ public:
     bool AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error );
 
     // print routines for testing/debugging
-    void PrintPoint( IGES_POINT p0 );
+    void PrintPoint( MCAD_POINT p0 );
     void PrintSeg( MCAD_SEGMENT* seg );
     void PrintGeomIntersects( const std::list<MCAD_INTERSECT>& aList );
 

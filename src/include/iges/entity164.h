@@ -25,7 +25,7 @@
 #ifndef ENTITY_164_H
 #define ENTITY_164_H
 
-#include <iges_elements.h>
+#include <mcad_elements.h>
 #include <iges_curve.h>
 
 // NOTE:

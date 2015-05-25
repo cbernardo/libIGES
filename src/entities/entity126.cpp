@@ -27,7 +27,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <entity124.h>
 #include <entity126.h>
 
@@ -746,7 +746,7 @@ bool IGES_ENTITY_126::isPeriodic( void )
 }
 
 
-bool IGES_ENTITY_126::GetNormal( IGES_POINT& aNorm )
+bool IGES_ENTITY_126::GetNormal( MCAD_POINT& aNorm )
 {
     aNorm = vnorm;
     return IsPlanar();
@@ -766,7 +766,7 @@ IGES_CURVE* IGES_ENTITY_126::GetCurve( int index )
 }
 
 
-bool IGES_ENTITY_126::GetStartPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
 {
     if( nCoeffs < 2 )
         return false;
@@ -816,7 +816,7 @@ bool IGES_ENTITY_126::GetStartPoint( IGES_POINT& pt, bool xform )
 }
 
 
-bool IGES_ENTITY_126::GetEndPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
 {
     if( nCoeffs < 2 )
         return false;
@@ -874,7 +874,7 @@ int IGES_ENTITY_126::GetNSegments( void )
 }
 
 
-bool IGES_ENTITY_126::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+bool IGES_ENTITY_126::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
 {
     pt.x = 0.0;
     pt.y = 0.0;
@@ -1146,7 +1146,7 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
 }
 
 
-bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
+bool IGES_ENTITY_126::hasUniquePlane( MCAD_POINT* norm )
 {
     // if we have a line (or no data) return false
     if( nCoeffs < 3 )
@@ -1159,17 +1159,17 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
 
     // we must test for planarity by taking the normal vector of every
     // 3 control points; if all normals are equal (or anti) then we have a plane
-    IGES_POINT p0;
-    IGES_POINT p1;
-    IGES_POINT p2;
+    MCAD_POINT p0;
+    MCAD_POINT p1;
+    MCAD_POINT p2;
 
-    IGES_POINT* pts[3] = { &p0, &p1, &p2 };
+    MCAD_POINT* pts[3] = { &p0, &p1, &p2 };
 
     int i = 0;
     int j = 0;
 
-    IGES_POINT tnorm0;
-    IGES_POINT tnorm1;
+    MCAD_POINT tnorm0;
+    MCAD_POINT tnorm1;
 
     for( i = 0; i < 3; ++i )
     {
@@ -1187,7 +1187,7 @@ bool IGES_ENTITY_126::hasUniquePlane( IGES_POINT* norm )
         return true;
 
     tnorm0 = *norm;
-    IGES_POINT* px;
+    MCAD_POINT* px;
 
     for( i = 3; i < nCoeffs; ++i )
     {

@@ -313,7 +313,7 @@ bool IGES_ENTITY_110::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_110::GetStartPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_110::GetStartPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = X1;
     pt.y = Y1;
@@ -326,7 +326,7 @@ bool IGES_ENTITY_110::GetStartPoint( IGES_POINT& pt, bool xform )
 }
 
 
-bool IGES_ENTITY_110::GetEndPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_110::GetEndPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = X2;
     pt.y = Y2;
@@ -363,7 +363,7 @@ IGES_CURVE* IGES_ENTITY_110::GetCurve( int index )
 }
 
 
-bool IGES_ENTITY_110::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+bool IGES_ENTITY_110::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
 {
     if( 1 !=nSeg )
     {
@@ -401,7 +401,7 @@ bool IGES_ENTITY_110::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
             break;;
     }
 
-    IGES_POINT dV( X2 - X1, Y2 - Y1, Z2 - Z1 );
+    MCAD_POINT dV( X2 - X1, Y2 - Y1, Z2 - Z1 );
     pt.x = X1;
     pt.y = Y1;
     pt.z = Z1;

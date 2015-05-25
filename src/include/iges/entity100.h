@@ -66,14 +66,14 @@ public:
     virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
 
     // Inherited from IGES_CURVE
-    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
-    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
 
     virtual int GetNSegments( void );
     virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
-    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
     virtual bool Unlink( IGES_ENTITY* aChild );

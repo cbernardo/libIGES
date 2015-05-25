@@ -38,7 +38,7 @@
 
 using namespace std;
 
-void print_vec( const IGES_POINT p )
+void print_vec( const MCAD_POINT p )
 {
     cout << setprecision( 3 );
     cout << "V: " << p.x << ", " << p.y << ", " << p.z << "\n";

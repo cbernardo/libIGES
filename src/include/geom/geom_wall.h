@@ -36,7 +36,7 @@ class IGES_GEOM_WALL
 private:
     SISLSurf* plane;        // NURBS representation of the plane
     SISLCurve* side[4];     // Representation of the 4 bounding edges
-    IGES_POINT vertex[4];   // vertices as specified by the user
+    MCAD_POINT vertex[4];   // vertices as specified by the user
 
     void init( void );
     void clear( void );
@@ -45,7 +45,7 @@ public:
     IGES_GEOM_WALL();
     ~IGES_GEOM_WALL();
 
-    bool SetParams( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGES_POINT p3 );
+    bool SetParams( MCAD_POINT p0, MCAD_POINT p1, MCAD_POINT p2, MCAD_POINT p3 );
     IGES_ENTITY_144* Instantiate( IGES* model );
 };
 

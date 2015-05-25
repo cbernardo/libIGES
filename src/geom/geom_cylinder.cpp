@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <error_macros.h>
 #include <iges.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <geom_cylinder.h>
 
 using namespace std;
@@ -104,7 +104,7 @@ void IGES_GEOM_CYLINDER::clear( void )
 }
 
 
-bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_POINT end )
+bool IGES_GEOM_CYLINDER::SetParams( MCAD_POINT center, MCAD_POINT start, MCAD_POINT end )
 {
     clear();
 
@@ -123,7 +123,7 @@ bool IGES_GEOM_CYLINDER::SetParams( IGES_POINT center, IGES_POINT start, IGES_PO
         return false;
     }
 
-    IGES_POINT p0 = center - start;
+    MCAD_POINT p0 = center - start;
     double rad1 = sqrt( p0.x*p0.x + p0.y*p0.y );
     p0 = center - end;
     double rad2 = sqrt( p0.x*p0.x + p0.y*p0.y );
@@ -395,8 +395,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         inurbs[i] = NULL; \
     } } while( 0 );
 
-    IGES_POINT p0;
-    IGES_POINT p1;
+    MCAD_POINT p0;
+    MCAD_POINT p1;
 
     // create the entities
     IGES_ENTITY* ep;

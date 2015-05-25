@@ -45,7 +45,7 @@ int main()
 
     // create an X-shaped set of walls to demonstrate how the
     // PCB sides and drilled holes may be represented
-    IGES_POINT p[5];
+    MCAD_POINT p[5];
     p[0].x = -3.0;  // < line
     p[0].y = -3.0;
     p[1].x = -1.0;  // > line, < arc
@@ -142,7 +142,7 @@ int test_cyl_wall( void )
     IGES model;
     IGES_GEOM_WALL plane[6];
 
-    IGES_POINT v[8];
+    MCAD_POINT v[8];
     v[0].x = -0.5;
     v[0].y = -1.0;
     v[0].z = 0.0;
@@ -228,7 +228,7 @@ int test_cyl_wall( void )
 
     IGES_GEOM_CYLINDER cyl;
 
-    IGES_POINT p0, p1, p2;
+    MCAD_POINT p0, p1, p2;
     p0.x = -0.5;
     p0.y = -0.5;
     p0.z = 0.0;
@@ -314,13 +314,13 @@ bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
             do
             {
                 IGES_GEOM_WALL wall;
-                IGES_POINT p0 = aSegment->GetMStart();
+                MCAD_POINT p0 = aSegment->GetMStart();
                 p0.z = aTopZ;
-                IGES_POINT p1 = aSegment->GetMEnd();
+                MCAD_POINT p1 = aSegment->GetMEnd();
                 p1.z = aTopZ;
-                IGES_POINT p2 = aSegment->GetMEnd();
+                MCAD_POINT p2 = aSegment->GetMEnd();
                 p2.z = aBotZ;
-                IGES_POINT p3 = aSegment->GetMStart();
+                MCAD_POINT p3 = aSegment->GetMStart();
                 p3.z = aBotZ;
                 wall.SetParams( p0, p1, p2, p3 );
                 IGES_ENTITY_144* ep = wall.Instantiate( aModel );

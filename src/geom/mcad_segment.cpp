@@ -28,7 +28,7 @@
 #include <cmath>
 #include <error_macros.h>
 #include <mcad_segment.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 
 using namespace std;
 
@@ -69,7 +69,7 @@ void MCAD_SEGMENT::init( void )
 
 
 // set the parameters for a line
-bool MCAD_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
+bool MCAD_SEGMENT::SetParams( MCAD_POINT aStart, MCAD_POINT aEnd )
 {
     init();
 
@@ -95,8 +95,8 @@ bool MCAD_SEGMENT::SetParams( IGES_POINT aStart, IGES_POINT aEnd )
 // set the parameters for an arc; the parameters must be specified such that
 // the arc is traced in a counterclockwise direction as viewed from a positive
 // Z location.
-bool MCAD_SEGMENT::SetParams( IGES_POINT aCenter, IGES_POINT aStart,
-                              IGES_POINT aEnd, bool isCW )
+bool MCAD_SEGMENT::SetParams( MCAD_POINT aCenter, MCAD_POINT aStart,
+                              MCAD_POINT aEnd, bool isCW )
 {
     init();
 
@@ -204,7 +204,7 @@ double MCAD_SEGMENT::GetLength( void )
 
 // calculate intersections with another segment (list of points)
 bool MCAD_SEGMENT::GetIntersections( const MCAD_SEGMENT& aSegment,
-                                          std::list<IGES_POINT>& aIntersectList,
+                                          std::list<MCAD_POINT>& aIntersectList,
                                           MCAD_INTERSECT_FLAG& flags )
 {
     flags = MCAD_IFLAG_NONE;
@@ -269,7 +269,7 @@ bool MCAD_SEGMENT::GetIntersections( const MCAD_SEGMENT& aSegment,
 
 
 // split at the given list of intersections (1 or 2 intersections only)
-bool MCAD_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
+bool MCAD_SEGMENT::Split( std::list<MCAD_POINT>& aIntersectList,
                           std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     if( MCAD_SEGTYPE_NONE == msegtype )
@@ -296,8 +296,8 @@ bool MCAD_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
 
     if( MCAD_SEGTYPE_CIRCLE != msegtype )
     {
-        list<IGES_POINT>::iterator sP = aIntersectList.begin();
-        list<IGES_POINT>::iterator eP = aIntersectList.end();
+        list<MCAD_POINT>::iterator sP = aIntersectList.begin();
+        list<MCAD_POINT>::iterator eP = aIntersectList.end();
 
         while( sP != eP )
         {
@@ -347,8 +347,8 @@ bool MCAD_SEGMENT::Split( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-void MCAD_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d,
-    IGES_POINT& p1, IGES_POINT& p2 )
+void MCAD_SEGMENT::calcCircleIntercepts( MCAD_POINT c2, double r2, double d,
+    MCAD_POINT& p1, MCAD_POINT& p2 )
 {
     // note: given distance d between 2 circle centers
     // where radii = R[1], R[2],
@@ -408,10 +408,10 @@ void MCAD_SEGMENT::calcCircleIntercepts( IGES_POINT c2, double r2, double d,
 
 // check case where both segments are circles
 bool MCAD_SEGMENT::checkCircles( const MCAD_SEGMENT& aSegment,
-                                 std::list<IGES_POINT>& aIntersectList,
+                                 std::list<MCAD_POINT>& aIntersectList,
                                  MCAD_INTERSECT_FLAG& flags )
 {
-    IGES_POINT c2 = aSegment.GetCenter();
+    MCAD_POINT c2 = aSegment.GetCenter();
     double r2 = aSegment.GetRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
@@ -455,8 +455,8 @@ bool MCAD_SEGMENT::checkCircles( const MCAD_SEGMENT& aSegment,
     }
 
     // there must be 2 intersection points
-    IGES_POINT p1;
-    IGES_POINT p2;
+    MCAD_POINT p1;
+    MCAD_POINT p2;
     calcCircleIntercepts( c2, r2, d, p1, p2 );
     aIntersectList.push_back( p1 );
     aIntersectList.push_back( p2 );
@@ -467,10 +467,10 @@ bool MCAD_SEGMENT::checkCircles( const MCAD_SEGMENT& aSegment,
 
 // check case where both segments are arcs (one may be a circle)
 bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
-                              std::list<IGES_POINT>& aIntersectList,
+                              std::list<MCAD_POINT>& aIntersectList,
                               MCAD_INTERSECT_FLAG& flags )
 {
-    IGES_POINT c2 = aSegment.GetCenter();
+    MCAD_POINT c2 = aSegment.GetCenter();
     double r2 = aSegment.GetRadius();
     double dx = mcenter.x - c2.x;
     double dy = mcenter.y - c2.y;
@@ -657,8 +657,8 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
     // the arcs are not concentric so if there is any intersection
     // it is at 1 or 2 points
-    IGES_POINT p1;
-    IGES_POINT p2;
+    MCAD_POINT p1;
+    MCAD_POINT p2;
     calcCircleIntercepts( c2, r2, d, p1, p2 );
 
     // determine if any of the points lie on *this arc and
@@ -666,7 +666,7 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
     double angX0 = atan2( p1.y - mcenter.y, p1.x - mcenter.x );
     double angX1 = atan2( p2.y - mcenter.y, p2.x - mcenter.x );
-    IGES_POINT p0[2];
+    MCAD_POINT p0[2];
     double ang0[2];
     int np = 0;
     int isOnArc[2];
@@ -832,22 +832,22 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
 // check case where one segment is an arc and one a line
 bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
-                                 std::list<IGES_POINT>& aIntersectList,
+                                 std::list<MCAD_POINT>& aIntersectList,
                                  MCAD_INTERSECT_FLAG& flags )
 {
     flags = MCAD_IFLAG_NONE;
 
     // retrieve parameters of the arc and line segment
-    IGES_POINT arcC;
-    IGES_POINT arcS;
-    IGES_POINT arcE;
+    MCAD_POINT arcC;
+    MCAD_POINT arcS;
+    MCAD_POINT arcE;
     double arcR;
     double arcSAng;
     double arcEAng;
     bool arcCircle = false;
 
-    IGES_POINT lS;
-    IGES_POINT lE;
+    MCAD_POINT lS;
+    MCAD_POINT lE;
 
     if( MCAD_SEGTYPE_ARC == msegtype || MCAD_SEGTYPE_CIRCLE == msegtype )
     {
@@ -933,7 +933,7 @@ bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
                 return false;
 
             flags = MCAD_IFLAG_TANGENT;
-            IGES_POINT p;
+            MCAD_POINT p;
             p.x = t * lS.x + (1.0 - t) * lE.x;
             p.y = t * lS.y + (1.0 - t) * lE.y;
             aIntersectList.push_back( p );
@@ -961,7 +961,7 @@ bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
     }
 
     int np = 0;
-    IGES_POINT p[2];
+    MCAD_POINT p[2];
     MCAD_INTERSECT_FLAG f[2];
 
     if( t0 >= 0.0 && t0 <= 1.0 )
@@ -1041,7 +1041,7 @@ bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
         return true;
     }
 
-    IGES_POINT pt[2];
+    MCAD_POINT pt[2];
     int np2 = 0;
 
     // check if each point is on the arc
@@ -1103,7 +1103,7 @@ bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
 
 // check case where both segments are lines
 bool MCAD_SEGMENT::checkLines( const MCAD_SEGMENT& aSegment,
-                               std::list<IGES_POINT>& aIntersectList,
+                               std::list<MCAD_POINT>& aIntersectList,
                                MCAD_INTERSECT_FLAG& flags )
 {
     if( MCAD_SEGTYPE_NONE == msegtype || MCAD_SEGTYPE_NONE == aSegment.GetSegType() )
@@ -1141,8 +1141,8 @@ bool MCAD_SEGMENT::checkLines( const MCAD_SEGMENT& aSegment,
 
     double XA1 = mend.x - mstart.x;
     double YA1 = mend.y - mstart.y;
-    IGES_POINT p0 = aSegment.GetStart();
-    IGES_POINT p1 = aSegment.GetEnd();
+    MCAD_POINT p0 = aSegment.GetStart();
+    MCAD_POINT p1 = aSegment.GetEnd();
     double XA2 = p1.x - p0.x;
     double YA2 = p1.y - p0.y;
 
@@ -1305,7 +1305,7 @@ bool MCAD_SEGMENT::checkLines( const MCAD_SEGMENT& aSegment,
 
 
 // calculate the bottom-left and top-right rectangular bounds
-bool MCAD_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
+bool MCAD_SEGMENT::GetBoundingBox( MCAD_POINT& p0, MCAD_POINT& p1 )
 {
     if( MCAD_SEGTYPE_NONE == msegtype )
     {
@@ -1371,7 +1371,7 @@ bool MCAD_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
     double aS = GetStartAngle();
     double aE = GetEndAngle();
 
-    IGES_POINT m[4];    // x,y extrema of an arc
+    MCAD_POINT m[4];    // x,y extrema of an arc
     int ne = 0;
 
     // check if start..end encompasses (0d)
@@ -1452,7 +1452,7 @@ bool MCAD_SEGMENT::GetBoundingBox( IGES_POINT& p0, IGES_POINT& p1 )
 // + calculate the midpoint along the segment and return true;
 //   for circles the reported midpoint is the point to the right
 //   of the center.
-bool MCAD_SEGMENT::GetMidpoint( IGES_POINT& p0 )
+bool MCAD_SEGMENT::GetMidpoint( MCAD_POINT& p0 )
 {
     switch( msegtype )
     {
@@ -1530,13 +1530,13 @@ double MCAD_SEGMENT::GetMEAngle( void ) const
 }
 
 
-IGES_POINT MCAD_SEGMENT::GetCenter( void ) const
+MCAD_POINT MCAD_SEGMENT::GetCenter( void ) const
 {
     return mcenter;
 }
 
 
-IGES_POINT MCAD_SEGMENT::GetStart( void ) const
+MCAD_POINT MCAD_SEGMENT::GetStart( void ) const
 {
     // ensure that the start/end points given
     // describe a CCW arc
@@ -1547,13 +1547,13 @@ IGES_POINT MCAD_SEGMENT::GetStart( void ) const
 }
 
 
-IGES_POINT MCAD_SEGMENT::GetMStart( void ) const
+MCAD_POINT MCAD_SEGMENT::GetMStart( void ) const
 {
     return mstart;
 }
 
 
-IGES_POINT MCAD_SEGMENT::GetEnd( void ) const
+MCAD_POINT MCAD_SEGMENT::GetEnd( void ) const
 {
     // ensure that the start/end points given
     // describe a CCW arc
@@ -1564,7 +1564,7 @@ IGES_POINT MCAD_SEGMENT::GetEnd( void ) const
 }
 
 
-IGES_POINT MCAD_SEGMENT::GetMEnd( void ) const
+MCAD_POINT MCAD_SEGMENT::GetMEnd( void ) const
 {
     return mend;
 }
@@ -1576,7 +1576,7 @@ void MCAD_SEGMENT::reverse( void )
     if( MCAD_SEGTYPE_NONE == msegtype || MCAD_SEGTYPE_CIRCLE == msegtype )
         return;
 
-    IGES_POINT tmp = mstart;
+    MCAD_POINT tmp = mstart;
     mstart = mend;
     mend = tmp;
 
@@ -1595,7 +1595,7 @@ void MCAD_SEGMENT::reverse( void )
     return;
 }
 
-bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
+bool MCAD_SEGMENT::splitLine( std::list<MCAD_POINT>& aIntersectList,
                               std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     if( aIntersectList.empty() )
@@ -1637,8 +1637,8 @@ bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
         den = 1.0 / (mend.x - mstart.x);
     }
 
-    list<IGES_POINT>::iterator sPL = aIntersectList.begin();
-    list<IGES_POINT>::iterator ePL = aIntersectList.end();
+    list<MCAD_POINT>::iterator sPL = aIntersectList.begin();
+    list<MCAD_POINT>::iterator ePL = aIntersectList.end();
 
     double tp[2];   // parameter points
     int np = 0;     // number of points to break at
@@ -1700,7 +1700,7 @@ bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
     }
 
     MCAD_SEGMENT* sp = new MCAD_SEGMENT;
-    IGES_POINT p0;
+    MCAD_POINT p0;
 
     if( 1 == np )
     {
@@ -1714,7 +1714,7 @@ bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
         return true;
     }
 
-    IGES_POINT p1;
+    MCAD_POINT p1;
 
     if( tp[0] < tp[1] )
     {
@@ -1742,10 +1742,10 @@ bool MCAD_SEGMENT::splitLine( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
+bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
                              std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
-    IGES_POINT p0 = aIntersectList.front();
+    MCAD_POINT p0 = aIntersectList.front();
     double dx = p0.x - mcenter.x;
     double dy = p0.y - mcenter.y;
     double dd = dx*dx + dy*dy;
@@ -1803,7 +1803,7 @@ bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
         return true;
     }
 
-    IGES_POINT p1 = aIntersectList.back();
+    MCAD_POINT p1 = aIntersectList.back();
 
     dx = p1.x - mcenter.x;
     dy = p1.y - mcenter.y;
@@ -1835,7 +1835,7 @@ bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
             double t0 = a0;
             a0 = a1;
             a1 = t0;
-            IGES_POINT tp0 = p0;
+            MCAD_POINT tp0 = p0;
             p0 = p1;
             p1 = tp0;
         }
@@ -1847,7 +1847,7 @@ bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
             double t0 = a0;
             a0 = a1;
             a1 = t0;
-            IGES_POINT tp0 = p0;
+            MCAD_POINT tp0 = p0;
             p0 = p1;
             p1 = tp0;
         }
@@ -1903,7 +1903,7 @@ bool MCAD_SEGMENT::splitArc( std::list<IGES_POINT>& aIntersectList,
 }
 
 
-bool MCAD_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
+bool MCAD_SEGMENT::splitCircle( std::list<MCAD_POINT>& aIntersectList,
                                 std::list<MCAD_SEGMENT*>& aNewSegmentList )
 {
     if( aIntersectList.size() != 2 )
@@ -1912,8 +1912,8 @@ bool MCAD_SEGMENT::splitCircle( std::list<IGES_POINT>& aIntersectList,
         return false;
     }
 
-    IGES_POINT p0 = aIntersectList.front();
-    IGES_POINT p1 = aIntersectList.back();
+    MCAD_POINT p0 = aIntersectList.front();
+    MCAD_POINT p1 = aIntersectList.back();
 
     if( abs(p0.x - p1.x) < 1e-8 && abs(p0.y - p1.y) < 1e-8 )
     {

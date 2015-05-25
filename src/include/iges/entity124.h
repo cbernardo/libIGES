@@ -25,7 +25,7 @@
 #ifndef ENTITY_124_H
 #define ENTITY_124_H
 
-#include <iges_elements.h>
+#include <mcad_elements.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -80,7 +80,7 @@ protected:
 
 
 public:
-    IGES_TRANSFORM T;
+    MCAD_TRANSFORM T;
 
     IGES_ENTITY_124( IGES* aParent );
     virtual ~IGES_ENTITY_124();
@@ -117,7 +117,7 @@ public:
     virtual bool SetLineWeightNum( int aLineWeight );
 
     // retrieves the overall transform matrix ()
-    IGES_TRANSFORM GetTransformMatrix( void );
+    MCAD_TRANSFORM GetTransformMatrix( void );
 };
 
 #endif  // ENTITY_124_H

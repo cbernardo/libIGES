@@ -34,7 +34,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <all_entities.h>
 
 using namespace std;
@@ -241,8 +241,8 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
             // check that StartPoint[N] == EndPoint[N-1]
             // we must execute the transform since 2D curves may be tested
             // against 3D curves
-            IGES_POINT p1;
-            IGES_POINT p2;
+            MCAD_POINT p1;
+            MCAD_POINT p2;
             double dN;
 
             if( !parent )
@@ -630,7 +630,7 @@ IGES_CURVE* IGES_ENTITY_102::GetCurve( int index )
 }
 
 
-bool IGES_ENTITY_102::GetStartPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_102::GetStartPoint( MCAD_POINT& pt, bool xform )
 {
     if( curves.empty() )
         return false;
@@ -647,7 +647,7 @@ bool IGES_ENTITY_102::GetStartPoint( IGES_POINT& pt, bool xform )
 }
 
 
-bool IGES_ENTITY_102::GetEndPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_102::GetEndPoint( MCAD_POINT& pt, bool xform )
 {
     if( curves.empty() )
         return false;
@@ -683,8 +683,8 @@ bool IGES_ENTITY_102::IsClosed( void )
     if( curves.size() == 1 && (*sc)->GetEntityType() != ENT_CIRCULAR_ARC )
         return false;
 
-    IGES_POINT p1;
-    IGES_POINT p2;
+    MCAD_POINT p1;
+    MCAD_POINT p2;
 
     if( !(*sc)->GetStartPoint( p1, true )
         || !(*lc)->GetEndPoint( p2, true ) )
@@ -718,7 +718,7 @@ bool IGES_ENTITY_102::IsClosed( void )
 }
 
 
-bool IGES_ENTITY_102::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+bool IGES_ENTITY_102::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
 {
     ERRMSG << "\n + [WARNING] method invoked on composite curve\n";
     return false;

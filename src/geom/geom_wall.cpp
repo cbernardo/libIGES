@@ -90,7 +90,7 @@ void IGES_GEOM_WALL::clear( void )
 }
 
 
-bool IGES_GEOM_WALL::SetParams( IGES_POINT p0, IGES_POINT p1, IGES_POINT p2, IGES_POINT p3 )
+bool IGES_GEOM_WALL::SetParams( MCAD_POINT p0, MCAD_POINT p1, MCAD_POINT p2, MCAD_POINT p3 )
 {
     clear();
     double data[12];

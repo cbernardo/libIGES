@@ -63,9 +63,9 @@ class IGES_ENTITY_104 : public IGES_CURVE
 {
 private:
     int getForm();
-    bool getPtEllipse( IGES_POINT& pt0, double var );
-    bool getPtHyperbola( IGES_POINT& pt0, double var );
-    bool getPtParabola( IGES_POINT& pt0, double var );
+    bool getPtEllipse( MCAD_POINT& pt0, double var );
+    bool getPtHyperbola( MCAD_POINT& pt0, double var );
+    bool getPtParabola( MCAD_POINT& pt0, double var );
 
 protected:
 
@@ -102,13 +102,13 @@ public:
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // Inherited from IGES_CURVE
-    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
-    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
     virtual int GetNSegments( void );
     virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
-    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_104_H

@@ -35,7 +35,7 @@ class IGES;
 class IGES_GEOM_CYLINDER
 {
 private:
-    IGES_POINT arcs[5];     // center, start .. end for series of sub-arcs;
+    MCAD_POINT arcs[5];     // center, start .. end for series of sub-arcs;
                             // the end point of one sub-arc is the start
                             // of the next
     int narcs;              // number of arc segments to represent the surface
@@ -49,7 +49,7 @@ public:
     IGES_GEOM_CYLINDER();
     ~IGES_GEOM_CYLINDER();
 
-    bool SetParams( IGES_POINT center, IGES_POINT start, IGES_POINT end );
+    bool SetParams( MCAD_POINT center, MCAD_POINT start, MCAD_POINT end );
     bool Instantiate( IGES* model, double top, double bot,
                       std::vector<IGES_ENTITY_144*>& result );
 };

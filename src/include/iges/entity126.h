@@ -26,7 +26,7 @@
 #define ENTITY_126_H
 
 #include <iges_curve.h>
-#include <iges_elements.h>
+#include <mcad_elements.h>
 
 struct SISLCurve;
 
@@ -64,7 +64,7 @@ private:
     SISLCurve* scurve;
 
     // norm: if provided the normal to the plane will be returned
-    bool hasUniquePlane( IGES_POINT* norm = NULL );
+    bool hasUniquePlane( MCAD_POINT* norm = NULL );
 
 protected:
 
@@ -89,7 +89,7 @@ protected:
     int PROP4;  // 0,1: Nonperiodic, Periodic
     double V0;
     double V1;
-    IGES_POINT vnorm;
+    MCAD_POINT vnorm;
 
 public:
     IGES_ENTITY_126( IGES* aParent );
@@ -110,10 +110,10 @@ public:
     virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
-    virtual bool GetStartPoint( IGES_POINT& pt, bool xform = true );
-    virtual bool GetEndPoint( IGES_POINT& pt, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
     virtual int GetNSegments( void );
-    virtual bool Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // nCoeff: number of control points and weights
     // knot: pointer to hold pointer to knots
@@ -127,7 +127,7 @@ public:
     bool IsPlanar( void );
     bool IsRational( void );
     bool isPeriodic( void );
-    bool GetNormal( IGES_POINT& aNorm );
+    bool GetNormal( MCAD_POINT& aNorm );
 };
 
 #endif  // ENTITY_126_H

@@ -27,7 +27,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 #include <entity104.h>
 #include <entity124.h>
 
@@ -374,7 +374,7 @@ bool IGES_ENTITY_104::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_104::GetStartPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_104::GetStartPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = X1;
     pt.y = Y1;
@@ -387,7 +387,7 @@ bool IGES_ENTITY_104::GetStartPoint( IGES_POINT& pt, bool xform )
 }
 
 
-bool IGES_ENTITY_104::GetEndPoint( IGES_POINT& pt, bool xform )
+bool IGES_ENTITY_104::GetEndPoint( MCAD_POINT& pt, bool xform )
 {
     pt.x = X2;
     pt.y = Y2;
@@ -430,7 +430,7 @@ IGES_CURVE* IGES_ENTITY_104::GetCurve( int index )
 }
 
 
-bool IGES_ENTITY_104::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xform )
+bool IGES_ENTITY_104::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
 {
     if( 1 !=nSeg )
     {
@@ -444,7 +444,7 @@ bool IGES_ENTITY_104::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
         return false;
     }
 
-    IGES_POINT pt0;
+    MCAD_POINT pt0;
 
     if( !form )
     {
@@ -497,7 +497,7 @@ bool IGES_ENTITY_104::Interpolate( IGES_POINT& pt, int nSeg, double var, bool xf
 }
 
 
-bool IGES_ENTITY_104::getPtEllipse( IGES_POINT& pt0, double var )
+bool IGES_ENTITY_104::getPtEllipse( MCAD_POINT& pt0, double var )
 {
     if( A == 0.0 || (F < 0.0 && A < 0.0) || (F > 0.0 && A > 0.0) )
     {
@@ -530,7 +530,7 @@ bool IGES_ENTITY_104::getPtEllipse( IGES_POINT& pt0, double var )
 }
 
 
-bool IGES_ENTITY_104::getPtHyperbola( IGES_POINT& pt0, double var )
+bool IGES_ENTITY_104::getPtHyperbola( MCAD_POINT& pt0, double var )
 {
     if( X1 == X2 && Y1 == Y2 )
     {
@@ -579,7 +579,7 @@ bool IGES_ENTITY_104::getPtHyperbola( IGES_POINT& pt0, double var )
 }
 
 
-bool IGES_ENTITY_104::getPtParabola( IGES_POINT& pt0, double var )
+bool IGES_ENTITY_104::getPtParabola( MCAD_POINT& pt0, double var )
 {
     if( X1 == X2 && Y1 == Y2 )
     {

@@ -26,7 +26,7 @@
 #define ENTITY_128_H
 
 #include <iges_entity.h>
-#include <iges_elements.h>
+#include <mcad_elements.h>
 
 // NOTE:
 // The associated parameter data are:

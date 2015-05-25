@@ -1,5 +1,5 @@
 /*
- * file: iges_helpers.cpp
+ * file: mcad_helpers.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -28,7 +28,7 @@
 #include <cmath>
 
 #include <error_macros.h>
-#include <iges_helpers.h>
+#include <mcad_helpers.h>
 
 
 using namespace std;
@@ -36,7 +36,7 @@ using namespace std;
 
 // return true if the 2 points match to within 'minRes'
 // or best effort if the numbers are big
-bool PointMatches( IGES_POINT p1, IGES_POINT p2, double minRes )
+bool PointMatches( MCAD_POINT p1, MCAD_POINT p2, double minRes )
 {
     // determine if we can in fact meet the minRes specification
     double dN = abs( p1.x*p1.x + p1.y*p1.y + p1.z*p1.z );
@@ -98,7 +98,7 @@ bool CheckNormal( double& X, double &Y, double& Z )
 }
 
 
-void print_transform( const IGES_TRANSFORM* T )
+void print_transform( const MCAD_TRANSFORM* T )
 {
     cout << setprecision( 3 );
     cout << "R1: " << T->R.v[0][0] << ", " << T->R.v[0][1] << ", " << T->R.v[0][2] << ",  T.x = " << T->T.x << "\n";
@@ -108,7 +108,7 @@ void print_transform( const IGES_TRANSFORM* T )
 }
 
 
-void print_matrix( const IGES_MATRIX* m )
+void print_matrix( const MCAD_MATRIX* m )
 {
     cout << setprecision( 3 );
     cout << "R1: " << m->v[0][0] << ", " << m->v[0][1] << ", " << m->v[0][2] << "\n";
@@ -118,7 +118,7 @@ void print_matrix( const IGES_MATRIX* m )
 }
 
 
-void print_vec( const IGES_POINT* p )
+void print_vec( const MCAD_POINT* p )
 {
     cout << setprecision( 3 );
     cout << "V: " << p->x << ", " << p->y << ", " << p->z << "\n";
@@ -127,7 +127,7 @@ void print_vec( const IGES_POINT* p )
 
 
 // calculate the normal given points p0, p1, p2
-bool CalcNormal( const IGES_POINT* p0, const IGES_POINT* p1, const IGES_POINT* p2, IGES_POINT* pn )
+bool CalcNormal( const MCAD_POINT* p0, const MCAD_POINT* p1, const MCAD_POINT* p2, MCAD_POINT* pn )
 {
     if( !p0 || !p1 || !p2 || !pn )
     {
@@ -135,12 +135,12 @@ bool CalcNormal( const IGES_POINT* p0, const IGES_POINT* p1, const IGES_POINT* p
         return false;
     }
 
-    IGES_POINT tp0( *p0 );
-    IGES_POINT tp1( *p1 );
-    IGES_POINT tp2( *p2 );
+    MCAD_POINT tp0( *p0 );
+    MCAD_POINT tp1( *p1 );
+    MCAD_POINT tp2( *p2 );
 
-    IGES_POINT t0 = tp1 - tp0;
-    IGES_POINT t1 = tp2 - tp0;
+    MCAD_POINT t0 = tp1 - tp0;
+    MCAD_POINT t1 = tp2 - tp0;
 
     pn->x = t0.y * t1.z - t0.z * t1.y;
     pn->y = t0.z * t1.x - t0.x * t1.z;

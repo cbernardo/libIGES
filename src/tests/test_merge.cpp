@@ -44,8 +44,8 @@
 #include <fstream>
 #include <iges.h>
 #include <iges_io.h>
-#include <iges_helpers.h>
-#include <iges_elements.h>
+#include <mcad_helpers.h>
+#include <mcad_elements.h>
 #include "all_entities.h"
 
 using namespace std;
@@ -92,7 +92,7 @@ struct TPARAMS
         zOff = 0.0;
     }
 
-    void GetTransform( IGES_TRANSFORM& T );
+    void GetTransform( MCAD_TRANSFORM& T );
 };
 
 // merge the model with the given filename 'modelOut' and instantiate
@@ -110,11 +110,11 @@ void parseOrient( const std::string& fname, vector<pair<string, ORIENT > >& orie
 // parse a UNIT line
 void parseUnit( const std::string& iline );
 // create a rotation matrix around X
-void rotateX( IGES_MATRIX& mat, double angle );
+void rotateX( MCAD_MATRIX& mat, double angle );
 // create a rotation matrix around Y
-void rotateY( IGES_MATRIX& mat, double angle );
+void rotateY( MCAD_MATRIX& mat, double angle );
 // create a rotation matrix around Z
-void rotateZ( IGES_MATRIX& mat, double angle );
+void rotateZ( MCAD_MATRIX& mat, double angle );
 
 IGES_UNIT unit = UNIT_END;
 
@@ -254,7 +254,7 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<p
     }
 
     IGES_ENTITY* ep;
-    IGES_TRANSFORM* pO = NULL;
+    MCAD_TRANSFORM* pO = NULL;
 
     // determine if there is an transform to associate with the basic model
     if( !o.empty() )
@@ -267,7 +267,7 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<p
             if( !sbeg->first.compare( fname ) )
             {
                 ORIENT od = sbeg->second;
-                pO = new IGES_TRANSFORM;
+                pO = new MCAD_TRANSFORM;
 
                 if( !pO )
                 {
@@ -342,7 +342,7 @@ bool merge( IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<p
     return true;
 }
 
-void TPARAMS::GetTransform( IGES_TRANSFORM& T )
+void TPARAMS::GetTransform( MCAD_TRANSFORM& T )
 {
     /* Calculate 3D shape rotation:
      * this is the rotation parameters, with an additional 180 deg rotation
@@ -359,8 +359,8 @@ void TPARAMS::GetTransform( IGES_TRANSFORM& T )
     }
 
 
-    IGES_MATRIX mx;
-    IGES_MATRIX mz;
+    MCAD_MATRIX mx;
+    MCAD_MATRIX mz;
 
     rotateX( mx, rotx );
     rotateZ( mz, rotz );
@@ -368,9 +368,9 @@ void TPARAMS::GetTransform( IGES_TRANSFORM& T )
     T.R = mx * mz;
 
     if( flip )
-        T.T = IGES_POINT( xOff, yOff, -zOff );
+        T.T = MCAD_POINT( xOff, yOff, -zOff );
     else
-        T.T = IGES_POINT( xOff, yOff, zOff );
+        T.T = MCAD_POINT( xOff, yOff, zOff );
 
     return;
 }
@@ -468,7 +468,7 @@ void parsePos( vector<pair<string, list<TPARAMS>* > >& models, const std::string
 }
 
 // create a rotation matrix around X
-void rotateX( IGES_MATRIX& mat, double angle )
+void rotateX( MCAD_MATRIX& mat, double angle )
 {
     double cosN = cos( angle );
     double sinN = sin( angle );
@@ -481,7 +481,7 @@ void rotateX( IGES_MATRIX& mat, double angle )
 }
 
 // create a rotation matrix around Y
-void rotateY( IGES_MATRIX& mat, double angle )
+void rotateY( MCAD_MATRIX& mat, double angle )
 {
     double cosN = cos( angle );
     double sinN = sin( angle );
@@ -494,7 +494,7 @@ void rotateY( IGES_MATRIX& mat, double angle )
 }
 
 // create a rotation matrix around Z
-void rotateZ( IGES_MATRIX& mat, double angle )
+void rotateZ( MCAD_MATRIX& mat, double angle )
 {
     double cosN = cos( angle );
     double sinN = sin( angle );

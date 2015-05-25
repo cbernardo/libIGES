@@ -25,7 +25,7 @@
 #ifndef ENTITY_408_H
 #define ENTITY_408_H
 
-#include <iges_elements.h>
+#include <mcad_elements.h>
 #include <iges_entity.h>
 
 class IGES_ENTITY_308;

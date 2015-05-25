@@ -52,7 +52,7 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::vector<IGES_POINT> vertices;
+    std::vector<MCAD_POINT> vertices;
 
 public:
     IGES_ENTITY_502( IGES* aParent );
@@ -79,9 +79,9 @@ public:
     virtual bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E502
-    const std::vector<IGES_POINT>* GetVertices( void );
+    const std::vector<MCAD_POINT>* GetVertices( void );
     size_t GetNVertices( void );
-    void AddVertex( IGES_POINT aPoint );
+    void AddVertex( MCAD_POINT aPoint );
 };
 
 #endif  // ENTITY_502_H

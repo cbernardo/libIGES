@@ -1,5 +1,5 @@
 /*
- * file: iges_helpers.h
+ * file: mcad_helpers.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -22,32 +22,31 @@
  *
  */
 
-#ifndef IGES_HELPERS_H
-#define IGES_HELPERS_H
+#ifndef MCAD_HELPERS_H
+#define MCAD_HELPERS_H
 
 #include <string>
-#include <iges_base.h>
-#include <iges_elements.h>
+#include <mcad_elements.h>
 
 // return true if the 2 points match to within 'minRes'
-bool PointMatches( IGES_POINT p1, IGES_POINT p2, double minRes );
+bool PointMatches( MCAD_POINT p1, MCAD_POINT p2, double minRes );
 
 // check and renormalize a vector; return false if vector is invalid
 bool CheckNormal( double& X, double &Y, double& Z );
 
 // print out an IGES transform
-class IGES_TRANSFORM;
-void print_transform( const IGES_TRANSFORM* T );
+class MCAD_TRANSFORM;
+void print_transform( const MCAD_TRANSFORM* T );
 
 // print out an IGES matrix
-class IGES_MATRIX;
-void print_matrix( const IGES_MATRIX* m );
+class MCAD_MATRIX;
+void print_matrix( const MCAD_MATRIX* m );
 
 // print out an IGES point (decimal places limited to 3)
-class IGES_POINT;
-void print_vec( const IGES_POINT* p );
+class MCAD_POINT;
+void print_vec( const MCAD_POINT* p );
 
 // calculate the normal given points p0, p1, p2
-bool CalcNormal( const IGES_POINT* p0, const IGES_POINT* p1, const IGES_POINT* p2, IGES_POINT* pn );
+bool CalcNormal( const MCAD_POINT* p0, const MCAD_POINT* p1, const MCAD_POINT* p2, MCAD_POINT* pn );
 
-#endif  // IGES_HELPERS_H
+#endif  // MCAD_HELPERS_H

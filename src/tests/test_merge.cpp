@@ -232,6 +232,12 @@ int main( int argc, char** argv )
         modelOut.Write( ONAME, true );
     }
 
+    while( !modelNames.empty() )
+    {
+        delete modelNames.back().second;
+        modelNames.pop_back();
+    }
+
     return 0;
 }
 

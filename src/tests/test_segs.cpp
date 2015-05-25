@@ -1,7 +1,8 @@
 /*
  * Description:
  *  This is a test suite for the intersection algorithms of
- * the segment object.
+ * the segment object. Various cases are explored and the
+ * results tested against the expected result.
  */
 
 #include <iostream>

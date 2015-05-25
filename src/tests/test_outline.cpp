@@ -1,6 +1,9 @@
 /*
  * Description:
- *  This is a test suite for the IGES_GEOM_PCB class
+ *  This is a test suite for the IGES_GEOM_PCB class which
+ * performs outline manipulations (add, subtract outlines)
+ * and creates vertical walls corresponding to the resulting
+ * outline.
  */
 
 #include <iostream>

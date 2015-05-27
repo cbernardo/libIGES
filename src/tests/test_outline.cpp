@@ -420,7 +420,7 @@ int test_lines( void )
     if( 1 )
     {
         // nibble out 8 bits
-        MCAD_SEGMENT circ;
+        MCAD_SEGMENT* circ = new MCAD_SEGMENT;
 
         // radius: 0.5, c(10,10)
         c1[0].x = 10.0;
@@ -428,9 +428,9 @@ int test_lines( void )
         c1[1].x = 10.5;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -442,9 +442,10 @@ int test_lines( void )
         c1[1].x = 1.0;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -456,9 +457,10 @@ int test_lines( void )
         c1[1].x = -8.5;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -470,9 +472,10 @@ int test_lines( void )
         c1[1].x = -8;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -484,9 +487,10 @@ int test_lines( void )
         c1[1].x = -7.5;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -498,9 +502,10 @@ int test_lines( void )
         c1[1].x = 3.0;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -512,9 +517,10 @@ int test_lines( void )
         c1[1].x = 13.5;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -526,9 +532,10 @@ int test_lines( void )
         c1[1].x = 14.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add a cutout\n";
             return -1;
@@ -626,7 +633,7 @@ int test_addr( void )
     }
 
     MCAD_POINT c1[2];   // parameters for circles
-    MCAD_SEGMENT circ;
+    MCAD_SEGMENT* circ;
 
     if( 1 )
     {
@@ -638,9 +645,10 @@ int test_addr( void )
         c1[1].x = 10.0;
         c1[1].y = 10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -659,9 +667,10 @@ int test_addr( void )
         c1[1].x = -2.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -676,9 +685,10 @@ int test_addr( void )
         c1[1].x = 0.0;
         c1[1].y = 0.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.SubOutline( &circ, error ) )
+        if( !otln.SubOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;
@@ -694,9 +704,10 @@ int test_addr( void )
         c1[1].x = 15.0;
         c1[1].y = -10.0;
 
-        circ.SetParams( c1[0], c1[1], c1[1], false );
+        circ = new MCAD_SEGMENT;
+        circ->SetParams( c1[0], c1[1], c1[1], false );
 
-        if( !otln.AddOutline( &circ, error ) )
+        if( !otln.AddOutline( circ, error ) )
         {
             cout << "* [FAIL]: could not add an outline\n";
             return -1;

@@ -2083,11 +2083,8 @@ bool MCAD_OUTLINE::AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error 
 
     cout << "XXX: checking overlap\n";
     if( SubOutline( aCircle, error ) )
-    {
-        delete aCircle;
-        aCircle = NULL;
         return true;
-    }
+
     cout << "XXX: no overlap; checking for error\n";
 
     if( error )

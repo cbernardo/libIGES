@@ -1883,6 +1883,13 @@ bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
     sp->mcenter = mcenter;
     aNewSegmentList.push_back( sp );
 
+    // renormalize angles
+    if( sp->GetStartAngle() > M_PI )
+    {
+        sp->msang -= 2.0 * M_PI;
+        sp->meang -= 2.0 * M_PI;
+    }
+
     // create the second of 2 new arcs
     sp = new MCAD_SEGMENT;
     sp->mstart = p1;
@@ -1894,6 +1901,13 @@ bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
     sp->mradius = mradius;
     sp->mcenter = mcenter;
     aNewSegmentList.push_back( sp );
+
+    // renormalize angles
+    if( sp->GetStartAngle() > M_PI )
+    {
+        sp->msang -= 2.0 * M_PI;
+        sp->meang -= 2.0 * M_PI;
+    }
 
     // adjust the extent of this arc
     mend = p0;

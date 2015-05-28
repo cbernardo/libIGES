@@ -1362,7 +1362,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     if( !p1e && !p2e && *lSegs.front() == *lSegs.back() )
     {
         // we are splitting a single entity at 2 points
-        cout << "XXX: splitting at 2 points\n";
         list<MCAD_SEGMENT*> sList;
 
         if( !(*lSegs.front())->Split(iList, sList) )
@@ -1376,12 +1375,10 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
             return false;
         }
 
-        cout << "XXX: old nsegs: " << msegments.size() << "\n";
         list<MCAD_SEGMENT*>::iterator sSL = sList.begin();
         list<MCAD_SEGMENT*>::iterator eSL = sList.end();
         list<MCAD_SEGMENT*>::iterator ps0 = lSegs.front();
         msegments.insert( ++ps0, sSL, eSL );
-        cout << "XXX: new nsegs: " << msegments.size() << "\n";
     }
     else
     {
@@ -1821,29 +1818,38 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     if( opsub )
     {
         // insert the remaining segments of aOutline starting at
-        // the CCW-most position and with each segment reversed.
+        // the CCW-most position and with each aOutline segment
+        // reversed and in the reverse order within the list
         list<MCAD_SEGMENT*>::iterator eT = oSegs.front();
+        list<MCAD_SEGMENT*>::iterator qT;
+
+        if( eT == aOutline->msegments.begin() )
+            eT = --aOutline->msegments.end();
+        else
+            --eT;
+
         eSegT = lSegs.front();
 
-        while( eT != aOutline->msegments.end() )
+        while( !aOutline->msegments.empty() )
         {
-            (*eT)->reverse();
-            msegments.insert( eSegT, *eT );
-            eT = aOutline->msegments.erase( eT );
-        }
-
-        if( !aOutline->msegments.empty() )
-        {
-            eT = aOutline->msegments.begin();
-
-            while( eT != aOutline->msegments.end() )
+            if( aOutline->msegments.size() > 1 )
             {
-                (*eT)->reverse();
-                msegments.insert( eSegT, *eT );
-                ++eT;
+                if( eT == aOutline->msegments.begin() )
+                    qT = aOutline->msegments.end();
+                else
+                    qT = eT;
+
+                --qT;
+            }
+            else
+            {
+                qT = aOutline->msegments.end();
             }
 
-            aOutline->msegments.clear();
+            (*eT)->reverse();
+            msegments.insert( eSegT, *eT );
+            aOutline->msegments.erase( eT );
+            eT = qT;
         }
 
         delete aOutline;
@@ -1876,17 +1882,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
 
         delete aOutline;
-    }
-
-    cout << "XXX: OK so far\n";
-    list<MCAD_SEGMENT*>::iterator zzS = msegments.begin();
-    list<MCAD_SEGMENT*>::iterator zzE = msegments.end();
-    int q = 0;
-    while( zzS != zzE )
-    {
-        cout << "SEG #" << q++ << "\n";
-        PrintSeg(*zzS);
-        ++zzS;
     }
 
     return true;
@@ -1996,6 +1991,8 @@ bool MCAD_OUTLINE::SubOutline( MCAD_OUTLINE* aOutline, bool& error )
 // performed to ensure valid geometry.
 bool MCAD_OUTLINE::AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error )
 {
+    error = false;
+
     if( NULL == aCutout )
     {
         ostringstream msg;
@@ -2020,27 +2017,45 @@ bool MCAD_OUTLINE::AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error 
 
     if( !overlaps )
     {
-        cout << "XXX: adding without tests\n";
         mcutouts.push_back( aCutout );
         return true;
     }
 
-    cout << "XXX: checking overlap\n";
     if( SubOutline( aCutout, error ) )
         return true;
-    cout << "XXX: no overlap; checking for error\n";
 
     if( error )
     {
         ostringstream msg;
         GEOM_ERR( msg );
-        msg << "[ERROR] could not apply cutout";
+        msg << "[ERROR] cannot add cutout to main outline";
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         return false;
     }
 
-    cout << "XXX: no error; adding to list\n";
+    // check for overlaps with internal cutouts
+    list<MCAD_OUTLINE*>::iterator sC = mcutouts.begin();
+    list<MCAD_OUTLINE*>::iterator eC = mcutouts.end();
+
+    while( sC != eC )
+    {
+        if( (*sC)->AddOutline( aCutout, error ) )
+            return true;
+
+        if( error )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not apply cutout";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            return false;
+        }
+
+        ++sC;
+    }
+
     mcutouts.push_back( aCutout );
     return true;
 }
@@ -2052,6 +2067,8 @@ bool MCAD_OUTLINE::AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error 
 // then it is the caller's responsibility to dispose of the object.
 bool MCAD_OUTLINE::AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error )
 {
+    error = false;
+
     if( NULL == aCircle )
     {
         ostringstream msg;
@@ -2076,28 +2093,45 @@ bool MCAD_OUTLINE::AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error 
 
     if( !overlaps )
     {
-        cout << "XXX: adding without tests\n";
         mholes.push_back( aCircle );
         return true;
     }
 
-    cout << "XXX: checking overlap\n";
     if( SubOutline( aCircle, error ) )
         return true;
-
-    cout << "XXX: no overlap; checking for error\n";
 
     if( error )
     {
         ostringstream msg;
         GEOM_ERR( msg );
-        msg << "[ERROR] could not apply cutout";
+        msg << "[ERROR] could not apply cutout to main outline";
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         return false;
     }
 
-    cout << "XXX: no error; adding to list\n";
+    // check for overlaps with internal cutouts
+    list<MCAD_OUTLINE*>::iterator sC = mcutouts.begin();
+    list<MCAD_OUTLINE*>::iterator eC = mcutouts.end();
+
+    while( sC != eC )
+    {
+        if( (*sC)->AddOutline( aCircle, error ) )
+            return true;
+
+        if( error )
+        {
+            ostringstream msg;
+            GEOM_ERR( msg );
+            msg << "[ERROR] could not apply cutout";
+            ERRMSG << msg.str() << "\n";
+            errors.push_back( msg.str() );
+            return false;
+        }
+
+        ++sC;
+    }
+
     mholes.push_back( aCircle );
     return true;
 }

@@ -4,6 +4,9 @@ project( libIGES CXX C )
 
 cmake_minimum_required( VERSION 2.8.4 FATAL_ERROR )
 
+find_package( wxWidgets 3 REQUIRED core base )
+include( ${wxWidgets_USE_FILE} )
+
 # Version information
 set( LIBIGES_VERSION_MAJOR 0 )
 
@@ -132,3 +135,7 @@ target_link_libraries( curvetest iges )
 target_link_libraries( segtest iges )
 target_link_libraries( olntest iges )
 target_link_libraries( planetest iges )
+
+# build the idf2igs tool
+add_subdirectory( idf )
+

@@ -1,3 +1,48 @@
+29 May 2015
+  + Added the "idf2igs" tool (work in progress) based on
+    the IDFv3 framework from the KiCad project.
+    This tool is based on the idf2vrml source and as
+    such currently contains a lot of cruft. At the moment
+    bare PCBs with arbitrary boundaries and cutouts can be
+    generated. Overlapping drill holes are handled correctly
+    so that IDF files from ECADs such as Eagle, which
+    represent slots using multiple overlapping drills,
+    can be modeled.
+
+    Intentional limitations to keep in mind when creating
+    test IDF files:
+
+    a. ensure that no drill holes or cutouts are completely
+    outside the main outline and that no drill holes are
+    completely inside another drill hole or cutout.
+    Unfortunately ECAD software does not typically enforce
+    this constraint so it is possible to generate such
+    bad geometry.
+
+    b. ensure that no zero-thickness walls are created,
+    for example a drill hole tangent to a board edge or
+    two tangent drill holes.
+
+    c. Ensure that cutouts and drill holes intersect the
+    main outline at no more than 2 points; this is to
+    guarantee that the board will not be split into two
+    separate bodies.
+
+    The code has been generated on a number of test shapes
+    and on the IDF models of the following boards:
+    (a) pic_programmer demo from KiCad
+    (b) video demo from KiCad
+    (c) Arduino Due
+
+    I intend for this tool to be refined to provide all
+    the following features:
+    a. A complete board assembly model in IGES
+       (currently only a single bare PCB model is generated)
+    b. embedded IGES models of all IDF component extrusions
+    c. Colored PCB and components
+    e. sensible naming of the parts (board model, component
+       models, component instances)
+
 24 May 2015
 Updates:
   + The code is now capable of creating bare PCB models

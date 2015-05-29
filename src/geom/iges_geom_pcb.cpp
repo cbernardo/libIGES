@@ -724,6 +724,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
         ++sDH;
     }
 
+    aSurface.push_back( plane );
     return true;
 }
 

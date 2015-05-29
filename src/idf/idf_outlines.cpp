@@ -146,7 +146,7 @@ BOARD_OUTLINE::~BOARD_OUTLINE()
     return;
 }
 
-IDF3::OUTLINE_TYPE BOARD_OUTLINE::GetOutlineType( void )
+IDF3::OUTLINE_TYPE BOARD_OUTLINE::GetOutlineType( void ) const
 {
     return outlineType;
 }
@@ -992,7 +992,7 @@ bool BOARD_OUTLINE::SetUnit( IDF3::IDF_UNIT aUnit )
     return true;
 }
 
-IDF3::IDF_UNIT BOARD_OUTLINE::GetUnit( void )
+IDF3::IDF_UNIT BOARD_OUTLINE::GetUnit( void ) const
 {
     return unit;
 }
@@ -1024,7 +1024,7 @@ bool BOARD_OUTLINE::SetThickness( double aThickness )
     return setThickness( aThickness );
 }
 
-double BOARD_OUTLINE::GetThickness( void )
+double BOARD_OUTLINE::GetThickness( void ) const
 {
     return thickness;
 }
@@ -1424,12 +1424,12 @@ bool BOARD_OUTLINE::DelOutline( size_t aIndex )
     return true;
 }
 
-const std::list< IDF_OUTLINE* >*const BOARD_OUTLINE::GetOutlines( void )
+const std::list< IDF_OUTLINE* >*const BOARD_OUTLINE::GetOutlines( void ) const
 {
     return &outlines;
 }
 
-size_t BOARD_OUTLINE::OutlinesSize( void )
+size_t BOARD_OUTLINE::OutlinesSize( void ) const
 {
     return outlines.size();
 }
@@ -1454,7 +1454,7 @@ IDF_OUTLINE* BOARD_OUTLINE::GetOutline( size_t aIndex )
     return *itS;
 }
 
-IDF3::KEY_OWNER BOARD_OUTLINE::GetOwner( void )
+IDF3::KEY_OWNER BOARD_OUTLINE::GetOwner( void ) const
 {
     return owner;
 }
@@ -1470,7 +1470,7 @@ bool BOARD_OUTLINE::SetOwner( IDF3::KEY_OWNER aOwner )
     return true;
 }
 
-bool BOARD_OUTLINE::IsSingle( void )
+bool BOARD_OUTLINE::IsSingle( void ) const
 {
     return single;
 }
@@ -1499,7 +1499,7 @@ void BOARD_OUTLINE::AddComment( const std::string& aComment )
     return;
 }
 
-size_t BOARD_OUTLINE::CommentsSize( void )
+size_t BOARD_OUTLINE::CommentsSize( void ) const
 {
     return comments.size();
 }
@@ -1509,12 +1509,12 @@ std::list< std::string >* BOARD_OUTLINE::GetComments( void )
     return &comments;
 }
 
-const std::string* BOARD_OUTLINE::GetComment( size_t aIndex )
+const std::string* BOARD_OUTLINE::GetComment( size_t aIndex ) const
 {
     if( aIndex >= comments.size() )
         return NULL;
 
-    std::list< std::string >::iterator itS = comments.begin();
+    std::list< std::string >::const_iterator itS = comments.begin();
 
     for( ; aIndex > 0; --aIndex )
         ++itS;

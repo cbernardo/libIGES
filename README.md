@@ -1,3 +1,10 @@
+30 May 2015
+  + The idf2igs tool now exports IGES assemblies which
+    include the PCB and component models. If your MCAD
+    supports the color attribute of IGES then your
+    model will be displayed in glorious color. If you
+    use FreeCAD you will only see grey.
+
 29 May 2015
   + Added the "idf2igs" tool (work in progress) based on
     the IDFv3 framework from the KiCad project.

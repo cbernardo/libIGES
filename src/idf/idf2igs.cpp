@@ -50,6 +50,7 @@
 #include <idf_common.h>
 #include <idf_parser.h>
 
+#include <error_macros.h>
 #include <iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
@@ -65,48 +66,14 @@ using namespace std;
 setlocale( LC_ALL, "C" ); \
 } while( 0 );
 
-// define colors
-struct VRML_COLOR
+static struct
 {
-    double diff[3];
-    double emis[3];
-    double spec[3];
-    double ambi;
-    double tran;
-    double shin;
-};
+    IGES_ENTITY_314** colors;
+} globs;
 
-struct VRML_IDS
-{
-    int colorIndex;
-    std::string objectName;
-    bool used;
-    bool bottom;
-    double dX, dY, dZ, dA;
-
-    VRML_IDS()
-    {
-        colorIndex = 0;
-        used = false;
-        bottom = false;
-        dX = 0.0;
-        dY = 0.0;
-        dZ = 0.0;
-        dA = 0.0;
-    }
-};
-
-#define NCOLORS 7
-VRML_COLOR colors[NCOLORS] =
-{
-    { { 0, 0.82, 0.247 },       { 0, 0, 0 },    { 0, 0.82, 0.247 },         0.9, 0, 0.1 },
-    { { 1, 0, 0 },              { 1, 0, 0 },    { 1, 0, 0 },                0.9, 0, 0.1 },
-    { { 0.659, 0, 0.463 },      { 0, 0, 0 },    { 0.659, 0, 0.463 },        0.9, 0, 0.1 },
-    { { 0.659, 0.294, 0 },      { 0, 0, 0 },    { 0.659, 0.294, 0 },        0.9, 0, 0.1 },
-    { { 0, 0.918, 0.659 },      { 0, 0, 0 },    { 0, 0.918, 0.659 },        0.9, 0, 0.1 },
-    { { 0.808, 0.733, 0.071 },  { 0, 0, 0 },    { 0.808, 0.733 , 0.071 },   0.9, 0, 0.1 },
-    { { 0.102, 1, 0.984 },      { 0, 0, 0 },    { 0.102, 1, 0.984 },        0.9, 0, 0.1 }
-};
+// colors to be used in the output assembly model
+#define NCOLORS 9
+bool initColors( IGES& model, IGES_ENTITY_314** colors );
 
 // convert IDF outline to IGS outline
 bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF );
@@ -124,33 +91,23 @@ void killCutouts( list< MCAD_OUTLINE* >& cutouts );
 bool MakeBoard( IDF3_BOARD& board, IGES& model );
 bool MakeComponents( IDF3_BOARD& board, IGES& model );
 bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model );
+// build a component part model from the given outline data
+bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig );
 
-#ifdef GOOBLE0
-bool PopulateVRML( VRML_LAYER& model, const std::list< IDF_OUTLINE* >* items, bool bottom,
-                   double scale, double dX = 0.0, double dY = 0.0, double angle = 0.0 );
-bool AddSegment( VRML_LAYER& model, IDF_SEGMENT* seg, int icont, int iseg );
-bool WriteTriangles( std::ofstream& file, VRML_IDS* vID, VRML_LAYER* layer, bool plane,
-                     bool top, double top_z, double bottom_z, int precision, bool compact );
-inline void TransformPoint( IDF_SEGMENT& seg, double frac, bool bottom,
-                            double dX, double dY, double angle );
-VRML_IDS* GetColor( std::map<std::string, VRML_IDS*>& cmap,
-                      int& index, const std::string& uid );
-#endif
+// routines to make IGES model creation easier
+bool newSubfigure( IGES& model, IGES_ENTITY_308** aNewSubfig );
+IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, double dA, bool bottom );
+
+// retrieve an index to the next color in the sequence
+int GetComponentColor( void );
+
 
 void PrintUsage( void )
 {
-    cout << "-\nUsage: idf2vrml -f input_file.emn -s scale_factor {-k} {-d} {-z} {-m}\n";
-    cout << "flags:\n";
-    cout << "       -k: produce KiCad-friendly VRML output; default is compact VRML\n";
-    cout << "       -d: suppress substitution of default outlines\n";
-    cout << "       -z: suppress rendering of zero-height outlines\n";
-    cout << "       -m: print object mapping to stdout for debugging purposes\n";
-    cout << "example to produce a model for use by KiCad: idf2vrml -f input.emn -s 0.3937008 -k\n\n";
+    cout << "-\nUsage: idfigs -f input_file.emn\n";
     return;
 }
 
-bool nozeroheights;
-bool showObjectMapping;
 
 int main( int argc, char **argv )
 {
@@ -215,6 +172,17 @@ int main( int argc, char **argv )
     model.globalData.unitsFlag = UNIT_MM;
     model.globalData.minResolution = 1e-8;
 
+    // create the color schemes:
+    IGES_ENTITY_314* colors[NCOLORS];
+
+    if( !initColors( model, colors ) )
+    {
+        cerr << "** Failed to create IGES color entities\n";
+        return -1;
+    }
+
+    globs.colors = colors;
+
     // Create the VRML file and write the header
     char* bnp = (char*) malloc( inputFilename.size() + 1 );
     strcpy( bnp, inputFilename.c_str() );
@@ -232,7 +200,7 @@ int main( int argc, char **argv )
     MakeBoard( pcb, model );
 
     // STEP 2: Render the components
-    //MakeComponents( pcb, model );
+    MakeComponents( pcb, model );
 
     // STEP 3: Render the OTHER outlines
     //MakeOtherOutlines( pcb, model );
@@ -391,7 +359,7 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
         ++sDH;
     }
 
-    // XXX - put in part and solid instance, names, and color
+    // put in part and solid instance, names, and color
     // create the PCB model
     vector<IGES_ENTITY_144*> surfs;
     double th = 0.5 * board.GetBoardThickness();
@@ -399,71 +367,33 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
     otln.GetTrimmedPlane( &model, dud, surfs, th );
     otln.GetTrimmedPlane( &model, dud, surfs, -th );
 
-    // XXX - CODE FOR VRML
+    IGES_ENTITY_308* subfig;
 
-#ifdef GOOBLE0
-    // set the arc parameters according to output scale
-    int tI;
-    double tMin, tMax;
-    vpcb.GetArcParams( tI, tMin, tMax );
-    vpcb.SetArcParams( tI, tMin * scale, tMax * scale );
-
-    if( !PopulateVRML( vpcb, board.GetBoardOutline()->GetOutlines(), false, board.GetUserScale() ) )
+    if( !newSubfigure( model, &subfig ) )
     {
+        ERROR_IDF << "\n + could not create a subfigure entity\n";
         return false;
     }
 
-    vpcb.EnsureWinding( 0, false );
+    vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
+    vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
 
-    int nvcont = vpcb.GetNContours() - 1;
-
-    while( nvcont > 0 )
-        vpcb.EnsureWinding( nvcont--, true );
-
-    // Add the drill holes
-    const std::list<IDF_DRILL_DATA*>* drills = &board.GetBoardDrills();
-
-    std::list<IDF_DRILL_DATA*>::const_iterator sd = drills->begin();
-    std::list<IDF_DRILL_DATA*>::const_iterator ed = drills->end();
-
-    while( sd != ed )
+    while( sSL != eSL )
     {
-        vpcb.AddCircle( (*sd)->GetDrillXPos() * scale, (*sd)->GetDrillYPos() * scale,
-                        (*sd)->GetDrillDia() * scale / 2.0, true );
-        ++sd;
+        (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[0] );
+        subfig->AddDE( (IGES_ENTITY*)(*sSL) );
+        ++sSL;
     }
 
-    std::map< std::string, IDF3_COMPONENT* >*const comp = board.GetComponents();
-    std::map< std::string, IDF3_COMPONENT* >::const_iterator sc = comp->begin();
-    std::map< std::string, IDF3_COMPONENT* >::const_iterator ec = comp->end();
+    // add the name : XXX: TO BE IMPLEMENTED  - use something other than "pcb"
+    subfig->NAME = "pcb";
 
-    while( sc != ec )
-    {
-        drills = sc->second->GetDrills();
-        sd = drills->begin();
-        ed = drills->end();
-
-        while( sd != ed )
-        {
-            vpcb.AddCircle( (*sd)->GetDrillXPos() * scale, (*sd)->GetDrillYPos() * scale,
-                            (*sd)->GetDrillDia() * scale / 2.0, true );
-            ++sd;
-        }
-
-        ++sc;
-    }
-
-    // tesselate and write out
-    vpcb.Tesselate( NULL );
-
-    double thick = board.GetBoardThickness() / 2.0 * scale;
-
-    VRML_IDS tvid;
-    tvid.colorIndex = 0;
-
-    WriteTriangles( file, &tvid, &vpcb, false, false,
-                    thick, -thick, board.GetUserPrecision(), false );
-#endif  // GOOBLE0
+    IGES_ENTITY* ep;
+    IGES_ENTITY_408* p408;
+    model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
+    p408 = (IGES_ENTITY_408*)ep;
+    p408->SetDE( subfig );
+    p408->SetLabel( "pcb" );
 
     return true;
 }
@@ -472,7 +402,7 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
 // convert IDF outline to IGS outline
 bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
 {
-    if( olnIDF->size() < 1 )
+    if( ((IDF_OUTLINE*)olnIDF)->size() < 1 )
     {
         ERROR_IDF << "invalid contour: no vertices\n";
         return false;
@@ -801,347 +731,119 @@ void killCutouts( list< MCAD_OUTLINE* >& cutouts )
     return;
 }
 
-// XXX - OLD VRML CODE
-#ifdef GOOBLE0
 
-bool PopulateVRML( VRML_LAYER& model, const std::list< IDF_OUTLINE* >* items, bool bottom, double scale,
-                   double dX, double dY, double angle )
+bool initColors( IGES& model, IGES_ENTITY_314** colors )
 {
-    // empty outlines are not unusual so we fail quietly
-    if( items->size() < 1 )
-        return false;
+    IGES_ENTITY* ep;
 
-    int nvcont = 0;
-    int iseg   = 0;
+    unsigned char cdef[NCOLORS][3] = {
+        { 0x2F, 0xD0, 0x37 },   // green for PC board
+        { 0x2F, 0xAA, 0xD0 },   // cyan
+        { 0xD0, 0x55, 0x2F },   // peach
+        { 0xF0, 0x76, 0x0F },   // orange
+        { 0x77, 0x0B, 0xF4 },   // purple
+        { 0xF4, 0xC8, 0x0B },   // yellow
+        { 0xF4, 0x0B, 0x84 },   // pink
+        { 0x1B, 0x20, 0xE4 },   // blue
+        { 0x8A, 0xAA, 0x55 },   // olive
+    };
 
-    std::list< IDF_OUTLINE* >::const_iterator scont = items->begin();
-    std::list< IDF_OUTLINE* >::const_iterator econt = items->end();
-    std::list<IDF_SEGMENT*>::iterator sseg;
-    std::list<IDF_SEGMENT*>::iterator eseg;
+    string cname[NCOLORS] = {
+      "pcb green",
+      "pcb cyan",
+      "pcb peach",
+      "pcb orange",
+      "pcb purple",
+      "pcb yellow",
+      "pcb pink",
+      "pcb blue",
+      "pcb olive"
+    };
 
-    IDF_SEGMENT lseg;
-
-    while( scont != econt )
+    for( int i = 0; i < NCOLORS; ++i )
     {
-        nvcont = model.NewContour();
+        if( !model.NewEntity( ENT_COLOR_DEFINITION, &ep ) )
+            return false;
 
-        if( nvcont < 0 )
+        colors[i] = dynamic_cast<IGES_ENTITY_314*>( ep );
+
+        if( !colors[i] )
         {
-            ERROR_IDF << "\n";
-            cerr << "* cannot create an outline\n";
+            cerr << "*** could not cast pointer to color entity\n";
+            model.DelEntity( ep );
+
+            for( int j = 0; j < i; ++j )
+            {
+                model.DelEntity( (IGES_ENTITY*)colors[j] );
+                colors[j] = NULL;
+            }
+
             return false;
         }
 
-        if( (*scont)->size() < 1 )
-        {
-            ERROR_IDF << "invalid contour: no vertices\n";
-            return false;
-        }
+        colors[i]->red = cdef[i][0] * 100.0 / 255.0 ;
+        colors[i]->green = cdef[i][1] * 100.0 / 255.0 ;
+        colors[i]->blue = cdef[i][2] * 100.0 / 255.0 ;
 
-        sseg = (*scont)->begin();
-        eseg = (*scont)->end();
-
-        iseg = 0;
-        while( sseg != eseg )
-        {
-            lseg = **sseg;
-            TransformPoint( lseg, scale, bottom, dX, dY, angle );
-
-            if( !AddSegment( model, &lseg, nvcont, iseg ) )
-                return false;
-
-            ++iseg;
-            ++sseg;
-        }
-
-        ++scont;
+        colors[i]->cname = cname[i];
     }
 
     return true;
 }
 
-
-bool AddSegment( VRML_LAYER& model, IDF_SEGMENT* seg, int icont, int iseg )
-{
-    // note: in all cases we must add all but the last point in the segment
-    // to avoid redundant points
-
-    if( seg->angle != 0.0 )
-    {
-        if( seg->IsCircle() )
-        {
-            if( iseg != 0 )
-            {
-                ERROR_IDF << "adding a circle to an existing vertex list\n";
-                return false;
-            }
-
-            return model.AppendCircle( seg->center.x, seg->center.y, seg->radius, icont );
-        }
-        else
-        {
-            return model.AppendArc( seg->center.x, seg->center.y, seg->radius,
-                                    seg->offsetAngle, seg->angle, icont );
-        }
-    }
-
-    if( !model.AddVertex( icont, seg->startPoint.x, seg->startPoint.y ) )
-        return false;
-
-    return true;
-}
-
-
-bool WriteTriangles( std::ofstream& file, VRML_IDS* vID, VRML_LAYER* layer, bool plane,
-                     bool top, double top_z, double bottom_z, int precision, bool compact )
-{
-    if( vID == NULL || layer == NULL )
-        return false;
-
-    file << "Transform {\n";
-
-    if( compact && !vID->objectName.empty() )
-    {
-        file << "translation " << setprecision( precision ) << vID->dX;
-        file << " " << vID->dY << " ";
-
-        if( vID->bottom )
-        {
-            file << -vID->dZ << "\n";
-
-            double tx, ty;
-
-            // calculate the rotation axis and angle
-            tx = cos( M_PI2 - vID->dA / 2.0 );
-            ty = sin( M_PI2 - vID->dA / 2.0 );
-
-            file << "rotation " << setprecision( precision );
-            file << tx << " " << ty << " 0 ";
-            file << setprecision(5) << M_PI << "\n";
-        }
-        else
-        {
-            file << vID->dZ << "\n";
-            file << "rotation 0 0 1 " << setprecision(5) << vID->dA << "\n";
-        }
-
-        file << "children [\n";
-
-        if( vID->used )
-        {
-            file << "USE " << vID->objectName << "\n";
-            file << "]\n";
-            file << "}\n";
-            return true;
-        }
-
-        file << "DEF " << vID->objectName << " Transform {\n";
-
-        if( !plane && top_z <= bottom_z )
-        {
-            // the height specification is faulty; make the component
-            // a bright red to highlight it
-            vID->colorIndex = 1;
-            // we don't know the scale, but 5 units is huge in most situations
-            top_z = bottom_z + 5.0;
-        }
-
-    }
-
-    VRML_COLOR* color = &colors[vID->colorIndex];
-
-    vID->used = true;
-
-    file << "children [\n";
-    file << "Group {\n";
-    file << "children [\n";
-    file << "Shape {\n";
-    file << "appearance Appearance {\n";
-    file << "material Material {\n";
-
-    // material definition
-    file << "diffuseColor " << setprecision(3) << color->diff[0] << " ";
-    file << color->diff[1] << " " << color->diff[2] << "\n";
-    file << "specularColor " << color->spec[0] << " " << color->spec[1];
-    file << " " << color->spec[2] << "\n";
-    file << "emissiveColor " << color->emis[0] << " " << color->emis[1];
-    file << " " << color->emis[2] << "\n";
-    file << "ambientIntensity " << color->ambi << "\n";
-    file << "transparency " << color->tran << "\n";
-    file << "shininess " << color->shin << "\n";
-
-    file << "}\n";
-    file << "}\n";
-    file << "geometry IndexedFaceSet {\n";
-    file << "solid TRUE\n";
-    file << "coord Coordinate {\n";
-    file << "point [\n";
-
-    // Coordinates (vertices)
-    if( plane )
-    {
-        if( !layer->WriteVertices( top_z, file, precision ) )
-        {
-            cerr << "* errors writing planar vertices to " << vID->objectName << "\n";
-            cerr << "** " << layer->GetError() << "\n";
-        }
-    }
-    else
-    {
-        if( !layer->Write3DVertices( top_z, bottom_z, file, precision ) )
-        {
-            cerr << "* errors writing 3D vertices to " << vID->objectName << "\n";
-            cerr << "** " << layer->GetError() << "\n";
-        }
-    }
-
-    file << "\n";
-
-    file << "]\n";
-    file << "}\n";
-    file << "coordIndex [\n";
-
-    // Indices
-    if( plane )
-        layer->WriteIndices( top, file );
-    else
-        layer->Write3DIndices( file );
-
-    file << "\n";
-    file << "]\n";
-    file << "}\n";
-    file << "}\n";
-    file << "]\n";
-    file << "}\n";
-    file << "]\n";
-    file << "}\n";
-
-    if( compact && !vID->objectName.empty() )
-    {
-        file << "]\n";
-        file << "}\n";
-    }
-
-    return !file.fail();
-}
-
-inline void TransformPoint( IDF_SEGMENT& seg, double frac, bool bottom,
-                            double dX, double dY, double angle )
-{
-    dX *= frac;
-    dY *= frac;
-
-    if( bottom )
-    {
-        // mirror points on the Y axis
-        seg.startPoint.x = -seg.startPoint.x;
-        seg.endPoint.x = -seg.endPoint.x;
-        seg.center.x = -seg.center.x;
-        angle = -angle;
-    }
-
-    seg.startPoint.x *= frac;
-    seg.startPoint.y *= frac;
-    seg.endPoint.x *= frac;
-    seg.endPoint.y *= frac;
-    seg.center.x *= frac;
-    seg.center.y *= frac;
-
-    double tsin = 0.0;
-    double tcos = 0.0;
-
-    if( angle > MIN_ANG || angle < -MIN_ANG )
-    {
-        double ta = angle * M_PI / 180.0;
-        double tx, ty;
-
-        tsin = sin( ta );
-        tcos = cos( ta );
-
-        tx = seg.startPoint.x * tcos - seg.startPoint.y * tsin;
-        ty = seg.startPoint.x * tsin + seg.startPoint.y * tcos;
-        seg.startPoint.x = tx;
-        seg.startPoint.y = ty;
-
-        tx = seg.endPoint.x * tcos - seg.endPoint.y * tsin;
-        ty = seg.endPoint.x * tsin + seg.endPoint.y * tcos;
-        seg.endPoint.x = tx;
-        seg.endPoint.y = ty;
-
-        if( seg.angle != 0 )
-        {
-            tx = seg.center.x * tcos - seg.center.y * tsin;
-            ty = seg.center.x * tsin + seg.center.y * tcos;
-            seg.center.x = tx;
-            seg.center.y = ty;
-        }
-    }
-
-    seg.startPoint.x += dX;
-    seg.startPoint.y += dY;
-    seg.endPoint.x += dX;
-    seg.endPoint.y += dY;
-    seg.center.x += dX;
-    seg.center.y += dY;
-
-    if( seg.angle != 0 )
-    {
-        seg.radius *= frac;
-
-        if( bottom )
-        {
-            if( !seg.IsCircle() )
-            {
-                seg.angle = -seg.angle;
-                if( seg.offsetAngle > 0.0 )
-                    seg.offsetAngle = 180 - seg.offsetAngle;
-                else
-                    seg.offsetAngle = -seg.offsetAngle - 180;
-            }
-        }
-
-        if( angle > MIN_ANG || angle < -MIN_ANG )
-            seg.offsetAngle += angle;
-    }
-
-    return;
-}
 
 bool MakeComponents( IDF3_BOARD& board, IGES& model )
 {
-    int cidx = 2;   // color index; start at 2 since 0,1 are special (board, NOGEOM_NOPART)
+    map< string, IGES_ENTITY_308*> componentList; // the IGES component models
+    double th = 0.5 * board.GetBoardThickness();
 
-    VRML_LAYER vpcb;
+    const map< string, IDF3_COMP_OUTLINE*>* cop = &board.GetComponentOutlines();
+    map< string, IDF3_COMP_OUTLINE*>::const_iterator sOP = cop->begin();
+    map< string, IDF3_COMP_OUTLINE*>::const_iterator eOP = cop->end();
 
-    double scale = board.GetUserScale();
-    double thick = board.GetBoardThickness() / 2.0;
+    IGES_ENTITY_308* subfig;
 
-    // set the arc parameters according to output scale
-    int tI;
-    double tMin, tMax;
-    vpcb.GetArcParams( tI, tMin, tMax );
-    vpcb.SetArcParams( tI, tMin * scale, tMax * scale );
+    while( sOP != eOP )
+    {
+        if( !buildComponent( model, sOP->second, &subfig ) )
+        {
+            ERRMSG << "+ [INFO] could not build a component model\n";
+            return false;
+        }
 
-    // Add the component outlines
-    const std::map< std::string, IDF3_COMPONENT* >*const comp = board.GetComponents();
-    std::map< std::string, IDF3_COMPONENT* >::const_iterator sc = comp->begin();
-    std::map< std::string, IDF3_COMPONENT* >::const_iterator ec = comp->end();
+        if( !subfig )
+        {
+            // there was no outline to render but we do not
+            // have an error condition
+            ++sOP;
+            continue;
+        }
 
-    std::list< IDF3_COMP_OUTLINE_DATA* >::const_iterator so;
-    std::list< IDF3_COMP_OUTLINE_DATA* >::const_iterator eo;
+        componentList.insert( pair<string, IGES_ENTITY_308*>( sOP->first, subfig ) );
+        ++sOP;
+    }
+
+    // instantiate every component
+
+    const map< string, IDF3_COMPONENT* >*const comp = board.GetComponents();
+
+    map< string, IDF3_COMPONENT* >::const_iterator sc = comp->begin();
+    map< string, IDF3_COMPONENT* >::const_iterator ec = comp->end();
+
+    list< IDF3_COMP_OUTLINE_DATA* >::const_iterator so;
+    list< IDF3_COMP_OUTLINE_DATA* >::const_iterator eo;
 
     double vX, vY, vA;
     double tX, tY, tZ, tA;
-    double top, bot;
     bool   bottom;
     IDF3::IDF_LAYER lyr;
-
-    std::map< std::string, VRML_IDS*> cmap;  // map colors by outline UID
-    VRML_IDS* vcp;
-    IDF3_COMP_OUTLINE* pout;
+    string uid;
 
     while( sc != ec )
     {
+        so = sc->second->GetOutlinesData()->begin();
+        eo = sc->second->GetOutlinesData()->end();
+        // position and orientation of the component on the board
         sc->second->GetPosition( vX, vY, vA, lyr );
 
         if( lyr == IDF3::LYR_BOTTOM )
@@ -1149,101 +851,42 @@ bool MakeComponents( IDF3_BOARD& board, IGES& model )
         else
             bottom = false;
 
-        so = sc->second->GetOutlinesData()->begin();
-        eo = sc->second->GetOutlinesData()->end();
-
         while( so != eo )
         {
-            if( (*so)->GetOutline()->GetThickness() < 0.00000001 && nozeroheights )
+            uid = ((IDF3_COMP_OUTLINE*)((*so)->GetOutline()))->GetUID().c_str();
+            map<string, IGES_ENTITY_308*>::iterator outline =
+                componentList.find( uid );
+
+            if( outline == componentList.end() )
             {
-                vpcb.Clear();
+                // there is no model for this component
                 ++so;
                 continue;
             }
 
+            // retrieve the additional component and orientation offsets
             (*so)->GetOffsets( tX, tY, tZ, tA );
             tX += vX;
             tY += vY;
-            tA += vA;
+            tZ += th;
+            tA = (tA + vA) * M_PI / 180.0;
 
-            if( ( pout = (IDF3_COMP_OUTLINE*)((*so)->GetOutline()) ) )
+            IGES_ENTITY_124* tx = calcTransform( model, tX, tY, tZ, tA, bottom );
+
+            if( !tx )
             {
-                vcp = GetColor( cmap, cidx, pout->GetUID() );
-            }
-            else
-            {
-                vpcb.Clear();
-                ++so;
-                continue;
+                ERRMSG << "\n + [INFO]: could not instantiate a transform for the entity\n";
+                return false;
             }
 
-            if( !compact )
-            {
-                if( !PopulateVRML( vpcb, (*so)->GetOutline()->GetOutlines(), bottom,
-                    board.GetUserScale(), tX, tY, tA ) )
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if( !vcp->used && !PopulateVRML( vpcb, (*so)->GetOutline()->GetOutlines(), false,
-                    board.GetUserScale() ) )
-                {
-                    return false;
-                }
+            IGES_ENTITY* ep;
+            IGES_ENTITY_408* p408;
+            model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
+            p408 = (IGES_ENTITY_408*)ep;
+            p408->SetTransform( tx );
+            p408->SetDE( outline->second );
+            p408->SetLabel( sc->second->GetRefDes() );
 
-                vcp->dX = tX * scale;
-                vcp->dY = tY * scale;
-                vcp->dZ = tZ * scale;
-                vcp->dA = tA * M_PI / 180.0;
-            }
-
-            if( !compact || !vcp->used )
-            {
-                vpcb.EnsureWinding( 0, false );
-
-                int nvcont = vpcb.GetNContours() - 1;
-
-                while( nvcont > 0 )
-                    vpcb.EnsureWinding( nvcont--, true );
-
-                vpcb.Tesselate( NULL );
-            }
-
-            if( !compact )
-            {
-                if( bottom )
-                {
-                    top = -thick - tZ;
-                    bot = (top - (*so)->GetOutline()->GetThickness() ) * scale;
-                    top *= scale;
-                }
-                else
-                {
-                    bot = thick + tZ;
-                    top = (bot + (*so)->GetOutline()->GetThickness() ) * scale;
-                    bot *= scale;
-                }
-            }
-            else
-            {
-                bot = thick;
-                top = (bot + (*so)->GetOutline()->GetThickness() ) * scale;
-                bot *= scale;
-            }
-
-            vcp = GetColor( cmap, cidx, ((IDF3_COMP_OUTLINE*)((*so)->GetOutline()))->GetUID() );
-            vcp->bottom = bottom;
-
-            // note: this can happen because IDF allows some negative heights/thicknesses
-            if( bot > top )
-                std::swap( bot, top );
-
-            WriteTriangles( file, vcp, &vpcb, false,
-                            false, top, bot, board.GetUserPrecision(), compact );
-
-            vpcb.Clear();
             ++so;
         }
 
@@ -1254,42 +897,7 @@ bool MakeComponents( IDF3_BOARD& board, IGES& model )
 }
 
 
-VRML_IDS* GetColor( std::map<std::string, VRML_IDS*>& cmap, int& index, const std::string& uid )
-{
-    static int refnum = 0;
-
-    if( index < 2 )
-        index = 2;   // 0 and 1 are special (BOARD, UID=NOGEOM_NOPART)
-
-    std::map<std::string, VRML_IDS*>::iterator cit = cmap.find( uid );
-
-    if( cit == cmap.end() )
-    {
-        VRML_IDS* id = new VRML_IDS;
-
-        if( !uid.compare( "NOGEOM_NOPART" ) )
-            id->colorIndex = 1;
-        else
-            id->colorIndex = index++;
-
-        std::ostringstream ostr;
-        ostr << "OBJECTn" << refnum++;
-        id->objectName = ostr.str();
-
-        if( showObjectMapping )
-            cout << "* " << ostr.str() << " = '" << uid << "'\n";
-
-        cmap.insert( std::pair<std::string, VRML_IDS*>(uid, id) );
-
-        if( index >= NCOLORS )
-            index = 2;
-
-        return id;
-    }
-
-    return cit->second;
-}
-
+#ifdef GOOBLE0
 
 bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
 {
@@ -1381,3 +989,164 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
 }
 
 #endif  // GOOBLE0
+
+
+
+
+
+
+
+bool newSubfigure( IGES& model, IGES_ENTITY_308** aNewSubfig )
+{
+    *aNewSubfig = NULL;
+    IGES_ENTITY* ep;
+    IGES_ENTITY_308* p308;
+
+    if( !model.NewEntity( ENT_SUBFIGURE_DEFINITION, &ep ) )
+    {
+        ERRMSG << "\n + [INFO] could not create Subfigure Definition Entity\n";
+        return false;
+    }
+
+    p308 = dynamic_cast<IGES_ENTITY_308*>(ep);
+
+    if( !p308 )
+    {
+        model.DelEntity( ep );
+        ERRMSG << "\n + [INFO] could not cast pointer to Subfigure Definition Entity\n";
+        return false;
+    }
+
+    *aNewSubfig = p308;
+    return true;
+}
+
+
+// build a component part model from the given outline data
+bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig )
+{
+    *subfig = NULL;
+
+    // note we defeat the 'const' attribute here
+    IDF_OUTLINE* op = ((IDF3_COMP_OUTLINE*)idf)->GetOutline( 0 );
+
+    if( op->empty() )
+        return true;
+
+    double th = idf->GetThickness();
+
+    if( th < 1e-3 )
+    {
+        ERRMSG << "\n + [INFO] bad thickness (" << th << ") in component outline\n";
+        return true;
+    }
+
+    IGES_GEOM_PCB otln;     // component outline
+
+    if( !convertOln( &otln, op ) )
+    {
+        ERRMSG << "\n + [INFO] could not convert component outline\n";
+        return true;
+    }
+
+    // put in part definition, names, color and create the component model
+    bool dud = false;
+    vector<IGES_ENTITY_144*> surfs;
+    otln.GetVerticalSurface( &model, dud, surfs, th, 0.0 );
+    otln.GetTrimmedPlane( &model, dud, surfs, th );
+    otln.GetTrimmedPlane( &model, dud, surfs, 0.0 );
+
+    if( !newSubfigure( model, subfig ) )
+    {
+        ERROR_IDF << "\n + could not create a subfigure entity\n";
+        return false;
+    }
+
+    vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
+    vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
+
+    int cidx = GetComponentColor();
+
+    while( sSL != eSL )
+    {
+        (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
+        (*subfig)->AddDE( (IGES_ENTITY*)(*sSL) );
+        ++sSL;
+    }
+
+    // add the name; note this dirty trick to work around retrieval of the UID
+    (*subfig)->NAME = ((IDF3_COMP_OUTLINE*)idf)->GetUID().c_str();
+
+    return true;
+}
+
+
+int GetComponentColor( void )
+{
+    static int cidx = 1;    // index starts at 1 since 0 is the PCB color
+    int tc = cidx;
+
+    if( ++cidx == NCOLORS )
+        cidx = 1;
+
+    return tc;
+}
+
+
+// create a rotation matrix around Y
+void rotateY( MCAD_MATRIX& mat, double angle )
+{
+    double cosN = cos( angle );
+    double sinN = sin( angle );
+    mat.v[0][0] = cosN;
+    mat.v[0][2] = sinN;
+    mat.v[2][0] = -sinN;
+    mat.v[2][2] = cosN;
+
+    return;
+}
+
+// create a rotation matrix around Z
+void rotateZ( MCAD_MATRIX& mat, double angle )
+{
+    double cosN = cos( angle );
+    double sinN = sin( angle );
+    mat.v[0][0] = cosN;
+    mat.v[0][1] = -sinN;
+    mat.v[1][0] = sinN;
+    mat.v[1][1] = cosN;
+}
+
+
+IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, double dA, bool bottom )
+{
+    MCAD_MATRIX m0;
+    MCAD_MATRIX m1;
+
+    if( bottom )
+    {
+        dA = -dA;
+        dZ = -dZ;
+        rotateY( m1, M_PI );
+    }
+
+    if( dA != 0.0 )
+    {
+        rotateZ( m0, dA );
+    }
+
+    m0 = m0 * m1;
+    IGES_ENTITY_124* p124 = NULL;
+    IGES_ENTITY* ep;
+
+    if( !model.NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
+        return NULL;
+
+    p124 = (IGES_ENTITY_124*)ep;
+    p124->T.R = m0;
+    p124->T.T.x = dX;
+    p124->T.T.y = dY;
+    p124->T.T.z = dZ;
+
+    return p124;
+}

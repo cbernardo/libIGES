@@ -166,7 +166,7 @@ public:
      *
      * @return IDF_UNIT is the native unit (UNIT_MM or UNIT_THOU)
      */
-    virtual IDF3::IDF_UNIT GetUnit( void );
+    virtual IDF3::IDF_UNIT GetUnit( void ) const;
 
     /**
      * Function SetThickness
@@ -180,7 +180,7 @@ public:
      * Function GetThickness
      * returns the thickness or height of an outline (mm)
      */
-    virtual double GetThickness( void );
+    virtual double GetThickness( void ) const;
 
     /**
      * Function Clear
@@ -194,7 +194,7 @@ public:
      * Function GetOutlineType
      * returns the type of outline according to the IDFv3 classification
      */
-    IDF3::OUTLINE_TYPE GetOutlineType( void );
+    IDF3::OUTLINE_TYPE GetOutlineType( void ) const;
 
     /**
      * Function GetParent
@@ -252,13 +252,13 @@ public:
      *  user to respect the IDFv3 specification and avoid changes to this
      *  list which are in violation of the specification.
      */
-    const std::list< IDF_OUTLINE* >*const GetOutlines( void );
+    const std::list< IDF_OUTLINE* >*const GetOutlines( void ) const;
 
     /**
      * Function OutlinesSize
      * returns the number of items in the internal outline list
      */
-    size_t OutlinesSize( void );
+    size_t OutlinesSize( void ) const;
 
     /**
      * Function GetOutline
@@ -273,7 +273,7 @@ public:
      * Function GetOwner
      * returns the ownership status of the outline ( ECAD, MCAD, UNOWNED)
      */
-    IDF3::KEY_OWNER GetOwner( void );
+    IDF3::KEY_OWNER GetOwner( void ) const;
 
     /**
      * Function SetOwner
@@ -288,7 +288,7 @@ public:
      * return true if this type of outline only supports a single
      * outline. All outlines except for BOARD_OUTLINE are single.
      */
-    bool IsSingle( void );
+    bool IsSingle( void ) const;
 
     /**
      * Function ClearOutlines
@@ -307,7 +307,7 @@ public:
      * Function CommentSize
      * returns the number of comments in the internal list
      */
-    size_t CommentsSize( void );
+    size_t CommentsSize( void ) const;
 
     /**
      * Function GetComments
@@ -320,7 +320,7 @@ public:
      * returns the string representing the indexed comment or
      * NULL if the index is out of bounds
      */
-    const std::string* GetComment( size_t aIndex );
+    const std::string* GetComment( size_t aIndex ) const;
 
     /**
      * Function DeleteComment

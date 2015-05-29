@@ -708,6 +708,12 @@ public:
     // whenever a true outline cannot be found or is defective
     IDF3_COMP_OUTLINE* GetInvalidOutline( const std::string& aGeomName, const std::string& aPartName );
 
+    // component outlines (data for library file)
+    const std::map< std::string, IDF3_COMP_OUTLINE*>& GetComponentOutlines( void )
+    {
+       return compOutlines;
+    }
+
     // clears all data
     void Clear( void );
 

@@ -1123,19 +1123,18 @@ IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, do
     MCAD_MATRIX m0;
     MCAD_MATRIX m1;
 
-    if( bottom )
-    {
-        dA = -dA;
-        dZ = -dZ;
-        rotateY( m1, M_PI );
-    }
-
     if( dA != 0.0 )
     {
         rotateZ( m0, dA );
     }
 
-    m0 = m0 * m1;
+    if( bottom )
+    {
+        dZ = -dZ;
+        rotateY( m1, M_PI );
+    }
+
+    m1 *= m0;
     IGES_ENTITY_124* p124 = NULL;
     IGES_ENTITY* ep;
 
@@ -1143,7 +1142,7 @@ IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, do
         return NULL;
 
     p124 = (IGES_ENTITY_124*)ep;
-    p124->T.R = m0;
+    p124->T.R = m1;
     p124->T.T.x = dX;
     p124->T.T.y = dY;
     p124->T.T.z = dZ;

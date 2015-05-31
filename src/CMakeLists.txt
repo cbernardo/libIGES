@@ -4,28 +4,48 @@ project( libIGES CXX C )
 
 cmake_minimum_required( VERSION 2.8.4 FATAL_ERROR )
 
+set( CMAKE_VERBOSE_MAKEFILE ON )
+
 # Version information
 set( LIBIGES_VERSION_MAJOR 0 )
-
 set( LIBIGES_VERSION_MINOR 1 )
 
-option( USE_SISL "Use the SINTEF SISL library; note license restrictions on cloud services" OFF )
+include( ExternalProject )
+set( SISL_ROOT "${PROJECT_SOURCE_DIR}/sisl" )
+set( SISL_INCLUDE_DIR "${SISL_ROOT}/include" )
+set( SISL_LIB_DIR "${SISL_ROOT}" )
 
-if( NOT DEFINED SISL_INCLUDE_DIR )
-message( FATAL_ERROR "SISL_INCLUDE_DIR is not defined" )
+ExternalProject_Add( sisl
+    SOURCE_DIR      ${SISL_ROOT}
+    GIT_SUBMODULES "sisl"
+    TIMEOUT         1200            # 20 minutes
+
+    BUILD_IN_SOURCE 1
+
+    BUILD_COMMAND   make
+    UPDATE_COMMAND ""
+    INSTALL_COMMAND ""
+    )
+
+if( 0 )
+    if( NOT DEFINED SISL_INCLUDE_DIR )
+    message( FATAL_ERROR "SISL_INCLUDE_DIR is not defined" )
+    endif()
+
+    if( NOT EXISTS "${SISL_INCLUDE_DIR}/sisl.h" )
+    message( FATAL_ERROR "sisl.h was not found in '${SISL_INCLUDE_DIR}'" )
+    endif()
+
+    if( NOT DEFINED SISL_LIB_DIR )
+    message( FATAL_ERROR "SISL_LIB_DIR is not defined" )
+    endif()
+
+    if( NOT EXISTS "${SISL_LIB_DIR}/libsisl.so" )
+    message( FATAL_ERROR "libsisl was not found in '${SISL_LIB_DIR}'" )
+    endif()
 endif()
 
-if( NOT EXISTS "${SISL_INCLUDE_DIR}/sisl.h" )
-message( FATAL_ERROR "sisl.h was not found in '${SISL_INCLUDE_DIR}'" )
-endif()
-
-if( NOT DEFINED SISL_LIB_DIR )
-message( FATAL_ERROR "SISL_LIB_DIR is not defined" )
-endif()
-
-if( NOT EXISTS "${SISL_LIB_DIR}/libsisl.so" )
-message( FATAL_ERROR "libsisl was not found in '${SISL_LIB_DIR}'" )
-endif()
+find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system )
 
 set( LIBIGES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
 set( LIBIGES_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
@@ -44,6 +64,7 @@ configure_file(
 
 # ensure that the newly created k3dconfig.h can be found
 include_directories(
+    "${Boost_INCLUDE_DIRS}"
     "${LIBIGES_BINARY_DIR}"
     "${LIBIGES_SOURCE_DIR}/include"
     "${LIBIGES_SOURCE_DIR}/include/iges"
@@ -51,12 +72,7 @@ include_directories(
     "${SISL_INCLUDE_DIR}"
     )
 
-#set( CMAKE_CXX_FLAGS "-O2 -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
-set( CMAKE_CXX_FLAGS "-g -Wall -DDEBUG -lm -lboost_filesystem -lboost_system" )
-
-# pull in the sources
-#add_subdirectory ( entities )
-#add_subdirectory ( iges )
+set( CMAKE_CXX_FLAGS "-g -Wall -DDEBUG" )
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
@@ -100,7 +116,8 @@ add_library( iges STATIC
     "${SRC_GEOM}/mcad_outline.cpp"
     )
 
-target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" )
+add_dependencies( iges sisl )
+target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" "${Boost_LIBRARIES}" )
 
 add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/tests/test_read.cpp"
@@ -135,4 +152,3 @@ target_link_libraries( planetest iges )
 
 # build the idf2igs tool
 add_subdirectory( idf )
-

@@ -29,6 +29,8 @@
 #include <cmath>
 #include <cerrno>
 #include <algorithm>
+#include <boost/filesystem.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include <idf_parser.h>
 #include <idf_helpers.h>
@@ -594,7 +596,7 @@ bool IDF3_COMP_OUTLINE_DATA::readPlaceData( std::ifstream &aBoardFile,
         throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
     }
 
-    outline = aBoard->GetComponentOutline( uid );
+    outline = aBoard->GetComponentOutlineByID( uid );
 
     if( outline == NULL && !aNoSubstituteOutlines )
     {
@@ -2475,7 +2477,7 @@ void IDF3_BOARD::readLibSection( std::ifstream& aLibFile, IDF3::FILE_STATE& aLib
                 }
             }
 
-            IDF3_COMP_OUTLINE* cop = aBoard->GetComponentOutline( pout->GetUID() );
+            IDF3_COMP_OUTLINE* cop = aBoard->GetComponentOutlineByID( pout->GetUID() );
 
             if( cop == NULL )
             {
@@ -2714,25 +2716,24 @@ void IDF3_BOARD::readLibFile( const std::string& aFileName )
 }
 
 
-bool IDF3_BOARD::ReadFile( const wxString& aFullFileName, bool aNoSubstituteOutlines )
+bool IDF3_BOARD::ReadFile( const std::string& aFullFileName, bool aNoSubstituteOutlines )
 {
     // 1. Check that the file extension is 'emn'
     // 2. Check if a file with extension 'emp' exists and read it
     // 3. Open the specified filename and read it
 
-    std::string fname = TO_UTF8( aFullFileName );
+    boost::filesystem::path bpbname( aFullFileName );
+    boost::filesystem::path bplname( aFullFileName );
 
-    wxFileName brdname( aFullFileName );
-    wxFileName libname( aFullFileName );
+    bpbname.replace_extension( "emn" );
+    bplname.replace_extension( "emp" );
 
-    brdname.SetExt( wxT( "emn" ) );
-    libname.SetExt( wxT( "emp" ) );
-
-    std::string bfname = TO_UTF8( aFullFileName );
+    std::string bfname = bpbname.filename().string();
+    std::string lfname = bplname.filename().string();
 
     try
     {
-        if( !brdname.IsOk() )
+        if ( !exists( bpbname ) || !is_regular_file( bpbname ) )
         {
             ostringstream ostr;
             ostr << "\n* invalid file name: '" << bfname << "'";
@@ -2740,39 +2741,13 @@ bool IDF3_BOARD::ReadFile( const wxString& aFullFileName, bool aNoSubstituteOutl
             throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
         }
 
-        if( !brdname.FileExists() )
-        {
-            ostringstream ostr;
-            ostr << "\n* no such file: '" << bfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
-        }
-
-        if( !brdname.IsFileReadable() )
-        {
-            ostringstream ostr;
-            ostr << "\n* cannot read file: '" << bfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
-        }
-
-        bfname = TO_UTF8( brdname.GetFullPath() );
-        std::string lfname = TO_UTF8( libname.GetFullPath() );
-
-        if( !libname.FileExists() )
+        if ( !exists( bplname ) || !is_regular_file( bplname ) )
         {
             // NOTE: Since this is a common case we simply proceed
             // with the assumption that there is no library file;
             // however we print a message to inform the user.
             ERROR_IDF;
             cerr << "no associated library file (*.emp)\n";
-        }
-        else if( !libname.IsFileReadable() )
-        {
-            ostringstream ostr;
-            ostr << "\n* cannot read library file: '" << lfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
         }
         else
         {
@@ -2805,15 +2780,16 @@ bool IDF3_BOARD::writeLibFile( const std::string& aFileName )
     {
         lib.open( aFileName.c_str(), std::ios_base::out );
 
-        wxDateTime tdate( time( NULL ) );
+        boost::posix_time::ptime tdate( boost::posix_time::second_clock::local_time() );
+        struct tm ltime = to_tm( tdate );
 
         if( idfSource.empty() )
             idfSource = "KiCad-IDF Framework";
 
         ostringstream fileDate;
-        fileDate << setfill( '0' ) << setw(4) << tdate.GetYear();
-        fileDate << "/" << setw(2) << tdate.GetMonth() << "/" << tdate.GetDay();
-        fileDate << "." << tdate.GetHour() << ":" << tdate.GetMinute() << ":" << tdate.GetSecond();
+        fileDate << setfill( '0' ) << setw(4) << ltime.tm_year + 1900;
+        fileDate << "/" << setw(2) << ltime.tm_mon + 1 << "/" << ltime.tm_mday;
+        fileDate << "." << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
         libDate = fileDate.str();
 
         lib << ".HEADER\n";
@@ -2856,15 +2832,16 @@ void IDF3_BOARD::writeBoardFile( const std::string& aFileName )
     {
         brd.open( aFileName.c_str(), std::ios_base::out );
 
-        wxDateTime tdate( time( NULL ) );
+        boost::posix_time::ptime tdate( boost::posix_time::second_clock::local_time() );
+        struct tm ltime = to_tm( tdate );
 
         if( idfSource.empty() )
             idfSource = "KiCad-IDF Framework";
 
         ostringstream fileDate;
-        fileDate << setfill( '0' ) << setw(4) << tdate.GetYear();
-        fileDate << "/" << setw(2) << tdate.GetMonth() << "/" << tdate.GetDay();
-        fileDate << "." << tdate.GetHour() << ":" << tdate.GetMinute() << ":" << tdate.GetSecond();
+        fileDate << setfill( '0' ) << setw(4) << ltime.tm_year + 1900;
+        fileDate << "/" << setw(2) << ltime.tm_mon + 1 << "/" << ltime.tm_mday;
+        fileDate << "." << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
         brdDate = fileDate.str();
 
         brd << ".HEADER\n";
@@ -3114,7 +3091,7 @@ void IDF3_BOARD::writeBoardFile( const std::string& aFileName )
 }
 
 
-bool IDF3_BOARD::WriteFile( const wxString& aFullFileName, bool aUnitMM, bool aForceUnitFlag )
+bool IDF3_BOARD::WriteFile( const std::string& aFullFileName, bool aUnitMM, bool aForceUnitFlag )
 {
     if( aUnitMM != IDF3::UNIT_THOU )
         setUnit( IDF3::UNIT_MM, aForceUnitFlag );
@@ -3125,50 +3102,19 @@ bool IDF3_BOARD::WriteFile( const wxString& aFullFileName, bool aUnitMM, bool aF
     // 2. Write the *.emn file according to the IDFv3 spec
     // 3. Write the *.emp file according to the IDFv3 spec
 
-    std::string fname = TO_UTF8( aFullFileName );
+    boost::filesystem::path bpbname( aFullFileName );
+    boost::filesystem::path bplname( aFullFileName );
 
-    wxFileName brdname( aFullFileName );
-    wxFileName libname( aFullFileName );
+    bpbname.replace_extension( "emn" );
+    bplname.replace_extension( "emp" );
 
-    brdname.SetExt( wxT( "emn" ) );
-    libname.SetExt( wxT( "emp" ) );
-
-    std::string bfname = TO_UTF8( aFullFileName );
+    std::string bfname = bpbname.filename().string();
+    std::string lfname = bplname.filename().string();
 
     try
     {
-        if( !brdname.IsOk() )
-        {
-            ostringstream ostr;
-            ostr << "\n* invalid file name: '" << bfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
-        }
-
-        if( brdname.FileExists() && !brdname.IsFileWritable() )
-        {
-            ostringstream ostr;
-            ostr << "cannot overwrite existing board file\n";
-            ostr << "* filename: '" << bfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
-        }
-
-        bfname = TO_UTF8( brdname.GetFullPath() );
-        std::string lfname = TO_UTF8( libname.GetFullPath() );
-
-        if( libname.FileExists() && !libname.IsFileWritable() )
-        {
-            ostringstream ostr;
-            ostr << "cannot overwrite existing library file\n";
-            ostr << "* filename: '" << lfname << "'";
-
-            throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
-        }
-
         writeLibFile( lfname );
         writeBoardFile( bfname );
-
     }
     catch( const std::exception& e )
     {
@@ -3830,22 +3776,12 @@ IDF3_COMPONENT* IDF3_BOARD::FindComponent( std::string aRefDes )
 
 // returns a pointer to a component outline object or NULL
 // if the object doesn't exist
-IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( wxString aFullFileName )
+IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( const std::string aFullFileName )
 {
-    std::string fname = TO_UTF8( aFullFileName );
-    wxFileName idflib( aFullFileName );
+    boost::filesystem::path bponame( aFullFileName );
+    std::string fname = bponame.filename().string();
 
-    if( !idflib.IsOk() )
-    {
-        ostringstream ostr;
-        ostr << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "(): \n";
-        cerr << "* invalid file name: '" << fname << "'";
-        errormsg = ostr.str();
-
-        return NULL;
-    }
-
-    if( !idflib.FileExists() )
+    if ( !exists( bponame ) || !is_regular_file( bponame ) )
     {
         ostringstream ostr;
         ostr << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "(): \n";
@@ -3855,20 +3791,10 @@ IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( wxString aFullFileName )
         return NULL;
     }
 
-    if( !idflib.IsFileReadable() )
-    {
-        ostringstream ostr;
-        ostr << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "(): \n";
-        cerr << "* cannot read file: '" << fname << "'";
-        errormsg = ostr.str();
-
-        return NULL;
-    }
-
     std::map< std::string, std::string >::iterator itm = uidFileList.find( fname );
 
     if( itm != uidFileList.end() )
-        return GetComponentOutline( itm->second );
+        return GetComponentOutlineByID( itm->second );
 
     IDF3_COMP_OUTLINE* cp = new IDF3_COMP_OUTLINE( this );
 
@@ -3956,7 +3882,7 @@ IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( wxString aFullFileName )
     {
         if( ! lsts->compare( uid ) )
         {
-            oldp = GetComponentOutline( uid );
+            oldp = GetComponentOutlineByID( uid );
 
             if( MatchCompOutline( cp, oldp ) )
             {
@@ -3985,7 +3911,7 @@ IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( wxString aFullFileName )
     }
 
     // if we got this far then any duplicates are from files previously read
-    oldp = GetComponentOutline( uid );
+    oldp = GetComponentOutlineByID( uid );
 
     if( oldp == NULL )
     {
@@ -4037,7 +3963,7 @@ IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( wxString aFullFileName )
 
 // returns a pointer to the component outline object with the
 // unique ID aComponentID
-IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( std::string aComponentID )
+IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutlineByID( std::string aComponentID )
 {
     std::map< std::string, IDF3_COMP_OUTLINE*>::iterator its = compOutlines.find( aComponentID );
 
@@ -4065,7 +3991,7 @@ IDF3_COMP_OUTLINE* IDF3_BOARD::GetInvalidOutline( const std::string& aGeomName, 
         uid = aGeomName + "_" + aPartName;
     }
 
-    IDF3_COMP_OUTLINE* cp = GetComponentOutline( uid );
+    IDF3_COMP_OUTLINE* cp = GetComponentOutlineByID( uid );
 
     if( cp != NULL )
         return cp;

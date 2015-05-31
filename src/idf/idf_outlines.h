@@ -28,8 +28,6 @@
 #include <string>
 #include <list>
 #include <map>
-#include <wx/string.h>
-#include <wx/filename.h>
 
 #include <idf_common.h>
 

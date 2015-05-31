@@ -581,8 +581,8 @@ public:
     bool SetBoardThickness( double aBoardThickness );
     double GetBoardThickness( void );
 
-    bool ReadFile( const wxString& aFullFileName, bool aNoSubstituteOutlines = false );
-    bool WriteFile( const wxString& aFullFileName, bool aUnitMM = true, bool aForceUnitFlag = false );
+    bool ReadFile( const std::string& aFullFileName, bool aNoSubstituteOutlines = false );
+    bool WriteFile( const std::string& aFullFileName, bool aUnitMM = true, bool aForceUnitFlag = false );
 
     const std::string& GetIDFSource( void );
     void  SetIDFSource( const std::string& aIDFSource);
@@ -698,11 +698,11 @@ public:
 
     // returns a pointer to a component outline object or NULL
     // if the object doesn't exist
-    IDF3_COMP_OUTLINE* GetComponentOutline( wxString aFullFileName );
+    IDF3_COMP_OUTLINE* GetComponentOutline( const std::string aFullFileName );
 
     // returns a pointer to the component outline object with the
     // unique ID aComponentID
-    IDF3_COMP_OUTLINE* GetComponentOutline( std::string aComponentID );
+    IDF3_COMP_OUTLINE* GetComponentOutlineByID( std::string aComponentID );
 
     // returns a pointer to the outline "NOGEOM NOPART" which is substituted
     // whenever a true outline cannot be found or is defective

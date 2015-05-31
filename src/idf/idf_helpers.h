@@ -24,35 +24,9 @@
 #ifndef IDF_HELPERS_H
 #define IDF_HELPERS_H
 
-#include <wx/wx.h>
 #include <fstream>
 #include <string>
 #include <idf_common.h>
-
-/**
- * Macro TO_UTF8
- * converts a wxString to a UTF8 encoded C string for all wxWidgets build modes.
- * wxstring is a wxString, not a wxT() or _().  The scope of the return value
- * is very limited and volatile, but can be used with printf() style functions well.
- * NOTE: Taken from KiCad include/macros.h
- */
-#define TO_UTF8( wxstring )  ( (const char*) (wxstring).utf8_str() )
-
-/**
- * function FROM_UTF8
- * converts a UTF8 encoded C string to a wxString for all wxWidgets build modes.
- * NOTE: Taken from KiCad include/macros.h
- */
-static inline wxString FROM_UTF8( const char* cstring )
-{
-    wxString line = wxString::FromUTF8( cstring );
-
-    if( line.IsEmpty() )  // happens when cstring is not a valid UTF8 sequence
-        line = wxConvCurrent->cMB2WC( cstring );    // try to use locale conversion
-
-        return line;
-}
-
 
 #define ERROR_IDF std::cerr << "* " << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "(): "
 

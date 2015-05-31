@@ -4,9 +4,6 @@ project( libIGES CXX C )
 
 cmake_minimum_required( VERSION 2.8.4 FATAL_ERROR )
 
-find_package( wxWidgets 3 REQUIRED core base )
-include( ${wxWidgets_USE_FILE} )
-
 # Version information
 set( LIBIGES_VERSION_MAJOR 0 )
 

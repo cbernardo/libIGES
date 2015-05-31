@@ -153,7 +153,7 @@ int main( int argc, char **argv )
 
     cout << "** Reading file: " << inputFilename << "\n";
 
-    if( !pcb.ReadFile( FROM_UTF8( inputFilename.c_str() ), true ) )
+    if( !pcb.ReadFile( inputFilename, true ) )
     {
         cerr << "** Failed to read IDF data:\n";
         cerr << pcb.GetError() << "\n\n";

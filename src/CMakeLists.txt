@@ -20,30 +20,15 @@ ExternalProject_Add( sisl
     GIT_SUBMODULES "sisl"
     TIMEOUT         1200            # 20 minutes
 
+    PATCH_COMMAND git checkout CMakeLists.txt
+        COMMAND patch < ${PROJECT_SOURCE_DIR}/patches/sisl.patch
+
     BUILD_IN_SOURCE 1
 
     BUILD_COMMAND   make
     UPDATE_COMMAND ""
     INSTALL_COMMAND ""
     )
-
-if( 0 )
-    if( NOT DEFINED SISL_INCLUDE_DIR )
-    message( FATAL_ERROR "SISL_INCLUDE_DIR is not defined" )
-    endif()
-
-    if( NOT EXISTS "${SISL_INCLUDE_DIR}/sisl.h" )
-    message( FATAL_ERROR "sisl.h was not found in '${SISL_INCLUDE_DIR}'" )
-    endif()
-
-    if( NOT DEFINED SISL_LIB_DIR )
-    message( FATAL_ERROR "SISL_LIB_DIR is not defined" )
-    endif()
-
-    if( NOT EXISTS "${SISL_LIB_DIR}/libsisl.so" )
-    message( FATAL_ERROR "libsisl was not found in '${SISL_LIB_DIR}'" )
-    endif()
-endif()
 
 find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system )
 

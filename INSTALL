@@ -1,0 +1,51 @@
+This software is being developed on a Debian Linux system
+and the CMake scripts have not been tested on other
+systems, so developers and testers using other systems
+will have to sort out issues on their own at the moment.
+Installation instructions below assume a Debian-based
+system; users of other systems will have to modify the
+instructions to suit their own package managers.
+
+I. Requirements:
+a. git:
+    apt-get install git
+
+b. BOOST system and filesystem:
+    apt-get install libboost-system-dev libboost-filesystem-dev
+
+c. cmake:
+    apt-get install cmake
+
+d. GCC (gcc, g++, GNU make) and other build tools:
+    apt-get install build-essential
+
+
+II. Cloning with git:
+    git clone https://github.com/cbernardo/libIGES.git
+
+III. Cloning the SINTEF SISL libraries:
+    cd libIGES
+    git submodule init
+    git submodule update
+
+
+IV. Build: create a build directory and run cmake then make:
+    cd src
+    mkdir build
+    cd build
+    cmake ..
+    make
+    (alt: "make -j 8" or similar to use multiple cores to compile)
+
+That's all; there is no INSTALL script at this point since
+the software is still under development.
+
+Most of the test programs will be in the 'build' directory
+except for the 'idf2igs' tool which will be in the 'build/idf'
+directory. To run the idf2igs tool:
+
+./idf2igs -f some_IDF_file.emn
+
+The resulting IGES file can be viewed in your favorite
+MCAD software. SolidWorks will display the assembly
+with colors while FreeCAD uses only grey.

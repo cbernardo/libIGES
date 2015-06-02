@@ -648,6 +648,15 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         {
             if( MCAD_IFLAG_NONE != flag )
             {
+                if( opsub && MCAD_IFLAG_ENCIRCLES == flag )
+                {
+                    // we have a circle within a circle which is
+                    // valid geometry in this case but there is
+                    // no intersection
+                    flag = MCAD_IFLAG_NONE;
+                    return false;
+                }
+
                 ostringstream msg;
                 GEOM_ERR( msg );
                 msg << "[INFO] invalid geometry: flag = " << flag;
@@ -1256,6 +1265,15 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
             {
                 if( MCAD_IFLAG_NONE != flag )
                 {
+                    if( opsub && MCAD_IFLAG_ENCIRCLES == flag )
+                    {
+                        // we have a circle within a circle which is
+                        // valid geometry in this case but there is
+                        // no intersection
+                        flag = MCAD_IFLAG_NONE;
+                        return false;
+                    }
+
                     ostringstream msg;
                     GEOM_ERR( msg );
                     msg << "[INFO] invalid geometry: flag = " << flag;

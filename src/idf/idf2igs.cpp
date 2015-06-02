@@ -203,7 +203,7 @@ int main( int argc, char **argv )
     MakeComponents( pcb, model );
 
     // STEP 3: Render the OTHER outlines
-    //MakeOtherOutlines( pcb, model );
+    MakeOtherOutlines( pcb, model );
 
     model.Write( fname.c_str(), true );
 
@@ -583,7 +583,8 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
 
                         if( flag )
                         {
-                            // XXX - something went wrong
+                            ERROR_IDF << "\n + [INFO] geometry error (flag = " << flag << ")\n";
+                            return false;
                         }
 
                         ++sD1;
@@ -603,7 +604,8 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
 
             if( flag )
             {
-                // XXX - something went wrong
+                ERROR_IDF << "\n + [INFO] geometry error (flag = " << flag << ")\n";
+                return false;
             }
 
             ++iD;
@@ -623,7 +625,8 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
     {
         if( !bundleDrills( *sB, cutouts ) )
         {
-            // XXX - something went wrong
+            ERROR_IDF << "\n + [INFO] problems encountered while merging drill holes\n";
+            return false;
         }
 
         ++sB;
@@ -683,8 +686,8 @@ bool bundleDrills( list< MCAD_SEGMENT* >* drills, list< MCAD_OUTLINE* >& cutouts
     {
         if( !op->AddOutline( dist[i].second, dud ) )
         {
-            // XXX - something went wrong
-            cerr << "XXX: QWERTY - we're screwed!\n";
+            ERROR_IDF << "\n + [INFO] could not merge drill holes\n";
+            return false;
         }
     }
 
@@ -897,103 +900,119 @@ bool MakeComponents( IDF3_BOARD& board, IGES& model )
 }
 
 
-#ifdef GOOBLE0
-
 bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
 {
-    int cidx = 2;   // color index; start at 2 since 0,1 are special (board, NOGEOM_NOPART)
-
-    VRML_LAYER vpcb;
-
-    double scale = board.GetUserScale();
-    double thick = board.GetBoardThickness() / 2.0;
-
-    // set the arc parameters according to output scale
-    int tI;
-    double tMin, tMax;
-    vpcb.GetArcParams( tI, tMin, tMax );
-    vpcb.SetArcParams( tI, tMin * scale, tMax * scale );
+    double bt = 0.5 * board.GetBoardThickness();
 
     // Add the component outlines
     const std::map< std::string, OTHER_OUTLINE* >*const comp = board.GetOtherOutlines();
     std::map< std::string, OTHER_OUTLINE* >::const_iterator sc = comp->begin();
     std::map< std::string, OTHER_OUTLINE* >::const_iterator ec = comp->end();
 
-    double top, bot;
-    bool   bottom;
-    int nvcont;
-
-    std::map< std::string, VRML_IDS*> cmap;  // map colors by outline UID
-    VRML_IDS* vcp;
-    OTHER_OUTLINE* pout;
-
     while( sc != ec )
     {
-        pout = sc->second;
-
-        if( pout->GetSide() == IDF3::LYR_BOTTOM )
-            bottom = true;
-        else
-            bottom = false;
-
-        if( pout->GetThickness() < 0.00000001 && nozeroheights )
+        if( sc->second->OutlinesSize() < 1 )
         {
-            vpcb.Clear();
             ++sc;
             continue;
         }
 
-        vcp = GetColor( cmap, cidx, pout->GetOutlineIdentifier() );
+        IGES_GEOM_PCB otln; // main outline for this section
+        MCAD_OUTLINE* pIGS;
+        list< MCAD_OUTLINE* > cutouts;
 
-        if( !PopulateVRML( vpcb, pout->GetOutlines(), bottom,
-            board.GetUserScale(), 0, 0, 0 ) )
+        list< IDF_OUTLINE* >::const_iterator scont = sc->second->GetOutlines()->begin();
+        list< IDF_OUTLINE* >::const_iterator econt = sc->second->GetOutlines()->end();
+        list< IDF_OUTLINE* >::const_iterator rcont = scont;
+
+        // extract the outline and cutouts
+        while( scont != econt )
         {
-            return false;
+            if( scont == rcont )
+                pIGS = &otln;
+            else
+                pIGS = new MCAD_OUTLINE;
+
+            if( !convertOln( pIGS, *scont ) )
+            {
+                if( scont != rcont )
+                    delete pIGS;
+
+                return false;
+            }
+
+            if( scont != rcont )
+                cutouts.push_back( pIGS );
+
+            ++scont;
         }
 
-        vpcb.EnsureWinding( 0, false );
+        // add all cutouts to the main outline
+        bool dud = false;
+        list< MCAD_OUTLINE* >::iterator sMO = cutouts.begin();
+        list< MCAD_OUTLINE* >::iterator eMO = cutouts.end();
 
-        nvcont = vpcb.GetNContours() - 1;
+        while( sMO != eMO )
+        {
+            otln.AddCutout( *sMO, true, dud );
+            ++sMO;
+        }
 
-        while( nvcont > 0 )
-            vpcb.EnsureWinding( nvcont--, true );
+        // put in part and solid instance, names, and color
+        bool bottom = false;
 
-        vpcb.Tesselate( NULL );
+        if( sc->second->GetSide() == IDF3::LYR_BOTTOM )
+            bottom = true;
+
+        vector<IGES_ENTITY_144*> surfs;
+        double th = sc->second->GetThickness();
 
         if( bottom )
         {
-            top = -thick;
-            bot = ( top - pout->GetThickness() ) * scale;
-            top *= scale;
+            otln.GetVerticalSurface( &model, dud, surfs, -(th + bt), -bt );
+            otln.GetTrimmedPlane( &model, dud, surfs, -(th + bt) );
+            otln.GetTrimmedPlane( &model, dud, surfs, -bt );
         }
         else
         {
-            bot = thick;
-            top = (bot + pout->GetThickness() ) * scale;
-            bot *= scale;
+            otln.GetVerticalSurface( &model, dud, surfs, th + bt, bt );
+            otln.GetTrimmedPlane( &model, dud, surfs, th + bt );
+            otln.GetTrimmedPlane( &model, dud, surfs, bt );
         }
 
-        // note: this can happen because IDF allows some negative heights/thicknesses
-        if( bot > top )
-            std::swap( bot, top );
+        IGES_ENTITY_308* subfig;
 
-        vcp->bottom = bottom;
-        WriteTriangles( file, vcp, &vpcb, false,
-                        false, top, bot, board.GetUserPrecision(), false );
+        if( !newSubfigure( model, &subfig ) )
+        {
+            ERROR_IDF << "\n + could not create a subfigure entity\n";
+            return false;
+        }
 
-        vpcb.Clear();
+        vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
+        vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
+        int cidx = GetComponentColor();
+
+        while( sSL != eSL )
+        {
+            (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
+            subfig->AddDE( (IGES_ENTITY*)(*sSL) );
+            ++sSL;
+        }
+
+        // add the name
+        subfig->NAME = sc->first;
+
+        IGES_ENTITY* ep;
+        IGES_ENTITY_408* p408;
+        model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
+        p408 = (IGES_ENTITY_408*)ep;
+        p408->SetDE( subfig );
+        p408->SetLabel( sc->first );
         ++sc;
     }
 
     return true;
 }
-
-#endif  // GOOBLE0
-
-
-
-
-
 
 
 bool newSubfigure( IGES& model, IGES_ENTITY_308** aNewSubfig )

@@ -45,6 +45,7 @@
 #include <algorithm>
 #include <libgen.h>
 #include <unistd.h>
+#include <boost/filesystem.hpp>
 
 #include <idf_helpers.h>
 #include <idf_common.h>
@@ -68,6 +69,7 @@ setlocale( LC_ALL, "C" ); \
 
 static struct
 {
+    string basename;
     IGES_ENTITY_314** colors;
 } globs;
 
@@ -184,15 +186,10 @@ int main( int argc, char **argv )
     globs.colors = colors;
 
     // Create the VRML file and write the header
-    char* bnp = (char*) malloc( inputFilename.size() + 1 );
-    strcpy( bnp, inputFilename.c_str() );
-
-    std::string fname = basename( bnp );
-    free( bnp );
-    std::string::iterator itf = fname.end();
-    *(--itf) = 's';
-    *(--itf) = 'g';
-    *(--itf) = 'i';
+    boost::filesystem::path bofname( inputFilename );
+    bofname.replace_extension( "igs" );
+    string fname = bofname.filename().string();
+    globs.basename = boost::filesystem::basename( bofname );
 
     cout << "Output file: '" << fname << "'\n";
 
@@ -385,15 +382,15 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
         ++sSL;
     }
 
-    // add the name : XXX: TO BE IMPLEMENTED  - use something other than "pcb"
-    subfig->NAME = "pcb";
+    // add the name
+    subfig->NAME = globs.basename;
 
     IGES_ENTITY* ep;
     IGES_ENTITY_408* p408;
     model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
     p408 = (IGES_ENTITY_408*)ep;
     p408->SetDE( subfig );
-    p408->SetLabel( "pcb" );
+    p408->SetLabel( globs.basename );
 
     return true;
 }

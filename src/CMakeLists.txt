@@ -20,8 +20,7 @@ ExternalProject_Add( sisl
     GIT_SUBMODULES "sisl"
     TIMEOUT         1200            # 20 minutes
 
-    PATCH_COMMAND git checkout CMakeLists.txt
-        COMMAND patch < ${PROJECT_SOURCE_DIR}/patches/sisl.patch
+    CMAKE_ARGS  -DBUILD_SHARED_LIBS:BOOL=TRUE
 
     BUILD_IN_SOURCE 1
 

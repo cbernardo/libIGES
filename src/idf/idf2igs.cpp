@@ -32,19 +32,11 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include <sstream>
 #include <cmath>
-#include <cstdio>
-#include <cerrno>
 #include <list>
 #include <utility>
 #include <clocale>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
-#include <algorithm>
-#include <libgen.h>
-#include <unistd.h>
 #include <boost/filesystem.hpp>
 
 #include <idf_helpers.h>
@@ -62,10 +54,6 @@ extern char* optarg;
 extern int   optopt;
 
 using namespace std;
-
-#define CLEANUP do { \
-setlocale( LC_ALL, "C" ); \
-} while( 0 );
 
 static struct
 {

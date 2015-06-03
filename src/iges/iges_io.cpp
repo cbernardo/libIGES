@@ -617,7 +617,7 @@ bool FormatPDREal( std::string &tStr, double var, char delim, double minRes )
 // tack the delimited section item tStr onto fStr and when appropriate update fOut and index;
 // if the delimeter of tStr == rd then the PD entry is finalized
 bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
-                int& index, int sequenceNumber, char pd, char rd )
+                int& pdIndex, int deIndex, char pd, char rd )
 {
     if( tStr.length() > 64 )
     {
@@ -641,7 +641,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         // add sequence number
         std::string seq;
 
-        if( !FormatDEInt( seq, sequenceNumber ) )
+        if( !FormatDEInt( seq, deIndex ) )
         {
             ERRMSG << "\n + [BUG] cannot tack on Sequence Number\n";
             return false;
@@ -650,7 +650,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         fStr += seq;
 
         // add PD Sequence Number
-        if( !FormatDEInt( seq, index ) )
+        if( !FormatDEInt( seq, pdIndex ) )
         {
             ERRMSG << "\n + [BUG] cannot tack on PD Sequence Number\n";
             return false;
@@ -661,7 +661,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         fOut += fStr;
         fOut += "\n";
         fStr.clear();
-        ++index;
+        ++pdIndex;
     }
 
     // tack tStr onto fStr
@@ -678,7 +678,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         // add sequence number
         std::string seq;
 
-        if( !FormatDEInt( seq, sequenceNumber ) )
+        if( !FormatDEInt( seq, deIndex ) )
         {
             ERRMSG << "\n + [BUG] cannot tack on Sequence Number\n";
             return false;
@@ -687,7 +687,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         fStr += seq;
 
         // add PD Sequence Number
-        if( !FormatDEInt( seq, index ) )
+        if( !FormatDEInt( seq, pdIndex ) )
         {
             ERRMSG << "\n + [BUG] cannot tack on PD Sequence Number\n";
             return false;
@@ -698,7 +698,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         fOut += fStr;
         fOut += "\n";
         fStr.clear();
-        ++index;
+        ++pdIndex;
     }
 
     tStr.clear();

@@ -505,6 +505,12 @@ bool IGES::Read( const char* aFileName )
         }
     }
 
+    if( globalData.convert )
+    {
+        for( iEnt = 0; iEnt < nEnt; ++iEnt )
+            entities[iEnt]->rescale( globalData.cf );
+    }
+
     cull();
     return true;
 }

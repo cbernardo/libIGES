@@ -367,14 +367,6 @@ bool IGES_ENTITY_408::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         }
     }
 
-    if( parent->globalData.convert )
-    {
-        double cf = parent->globalData.cf;
-        X *= cf;
-        Y *= cf;
-        Z *= cf;
-    }
-
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";

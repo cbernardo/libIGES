@@ -287,6 +287,7 @@ bool IGES_ENTITY_180::format( int &index )
 
 bool IGES_ENTITY_180::rescale( double sf )
 {
+    // there is nothing to scale
     return true;
 }
 
@@ -493,9 +494,6 @@ bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         pdout.clear();
         return false;
     }
-
-    // note: normally a scale would be performed here (re. globalData.convert)
-    // but this entity does not own scalable data.
 
     pdout.clear();
     return true;

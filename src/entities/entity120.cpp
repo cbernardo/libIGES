@@ -68,7 +68,7 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
 
     int iEnt;
     bool dup = false;
-    
+
     if( iL )
     {
         iEnt = iL >> 1;
@@ -392,9 +392,6 @@ bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         pdout.clear();
         return false;
     }
-
-    // note: normally a scale would be performed here (re. globalData.convert)
-    // but this entity does not own scalable data.
 
     pdout.clear();
     return true;

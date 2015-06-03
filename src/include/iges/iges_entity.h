@@ -99,7 +99,7 @@ protected:
     // format optional (extra) PD comments for output
     bool formatComments( int& pdSeq );
 
-    // change the internal scale; this routine may be invoked by teh parent IGES object
+    // change the internal scale; this routine may be invoked by the parent IGES object
     // to change the internal units or the Model Scale.
     virtual bool rescale( double sf ) = 0;
 
@@ -186,8 +186,6 @@ public:
     virtual bool SetView( IGES_ENTITY* aView );
     bool         GetView( IGES_ENTITY** aView );
 
-    // XXX - may require other forms to retrieve compound transforms
-    // XXX - may also require a Transform(some point) to transform individual points
     virtual bool SetTransform( IGES_ENTITY* aTransform );
     bool         GetTransform( IGES_ENTITY** aTransform );
 
@@ -226,6 +224,8 @@ public:
 
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     bool         GetHierarchy( IGES_STAT_HIER& aHierarchy );
+
+    IGES_ENTITY* GetFirstParentRef( void );
 };
 
 #endif  // IGES_ENTITY_H

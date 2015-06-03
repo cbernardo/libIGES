@@ -285,9 +285,6 @@ bool IGES_ENTITY_110::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    if( parent->globalData.convert )
-        rescale( parent->globalData.cf );
-
     pdout.clear();
     return true;
 }

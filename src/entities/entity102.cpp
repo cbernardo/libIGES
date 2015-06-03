@@ -585,9 +585,6 @@ bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
-    // note: normally a scale would be performed here (re. globalData.convert)
-    // but this entity does not own scalable data.
-
     pdout.clear();
     return true;
 }

@@ -30,6 +30,7 @@
 #include <mcad_helpers.h>
 #include <entity124.h>
 #include <entity126.h>
+#include <entity142.h>
 
 using namespace std;
 
@@ -301,24 +302,70 @@ bool IGES_ENTITY_126::format( int &index )
 
 bool IGES_ENTITY_126::rescale( double sf )
 {
-    // XXX - BUG: for now we simply refuse to scale a NURBS curve since
-    // the majority of such curves are part of a Curve on a Parametric
-    // Surface (BPTR to Entity 144). Ideally we should be able to traverse
+    // Before scaling we must determine if this curve is a member of the BPTR
+    // of a Curve on a Parametric Surface (BPTR to Entity 144). We must traverse
     // the ancestors of this NURBS curve and decide whether or not it
-    // makes sense to scale the control points.
-    // If a Curve on Surface is scaled, only the Z values should be
-    // scaled
-    return true;
+    // makes sense to scale the control points. If a Curve on Surface is scaled,
+    // only the Z values should be scaled
+
+    list<IGES_ENTITY*> eps;
+    eps.push_back( this );
+
+    IGES_ENTITY* ep = GetFirstParentRef();
+    IGES_ENTITY* cps = NULL;
+
+    while( ep )
+    {
+        if( ep->GetEntityType() == ENT_CURVE_ON_PARAMETRIC_SURFACE )
+        {
+            cps = ep;
+            break;
+        }
+
+        eps.push_back( ep );
+        ep = ep->GetFirstParentRef();
+    }
+
+    bool scaleXY = true;
+
+    if( cps )
+    {
+        // block the operation if this entity or a parent is equal to BPTR
+        if( ((IGES_ENTITY_142*)cps)->GetBPTR( &ep ) )
+        {
+            list<IGES_ENTITY*>::iterator sP = eps.begin();
+            list<IGES_ENTITY*>::iterator eP = eps.end();
+
+            while( sP != eP )
+            {
+                if( *sP == ep )
+                {
+                    scaleXY = false;
+                    break;
+                }
+
+                ++sP;
+            }
+        }
+    }
 
     if( NULL == coeffs )
         return true;
 
     for( int i = 0, j = 0; i < nCoeffs; ++i )
     {
-        coeffs[j] *= sf;
-        ++j;
-        coeffs[j] *= sf;
-        ++j;
+        if( scaleXY )
+        {
+            coeffs[j] *= sf;
+            ++j;
+            coeffs[j] *= sf;
+            ++j;
+        }
+        else
+        {
+            j += 2;
+        }
+
         coeffs[j] *= sf;
         ++j;
 
@@ -679,9 +726,6 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         pdout.clear();
         return false;
     }
-
-    if( parent->globalData.convert )
-        rescale( parent->globalData.cf );
 
     pdout.clear();
     return true;

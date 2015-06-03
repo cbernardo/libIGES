@@ -2873,3 +2873,12 @@ bool IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
     hierarchy = aHierarchy;
     return true;
 }
+
+
+IGES_ENTITY* IGES_ENTITY::GetFirstParentRef( void )
+{
+    if( refs.empty() )
+        return NULL;
+
+    return refs.front();
+}

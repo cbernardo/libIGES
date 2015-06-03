@@ -342,9 +342,6 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
 
     pdout.clear();
 
-    if( parent->globalData.convert )
-        rescale( parent->globalData.cf );
-
     // NOTE:
     // Ideally we would check that the radii are non-zero and equal;
     // however if we discover that some MCAD software produces

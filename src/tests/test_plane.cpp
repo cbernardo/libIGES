@@ -176,7 +176,6 @@ int test_arcs( void )
 
     if( 1 )
     {
-        seg2 = new MCAD_SEGMENT;
         // radius: 1, c(+2,0)
         c2[0].x = 2.0;
         c2[0].y = 0.0;
@@ -184,6 +183,7 @@ int test_arcs( void )
         c2[1].y = 0.0;
         c2[2].x = 3.0;
         c2[2].y = 0.0;
+        seg2 = new MCAD_SEGMENT;
         seg2->SetParams( c2[0], c2[1], c2[2], false );
 
         if( !otln.AddCutout( seg2, true, error ) )
@@ -192,7 +192,6 @@ int test_arcs( void )
             return -1;
         }
 
-        seg2 = new MCAD_SEGMENT;
         // radius: 1, c(0,+2)
         c2[0].x = 0.0;
         c2[0].y = 2.0;
@@ -200,6 +199,7 @@ int test_arcs( void )
         c2[1].y = 2.0;
         c2[2].x = 1.0;
         c2[2].y = 2.0;
+        seg2 = new MCAD_SEGMENT;
         seg2->SetParams( c2[0], c2[1], c2[2], false );
 
         if( !otln.AddCutout( seg2, true, error ) )
@@ -208,7 +208,6 @@ int test_arcs( void )
             return -1;
         }
 
-        seg2 = new MCAD_SEGMENT;
         // radius: 1, c(0,-2)
         c2[0].x = 0.0;
         c2[0].y = -2.0;
@@ -216,6 +215,7 @@ int test_arcs( void )
         c2[1].y = -2.0;
         c2[2].x = 1.0;
         c2[2].y = -2.0;
+        seg2 = new MCAD_SEGMENT;
         seg2->SetParams( c2[0], c2[1], c2[2], false );
 
         if( !otln.AddCutout( seg2, true, error ) )
@@ -294,24 +294,24 @@ int test_arcs( void )
         c2[2].y = 0.0;
         s0.SetParams( c2[0], c2[1], c2[2], false );
 
-        MCAD_SEGMENT s1;
+        MCAD_SEGMENT* s1 = new MCAD_SEGMENT;
         c2[0].x = 0.0;
         c2[0].y = -2.0;
         c2[1].x = 1.0;
         c2[1].y = -2.0;
         c2[2].x = 1.0;
         c2[2].y = -2.0;
-        s1.SetParams( c2[0], c2[1], c2[2], false );
+        s1->SetParams( c2[0], c2[1], c2[2], false );
 
         std::list<MCAD_POINT> iList;
         MCAD_INTERSECT_FLAG flag;
-        s0.GetIntersections( s1, iList, flag );
+        s0.GetIntersections( *s1, iList, flag );
 
         c2[0].x = 0.0;
         c2[0].y = -1.2;
-        s1.SetParams( c2[0], iList.front(), iList.front(), false );
+        s1->SetParams( c2[0], iList.front(), iList.front(), false );
 
-        if( !otln.SubOutline( (MCAD_SEGMENT*)&s1, error ) )
+        if( !otln.SubOutline( s1, error ) )
         {
             cout << "* [FAIL]: could not add a cutout which intersects endpoints, error: " << error << "\n";
             return -1;
@@ -321,7 +321,6 @@ int test_arcs( void )
 
     if( 1 )
     {
-        MCAD_SEGMENT* seg3 = new MCAD_SEGMENT;
         // radius: 0.5, c(0,0)
         c2[0].x = 0.0;
         c2[0].y = 0.0;
@@ -329,6 +328,7 @@ int test_arcs( void )
         c2[1].y = 0.0;
         c2[2].x = 0.5;
         c2[2].y = 0.0;
+        MCAD_SEGMENT* seg3 = new MCAD_SEGMENT;
         seg3->SetParams( c2[0], c2[1], c2[2], false );
 
         if( !otln.AddCutout( seg3, true, error ) )
@@ -376,7 +376,6 @@ int test_arcs( void )
         }
     }
 
-    seg2 = new MCAD_SEGMENT;
     // radius: 0.3, c(-0.75,0.75)
     c2[0].x = -0.75;
     c2[0].y = 0.75;
@@ -384,6 +383,7 @@ int test_arcs( void )
     c2[1].y = 0.75;
     c2[2].x = -0.6;
     c2[2].y = 0.75;
+    seg2 = new MCAD_SEGMENT;
     seg2->SetParams( c2[0], c2[1], c2[2], false );
 
     if( !otln.AddCutout( seg2, true, error ) )

@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 508: Loop, Section 4.149, p.590+ (618+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 508: Loop, Section 4.149, p.590+ (618+)
  */
 
 #ifndef ENTITY_508_H
@@ -44,13 +46,18 @@
 // + Structure
 // + View
 
+
+/**
+ * Struct LOOP_DEIDX
+ * stores information on Directory Entry indices to data being read from an IGES file.
+ */
 struct LOOP_DEIDX
 {
-    bool isVertex;  // true if curve is described by a vertex list
-    int  data;      // (DE index) pointer to E502 (vertex list) or E504 (edge list)
-    int  idx;           // index into E502 or E504
-    bool orientFlag;    // boundary curve orientation flag
-    // list of (DE index to) curves in parameter space and associated orientation
+    bool isVertex;      //< true if curve is described by a vertex list
+    int  data;          //< (DE index) pointer to E502 (vertex list) or E504 (edge list)
+    int  idx;           //< index into E502 or E504 entities
+    bool orientFlag;    //< boundary curve orientation flag
+    /// list of (DE index to) curves in parameter space and associated orientation
     std::list< std::pair<bool, int> > pcurves;
 
     LOOP_DEIDX()
@@ -63,6 +70,10 @@ struct LOOP_DEIDX
 };
 
 
+/**
+ * Struct LOOP_DATA
+ * stores information on instantiated entities referenced by the Loop Entity
+ */
 struct LOOP_DATA
 {
     bool isVertex;
@@ -81,19 +92,31 @@ struct LOOP_DATA
 };
 
 
+/**
+ * Class IGES_ENTITY_508
+ * represents the Loop Entity
+ */
 class IGES_ENTITY_508 : public IGES_ENTITY
 {
 private:
-    // add a parent reference to a Vertex or Edge list entity and maintain a refcount
+    /// add a parent reference to a Vertex or Edge list entity and maintain a refcount
     bool addEdge( IGES_ENTITY* aEdge );
-    // decrement refcount and release entity if appropriate; aFlagAll indicates
-    // that all LOOP_DATA structures containing this edge and their associated
-    // PCurves should be released
+
+    /**
+     * decrement refcount and release entity if appropriate; aFlagAll indicates
+     * that all LOOP_DATA structures containing this edge and their associated
+     * PCurves should be released
+     */
+
     bool delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnlink );
-    // add a parent reference to a parameter space curve and ensure no duplicates
+
+    /// add a parent reference to a parameter space curve and ensure no duplicates
     bool addPCurve( IGES_ENTITY* aCurve );
-    // delete parent reference from the given parameter space curve and delete
-    // the associated edge instance if required
+
+    /**
+     * delete parent reference from the given parameter space curve and delete
+     * the associated edge instance if required
+     */
     bool delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aFlagUnlink );
 
 protected:
@@ -126,7 +149,23 @@ public:
     virtual bool SetView( IGES_ENTITY* aView );
 
     // functions unique to E508
+
+    /**
+     * Function GetLoopData
+     * returns a pointer to the list of data structures
+     * representing this loop entity.
+     */
     const std::list<LOOP_DATA>* GetLoopData( void );
+
+
+    /**
+     * Function AddEdge
+     * adds references to data representing an edge along
+     * this loop and returns true on success.
+     *
+     * @param aEdge = pointer to data structure storing information
+     * representing the edge to be added.
+     */
     bool AddEdge( LOOP_DATA& aEdge );
 };
 

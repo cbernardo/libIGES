@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 0: NULL, Section 4.2, p.65 (93)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -22,6 +20,10 @@
  *
  */
 
+/*
+ * Description: IGES Entity 0: NULL, Section 4.2, p.65 (93)
+ */
+
 #ifndef ENTITY_NULL_H
 #define ENTITY_NULL_H
 
@@ -31,7 +33,7 @@
 // It is impossible to reliably determine the entity type
 // of a DE entry which has been set to NULL; as such, all
 // NULL entities may be safely destroyed upon verification
-// of the relationships of entities ('association' method
+// of the relationships of entities ('Associate' method
 // has been executed). Destroying this essentially unrecoverable
 // data will help ensure neater output files. Note that the
 // deletion of dangling entities is another matter.
@@ -51,6 +53,11 @@
 // + Form number
 //
 
+
+/**
+ * Class IGES_ENTITY_NULL
+ * represents the NULL Entity (Type 0) and all non-implemented entities.
+ */
 class IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
@@ -69,6 +76,14 @@ public:
     virtual ~IGES_ENTITY_NULL();
     virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
 
+    /**
+     * Function GetTrueEntityType
+     * returns the number representing the true entity type
+     * represented by this instance of the NULL Entity; in the
+     * case of a true NULL Entity the return value will be zero
+     * while for unimplemented entities the return value will be
+     * non-zero.
+     */
     int GetTrueEntityType(void)
     {
         return trueEntity;

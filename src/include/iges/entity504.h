@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 504: Edge, Section 4.148, p.588+ (616+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 504: Edge, Section 4.148, p.588+ (616+)
  */
 
 #ifndef ENTITY_504_H
@@ -50,6 +52,11 @@
 
 class IGES_ENTITY_502;
 
+
+/**
+ * Struct EDGE_DEIDX
+ * stores information on referenced entities to be read in from an IGES file
+ */
 struct EDGE_DEIDX
 {
     int curv;
@@ -69,6 +76,11 @@ struct EDGE_DEIDX
 };
 
 
+/**
+ * Struct EDGE_DATA
+ * stores information on instantiated entities representing
+ * part of an Edge entity
+ */
 struct EDGE_DATA
 {
     IGES_ENTITY* curv;
@@ -88,14 +100,20 @@ struct EDGE_DATA
 };
 
 
+/**
+ * Class IGES_ENTITY_504
+ * represents the Edge Entity
+ */
 class IGES_ENTITY_504 : public IGES_ENTITY
 {
 private:
-    // add a parent reference to a curve and ensure that it is not a duplicate
+    /// add a parent reference to a curve and ensure that it is not a duplicate
     bool addCurve( IGES_ENTITY* aCurve );
-    // add a parent reference to a Vertex List and maintain a reference count
+
+    /// add a parent reference to a Vertex List and maintain a reference count
     bool addVertexList( IGES_ENTITY_502* aVertexList );
-    // decrement a Vertex List's reference count and delete references if appropriate
+
+    /// decrement a Vertex List's reference count and delete references if appropriate
     bool delVertexList( IGES_ENTITY_502* aVertexList, bool aFlagAll );
 
 protected:
@@ -104,10 +122,13 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::list<EDGE_DEIDX> deItems;  // Data for EDGE, including DE indices
-    std::list<EDGE_DATA> edges;
-    std::vector<EDGE_DATA> vedges;   // EDGE data (pointers and values)
-    std::list< std::pair<IGES_ENTITY_502*, int> > vertices; // counts for vertex references
+    std::list<EDGE_DEIDX> deItems;  //< Data for EDGE, including DE indices
+    std::list<EDGE_DATA> edges;     //< Data for entities references by this Edge
+
+    ///< EDGE data (pointers and values) which may be passed to users for convenience
+    std::vector<EDGE_DATA> vedges;
+
+    std::list< std::pair<IGES_ENTITY_502*, int> > vertices; //< counts for vertex references
 
 public:
     IGES_ENTITY_504( IGES* aParent );
@@ -132,9 +153,27 @@ public:
     virtual bool SetColor( IGES_COLOR aColor );
     virtual bool SetColor( IGES_ENTITY* aColor );
     virtual bool SetLineWeightNum( int aLineWeight );
-    
+
     // functions unique to E504
+
+    /**
+     * Function GetEdges
+     * returns a vector containing Edge data for convenient access by users
+     */
     std::vector<EDGE_DATA>* GetEdges( void );
+
+
+    /**
+     * Function AddEdge
+     * adds information to represent a section of this Edge entity
+     * and returns true on success.
+     *
+     * @param aCurve = pointer to a valid curve entity (see sec. 4.148 of the specification)
+     * @param aSVP = pointer to a Vertex List entity which describes a section of this edge
+     * @param aSV = index into the vertex list @param aSVP to specify the Start Point of this edge segment
+     * @param aTVP = pointer to a Vertex List entity which describes a section of this edge
+     * @param aTV = index into the vertex list @param aTVP to specify the End Point of this edge segment
+     */
     bool AddEdge( IGES_ENTITY* aCurve, IGES_ENTITY_502* aSVP, int aSV,
                   IGES_ENTITY_502* aTVP, int aTV );
 };

@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 502: Vertex List, Section 4.147, p.586+ (614+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 502: Vertex List, Section 4.147, p.586+ (614+)
  */
 
 #ifndef ENTITY_502_H
@@ -44,6 +46,11 @@
 // + Color number
 //
 
+
+/**
+ * Class IGES_ENTITY_502
+ * represents the Vertex List entity
+ */
 class IGES_ENTITY_502 : public IGES_ENTITY
 {
 protected:
@@ -52,7 +59,7 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::vector<MCAD_POINT> vertices;
+    std::vector<MCAD_POINT> vertices;   //< list of vertices comprising this entity
 
 public:
     IGES_ENTITY_502( IGES* aParent );
@@ -79,8 +86,25 @@ public:
     virtual bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E502
+
+    /**
+     * Function GetVertices
+     * returns a pointer to the group of vertices comprising this Vertex List entity
+     */
     const std::vector<MCAD_POINT>* GetVertices( void );
+
+
+    /**
+     * Function GetNVertices
+     * returns the number of vertices comprising this Vertex List entity
+     */
     size_t GetNVertices( void );
+
+
+    /**
+     * Function AddVertex
+     * adds a Model Space vertex to this Vertex List entity
+     */
     void AddVertex( MCAD_POINT aPoint );
 };
 

@@ -3,9 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: common basic structures required for the implementation
- * of the Initial Graphics Exchange Specification (IGES) v6.
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -23,11 +20,18 @@
  *
  */
 
+
+/*
+ * Description: common basic structures required for the implementation
+ * of the Initial Graphics Exchange Specification (IGES) v6.
+ */
+
 #ifndef IGES_BASE_H
 #define IGES_BASE_H
 
 // precision used to represent angles
 #define IGES_ANGLE_RES (1.0e-15)
+
 
 enum IGES_COLOR
 {
@@ -43,6 +47,7 @@ enum IGES_COLOR
     COLOR_WHITE,
     COLOR_END
 };
+
 
 // UNIT types in IGES
 enum IGES_UNIT

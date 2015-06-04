@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
  */
 
 #ifndef ENTITY314_H
@@ -48,6 +50,16 @@
 // Constraints:
 // COLOR DE item must be 1..8 to represent the closest predefined shade
 
+
+/**
+ * Class IGES_ENTITY_314
+ * represents the Color Definition Entity; this entity can
+ * be used to define colors which are not predefined by the
+ * IGES specification. Note that to conform to the specification
+ * the user must also invoke the function SetColor() to assign
+ * a fixed color definition which most closely matches this
+ * color.
+ */
 class IGES_ENTITY_314 : public IGES_ENTITY
 {
 protected:
@@ -89,23 +101,23 @@ public:
     // parameters
     union
     {
-        double red;
+        double red;     //< RED value (0..100); known in the specification as CC1
         double CC1;
     };
 
     union
     {
-        double green;
+        double green;   //< GREEN value (0..100); known in the specification as CC2
         double CC2;
     };
 
     union
     {
-        double blue;
+        double blue;    //< BLUE value (0..100); known in the specification as CC3
         double CC3;
     };
 
-    std::string cname;
+    std::string cname;  // optional name describing the color; known in specification as CNAME
     std::string& CNAME;
 };
 

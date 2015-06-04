@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 4-8: Subfigure Instance, Section 4.137, p.557(585+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 4-8: Subfigure Instance, Section 4.137, p.557(585+)
  */
 
 #ifndef ENTITY_408_H
@@ -44,6 +46,12 @@ class IGES_ENTITY_308;
 // + Structure
 //
 
+/**
+ * Class IGES_ENTITY_408
+ * represents the Singular Subfigure Instance Entity; this
+ * entity is commonly used to instantiate a feature or part
+ * within a part or subassembly.
+ */
 class IGES_ENTITY_408 : public IGES_ENTITY
 {
 protected:
@@ -52,8 +60,8 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    IGES_ENTITY_308* DE;
-    int iDE;
+    IGES_ENTITY_308* DE;    // Pointer to the Subfigure Definition Entity to be instantiated
+    int iDE;                // Directory Entry index to the Subfigure Definition Entity
 
 public:
     IGES_ENTITY_408( IGES* aParent );
@@ -71,13 +79,37 @@ public:
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    double X;
-    double Y;
-    double Z;
-    double S;
+    double X;   //< X translation relative to type space of a referring entity
+    double Y;   //< Y translation relative to type space of a referring entity
+    double Z;   //< Z translation relative to type space of a referring entity
+    double S;   //< scale factor relative to type space of a referring entity
 
+
+    /**
+     * Function GetDE
+     * retrieves a pointer to the associated Subfigure Definition Entity
+     * and returns true on success; false is returned if there is no
+     * associated Subfigure Definition Entity.
+     *
+     * @param aPtr = handle to store pointer to associated Subfigure Definition Entity
+     */
     bool GetDE( IGES_ENTITY_308** aPtr );
+
+
+    /**
+     * Function SetDE
+     * sets the associated Subfigure Definition Entity and returns true on
+     * success.
+     *
+     * @param aPtr = pointer to the Subfigure Definition Entity to associate
+     */
     bool SetDE( IGES_ENTITY_308* aPtr );
+
+    /**
+     * Function GetDepthLevel
+     * returns the nesting level of this entity; this function is used to
+     * establish correct Depth Level values as per the IGES specification.
+     */
     int GetDepthLevel( void );
 };
 

@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 308: Subfigure Definition Entity, Section 4.74, p.377(405+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 308: Subfigure Definition Entity, Section 4.74, p.377(405+)
  */
 
 #ifndef ENTITY_308_H
@@ -41,12 +43,22 @@
 // + Structure
 //
 
-class IGES_ENTITY_308: public IGES_ENTITY
+
+/**
+ * Class IGES_ENTITY_308
+ * represents the Subfigure Definition Entity. This entity is
+ * commonly used to define a feature within a part, a part
+ * within an assembly or subassembly, and a subassembly
+ * within an assembly. In the case of SolidWorks, as an
+ * example, each occurrence of this entity is treated as
+ * a Part or Subassembly.
+ */
+class IGES_ENTITY_308 : public IGES_ENTITY
 {
 protected:
 
     std::list<int>iDE;
-    std::list<IGES_ENTITY*>DE;  // associated entities
+    std::list<IGES_ENTITY*>DE;  //< associated entities
 
     friend class IGES;
     virtual bool format( int &index );
@@ -70,15 +82,47 @@ public:
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // class-specific functions
+
+    /**
+     * Function GetDepthLevel
+     * calculates and returns the Depth Level of this entity;
+     * this number is required to maintain a file which conforms
+     * to the IGES specification.
+     */
     int GetDepthLevel( void );
 
     // parameters
-    int DEPTH;
-    std::string NAME;
-    int N;
+    int DEPTH;          //< Depth Level of this instance
+    std::string NAME;   //< Name of this Subfigure Definition (Part Name or Subassembly Name)
+    int N;              //< Number of entities comprising this Subfigure Definition
 
+    /**
+     * Function GetDEList
+     * adds pointers to entities comprising this Subfigure Definition to the
+     * given entity pointer list and returns true on success.
+     *
+     * @param aList = the list to which entity pointers will be added
+     */
     bool GetDEList( std::list<IGES_ENTITY*>& aList );
+
+
+    /**
+     * Function AddDE
+     * adds an entity to the list of entities comprising this Subfigure Definition
+     * and returns true on success.
+     *
+     * @param aPtr = a pointer to the entity to be added
+     */
     bool AddDE( IGES_ENTITY* aPtr );
+
+    /**
+     * Function DelDE
+     * removes a given entity pointer from the list of entities
+     * comprising this Subfigure Definition and returns true if
+     * the specified entity pointer was found and removed.
+     *
+     * @param aPtr = pointer of entity to be disassociated
+     */
     bool DelDE( IGES_ENTITY* aPtr );
 };
 

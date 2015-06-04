@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 510: Face, Section 4.150, p.593+ (621+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -22,6 +20,10 @@
  *
  */
 
+/*
+ * Description: IGES Entity 510: Face, Section 4.150, p.593+ (621+)
+ */
+
 #ifndef ENTITY_510_H
 #define ENTITY_510_H
 
@@ -29,15 +31,24 @@
 
 // NOTE:
 // The associated parameter data are:
-// + N: Int: number of edge tuples
-// + CURV(n): Int: DE to curve entity (100, 102, 104, 106/(11,12,63), 110, 112, 126, 130)
-// + SVP(n): Int: DE of Vertex Entity (E502-1) for start vertex
-// + SV(n): Int: List Index of Vertex in SVP(n) for start vertex
-// + TVP(n): Int: DE of Vertex Entity (E502-1) for terminate vertex
-// + TV(n): Int: List Index of Vertex in TVP(n) for terminate vertex
+// + SURF: Int: DE to underlying surface entity; this may be one of Entities:
+//      114: Parametric Spline Surface
+//      118: (Form 1) Ruled Surface
+//      120: Surface of Revolution
+//      122: Tabulated Cylinder
+//      128: Rational B-Spline Surface
+//      140: Offset Surface
+//      190: Plane Surface (untested)
+//      192: Right Circular Cylindrical Surface (untested)
+//      194: Right Circular Conical Surface (untested)
+//      196: Spherical Surface (untested)
+//      198: Toroidal Surface (untested)
+// + N: Int: Number of loops (must be > 0)
+// + OF: Bool: Outer Loop Flag (true implies that the first loop is the outer loop)
+// + LOOP(n): Int: DE to LOOP entities on the face
 //
 // Forms:
-//  1: Vertex List
+//  1: Face
 //
 // Unused DE items:
 // + Structure
@@ -50,9 +61,15 @@
 
 class IGES_ENTITY_508;
 
+
+/**
+ * Class IGES_ENTITY_510
+ * represents the Face Entity
+ */
 class IGES_ENTITY_510 : public IGES_ENTITY
 {
 private:
+    // check that the surface type is allowed by the specification
     bool checkSurfType( IGES_ENTITY* aEnt );
 
 protected:
@@ -61,11 +78,11 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::list<int> iloops;              // DE to loops bounding the face
-    std::list<IGES_ENTITY_508*> mloops; // loops bounding the face
-    IGES_ENTITY* msurface;
-    int mDEsurf;
-    bool mOuterLoopFlag;                // Outer loop flag 'OF'
+    std::list<int> iloops;              //< DE to loops bounding the face, LOOP(1..N) in the specification
+    std::list<IGES_ENTITY_508*> mloops; //< loops bounding the face
+    IGES_ENTITY* msurface;              //< associated surface entity
+    int mDEsurf;                        //< DE to associated surface entity, 'SURF' in the specification
+    bool mOuterLoopFlag;                //< Outer loop flag 'OF' in the specification
 
 public:
     IGES_ENTITY_510( IGES* aParent );
@@ -90,13 +107,54 @@ public:
     virtual bool SetColor( IGES_ENTITY* aColor );
     virtual bool SetLineWeightNum( int aLineWeight );
 
-    // functions unique to E510
+
+    /**
+     * Function GetBounds
+     * returns a pointer to the list of loop entities which
+     * bound this face.
+     */
     const std::list<IGES_ENTITY_508*>* GetBounds( void );
+
+
+    /**
+     * Function AddBound
+     * adds a Loop Entity to the list of bounds to this face
+     * and returns true on success.
+     *
+     * @param aLoop = loop to add to face boundaries
+     */
     bool AddBound( IGES_ENTITY_508* aLoop );
+
+
+    /**
+     * Function SetSurface
+     * sets the pointer to the underlying surface of this face
+     * and returns true on success.
+     *
+     * @param aSurface = a pointer to a valid surface (see sec. 4.150 of the specification)
+     */
     bool SetSurface( IGES_ENTITY* aSurface );
+
+
+    /**
+     * Function GetSurface
+     * retrieves a pointer to the underlying surface entity or NULL
+     * if no such entity has been provided.
+     */
     IGES_ENTITY* GetSurface( void );
 
+
+    /**
+     * Function SetOuterLoopFlag
+     * sets the value of the Outer Loop Flag 'OF'.
+     */
     void SetOuterLoopFlag( bool aFlag );
+
+
+    /**
+     * Function GetOuterLoopFlag
+     * returns the value of the Outer Loop Flag 'OF'.
+     */
     bool GetOuterLoopFlag( void );
 };
 

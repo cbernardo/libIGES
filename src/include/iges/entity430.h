@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 430: Solid Instance Entity, Section 4.146 p.584/612+
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 430: Solid Instance Entity, Section 4.146 p.584/612+
  */
 
 #ifndef ENTITY_430_H
@@ -51,6 +53,14 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_430
+ * represents the Solid Instance Entity; this entity represents a single instance of
+ * a feature, part, or subassembly. Note: This class is currently unimplemented;
+ * implementation is contingent upon encountering IGES files which make use of this
+ * entity.
+ */
 class IGES_ENTITY_430 : public IGES_ENTITY
 {
 protected:

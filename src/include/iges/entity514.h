@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 514: Shell, Section 4.151, p.595+ (623+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 514: Shell, Section 4.151, p.595+ (623+)
  */
 
 #ifndef ENTITY_514_H
@@ -50,6 +52,11 @@
 
 class IGES_ENTITY_510;
 
+
+/**
+ * Class IGES_ENTITY_514
+ * represents the Shell Entity
+ */
 class IGES_ENTITY_514 : public IGES_ENTITY
 {
 protected:
@@ -58,8 +65,8 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::list<std::pair<int, bool> > ifaces;                // DE and OFlag for faces
-    std::list<std::pair<IGES_ENTITY_510*, bool> > mfaces;   // faces of the shell
+    std::list<std::pair<int, bool> > ifaces;                //< DE and OFlag for faces
+    std::list<std::pair<IGES_ENTITY_510*, bool> > mfaces;   //< faces of the shell
 
 public:
     IGES_ENTITY_514( IGES* aParent );

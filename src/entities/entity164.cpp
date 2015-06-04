@@ -246,7 +246,7 @@ bool IGES_ENTITY_164::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_164::IGES_ENTITY_164::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_164::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 {
     if( !aParentEntity )
     {

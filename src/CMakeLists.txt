@@ -36,11 +36,8 @@ if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
         set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
         set( SISL_NEEDS_BUILD TRUE )
     endif()
-
 else()
-
-        message( WARNING "Using user-provided SISL_INCLUDE_DIR and NOT SISL_LIBRARIES" )
-
+    message( WARNING "Using user-provided SISL_INCLUDE_DIR and NOT SISL_LIBRARIES" )
 endif()
 
 
@@ -71,12 +68,20 @@ include_directories(
     "${SISL_INCLUDE_DIR}"
     )
 
-if( CMAKE_BUILD_TYPE MATCHES Debug )
-    set( CMAKE_CXX_FLAGS "-Wall -DDEBUG" )
-else()
+if( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
+elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
+    add_definitions( -D_USE_MATH_DEFINES )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4" )
+endif()
+
+if( NOT CMAKE_BUILD_TYPE )
     set( CMAKE_BUILD_TYPE Release CACHE STRING
         "Build type, options are Debug or Release (default)" FORCE )
-    set( CMAKE_CXX_FLAGS "-Wall" )
+endif()
+
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+    add_definitions( -DDEBUG )
 endif()
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )

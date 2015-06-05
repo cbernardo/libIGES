@@ -10,24 +10,39 @@ set( CMAKE_VERBOSE_MAKEFILE ON )
 set( LIBIGES_VERSION_MAJOR 0 )
 set( LIBIGES_VERSION_MINOR 1 )
 
-include( ExternalProject )
-set( SISL_ROOT "${PROJECT_SOURCE_DIR}/sisl" )
-set( SISL_INCLUDE_DIR "${SISL_ROOT}/include" )
-set( SISL_LIB_DIR "${SISL_ROOT}" )
+set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules )
 
-ExternalProject_Add( sisl
-    SOURCE_DIR      ${SISL_ROOT}
-    GIT_SUBMODULES "sisl"
-    TIMEOUT         1200            # 20 minutes
+#NOTE: the SISL_LIBRARIES path has only been checked on Linux;
+#I don't know if it will work on other platforms.
+if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
+    find_package( SISL )
 
-    CMAKE_ARGS  -DBUILD_SHARED_LIBS:BOOL=TRUE
+    if( NOT SISL_FOUND )
+        message( WARNING "SISL could not be found; attempting to build from git submodule" )
 
-    BUILD_IN_SOURCE 1
+        include( ExternalProject )
+        set( SISL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sisl" )
+        set( SISL_INCLUDE_DIR "${SISL_SOURCE_DIR}/include" )
 
-    BUILD_COMMAND   make
-    UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
-    )
+        ExternalProject_Add( sisl_submod
+            PREFIX sisl_submod
+            SOURCE_DIR  "."
+            BINARY_DIR sisl_submod
+            BUILD_IN_SOURCE 0
+            CONFIGURE_COMMAND cmake -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
+            INSTALL_COMMAND ""
+        )
+
+        set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
+        set( SISL_NEEDS_BUILD TRUE )
+    endif()
+
+else()
+
+        message( WARNING "Using user-provided SISL_INCLUDE_DIR and NOT SISL_LIBRARIES" )
+
+endif()
+
 
 find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system )
 
@@ -56,7 +71,13 @@ include_directories(
     "${SISL_INCLUDE_DIR}"
     )
 
-set( CMAKE_CXX_FLAGS "-g -Wall -DDEBUG" )
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+    set( CMAKE_CXX_FLAGS "-Wall -DDEBUG" )
+else()
+    set( CMAKE_BUILD_TYPE Release CACHE STRING
+        "Build type, options are Debug or Release (default)" FORCE )
+    set( CMAKE_CXX_FLAGS "-Wall" )
+endif()
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
@@ -100,8 +121,11 @@ add_library( iges STATIC
     "${SRC_GEOM}/mcad_outline.cpp"
     )
 
-add_dependencies( iges sisl )
-target_link_libraries( iges "${SISL_LIB_DIR}/libsisl.so" "${Boost_LIBRARIES}" )
+if( SISL_NEEDS_BUILD )
+    add_dependencies( iges sisl_submod )
+endif()
+
+target_link_libraries( iges "${SISL_LIBRARIES}" "${Boost_LIBRARIES}" )
 
 add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/tests/test_read.cpp"

@@ -23,19 +23,37 @@ d. GCC (gcc, g++, GNU make) and other build tools:
 II. Cloning with git:
     git clone https://github.com/cbernardo/libIGES.git
 
-III. Cloning the SINTEF SISL libraries:
+III. Cloning the SINTEF SISL libraries: (only required if
+     you do not have a pre-built library installed)
     cd libIGES
     git submodule init
     git submodule update
 
 
 IV. Build: create a build directory and run cmake then make:
-    cd src
-    mkdir build
-    cd build
-    cmake ..
-    make
-    (alt: "make -j 8" or similar to use multiple cores to compile)
+
+    CASE 1: building with the SISL submodule OR a pre-installed
+            SISL library which can be found by CMake's find_package():
+        cd src
+        mkdir build
+        cd build
+        cmake ..
+        make
+        (alt: "make -j 8" or similar to use multiple cores to compile)
+
+    CASE 2: building with a pre-built SISL library which cannot
+            be found by find_package():
+        cd src
+        mkdir build
+        cd build
+        cmake -DSISL_INCLUDE_DIR=PATH_TO_SISL_INCLUDE_DIR -DSISL_LIBRARIES=PATH_TO_SISL_LIBRARY ..
+        make
+
+    OPTION: By default a release build is built; this can be changed by passing
+    the command line argument: -DCMAKE_BUILD_TYPE=Debug
+
+    NOTE: Pay attention to the messages displayed at the cmake configuration
+    stage to make sure that the SISL options are being configured as desired.
 
 That's all; there is no INSTALL script at this point since
 the software is still under development.

@@ -1,0 +1,7 @@
+1. Compile and build SISL:
+cmake -G "Visual Studio 12 2013 Win64" -DBUILD_SHARED_LIBS:BOOL=TRUE -DCMAKE_SHARED_LINKER_FLAGS="/DEF:..\..\sisl_exports.def"
+msbuild sisl.sln /p:/Platform=x64 /p:Configuration=Release
+
+2. Configure and build libIGES and co:
+cmake -G "Visual Studio 12 2013 Win64" -DBOOST_INCLUDEDIR=C:\Users\cirilo\code\boost_dl\boost_1_58_0 -DBOOST_LIBRARYDIR=C:\Users\cirilo\code\boost_dl\boost_1_58_0\bin -DSISL_INCLUDE_DIR=C:\Users\cirilo\code\libIGES\src\sisl\include -DSISL_LIBRARIES=C:\Users\cirilo\code\libIGES\src\sisl\build\Release\sisl.dll ..
+

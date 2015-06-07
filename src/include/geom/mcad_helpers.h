@@ -35,15 +35,15 @@ bool PointMatches( MCAD_POINT p1, MCAD_POINT p2, double minRes );
 bool CheckNormal( double& X, double &Y, double& Z );
 
 // print out an IGES transform
-class MCAD_TRANSFORM;
+struct MCAD_TRANSFORM;
 void print_transform( const MCAD_TRANSFORM* T );
 
 // print out an IGES matrix
-class MCAD_MATRIX;
+struct MCAD_MATRIX;
 void print_matrix( const MCAD_MATRIX* m );
 
 // print out an IGES point (decimal places limited to 3)
-class MCAD_POINT;
+struct MCAD_POINT;
 void print_vec( const MCAD_POINT* p );
 
 // calculate the normal given points p0, p1, p2

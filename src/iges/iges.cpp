@@ -53,6 +53,16 @@
 
 using namespace std;
 
+#ifdef _WIN32
+struct tm *gmtime_r(time_t const *timep, struct tm *tmp)
+{
+    if( gmtime_s( tmp, timep ) == 0 )
+        return tmp;
+
+    return 0;
+}
+#endif
+
 // Note: a default of 11 = IGES5.3
 #define DEFAULT_IGES_VERSION (11)
 

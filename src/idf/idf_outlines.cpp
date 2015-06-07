@@ -288,13 +288,13 @@ void BOARD_OUTLINE::readOutlines( std::ifstream& aBoardFile, IDF3::IDF_VERSION a
                 throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
             }
 
-            if( loopidx == -1 )
+            if( -1 == loopidx )
             {
                 // first outline
                 if( single )
                 {
                     // outline may have a Loop Index of 0 or 1
-                    if( tmp == 0 || tmp == 1 )
+                    if( 0 == tmp || 1 == tmp )
                     {
                         op = new IDF_OUTLINE;
 

@@ -28,7 +28,6 @@
  */
 
 
-#include <unistd.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -51,8 +50,6 @@
 #include <mcad_segment.h>
 #include <iges_geom_pcb.h>
 
-extern char* optarg;
-extern int   optopt;
 
 using namespace std;
 
@@ -95,43 +92,26 @@ int GetComponentColor( void );
 
 void PrintUsage( void )
 {
-    cout << "-\nUsage: idfigs -f input_file.emn\n";
+    cout << "-\nUsage: idfigs input_file.emn\n";
     return;
 }
 
 
 int main( int argc, char **argv )
 {
+    if( argc != 2 )
+    {
+        PrintUsage();
+        return -1;
+    }
+
     // IDF implicitly requires the C locale
     setlocale( LC_ALL, "C" );
 
     // Essential inputs:
     // 1. IDF file
 
-    std::string inputFilename;
-    int    ichar;
-
-    while( ( ichar = getopt( argc, argv, ":f:" ) ) != -1 )
-    {
-        switch( ichar )
-        {
-        case 'f':
-            inputFilename = optarg;
-            break;
-
-        default:
-            cerr << "* Unexpected option: '-";
-
-            if( ichar == '?' )
-                cerr << ((char) optopt) << "'\n";
-            else
-                cerr << ((char) ichar) << "'\n";
-
-            PrintUsage();
-            return -1;
-            break;
-        }
-    }
+    std::string inputFilename = argv[1];
 
     if( inputFilename.empty() )
     {

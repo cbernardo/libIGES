@@ -27,7 +27,6 @@
 #define IGES_GEOM_CYLINDER_H
 
 #include <vector>
-#include <sisl.h>
 #include <all_entities.h>
 
 class IGES;

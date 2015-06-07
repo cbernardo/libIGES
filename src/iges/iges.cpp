@@ -44,6 +44,7 @@
 #include <limits>
 #include <iomanip>
 #include <ctime>
+#include <algorithm>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>

@@ -34,6 +34,7 @@
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 #include <iges_geom_pcb.h>
+#include <sisl.h>
 
 
 using namespace std;

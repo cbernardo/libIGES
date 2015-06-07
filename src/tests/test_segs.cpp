@@ -967,9 +967,10 @@ void testArcs( void )
         ilist.clear();
     }
 
-#warning TO BE IMPLEMENTED: MULTI-EDGE TEST
-cout << "* Test: multiple-overlap arcs\n";
-cout << "  [FAIL]: TEST NOT IMPLEMENTED\n";
+    // XXX -
+    // WARNING: TO BE IMPLEMENTED
+    cout << "* Test: multiple-overlap arcs\n";
+    cout << "  [FAIL]: TEST NOT IMPLEMENTED\n";
 
     return;
 }

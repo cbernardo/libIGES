@@ -26,7 +26,7 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <geom_wall.h>
-
+#include <sisl.h>
 
 IGES_GEOM_WALL::IGES_GEOM_WALL()
 {

@@ -33,6 +33,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 #include <idf_common.h>
 #include <idf_helpers.h>
 

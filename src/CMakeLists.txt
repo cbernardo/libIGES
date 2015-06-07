@@ -130,7 +130,10 @@ if( SISL_NEEDS_BUILD )
     add_dependencies( iges sisl_submod )
 endif()
 
-target_link_libraries( iges "${SISL_LIBRARIES}" "${Boost_LIBRARIES}" )
+# Note that putting quotes around the variables here will make linking
+# fail on windows target bulds, both GCC cross compilation and MSVC
+# native.
+target_link_libraries( iges ${SISL_LIBRARIES} ${Boost_LIBRARIES} )
 
 add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/tests/test_read.cpp"

@@ -480,7 +480,8 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
     double b0 = aSegment.GetStartAngle();
     double b1 = aSegment.GetEndAngle();
 
-#warning TO BE IMPLEMENTED
+    // XXX -
+    // WARNING: TO BE IMPLEMENTED
     // XXX - we may have a condition where we have 2 edge overlaps;
     // this violates our constraint of 0 or 2 point intersections
     // and we must inform the calling routine of the problem (invalid geometry)

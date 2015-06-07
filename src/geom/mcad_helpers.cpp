@@ -26,6 +26,7 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
+#include <algorithm>
 
 #include <error_macros.h>
 #include <mcad_helpers.h>

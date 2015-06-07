@@ -480,4 +480,4 @@ bool IGES_ENTITY_514::SetLineWeightNum( int aLineWeight )
 }
 
 // XXX - MORE TO BE ADDED
-#warning UNIMPLEMENTED
+//WARNING: TO BE IMPLEMENTED

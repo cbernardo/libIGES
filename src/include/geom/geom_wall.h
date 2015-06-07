@@ -26,8 +26,10 @@
 #ifndef IGES_GEOM_WALL_H
 #define IGES_GEOM_WALL_H
 
-#include <sisl.h>
 #include <all_entities.h>
+
+struct SISLSurf;
+struct SISLCurve;
 
 class IGES;
 

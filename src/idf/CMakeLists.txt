@@ -7,4 +7,4 @@ add_library( idf3 STATIC
     idf_parser.cpp )
 
 add_executable( idf2igs idf2igs.cpp )
-target_link_libraries( idf2igs iges idf3 "${Boost_LIBRARIES}" )
+target_link_libraries( idf2igs iges idf3 ${Boost_LIBRARIES} )

@@ -29,6 +29,7 @@
 #include <iges.h>
 #include <mcad_helpers.h>
 #include <geom_cylinder.h>
+#include <sisl.h>
 
 using namespace std;
 

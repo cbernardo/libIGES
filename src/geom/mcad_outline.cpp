@@ -27,6 +27,7 @@
 
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 #include <error_macros.h>
 #include <mcad_helpers.h>
 #include <mcad_segment.h>

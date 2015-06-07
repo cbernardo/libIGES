@@ -232,7 +232,7 @@ bool IGES_ENTITY_154::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     char rd = parent->globalData.rdelim;
     double minRes = parent->globalData.minResolution;
 
-    idx = pdout.find( pd );
+	idx = (int)pdout.find(pd);
 
     if( idx < 1 || idx > 8 )
     {

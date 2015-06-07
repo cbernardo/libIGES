@@ -554,7 +554,7 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
         entities[iEnt]->sequenceNumber = (int)(iEnt << 1) + 1;
 
-    nDESecLines = nEnt << 1;
+    nDESecLines = (int)(nEnt << 1);
 
     // Format PD entries for output and update some DE items
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
@@ -653,7 +653,7 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
     std::string oline;
     std::string tmp;
 
-    if( !FormatDEInt( tmp, startSection.size() ) )
+    if( !FormatDEInt( tmp, (int)startSection.size() ) )
     {
         ERRMSG << "\n + [INFO] could not format S* entry in terminal line\n";
         file.close();
@@ -2099,7 +2099,7 @@ bool IGES::writeGlobals( std::ofstream& file )
     // Item 17: (Real) Max. Width of Lines
     // REQ NODEF ( use 1.0 if none specified )
     if( globalData.maxLinewidth < 1e-6 )
-        globalData.maxLinewidthGrad = 1.0;
+        globalData.maxLinewidthGrad = 1;
 
     if( !FormatPDREal( tstr, globalData.maxLinewidthGrad, pd, globalData.minResolution ) )
     {

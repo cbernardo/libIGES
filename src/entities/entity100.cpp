@@ -265,7 +265,7 @@ bool IGES_ENTITY_100::ReadPD( std::ifstream& aFile, int& aSequenceVar )
     char pd = parent->globalData.pdelim;
     char rd = parent->globalData.rdelim;
 
-    idx = pdout.find( pd );
+    idx = (int)pdout.find( pd );
 
     if( idx < 1 || idx > 8 )
     {

@@ -77,8 +77,8 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
         return true;
     }
 
-    j += np;
-    k -= np;
+    j += (int)np;
+    k -= (int)np;
 
     for( i = 0; i < k; ++i, ++j )
         tmp[i] = input[j];
@@ -131,8 +131,8 @@ bool DEItemToStr( const std::string& input, int field, std::string& var )
 
     if( idx != string::npos )
     {
-        j += idx;
-        i -= idx;
+		j += (int)idx;
+		i -= (int)idx;
 
         var = input.substr(j , i);
     }
@@ -257,7 +257,7 @@ bool ParseHString( const std::string& data, int& idx, std::string& param, bool& 
         return false;
     }
 
-    idx += (rp - cp);
+	idx += (int)(rp - cp);
 
     if( data[idx] != 'H' )
     {
@@ -633,7 +633,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
 
     if( fStr.length() + tStr.length() > 64 )
     {
-        int len = 64 - fStr.length();
+		int len = 64 - (int)fStr.length();
 
         if( len > 0 )
             fStr.append( len, ' ' );
@@ -670,7 +670,7 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
     if( tStr[tStr.length() -1] == rd )
     {
         // this is the final entry
-        int len = 64 - fStr.length();
+		int len = 64 - (int)fStr.length();
 
         if( len > 0 )
             fStr.append( len, ' ' );
@@ -739,7 +739,7 @@ bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
 
     if( fStr.length() + tStr.length() > 72 )
     {
-        int len = 72 - fStr.length();
+		int len = 72 - (int)fStr.length();
 
         if( len > 0 )
             fStr.append( len, ' ' );
@@ -767,7 +767,7 @@ bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
     if( tStr[tStr.length() -1] == rd )
     {
         // this is the final entry
-        int len = 72 - fStr.length();
+		int len = 72 - (int)fStr.length();
 
         if( len > 0 )
             fStr.append( len, ' ' );

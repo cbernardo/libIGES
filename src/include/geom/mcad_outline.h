@@ -68,7 +68,7 @@
 #include <list>
 #include <string>
 
-struct MCAD_SEGMENT;
+class MCAD_SEGMENT;
 
 struct MCAD_INTERSECT
 {

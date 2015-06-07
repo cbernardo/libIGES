@@ -2719,7 +2719,7 @@ bool IGES_ENTITY::formatComments( int& pdSeq )
 
 int IGES_ENTITY::GetNOptionalEntities( void )
 {
-    return extras.size();
+    return (int)extras.size();
 }
 
 
@@ -2796,7 +2796,7 @@ bool IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
 
 int IGES_ENTITY::GetNComments( void )
 {
-    return comments.size();
+    return (int)comments.size();
 }
 
 

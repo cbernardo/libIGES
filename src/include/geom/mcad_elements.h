@@ -25,8 +25,10 @@
 #ifndef MCAD_ELEMENTS_H
 #define MCAD_ELEMENTS_H
 
+#include <libigesconf.h>
+
 struct MCAD_MATRIX;
-struct MCAD_POINT
+struct MCAD_API MCAD_POINT
 {
     double x;
     double y;
@@ -42,13 +44,13 @@ struct MCAD_POINT
 };
 
 // V1 = V0 * scalar
-MCAD_POINT operator*( const MCAD_POINT& v, const double scalar );
+MCAD_API MCAD_POINT operator*(const MCAD_POINT& v, const double scalar);
 // V1 = scalar * V0
-MCAD_POINT operator*( const double scalar, const MCAD_POINT& v );
+MCAD_API MCAD_POINT operator*(const double scalar, const MCAD_POINT& v);
 // pX = p0 - p1
-MCAD_POINT operator-( const MCAD_POINT& p0, const MCAD_POINT& p1 );
+MCAD_API MCAD_POINT operator-(const MCAD_POINT& p0, const MCAD_POINT& p1);
 
-struct MCAD_MATRIX
+struct MCAD_API MCAD_MATRIX
 {
     double v[3][3];
 
@@ -66,16 +68,16 @@ struct MCAD_MATRIX
 };
 
 // C = MatrixA * MatrixB
-MCAD_MATRIX operator*( const MCAD_MATRIX& m, const MCAD_MATRIX& n );
+MCAD_API MCAD_MATRIX operator*(const MCAD_MATRIX& m, const MCAD_MATRIX& n);
 // C = MatrixA * scalar
-MCAD_MATRIX operator*( const MCAD_MATRIX& lhs, double rhs );
+MCAD_API MCAD_MATRIX operator*(const MCAD_MATRIX& lhs, double rhs);
 // C = scalar * MatrixA
-MCAD_MATRIX operator*( double scalar, const MCAD_MATRIX& m );
+MCAD_API MCAD_MATRIX operator*(double scalar, const MCAD_MATRIX& m);
 // V1 = MatrixA * V0
-MCAD_POINT operator*( const MCAD_MATRIX& m, const MCAD_POINT& v );
+MCAD_API MCAD_POINT operator*(const MCAD_MATRIX& m, const MCAD_POINT& v);
 
 
-struct MCAD_TRANSFORM
+struct MCAD_API MCAD_TRANSFORM
 {
     MCAD_TRANSFORM();
     MCAD_TRANSFORM( const MCAD_TRANSFORM& t );
@@ -88,10 +90,10 @@ struct MCAD_TRANSFORM
     MCAD_TRANSFORM& operator*=(const double scalar);
 };
 // scalar * TX
-MCAD_TRANSFORM operator*( const double scalar, const MCAD_TRANSFORM& m );
+MCAD_API MCAD_TRANSFORM operator*(const double scalar, const MCAD_TRANSFORM& m);
 // TX0 * TX1
-MCAD_TRANSFORM operator*( const MCAD_TRANSFORM& m, const MCAD_TRANSFORM& n );
+MCAD_API MCAD_TRANSFORM operator*(const MCAD_TRANSFORM& m, const MCAD_TRANSFORM& n);
 // TX * V (perform a transform + offset)
-MCAD_POINT operator*( const MCAD_TRANSFORM& m, const MCAD_POINT& v );
+MCAD_API MCAD_POINT operator*(const MCAD_TRANSFORM& m, const MCAD_POINT& v);
 
 #endif  // MCAD_ELEMENTS_H

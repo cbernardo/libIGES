@@ -27,6 +27,7 @@
 #ifndef ENTITY314_H
 #define ENTITY314_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -60,7 +61,7 @@
  * a fixed color definition which most closely matches this
  * color.
  */
-class IGES_ENTITY_314 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_314 : public IGES_ENTITY
 {
 protected:
 

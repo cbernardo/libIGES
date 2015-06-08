@@ -27,6 +27,7 @@
 #ifndef ENTITY_408_H
 #define ENTITY_408_H
 
+#include <libigesconf.h>
 #include <mcad_elements.h>
 #include <iges_entity.h>
 
@@ -52,7 +53,7 @@ class IGES_ENTITY_308;
  * entity is commonly used to instantiate a feature or part
  * within a part or subassembly.
  */
-class IGES_ENTITY_408 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_408 : public IGES_ENTITY
 {
 protected:
 

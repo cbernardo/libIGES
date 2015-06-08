@@ -30,8 +30,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "iges_base.h"
-#include "iges_entity.h"
+#include <libigesconf.h>
+#include <iges_base.h>
+#include <iges_entity.h>
 
 class IGES_ENTITY_308;
 
@@ -79,7 +80,7 @@ struct IGES_GLOBAL
  * Class IGES
  * is the high level object for manipulating IGES data
  */
-class IGES
+class MCAD_API IGES
 {
 private:
     static int idxPartNum;                  //< index used to create Part Name

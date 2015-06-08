@@ -27,11 +27,12 @@
 #define IGES_GEOM_CYLINDER_H
 
 #include <vector>
+#include <libigesconf.h>
 #include <all_entities.h>
 
 class IGES;
 
-class IGES_GEOM_CYLINDER
+class MCAD_API IGES_GEOM_CYLINDER
 {
 private:
     MCAD_POINT arcs[5];     // center, start .. end for series of sub-arcs;

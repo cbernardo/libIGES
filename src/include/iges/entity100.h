@@ -25,6 +25,7 @@
 #ifndef ENTITY_100_H
 #define ENTITY_100_H
 
+#include <libigesconf.h>
 #include <iges_curve.h>
 
 // NOTE:
@@ -47,7 +48,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_100 : public IGES_CURVE
+class MCAD_API IGES_ENTITY_100 : public IGES_CURVE
 {
 protected:
 

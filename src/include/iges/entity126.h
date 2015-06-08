@@ -25,6 +25,7 @@
 #ifndef ENTITY_126_H
 #define ENTITY_126_H
 
+#include <libigesconf.h>
 #include <iges_curve.h>
 #include <mcad_elements.h>
 
@@ -58,7 +59,7 @@ struct SISLCurve;
 // + Structure
 //
 
-class IGES_ENTITY_126 : public IGES_CURVE
+class MCAD_API IGES_ENTITY_126 : public IGES_CURVE
 {
 private:
     SISLCurve* scurve;

@@ -77,7 +77,7 @@ bool IDF3::GetIDFString( const std::string& aLine, std::string& aIDFString,
 
     std::ostringstream ostr;
 
-    int len = aLine.length();
+    int len = (int)aLine.length();
     int idx = aIndex;
 
     if( idx < 0 || idx >= len )

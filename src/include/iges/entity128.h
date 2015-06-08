@@ -25,6 +25,7 @@
 #ifndef ENTITY_128_H
 #define ENTITY_128_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 #include <mcad_elements.h>
 
@@ -71,7 +72,7 @@
 
 struct SISLSurf;
 
-class IGES_ENTITY_128 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_128 : public IGES_ENTITY
 {
 private:
     SISLSurf* ssurf;

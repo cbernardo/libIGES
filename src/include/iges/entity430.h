@@ -27,6 +27,7 @@
 #ifndef ENTITY_430_H
 #define ENTITY_430_H
 
+#include <libigesconf.h>
 #include <mcad_elements.h>
 #include <iges_entity.h>
 
@@ -61,7 +62,7 @@
  * implementation is contingent upon encountering IGES files which make use of this
  * entity.
  */
-class IGES_ENTITY_430 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_430 : public IGES_ENTITY
 {
 protected:
 

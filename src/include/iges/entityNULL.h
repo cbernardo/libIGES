@@ -27,7 +27,8 @@
 #ifndef ENTITY_NULL_H
 #define ENTITY_NULL_H
 
-#include "iges_entity.h"
+#include <libigesconf.h>
+#include <iges_entity.h>
 
 // NOTE:
 // It is impossible to reliably determine the entity type
@@ -58,7 +59,7 @@
  * Class IGES_ENTITY_NULL
  * represents the NULL Entity (Type 0) and all non-implemented entities.
  */
-class IGES_ENTITY_NULL : IGES_ENTITY
+class MCAD_API IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
     int trueEntity;     // actual Entity Type; non-zero in the case of

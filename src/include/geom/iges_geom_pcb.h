@@ -67,9 +67,10 @@
 
 #include <list>
 #include <string>
+#include <libigesconf.h>
 #include <mcad_outline.h>
 
-class IGES_GEOM_PCB : public MCAD_OUTLINE
+class MCAD_API IGES_GEOM_PCB : public MCAD_OUTLINE
 {
 private:
     // routines to create curves suitable as subordinates to the CPTR of

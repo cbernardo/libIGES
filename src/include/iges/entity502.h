@@ -27,6 +27,7 @@
 #ifndef ENTITY_502_H
 #define ENTITY_502_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -51,7 +52,7 @@
  * Class IGES_ENTITY_502
  * represents the Vertex List entity
  */
-class IGES_ENTITY_502 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_502 : public IGES_ENTITY
 {
 protected:
 

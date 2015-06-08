@@ -67,10 +67,11 @@
 
 #include <list>
 #include <string>
+#include <libigesconf.h>
 
 class MCAD_SEGMENT;
 
-struct MCAD_INTERSECT
+struct MCAD_API MCAD_INTERSECT
 {
     MCAD_POINT vertex;
     MCAD_SEGMENT* segA;     // pointer to the segment operated upon
@@ -85,7 +86,7 @@ struct MCAD_INTERSECT
     }
 };
 
-class MCAD_OUTLINE
+class MCAD_API MCAD_OUTLINE
 {
 protected:
     std::list< std::string > errors;

@@ -29,6 +29,7 @@
 
 #include <list>
 #include <vector>
+#include <libigesconf.h>
 #include <mcad_elements.h>
 
 enum MCAD_SEGTYPE
@@ -63,7 +64,7 @@ enum MCAD_INTERSECT_FLAG
 };
 
 
-class MCAD_SEGMENT
+class MCAD_API MCAD_SEGMENT
 {
 protected:
     friend class MCAD_OUTLINE;

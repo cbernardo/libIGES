@@ -43,6 +43,7 @@
 #include <string>
 #include <list>
 
+#include <libigesconf.h>
 #include <iges_base.h>
 #include <iges_entity.h>
 #include <mcad_elements.h>
@@ -54,7 +55,7 @@ struct IGES_RECORD;     // Partially parsed single line of data from an IGES fil
  * Class IGES_CURVE
  * is the base class of all IGES Curve entities
  */
-class IGES_CURVE : public IGES_ENTITY
+class MCAD_API IGES_CURVE : public IGES_ENTITY
 {
 protected:
 

@@ -31,7 +31,8 @@
 #include <list>
 #include <vector>
 
-#include "iges_base.h"
+#include <libigesconf.h>
+#include <iges_base.h>
 
 class IGES;             // Overarching data structure and parent to all entities
 struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
@@ -41,7 +42,7 @@ class IGES_ENTITY_124;  // Transform entity
  * Class IGES_ENTITY
  * base class for all IGES entities.
  */
-class IGES_ENTITY
+class MCAD_API IGES_ENTITY
 {
 protected:
     IGES*               parent;             //< master IGES object; contains globals and manages entity I/O

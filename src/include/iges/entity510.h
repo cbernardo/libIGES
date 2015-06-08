@@ -27,6 +27,7 @@
 #ifndef ENTITY_510_H
 #define ENTITY_510_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -66,7 +67,7 @@ class IGES_ENTITY_508;
  * Class IGES_ENTITY_510
  * represents the Face Entity
  */
-class IGES_ENTITY_510 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_510 : public IGES_ENTITY
 {
 private:
     // check that the surface type is allowed by the specification

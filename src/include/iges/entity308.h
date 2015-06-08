@@ -27,6 +27,7 @@
 #ifndef ENTITY_308_H
 #define ENTITY_308_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -53,7 +54,7 @@
  * example, each occurrence of this entity is treated as
  * a Part or Subassembly.
  */
-class IGES_ENTITY_308 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_308 : public IGES_ENTITY
 {
 protected:
 

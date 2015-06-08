@@ -26,6 +26,7 @@
 #ifndef IGES_GEOM_WALL_H
 #define IGES_GEOM_WALL_H
 
+#include <libigesconf.h>
 #include <all_entities.h>
 
 struct SISLSurf;
@@ -33,7 +34,7 @@ struct SISLCurve;
 
 class IGES;
 
-class IGES_GEOM_WALL
+class MCAD_API IGES_GEOM_WALL
 {
 private:
     SISLSurf* plane;        // NURBS representation of the plane

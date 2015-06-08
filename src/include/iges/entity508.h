@@ -27,6 +27,7 @@
 #ifndef ENTITY_508_H
 #define ENTITY_508_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -96,7 +97,7 @@ struct LOOP_DATA
  * Class IGES_ENTITY_508
  * represents the Loop Entity
  */
-class IGES_ENTITY_508 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_508 : public IGES_ENTITY
 {
 private:
     /// add a parent reference to a Vertex or Edge list entity and maintain a refcount

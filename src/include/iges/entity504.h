@@ -27,6 +27,7 @@
 #ifndef ENTITY_504_H
 #define ENTITY_504_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -81,7 +82,7 @@ struct EDGE_DEIDX
  * stores information on instantiated entities representing
  * part of an Edge entity
  */
-struct EDGE_DATA
+struct MCAD_API EDGE_DATA
 {
     IGES_ENTITY* curv;
     IGES_ENTITY_502* svp;
@@ -104,7 +105,7 @@ struct EDGE_DATA
  * Class IGES_ENTITY_504
  * represents the Edge Entity
  */
-class IGES_ENTITY_504 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_504 : public IGES_ENTITY
 {
 private:
     /// add a parent reference to a curve and ensure that it is not a duplicate

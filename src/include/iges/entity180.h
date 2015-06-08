@@ -25,6 +25,7 @@
 #ifndef ENTITY_180_H
 #define ENTITY_180_H
 
+#include <libigesconf.h>
 #include <mcad_elements.h>
 #include <iges_entity.h>
 
@@ -77,7 +78,7 @@ struct BTREE_NODE
 };
 
 
-class IGES_ENTITY_180 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_180 : public IGES_ENTITY
 {
 protected:
 

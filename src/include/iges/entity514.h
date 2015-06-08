@@ -27,6 +27,7 @@
 #ifndef ENTITY_514_H
 #define ENTITY_514_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -57,7 +58,7 @@ class IGES_ENTITY_510;
  * Class IGES_ENTITY_514
  * represents the Shell Entity
  */
-class IGES_ENTITY_514 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_514 : public IGES_ENTITY
 {
 protected:
 

@@ -26,6 +26,7 @@
 #ifndef ENTITY_186_H
 #define ENTITY_186_H
 
+#include <libigesconf.h>
 #include <iges_entity.h>
 
 // NOTE:
@@ -42,7 +43,7 @@
 
 class IGES_ENTITY_514;
 
-class IGES_ENTITY_186 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_186 : public IGES_ENTITY
 {
 protected:
     friend class IGES;

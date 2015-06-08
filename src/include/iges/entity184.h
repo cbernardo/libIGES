@@ -25,6 +25,7 @@
 #ifndef ENTITY_184_H
 #define ENTITY_184_H
 
+#include <libigesconf.h>
 #include <mcad_elements.h>
 #include <iges_entity.h>
 
@@ -47,7 +48,7 @@
 // + Structure
 //
 
-class IGES_ENTITY_184 : public IGES_ENTITY
+class MCAD_API IGES_ENTITY_184 : public IGES_ENTITY
 {
 protected:
 

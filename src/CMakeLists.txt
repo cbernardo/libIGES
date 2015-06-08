@@ -41,10 +41,10 @@ else()
 endif()
 
 
-find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system )
+find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system date_time )
 
-set( LIBIGES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-set( LIBIGES_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
+set( LIBIGES_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+set( LIBIGES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
 if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set( LIBIGES_LIBDIR RUNTIME DESTINATION bin )
@@ -71,7 +71,7 @@ include_directories(
 if( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
 elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    add_definitions( -D_USE_MATH_DEFINES )
+    add_definitions( -D_USE_MATH_DEFINES -DBOOST_ALL_DYN_LINK -DBOOST_EXCEPTION_DISABLE )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4" )
 endif()
 
@@ -88,7 +88,7 @@ set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
 set( SRC_GEOM "${CMAKE_CURRENT_SOURCE_DIR}/geom" )
 
-add_library( iges STATIC
+add_library( iges SHARED
     "${SRC_ENT}/iges_entity.cpp"
     "${SRC_ENT}/iges_curve.cpp"
     "${SRC_ENT}/entityNULL.cpp"

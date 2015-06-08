@@ -26,6 +26,7 @@
 #define IGES_IO_H
 
 #include <string>
+#include <libigesconf.h>
 #include <iges_base.h>
 
 /** Single-line data record as per IGES specification */
@@ -125,7 +126,8 @@ bool ParseLString( const std::string& data, int& idx, std::string& param, bool& 
  * @param rd = IGES Record Delimeter
  * @param idefault = pointer to a variable with a default value if the variable may be defaulted
  */
-bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault = NULL );
+MCAD_API bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
+	char pd, char rd, int* idefault = NULL);
 
 
 /**
@@ -142,7 +144,8 @@ bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd
  * @param rd = IGES Record Delimeter
  * @param ddefault = pointer to a variable with a default value if the variable may be defaulted
  */
-bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault = NULL );
+MCAD_API bool ParseReal( const std::string& data, int& idx, double& param, bool& eor,
+	char pd, char rd, double* ddefault = NULL );
 
 
 /**

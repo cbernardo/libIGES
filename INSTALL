@@ -183,11 +183,11 @@ BUILDING ON MS WINDOWS WITH MINGW64
     Note: The patch is only necessary for the MS Windows
     build using MinGW.
 
-6. install cmake:
+7. install cmake:
     pacman -S mingw-w64-x86_64-cmake
-7. install boost:
+8. install boost:
     pacman -S  mingw-w64-x86_64-boost
-8. Configure and build:
+9. Configure and build:
   cd ~/libIGES
   mkdir build
   cd build

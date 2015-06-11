@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 102: Composite Curve, Section 4.4, p.69+ (97+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 102: Composite Curve, Section 4.4, p.69+ (97+)
  */
 
 #ifndef ENTITY_102_H
@@ -76,6 +78,11 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_102
+ * represents a composite curve
+ */
 class MCAD_API IGES_ENTITY_102 : public IGES_CURVE
 {
 protected:

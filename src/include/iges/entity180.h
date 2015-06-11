@@ -54,6 +54,10 @@
 // to 1 if necessary.
 //
 
+/**
+ * Enum BTREE_OPERATOR
+ * represents the types of operators allowed in a Boolean Tree
+ */
 enum BTREE_OPERATOR
 {
     OP_START = 1,
@@ -63,6 +67,10 @@ enum BTREE_OPERATOR
     OP_END
 };
 
+/**
+ * Struct BTREE_NODE
+ * represents an IGES Boolean Tree parameter or operation.
+ */
 struct BTREE_NODE
 {
     bool op;    // true if this is an operation; false if an entity pointer
@@ -78,6 +86,10 @@ struct BTREE_NODE
 };
 
 
+/**
+ * Class IGES_ENTITY_180
+ * represents a Boolean Solid Operation Tree.
+ */
 class MCAD_API IGES_ENTITY_180 : public IGES_ENTITY
 {
 protected:
@@ -106,10 +118,38 @@ public:
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
+    /**
+     * Function AddOp
+     * adds the given operator to the list of entities in the boolean tree
+     *
+     * @param op = Boolean Operation
+     */
     bool AddOp( BTREE_OPERATOR op );
+
+    /**
+     * Function AddArg
+     * adds the given argument to the list of entities in the boolean tree
+     *
+     * @param aOperand = operand for the Boolean Tree
+     */
     bool AddArg( IGES_ENTITY* aOperand );
+
+    /**
+     * Function ClearNodes
+     * erases the current Boolean Tree operator/operand list
+     */
     void ClearNodes( void );
+
+    /**
+     * Function GetNNodes
+     * returns the number of nodes (operators and operands) in the BTREE list
+     */
     int GetNNodes( void );
+
+    /**
+     * Function GetNodes
+     * returns a pointer to the internal list of BTREE operators and operands
+     */
     std::list<BTREE_NODE*>* GetNodes( void );
 };
 

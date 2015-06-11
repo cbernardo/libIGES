@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 126: NURBS Curve, Section 4.23, p.133(161+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 126: NURBS Curve, Section 4.23, p.133(161+)
  */
 
 #ifndef ENTITY_126_H
@@ -59,6 +61,16 @@ struct SISLCurve;
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_126
+ * represents a BSPLINE curve; depending on the context of the
+ * entity referencing this curve, the curve may be a Parameter
+ * Space Curve (such as when it is referenced by the BPTR entity
+ * of a Curve on a Parametric Surface Entity) or a Model Space
+ * Curve (such as when it is referenced by the CPTR entity of a
+ * Curve on a Parametric Surface Entity).
+ */
 class MCAD_API IGES_ENTITY_126 : public IGES_CURVE
 {
 private:

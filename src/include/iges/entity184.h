@@ -48,6 +48,11 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_184
+ * represents a Solid Assembly.
+ */
 class MCAD_API IGES_ENTITY_184 : public IGES_ENTITY
 {
 protected:

@@ -43,6 +43,12 @@ class IGES_ENTITY_142;
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_144
+ * represents a Trimmed Parametric Surface; this is the
+ * primary entity type used to describe surfaces of a solid model.
+ */
 class MCAD_API IGES_ENTITY_144 : public IGES_ENTITY
 {
 protected:
@@ -88,15 +94,75 @@ public:
     virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    int N1;
-    int N2;
+    int N1; //< 0 if the outer boundary is the boundary of the underlying untrimmed surface
+    int N2; //< Number of simple closed curves representing the inner boundary of the surface (0 if no inner boundaries)
 
+    /**
+     * Function GetPTS
+     * retrieves a pointer to the underlying untrimmed surface entity and
+     * returns true on success.
+     *
+     * @param aPtr = handle to store pointer to underlying untrimmed surface
+     */
     bool GetPTS( IGES_ENTITY** aPtr );
+
+    /**
+     * Function SetPTS
+     * sets the underlying untrimmed surface entity and returns true on success.
+     *
+     * @param aPtr = pointer to underlying untrimmed surface
+     */
     bool SetPTS( IGES_ENTITY* aPtr );
+
+
+    /**
+     * Function GetPTO
+     * retrieves a pointer to the Curve on a Parametric Surface Entity
+     * representing the outer boundary of the surface and returns true
+     * on success. The returned pointer may be NULL if the surface is
+     * untrimmed.
+     *
+     * @param aPtr = handle to store pointer to outer boundary curve
+     */
     bool GetPTO( IGES_ENTITY_142** aPtr );
+
+    /**
+     * Function SetPTO
+     * sets the Curve on a Parametric Surface Entity representing the
+     * outer boundary of the surface and returns true on success.
+     *
+     * @param aPtr = pointer to outer boundary curve or NULL for an untrimmed surface
+     */
     bool SetPTO( IGES_ENTITY_142* aPtr );
+
+    /**
+     * Function GetPTIList
+     * retrieves the pointers to internal boundary curves
+     * and returns true on success.
+     *
+     * @param aList = list to store pointers
+     */
     bool GetPTIList( std::list<IGES_ENTITY_142*>& aList );
+
+    /**
+     * Function AddPTI
+     * adds a Curve on a Parametric Surface Entity to the
+     * list of internal boundaries for the surface and returns
+     * true on success.
+     *
+     * @param aPtr = pointer to the inner boundary curve
+     */
     bool AddPTI( IGES_ENTITY_142* aPtr );
+
+
+    /**
+     * Function DelPTI
+     * removes  a Curve on a Parametric Surface Entity from the
+     * list of internal boundaries for the surface and returns
+     * true if the curve was found and removed.
+     *
+     * @param aPtr = pointer to the inner boundary curve to be removed
+     */
     bool DelPTI( IGES_ENTITY_142* aPtr );
 };
 

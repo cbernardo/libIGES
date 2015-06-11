@@ -91,7 +91,7 @@ c. BOOST system, filesystem, and date-time:
     i. download the latest BOOST for MS Windows
     ii. run the bootstrap.bat program to create the build system;
         you must have a Microsoft Visual C++ compiler installed.
-    iii. build the essential pieces in Debig and Release configurations:
+    iii. build the essential pieces in Debug and Release configurations:
          b2 --toolset=msvc-12.0 variant=debug,release link=shared threading=multi
             runtime-link=shared architecture=x86 address-model=64 --layout=versioned
             --with-date_time --with-system --with-filesystem stage

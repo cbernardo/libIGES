@@ -43,6 +43,10 @@
 
 class IGES_ENTITY_514;
 
+/**
+ * Class IGES_ENTITY_186
+ * represents a Manifold Solid B-Rep Object (MSBO)
+ */
 class MCAD_API IGES_ENTITY_186 : public IGES_ENTITY
 {
 protected:
@@ -50,11 +54,11 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    int mDEshell;               // DE of the shell
-    IGES_ENTITY_514* mshell;    // the primary shell of this MSBO
-    bool mSOF;  // shell orientation flag
-    std::list<std::pair<int, bool> > ivoids;    // DE of voids and their Orientation Flag
-    std::list<std::pair<IGES_ENTITY_514*, bool> > mvoids;   // voids and their Orientation Flag
+    int mDEshell;               //< DE of the shell
+    IGES_ENTITY_514* mshell;    //< the primary shell of this MSBO
+    bool mSOF;  //< shell orientation flag
+    std::list<std::pair<int, bool> > ivoids;    //< DE of voids and their Orientation Flag
+    std::list<std::pair<IGES_ENTITY_514*, bool> > mvoids;   //< voids and their Orientation Flag
 
 public:
     IGES_ENTITY_186( IGES* aParent );

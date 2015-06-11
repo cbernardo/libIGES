@@ -43,6 +43,11 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_164
+ * represents a Solid of Linear Extrusion
+ */
 class MCAD_API IGES_ENTITY_164 : public IGES_ENTITY
 {
 protected:
@@ -69,14 +74,29 @@ public:
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
+    /**
+     * Function GetClosedCurve
+     * retrieves a pointer to the (planar) closed curve to be extruded
+     * and returns true if a closed curve had been specified.
+     *
+     * @param aCurve = handle to to store the reference to the closed curve
+     */
     bool GetClosedCurve( IGES_CURVE** aCurve );
+
+    /**
+     * Function SetClosedCurve
+     * sets the closed planar curve which is to be extruded and returns
+     * true on success.
+     *
+     * @param aCurve = pointer to the closed planar curve to be extruded
+     */
     bool SetClosedCurve( IGES_CURVE* aCurve );
 
-    int iPtr;           // DE Sequence of the planar curve
-    double L;           // length of extrusion
-    double I1;          // unit vector of direction; default 0,0,1.0
-    double J1;
-    double K1;
+    int iPtr;           //< DE Sequence of the planar curve
+    double L;           //< length of extrusion
+    double I1;          //< X unit vector of direction; default 0
+    double J1;          //< Y unit vector of direction; default 0
+    double K1;          //< Z unit vector of direction; default 1
 };
 
 #endif  // ENTITY_164_H

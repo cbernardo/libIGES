@@ -46,6 +46,11 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_154
+ * represents a Right Circular Cylinder
+ */
 class MCAD_API IGES_ENTITY_154 : public IGES_ENTITY
 {
 protected:
@@ -71,14 +76,14 @@ public:
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    double H;   // cylinder height
-    double R;   // cylinder radius
-    double X1;  // first face center coordinate, default (0,0,0)
-    double Y1;
-    double Z1;
-    double I1;  // unit vector in axis direction, default (0,0,1)
-    double J1;
-    double K1;
+    double H;   //< cylinder height
+    double R;   //< cylinder radius
+    double X1;  //< X value, first face center coordinate, default 0
+    double Y1;  //< Y value, first face center coordinate, default 0
+    double Z1;  //< Z value, first face center coordinate, default 0
+    double I1;  //< X value, unit vector in axis direction, default 0
+    double J1;  //< Y value, unit vector in axis direction, default 0
+    double K1;  //< Z value, unit vector in axis direction, default 1
 };
 
 #endif  // ENTITY_154_H

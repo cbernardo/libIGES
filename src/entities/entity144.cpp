@@ -704,7 +704,7 @@ bool IGES_ENTITY_144::GetPTO( IGES_ENTITY_142** aPtr )
 {
     *aPtr = PTO;
 
-    if( NULL == PTO )
+    if( NULL == PTO && 0 != N1 )
         return false;
 
     return true;
@@ -719,7 +719,10 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
     PTO = aPtr;
 
     if( NULL == aPtr )
+    {
+        N1 = 0;
         return true;
+    }
 
     bool dup = false;
 

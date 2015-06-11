@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 124: Transformation Matrix, Section 4.21, p.123+ (151+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 124: Transformation Matrix, Section 4.21, p.123+ (151+)
  */
 
 #ifndef ENTITY_124_H
@@ -70,7 +72,11 @@
 //
 
 
-
+/**
+ * Class IGES_ENTITY_124
+ * represents a Transformation which consists of a
+ * 3x3 Transformation Matrix and a 3x1 Offset Matrix.
+ */
 class MCAD_API IGES_ENTITY_124 : public IGES_ENTITY
 {
 protected:

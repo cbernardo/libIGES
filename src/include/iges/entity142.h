@@ -3,8 +3,6 @@
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: IGES Entity 142: Curve on a Parametric Surface, Section 4.32, p.178 (206+)
- *
  * This file is part of libIGES.
  *
  * libIGES is free software: you can redistribute it and/or modify
@@ -20,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with libIGES.  If not, see <http://www.gnu.org/licenses/>.
  *
+ */
+
+/*
+ * Description: IGES Entity 142: Curve on a Parametric Surface, Section 4.32, p.178 (206+)
  */
 
 #ifndef ENTITY_142_H
@@ -50,6 +52,11 @@
 // + Structure
 //
 
+
+/**
+ * Class IGES_ENTITY_142
+ * represents a Curve on a Parametric Surface
+ */
 class MCAD_API IGES_ENTITY_142 : public IGES_ENTITY
 {
 protected:
@@ -81,14 +88,66 @@ public:
     virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    int CRTN;
-    int PREF;
+    int CRTN;   //< Creation flag for the curve; 0=Unspecified, 1=Projection onto surface,
+                //< 2=Intersection of 2 surfaces, 3=Isoparametric curve
+    int PREF;   //< Preferred representation in the Sending System, 0=Unspecified,
+                //< 1=Curve in Parameter Space (BPTR) is preferred, 2=Model space curve (CPTR)
+                //< is preferred, 3=BPTR and CPTR are equally preferred.
 
+    /**
+     * Function GetSPTR
+     * retrieves a pointer to the underlying surface entity; this surface
+     * entity must be the same as the one referenced by the Trimmed Parametric Surface Entity
+     * which references this Curve on a Parametric Surface Entity. The function returns
+     * true on success.
+     *
+     * @param aPtr = handle to store pointer to the underlying surface entity
+     */
     bool GetSPTR( IGES_ENTITY** aPtr );
+
+    /**
+     * Function SetSPTR
+     * Sets the underlying surface entity and returns true on success.
+     *
+     * @param aPtr = pointer to the underlying surface entity
+     */
     bool SetSPTR( IGES_ENTITY* aPtr );
+
+    /**
+     * Function GetBPTR
+     * retrieves a pointer to the Parameter Space Curve on the underlying surface entity
+     * and returns true on success (such a curve exists).
+     *
+     * @param aPtr = handle to store pointer to the Parameter Space Curve
+     */
     bool GetBPTR( IGES_ENTITY** aPtr );
+
+
+    /**
+     * Function SetBPTR
+     * sets the Parameter Space Curve on the underlying surface entity
+     * and returns true on success.
+     *
+     * @param aPtr = pointer to the Parameter Space Curve
+     */
     bool SetBPTR( IGES_ENTITY* aPtr );
+
+    /**
+     * Function GetCPTR
+     * retrieves a pointer to the Model Space Curve on the underlying surface entity
+     * and returns true on success (such a curve exists).
+     *
+     * @param aPtr = handle to store pointer to the Model Space Curve
+     */
     bool GetCPTR( IGES_ENTITY** aPtr );
+
+    /**
+     * Function SetCPTR
+     * sets the Model Space Curve on the underlying surface entity
+     * and returns true on success.
+     *
+     * @param aPtr = pointer to the Model Space Curve
+     */
     bool SetCPTR( IGES_ENTITY* aPtr );
 };
 

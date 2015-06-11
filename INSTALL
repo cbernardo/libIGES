@@ -178,7 +178,7 @@ BUILDING ON MS WINDOWS WITH MINGW64
     git submodule init
     git submodule update
     cd src\sisl
-    git am ../patches/0001-sisl.patch
+    git apply ../patches/0001-sisl.patch
 
     Note: The patch is only necessary for the MS Windows
     build using MinGW.

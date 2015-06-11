@@ -24,20 +24,61 @@ if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
         set( SISL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sisl" )
         set( SISL_INCLUDE_DIR "${SISL_SOURCE_DIR}/include" )
 
-        ExternalProject_Add( sisl_submod
-            PREFIX sisl_submod
-            SOURCE_DIR  "."
-            BINARY_DIR sisl_submod
-            BUILD_IN_SOURCE 0
-            CONFIGURE_COMMAND cmake -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
-            INSTALL_COMMAND ""
-        )
+        if( CMAKE_C_COMPILER_ID MATCHES "MSVC" )
+            ExternalProject_Add( sisl_submod
+                PREFIX sisl_submod
+                SOURCE_DIR  .
+                BINARY_DIR sisl_submod
+                BUILD_IN_SOURCE 0
+                CONFIGURE_COMMAND cmake -G "${CMAKE_GENERATOR}" -DBUILD_SHARED_LIBS:BOOL=TRUE -DCMAKE_SHARED_LINKER_FLAGS="/DEF:../../sisl_exports.def" ${SISL_SOURCE_DIR}
+                BUILD_COMMAND msbuild sisl.sln /p:Configuration=Release
+                INSTALL_COMMAND ""
+            )
 
-        set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
+            if( CMAKE_BUILD_TYPE MATCHES "Debug" )
+                set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/Debug/${CMAKE_SHARED_LIBRARY_PREFIX}sisl.lib )
+            else()
+                set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/Release/${CMAKE_SHARED_LIBRARY_PREFIX}sisl.lib )
+            endif()
+
+            add_definitions( /D SISLNEEDPROTOTYPES )
+  
+        elseif( WIN32 )
+
+            ExternalProject_Add( sisl_submod
+                PREFIX sisl_submod
+                SOURCE_DIR  .
+                BINARY_DIR sisl_submod
+                BUILD_IN_SOURCE 0
+                CONFIGURE_COMMAND cmake -G "${CMAKE_GENERATOR}" -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_AR=${CMAKE_AR} -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
+                INSTALL_COMMAND ""
+            )
+
+            set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
+
+        else()
+
+            ExternalProject_Add( sisl_submod
+                PREFIX sisl_submod
+                SOURCE_DIR  .
+                BINARY_DIR sisl_submod
+                BUILD_IN_SOURCE 0
+                CONFIGURE_COMMAND cmake -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
+                INSTALL_COMMAND ""
+            )
+
+            set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
+
+        endif()
+
         set( SISL_NEEDS_BUILD TRUE )
+
     endif()
+
 else()
+
     message( WARNING "Using user-provided SISL_INCLUDE_DIR and NOT SISL_LIBRARIES" )
+
 endif()
 
 

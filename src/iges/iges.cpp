@@ -53,7 +53,7 @@
 
 using namespace std;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 struct tm *gmtime_r(time_t const *timep, struct tm *tmp)
 {
     if( gmtime_s( tmp, timep ) == 0 )

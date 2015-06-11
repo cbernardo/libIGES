@@ -1,17 +1,21 @@
 This software is being developed on a Debian Linux system
-and the CMake scripts have not been tested on other
-systems, so developers and testers using other systems
-will have to sort out issues on their own at the moment.
-Installation instructions below assume a Debian-based
-system; users of other systems will have to modify the
-instructions to suit their own package managers.
+with some testing on MS Windows using MinGW-64 and MSVC
+2013. Developers and testers using other systems may
+have to sort out any build issues on their own.
+
+
+================================
+BUILDING ON DEBIAN BASED SYSTEMS
+================================
 
 I. Requirements:
 a. git:
     apt-get install git
 
-b. BOOST system and filesystem:
-    apt-get install libboost-system-dev libboost-filesystem-dev
+b. BOOST system, filesystem, and date-time:
+    apt-get install libboost-system-dev
+    apt-get install libboost-filesystem-dev
+    apt-get install libboost-date-time-dev
 
 c. cmake:
     apt-get install cmake
@@ -67,3 +71,125 @@ directory. To run the idf2igs tool:
 The resulting IGES file can be viewed in your favorite
 MCAD software. SolidWorks will display the assembly
 with colors while FreeCAD uses only grey.
+
+
+
+=========================================
+BUILDING ON MS WINDOWS WITH VISUAL STUDIO
+=========================================
+
+I. Requirements:
+a. git: install your favorite Windows command line
+   version of git.
+
+b. Microsoft Visual C++ (in this example it is MSVC 2013, aka MSVC 12.0).
+   If you do not have an MSVC compiler, try Microsoft's Visual Studio
+   Community 2013 or Visual Studio Express for Desktop which is provided
+   free of charge for users who meet Microsoft's criteria.
+
+c. BOOST system, filesystem, and date-time:
+    i. download the latest BOOST for MS Windows
+    ii. run the bootstrap.bat program to create the build system;
+        you must have a Microsoft Visual C++ compiler installed.
+    iii. build the essential pieces in Debig and Release configurations:
+         b2 --toolset=msvc-12.0 variant=debug,release link=shared threading=multi
+            runtime-link=shared architecture=x86 address-model=64 --layout=versioned
+            --with-date_time --with-system --with-filesystem stage
+
+d. cmake: install your favorite Windows version of cmake
+
+II. Cloning with git:
+    git clone https://github.com/cbernardo/libIGES.git
+
+III. Cloning the SINTEF SISL libraries: (only required if
+     you do not have a pre-built library installed)
+    cd libIGES
+    git submodule init
+    git submodule update
+
+
+IV. Build: create a build directory and run cmake then make:
+
+    CASE 1: building with the SISL submodule OR a pre-installed
+            SISL library which can be found by CMake's find_package():
+        cd src
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 12 2013 Win64"
+              -DBOOST_INCLUDEDIR=[path to boost source dir]
+              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib  ..
+        cmake --build . -- /p:Configuration=Release /m:8
+
+        Note: the configuration option may also be set to Debug;
+        the /m:8 option specifies a maximum of 8 cores to be used for
+        the compilation.
+
+    CASE 2: building with a pre-built SISL library which cannot
+            be found by find_package():
+        cd src
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 12 2013 Win64"
+              -DBOOST_INCLUDEDIR=[path to boost source dir]
+              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib
+              -DSISL_INCLUDE_DIR=[path to sisl include directory]
+              -DSISL_LIBRARIES=[path to SISL Release (or Debug) library] ..
+        cmake --build . -- /p:Configuration=Release /m:8
+
+There is no INSTALL script at this point since the software
+is still under development.
+
+The programs will be in the 'build\Release' directory (or
+'build\Debug' for debug builds). To run the programs you
+will need to place a copy of the appropriate BOOST and SISL
+DLLs into the same directory.
+
+To run the idf2igs tool:
+
+idf2igs -f some_IDF_file.emn
+
+The resulting IGES file can be viewed in your favorite
+MCAD software. SolidWorks will display the assembly
+with colors while FreeCAD uses only grey.
+
+
+
+===================================
+BUILDING ON MS WINDOWS WITH MINGW64
+===================================
+
+1. install msys2 and run the w64 console
+2. synchronize the package repository:
+    pacman -Sy
+3. install gcc/g++/gdb/make
+    * search for candidates:
+    pacman -Ss gcc
+    pacman -Ss gdb
+    pacman -Ss make
+    * install
+    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb
+    pacman -S mingw-w64-x86_64-make
+4. install git and openssh:
+    pacman -S git openssh
+    pacman -S python
+5  If you are retrieving the source via git:
+    cd && git clone https://github.com/cbernardo/libIGES.git
+6. install cmake:
+    pacman -S mingw-w64-x86_64-cmake
+7. install boost:
+    pacman -S  mingw-w64-x86_64-boost
+8. Configure and build:
+  cd ~/libIGES
+  mkdir build
+  cd build
+  /mingw64/bin/cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    -DCMAKE_AR=/mingw64/bin/ar.exe \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON ..
+
+  Note: most test programs will be in the build directory
+  while the idf2igs tool will be in the build/idf directory.
+  The programs must be run within the MSys environment to
+  ensure that all shared libraries can be found.

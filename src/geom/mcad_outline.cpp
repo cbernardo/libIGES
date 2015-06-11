@@ -1829,7 +1829,7 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
 
         aOutline->msegments = tSegs;
-        oSegs.front() = --aOutline->msegments.begin();
+        oSegs.front() = --aOutline->msegments.end();
         eSegO = --aOutline->msegments.end();
     }
 

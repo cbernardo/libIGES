@@ -128,18 +128,62 @@ public:
     virtual int GetNSegments( void );
     virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
-    // nCoeff: number of control points and weights
-    // knot: pointer to hold pointer to knots
-    // coeffs: pointer to hold pointer to control points and weights
+    /**
+     * Function GetNURBSData
+     * retrieves parameters from the internal SISLCurve
+     * representation of the curve and returns true
+     * on success; if there is no defined curve the
+     * function returns false.
+     *
+     * @param nCoeff = number of control points + weights
+     * @param order = polynomial/spline order of the curve
+     * @param knot = knot vectors
+     * @param coeff = X, Y, Z, (and Weight if applicable) values for the curve
+     * @param isRational = set to true if the curve is rational (unequal weights)
+     * @param isClosed = set to true if the curve is closed
+     * @param isPeriodic = set to true if the curve has been flagged as periodic
+     */
     bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff, bool& isRational,
                        bool& isClosed, bool& isPeriodic );
 
+    /**
+     * Function SetNURBSData
+     * set parameters of the internal SISLCurve representation of the curve and
+     * returns true on success.
+     *
+     * @param nCoeff = number of control points + weights
+     * @param order = polynomial/spline order of the curve
+     * @param knot = knot vectors
+     * @param coeff = X, Y, Z, (and Weight if applicable) values for the curve
+     * @param isRational = set to true if the curve is rational (unequal weights)
+     */
     bool SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff,
                        bool isRational );
 
+    /**
+     * Function IsPlanar
+     * returns true if the curve lies on a plane
+     */
     bool IsPlanar( void );
+
+    /**
+     * Function IsRational
+     * returns true if the curve is a Rational B-Spline and
+     * false if the curve is a Polynomial Curve.
+     */
     bool IsRational( void );
+
+    /**
+     * Function isPeriodic
+     * returns true if the curve is periodic
+     */
     bool isPeriodic( void );
+
+    /**
+     * Function GetNormal
+     * calculates the normal vector if the curve is planar and
+     * returns true if the curve is planar.
+     */
     bool GetNormal( MCAD_POINT& aNorm );
 };
 

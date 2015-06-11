@@ -48,7 +48,9 @@ class IGES_CURVE;
 
 /**
  * Class IGES_ENTITY_120
- * represents a Surface of Revolution
+ * represents a Surface of Revolution which consists of a
+ * 2D/3D Generatrix curve, an axis of revolution,
+ * and a Start and Terminate angle.
  */
 class MCAD_API IGES_ENTITY_120 : public IGES_ENTITY
 {
@@ -79,22 +81,87 @@ public:
     int iL;         // DE pointer to line entity
     int iC;         // DE pointer to curve entity
 
+    /**
+     * Function GetL
+     * retrieves a pointer to the axis of revolution and
+     * returns true on success.
+     *
+     * @param aCurve = handle to store pointer to axis of revolution, a line entity (Type 110)
+     */
     bool GetL( IGES_CURVE** aCurve );
+
+    /**
+     * Function GetAxis
+     * retrieves a pointer to the axis of revolution and
+     * returns true on success.
+     *
+     * @param aCurve = handle to store pointer to axis of revolution, a line entity (Type 110)
+     */
     bool GetAxis( IGES_CURVE** aCurve );
+
+    /**
+     * Function SetL
+     * sets the axis of revolution and returns true on success.
+     *
+     * @param aCurve = pointer to line entity (Type 110) representing the axis of revolution
+     */
     bool SetL( IGES_CURVE* aCurve );
+
+    /**
+     * Function SetAxis
+     * sets the axis of revolution and returns true on success.
+     *
+     * @param aCurve = pointer to line entity (Type 110) representing the axis of revolution
+     */
     bool SetAxis( IGES_CURVE* aCurve );
 
+    /**
+     * Function GetC
+     * retrieves a pointer to the 2D/3D Generatrix curve and
+     * returns true on success.
+     *
+     * @param aCurve = handle to store pointer to generatrix curve
+     */
     bool GetC( IGES_CURVE** aCurve );
+
+    /**
+     * Function GetGeneratrix
+     * retrieves a pointer to the 2D/3D Generatrix curve and
+     * returns true on success.
+     *
+     * @param aCurve = handle to store pointer to generatrix curve
+     */
     bool GetGeneratrix( IGES_CURVE** aCurve );
+
+
+    /**
+     * Function SetC
+     * sets the 2D/3D Generatrix curve and returns true on success.
+     *
+     * @param aCurve = pointer to generatrix curve
+     */
     bool SetC( IGES_CURVE* aCurve );
+
+    /**
+     * Function SetGeneratrix
+     * sets the 2D/3D Generatrix curve and returns true on success.
+     *
+     * @param aCurve = pointer to generatrix curve
+     */
     bool SetGeneratrix( IGES_CURVE* aCurve );
 
+    /**
+     * Start Angle (radians)
+     */
     union
     {
         double SA;
         double startAngle;
     };
 
+    /**
+     * Terminal Angle (radians)
+     */
     union
     {
         double TA;

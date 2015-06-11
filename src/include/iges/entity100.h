@@ -53,7 +53,9 @@
 
 /**
  * Class IGES_ENTITY_100
- * represents a circle or a circular arc
+ * represents a circle or a counterclockwise circular arc comprised of
+ * a Z plane, center point and arc start and end points; a circle has
+ * an end point which is the same as its start point.
  */
 class MCAD_API IGES_ENTITY_100 : public IGES_CURVE
 {
@@ -93,42 +95,49 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
+    /// Z plane of the circular arc
     union
     {
         double zOffset;     // ZT in the IGES spec
         double ZT;
     };
 
+    /// X value, arc center
     union
     {
         double xCenter;     // X1
         double X1;
     };
 
+    /// Y value, arc center
     union
     {
         double yCenter;     // Y1
         double Y1;
     };
 
+    /// X value, arc start point
     union
     {
         double xStart;      // X2
         double X2;
     };
 
+    /// Y value, arc start point
     union
     {
         double yStart;      // Y2
         double Y2;
     };
 
+    /// X value, arc end point
     union
     {
         double xEnd;        // X3
         double X3;
     };
 
+    /// X value, arc end point
     union
     {
         double yEnd;        // Y3

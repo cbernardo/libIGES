@@ -128,23 +128,82 @@ public:
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    // nCoeff: number of control points and weights
-    // knot: pointer to hold pointer to knots
-    // coeffs: pointer to hold pointer to control points and weights
+    /**
+     * Function GetNURBSData
+     * retrieves parameters from the internal SISLSurf
+     * representation of the surface and returns true
+     * on success; if there is no defined surface the
+     * function returns false.
+     *
+     * @param nCoeff1 = number of control points + weights for Parameter U
+     * @param nCoeff2 = number of control points + weights for Parameter V
+     * @param order1 = polynomial/spline order of Parameter U
+     * @param order2 = polynomial/spline order of Parameter V
+     * @param knot1 = knot vectors for Parameter U
+     * @param knot2 = knot vectors for Parameter V
+     * @param coeff = X, Y, Z, (and Weight if applicable) values for UV surface
+     * @param isRational = set to true if the surface is rational (unequal weights)
+     * @param isClosed1 = set to true if the surface is closed in Parameter U
+     * @param isClosed2 = set to true if the surface is closed in Parameter V
+     * @param isPeriodic1 = set to true if the surface is periodic in U
+     * @param isPeriodic2 = set to true if the surface is periodic in V
+     */
     bool GetNURBSData( int& nCoeff1, int& nCoeff2, int& order1, int& order2,
                        double** knot1, double** knot2, double** coeff,
                        bool& isRational, bool& isClosed1, bool& isClosed2,
                        bool& isPeriodic1, bool& isPeriodic2 );
 
+    /**
+     * Function SetNURBSData
+     * Sets the parameters for the internal SISLSurf
+     * representation of the surface and returns true
+     * on success.
+     *
+     * @param nCoeff1 = number of control points + weights for Parameter U
+     * @param nCoeff2 = number of control points + weights for Parameter V
+     * @param order1 = polynomial/spline order of Parameter U
+     * @param order2 = polynomial/spline order of Parameter V
+     * @param knot1 = knot vectors for Parameter U
+     * @param knot2 = knot vectors for Parameter V
+     * @param coeff = X, Y, Z, (and Weight if applicable) values for UV surface
+     * @param isRational = set to true if the surface is rational (unequal weights)
+     * @param isPeriodic1 = set to true if the surface is periodic in U
+     * @param isPeriodic2 = set to true if the surface is periodic in V
+     */
     bool SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
                        const double* knot1, const double* knot2,
                        const double* coeff, bool isRational,
                        bool isPeriodic1, bool isPeriodic2 );
 
+    /**
+     * Function IsRational
+     * returns true if the surface is a rational B-Spline and
+     * false if the surface is a polynomial.
+     */
     bool IsRational( void );
+
+    /**
+     * Function isClosed1
+     * returns true if the surface is closed in Parameter U
+     */
     bool isClosed1( void );
+
+    /**
+     * Function isClosed1
+     * returns true if the surface is closed in Parameter V
+     */
     bool isClosed2( void );
+
+    /**
+     * Function isPeriodic1
+     * returns true if the surface has been flagged as periodic in Parameter U
+     */
     bool isPeriodic1( void );
+
+    /**
+     * Function isPeriodic2
+     * returns true if the surface has been flagged as periodic in Parameter V
+     */
     bool isPeriodic2( void );
 
 };

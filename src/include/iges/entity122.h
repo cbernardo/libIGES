@@ -47,7 +47,10 @@
 
 /**
  * Class IGES_ENTITY_122
- * represents a Tabulated Cylinder
+ * represents a Tabulated Cylinder which consists of a line segment,
+ * the generatrix, which is swept along a 2D or 3D curve, the
+ * directrix. The implied start point of the generatrix is the start
+ * point of the directrix.
  */
 class MCAD_API IGES_ENTITY_122 : public IGES_ENTITY
 {
@@ -76,11 +79,25 @@ public:
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // parameters
-    double LX;
-    double LY;
-    double LZ;
+    double LX;  //< X value of Generatrix end point
+    double LY;  //< Y value of Generatrix end point
+    double LZ;  //< Z value of Generatrix end point
 
+    /**
+     * Function GetDE
+     * retrieves a pointer to the Directrix Entity 2D/3D curve
+     * and returns true on success.
+     *
+     * @param aPtr = handle to store a pointer to the directrix curve
+     */
     bool GetDE( IGES_CURVE** aPtr );
+
+    /**
+     * Function SetDE
+     * sets the curve entity of the Directrix and returns true on success.
+     *
+     * @param aPtr = pointer to the Directrix curve
+     */
     bool SetDE( IGES_CURVE* aPtr );
 };
 

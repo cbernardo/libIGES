@@ -87,7 +87,7 @@ protected:
 
 
 public:
-    MCAD_TRANSFORM T;
+    MCAD_TRANSFORM T;   //< Transformation matrix data for this entity
 
     IGES_ENTITY_124( IGES* aParent );
     virtual ~IGES_ENTITY_124();
@@ -123,7 +123,13 @@ public:
     virtual bool SetColor( IGES_ENTITY* aColor );
     virtual bool SetLineWeightNum( int aLineWeight );
 
-    // retrieves the overall transform matrix ()
+    /**
+     * Function GetTransformMatrix
+     * returns the overall transformation matrix for this entity
+     * which is equal to the local transform data multiplied by the
+     * overall transformation matrix of the referenced transform
+     * entity if any.
+     */
     MCAD_TRANSFORM GetTransformMatrix( void );
 };
 

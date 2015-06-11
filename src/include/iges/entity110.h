@@ -78,12 +78,12 @@ public:
     virtual bool SetEntityForm(int aForm);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    double X1;  // Start point
-    double Y1;
-    double Z1;
-    double X2;  // End point
-    double Y2;
-    double Z2;
+    double X1;  // X value, start point
+    double Y1;  // Y value, start point
+    double Z1;  // Z value, start point
+    double X2;  // X value, end point
+    double Y2;  // Y value, end point
+    double Z2;  // Z value, end point
 
     // methods required of parameterized curve entities
     virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );

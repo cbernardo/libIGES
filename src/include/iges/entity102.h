@@ -81,7 +81,12 @@
 
 /**
  * Class IGES_ENTITY_102
- * represents a composite curve
+ * represents a composite curve comprised of a list of entities
+ * of types 100 (circle), 104 (conic section), 110 (line).
+ * 112 (parametric spline curve), 126 (spline curve),
+ * 106[forms 1, 2, 3, 11, 12, 13, 63] (copious data),
+ * or 130 (offset curve). In addition the list may contain points of
+ * type 116 (point entity), or 132 (connect point entity).
  */
 class MCAD_API IGES_ENTITY_102 : public IGES_CURVE
 {

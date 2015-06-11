@@ -86,17 +86,17 @@ public:
     virtual ~IGES_ENTITY_104();
 
     // public variables
-    double A;
-    double B;
-    double C;
-    double D;
-    double E;
-    double F;
-    double ZT;
-    double X1;
-    double Y1;
-    double X2;
-    double Y2;
+    double A;   //< 1st general conic parameter
+    double B;   //< 2nd general conic parameter
+    double C;   //< 3rd general conic parameter
+    double D;   //< 4th general conic parameter
+    double E;   //< 5th general conic parameter
+    double F;   //< 6th general conic parameter
+    double ZT;  //< Z coordinate of plane in which conic is defined
+    double X1;  //< X value, start point, abscissa
+    double Y1;  //< Y value, start point, abscissa
+    double X2;  //< X value, terminal point, abscissa
+    double Y2;  //< Y value, terminal point, abscissa
 
     // Inherited from IGES_ENTITY
     virtual bool Associate( std::vector<IGES_ENTITY*>* entities );

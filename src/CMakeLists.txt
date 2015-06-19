@@ -22,7 +22,22 @@ if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
 
         include( ExternalProject )
         set( SISL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sisl" )
-        set( SISL_INCLUDE_DIR "${SISL_SOURCE_DIR}/include" )
+        find_file( SISL_INCLUDE_DIR sisl.h PATHS "${SISL_SOURCE_DIR}/include" NO_DEFAULT_PATH )
+
+        if( ${SISL_INCLUDE_DIR} MATCHES SISL_INCLUDE_DIR-NOTFOUND )
+            execute_process( COMMAND git submodule init
+                COMMAND git submodule update
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                RESULT_VARIABLE SISL_SRC_OK
+                )
+
+            if( NOT ${SISL_SRC_OK} EQUAL 0 )
+                message( FATAL_ERROR "Could not initialize/update SISL source" )
+            endif()
+
+            set( SISL_INCLUDE_DIR "${SISL_SOURCE_DIR}/include" CACHE PATH "SISL includes" FORCE )
+
+        endif()
 
         if( CMAKE_C_COMPILER_ID MATCHES "MSVC" )
             ExternalProject_Add( sisl_submod
@@ -42,7 +57,7 @@ if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
             endif()
 
             add_definitions( /D SISLNEEDPROTOTYPES )
-  
+
         elseif( WIN32 )
 
             ExternalProject_Add( sisl_submod

@@ -22,7 +22,7 @@ if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
 
         include( ExternalProject )
         set( SISL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sisl" )
-        find_file( SISL_INCLUDE_DIR sisl.h PATHS "${SISL_SOURCE_DIR}/include" NO_DEFAULT_PATH )
+        find_path( SISL_INCLUDE_DIR sisl.h PATHS "${SISL_SOURCE_DIR}/include" NO_DEFAULT_PATH )
 
         if( ${SISL_INCLUDE_DIR} MATCHES SISL_INCLUDE_DIR-NOTFOUND )
             execute_process( COMMAND git submodule init

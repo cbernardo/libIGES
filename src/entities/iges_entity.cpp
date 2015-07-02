@@ -85,7 +85,7 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
 
     // system line width thickness, 0 .. Global::maxLinewidthGrad
     // (default: 0 = use Receiving System's default)
-    lineWeightNum = 1;
+    lineWeightNum = 0;
 
     // 0 (default = NO COLOR), Color ID (IGES_COLOR), or index to Color Definition (314)
     colorNum = 0;

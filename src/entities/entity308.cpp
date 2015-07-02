@@ -128,6 +128,9 @@ bool IGES_ENTITY_308::format( int &index )
 {
     pdout.clear();
 
+    // ensure adherence with specification
+    use = STAT_USE_DEFINITION;      // fixed
+
     if( index < 1 || index > 9999999 )
     {
         ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";

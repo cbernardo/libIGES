@@ -63,7 +63,7 @@ bool IGES_ENTITY_314::Associate( std::vector<IGES_ENTITY*>* entities )
     view = 0;
     transform = 0;
     labelAssoc = 0;
-    colorNum = 0;
+    lineWeightNum = 0;
 
     if( pStructure )
     {
@@ -122,6 +122,10 @@ bool IGES_ENTITY_314::format( int &index )
 {
     pdout.clear();
     iExtras.clear();
+
+    // ensure compliance of STATUS NUM with specification
+    depends = STAT_INDEPENDENT;     // fixed value
+    use = STAT_USE_DEFINITION;      // fixed value
 
     if( red < 0.0 || red > 100.0 )
     {
@@ -265,8 +269,6 @@ bool IGES_ENTITY_314::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 
     depends = STAT_INDEPENDENT;     // fixed value
     use = STAT_USE_DEFINITION;      // fixed value
-    visible = true;                 // field ignored
-    hierarchy = STAT_HIER_ALL_SUB;  // field ignored
 
     structure = 0;                  // N.A.
     lineFontPattern = 0;            // N.A.

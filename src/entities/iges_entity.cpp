@@ -1153,8 +1153,9 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
     // DE9: Status Number
     if( !DEItemToInt(aRecord->data, 8, tmpInt, NULL))
     {
-        ERRMSG << "\n + could not extract Status Number\n";
-        return false;
+        ERRMSG << "\n + could not extract Status Number; offending DE: " << sequenceNumber << "\n";
+        cerr << " + [INFO]: action taken: assigning Status Number = 0\n";
+        tmpInt = 0;
     }
 
     if( tmpInt < 0 )
@@ -1255,8 +1256,9 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
     // DE12: Line Weight Number (note: in the spec there is no default for this)
     if( !DEItemToInt(rec.data, 1, tmpInt, NULL) )
     {
-        ERRMSG << "\n + could not extract Line Weight Number\n";
-        return false;
+        ERRMSG << "\n + could not extract Line Weight Number; offending DE: " << sequenceNumber << "\n";
+        cerr << " + [INFO]: action taken: assigning Line Weight Number = 0\n";
+        tmpInt = 0;
     }
 
     if( tmpInt < 0 )

@@ -686,18 +686,26 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         V1 = 1.0;
     }
 
-    // unit normal vector (ignored if curve is not planar)
-    if( !ParseReal( pdout, idx, tX, eor, pd, rd )
-        || !ParseReal( pdout, idx, tY, eor, pd, rd )
-        || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
+    if( !eor )
     {
-        ERRMSG << "\n + [INFO] couldn't read unit normal vector\n";
-        delete [] knots;
-        knots = NULL;
-        delete [] coeffs;
-        coeffs = NULL;
-        pdout.clear();
-        return false;
+        // unit normal vector (required but ignored if curve is not planar)
+        if( !ParseReal( pdout, idx, tX, eor, pd, rd )
+            || !ParseReal( pdout, idx, tY, eor, pd, rd )
+            || !ParseReal( pdout, idx, tZ, eor, pd, rd ) )
+        {
+            ERRMSG << "\n + [INFO] couldn't read unit normal vector\n";
+            delete [] knots;
+            knots = NULL;
+            delete [] coeffs;
+            coeffs = NULL;
+            pdout.clear();
+            return false;
+        }
+    }
+    else
+    {
+        ERRMSG << "\n + [VIOLATION] Unit Normal Vector field absent (must be present even though ignored for non-planar curve)\n";
+        cerr << " + [INFO] offending DE: " << sequenceNumber << "\n";
     }
 
     if( PROP1 == 1 )

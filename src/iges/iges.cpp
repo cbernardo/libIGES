@@ -1511,8 +1511,8 @@ bool IGES::readPD( IGES_RECORD& rec, std::ifstream& file )
     {
         if( !(*sEnt)->ReadPD( file, nPDSecLines ) )
         {
-            ERRMSG << "\n + [INFO] could not read parameter data for Entity[PD:";
-            cerr << i << "]\n";
+            ERRMSG << "\n + [INFO] could not read parameter data for Entity[DE:";
+            cerr << (2 * i + 1) << "]\n";
             return false;
         }
 

@@ -667,6 +667,25 @@ bool IGES_ENTITY_126::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
+    if( V0 < -1e-10 || V0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots; ++i )
+            knots[i] -= V0;
+
+        V1 -= V0;
+        V0 = 0.0;
+    }
+
+    if( 1.0 != V1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots; ++i )
+            knots[i] /= V1;
+
+        V1 = 1.0;
+    }
+
     // unit normal vector (ignored if curve is not planar)
     if( !ParseReal( pdout, idx, tX, eor, pd, rd )
         || !ParseReal( pdout, idx, tY, eor, pd, rd )
@@ -1106,6 +1125,28 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     for( int i = 0; i < nKnots; ++i )
         knots[i] = knot[i];
 
+    V0 = knots[0];
+    V1 = knots[nKnots - 1];
+
+    if( V0 < -1e-10 || V0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots; ++i )
+            knots[i] -= V0;
+
+        V1 -= V0;
+        V0 = 0.0;
+    }
+
+    if( 1.0 != V1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots; ++i )
+            knots[i] /= V1;
+
+        V1 = 1.0;
+    }
+
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];
 
@@ -1135,16 +1176,6 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
         return false;
         break;
     }
-
-    if( 0.0 == V0 && 1.0 != V1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots; ++i )
-            knots[i] /= V1;
-
-        V1 = 1.0;
-    }
-
 
     // determine planarity
     if( hasUniquePlane( &vnorm ) )

@@ -797,6 +797,44 @@ bool IGES_ENTITY_128::ReadPD( std::ifstream& aFile, int& aSequenceVar )
         return false;
     }
 
+    if( U0 < -1e-10 || U0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots1; ++i )
+            knots1[i] -= U0;
+
+        U1 -= U0;
+        U0 = 0.0;
+    }
+
+    if( 1.0 != U1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots1; ++i )
+            knots1[i] /= U1;
+
+        U1 = 1.0;
+    }
+
+    if( V0 < -1e-10 || V0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots2; ++i )
+            knots2[i] -= V0;
+
+        V1 -= V0;
+        V0 = 0.0;
+    }
+
+    if( 1.0 != V1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots2; ++i )
+            knots2[i] /= V1;
+
+        V1 = 1.0;
+    }
+
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
@@ -1057,6 +1095,49 @@ bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int or
 
     for( int i = 0; i < nKnots2; ++i )
         knots2[i] = knot2[i];
+
+    U0 = knots1[0];
+    U1 = knots1[nKnots1 -1];
+    V0 = knots2[0];
+    V1 = knots2[nKnots2 -1];
+
+    if( U0 < -1e-10 || U0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots1; ++i )
+            knots1[i] -= U0;
+
+        U1 -= U0;
+        U0 = 0.0;
+    }
+
+    if( 1.0 != U1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots1; ++i )
+            knots1[i] /= U1;
+
+        U1 = 1.0;
+    }
+
+    if( V0 < -1e-10 || V0 > 1e-10 )
+    {
+        // shift the knot values
+        for( int i = 0; i < nKnots2; ++i )
+            knots2[i] -= V0;
+
+        V1 -= V0;
+        V0 = 0.0;
+    }
+
+    if( 1.0 != V1 )
+    {
+        // normalize the knot vector
+        for( int i = 0; i < nKnots2; ++i )
+            knots2[i] /= V1;
+
+        V1 = 1.0;
+    }
 
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];

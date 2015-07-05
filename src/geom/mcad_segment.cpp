@@ -32,6 +32,25 @@
 
 using namespace std;
 
+
+// ensure the start angle a0 is in the range -M_PI < a0 <= +M_PI
+// a0, a1 = start, end angle (must ensure CCW order)
+static inline void NORMALIZE_ANGLES( double &a0, double &a1 )
+{
+    while( a0 > M_PI && a1 > M_PI)
+    {
+        a0 -= 2.0 * M_PI;
+        a1 -= 2.0 * M_PI;
+    }
+
+    while( a0 <= -M_PI && a1 <= -M_PI )
+    {
+        a0 += 2.0 * M_PI;
+        a1 += 2.0 * M_PI;
+    }
+}
+
+
 MCAD_SEGMENT::MCAD_SEGMENT()
 {
     init();
@@ -1800,6 +1819,9 @@ bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
         sp->mcenter = mcenter;
         aNewSegmentList.push_back( sp );
 
+        // ensure normalized angles in new segment
+        NORMALIZE_ANGLES( sp->msang, sp->meang );
+
         // adjust the extent of this arc
         mend = p0;
         meang = a0;
@@ -1985,6 +2007,9 @@ bool MCAD_SEGMENT::splitCircle( std::list<MCAD_POINT>& aIntersectList,
     if( sp->msang > sp->meang )
         sp->meang += 2.0 * M_PI;
 
+    // ensure normalized angles in new segment
+    NORMALIZE_ANGLES( sp->msang, sp->meang );
+
     aNewSegmentList.push_back( sp );
 
     // The preserved section of the circle runs CCW from p1 to p0
@@ -1997,6 +2022,9 @@ bool MCAD_SEGMENT::splitCircle( std::list<MCAD_POINT>& aIntersectList,
 
     if( msang > meang )
         meang += 2.0 * M_PI;
+
+    // ensure normalized angles in old segment
+    NORMALIZE_ANGLES( msang, meang );
 
     return true;
 }

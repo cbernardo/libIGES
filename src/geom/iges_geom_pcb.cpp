@@ -1127,7 +1127,6 @@ bool IGES_GEOM_PCB::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
 
     if( aSegment->IsCW() )
     {
-        cerr << "XXX: QQQ: Arc is CW\n";
         p0.x = pc.x - p0.x;
         p1.x = pc.x - p1.x;
         pc.x = 0.0;
@@ -1141,7 +1140,6 @@ bool IGES_GEOM_PCB::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
     }
     else
     {
-        cerr << "XXX: QQQ: Arc is CCW\n";
         a0 = aSegment->GetMSAngle();
         a1 = aSegment->GetMEAngle();
     }

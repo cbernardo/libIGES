@@ -1052,10 +1052,10 @@ bool MCAD_SEGMENT::checkArcLine( const MCAD_SEGMENT& aSegment,
         // in the angle calculations which may result in false negatives.
         if( ( ang[i] >= arcSAng && ang[i] <= arcEAng )
             || ( ( ang[i] + 2.0 * M_PI ) >= arcSAng && ( ang[i] + 2.0 * M_PI ) <= arcEAng )
-            || ( abs( p[0].x - mstart.x ) < 1e-14 && abs( p[0].y - mstart.y ) < 1e-14 )
-            || ( abs( p[0].x - mend.x ) < 1e-14 && abs( p[0].y - mend.y ) < 1e-14 ) )
+            || ( abs( p[i].x - mstart.x ) < 1e-14 && abs( p[i].y - mstart.y ) < 1e-14 )
+            || ( abs( p[i].x - mend.x ) < 1e-14 && abs( p[i].y - mend.y ) < 1e-14 ) )
         {
-            pt[i] = p[i];
+            pt[np2] = p[i];
             ++np2;
         }
     }
@@ -1665,7 +1665,10 @@ bool MCAD_SEGMENT::splitLine( std::list<MCAD_POINT>& aIntersectList,
 
             if( abs(u - sPL->x) > 1e-8 )
             {
-                ERRMSG << "\n + [ERROR] point " << np << " is not on the line\n";
+                ERRMSG << "\n + [ERROR] point " << np << " is not on the line (deviation: "
+                    << (u - sPL->x) << ")\n +         point( " << sPL->x << ", "
+                    << sPL->y << ")\n +         line[ (" << mstart.x << ", " << mstart.y
+                    << "), (" << mend.x << ", " << mend.y << ") ]\n";
                 return false;
             }
 

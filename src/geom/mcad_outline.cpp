@@ -1879,7 +1879,33 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         // insert the remaining segments of aOutline starting at
         // the CCW-most position
         list<MCAD_SEGMENT*>::iterator eT = oSegs.front();
+
         eSegT = lSegs.front();
+        MCAD_POINT lastPt;
+
+        do
+        {
+            list<MCAD_SEGMENT*>::iterator tmpT = eSegT;
+
+            if( tmpT == msegments.begin() )
+                tmpT = --msegments.end();
+            else
+                --tmpT;
+
+            lastPt = (*tmpT)->GetEnd();
+
+        } while(0);
+
+        // ensure that we start with the segment whose Start Point matches lastPt;
+        // this maintains the correct segment order.
+        while( !PointMatches( (*eT)->GetStart(), lastPt, 1e-8 ) )
+        {
+            ++eT;
+
+            if( aOutline->msegments.end() == eT )
+                eT = aOutline->msegments.begin();
+
+        }
 
         while( eT != aOutline->msegments.end() )
         {

@@ -303,7 +303,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         swap( top, bot );
 
     // Requirements:
-    // + [2 + 2*narcs]xE110: iline, Line (axis of revolution, generatrix, and geometric bound)
+    // + [4*narcs]xE110: iline, Line (axis of revolution, generatrix, and geometric bound)
     // + E120: isurf, Surface of Revolution
     // + [2x(narcs) + 2]xE126: icurve, curve segments for E102 NURBS bound
     // + [2x(narcs)]xE100: iarc, arc segments for geometric bound
@@ -312,7 +312,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     // + (narcs)xE144: itps, trimmed surface
     // + (narcs)xE124: transforms required for bottom part of simple bounding curve
 
-    #define N_ILINE 8
+    #define N_ILINE 12
+    #define N_ISURF 3
     #define N_ICURVE 12
     #define N_IARC 6
     #define N_ICC 6
@@ -322,7 +323,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     #define N_INURBS 12
 
     IGES_ENTITY_110* iline[N_ILINE];
-    IGES_ENTITY_120* isurf = NULL;
+    IGES_ENTITY_120* isurf[N_ISURF];
     IGES_ENTITY_126* icurve[N_ICURVE];
     IGES_ENTITY_100* iarc[N_IARC];
     IGES_ENTITY_102* icc[N_ICC];
@@ -333,6 +334,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     for( int i = 0; i < N_ILINE; ++i )
         iline[i] = NULL;
+
+    for( int i = 0; i < N_ISURF; ++i )
+        isurf[i] = NULL;
 
     for( int i = 0; i < N_ICURVE; ++i )
         icurve[i] = NULL;
@@ -361,6 +365,12 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         if( iline[i] ) \
             model->DelEntity((IGES_ENTITY*)iline[i]); \
         iline[i] = NULL; \
+    } \
+    for( int i = 0; i < N_ISURF; ++i ) \
+    { \
+        if( isurf[i] ) \
+            model->DelEntity((IGES_ENTITY*)isurf[i]); \
+        isurf[i] = NULL; \
     } \
     for( int i = 0; i < N_ICURVE; ++i ) \
     { \
@@ -412,7 +422,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     IGES_ENTITY* ep;
 
     // line entities
-    int nsegs = narcs * 2 + 2;
+    int nsegs = narcs * 4;
 
     for( int i = 0; i < nsegs; ++i )
     {
@@ -437,24 +447,27 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     }
 
     // surface entity
-    if( !model->NewEntity( ENT_SURFACE_OF_REVOLUTION, &ep ) )
+    for( int i = 0; i < narcs; ++i )
     {
-        ERRMSG << "\n + [INFO] could not instantiate IGES surface of revolution\n";
-        CLEANUP;
-        return false;
+        if( !model->NewEntity( ENT_SURFACE_OF_REVOLUTION, &ep ) )
+        {
+            ERRMSG << "\n + [INFO] could not instantiate IGES surface of revolution\n";
+            CLEANUP;
+            return false;
+        }
+
+        isurf[i] = dynamic_cast<IGES_ENTITY_120*>(ep);
+
+        if( !isurf[i] )
+        {
+            model->DelEntity( ep );
+            ERRMSG << "\n + [BUG] could not typecast IGES surface of revolution\n";
+            CLEANUP;
+            return false;
+        }
+
+        isurf[i]->SetDependency( STAT_DEP_PHY );
     }
-
-    isurf = dynamic_cast<IGES_ENTITY_120*>(ep);
-
-    if( !isurf )
-    {
-        model->DelEntity( ep );
-        ERRMSG << "\n + [BUG] could not typecast IGES surface of revolution\n";
-        CLEANUP;
-        return false;
-    }
-
-    isurf->SetDependency( STAT_DEP_PHY );
 
     // transform entity
     for( int i = 0; i < narcs; ++i )
@@ -601,79 +614,86 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     }
 
     // create the axis of revolution and generatrix
-    iline[0]->X1 = arcs[0].x;
-    iline[0]->Y1 = arcs[0].y;
-    iline[0]->Z1 = bot;
-    iline[0]->X2 = arcs[0].x;
-    iline[0]->Y2 = arcs[0].y;
-    iline[0]->Z2 = top;
-
-    iline[1]->X1 = arcs[0].x + radius;
-    iline[1]->Y1 = arcs[0].y;
-    iline[1]->Z1 = top;
-    iline[1]->X2 = arcs[0].x + radius;
-    iline[1]->Y2 = arcs[0].y;
-    iline[1]->Z2 = bot;
-
-    if( !isurf->SetAxis( (IGES_CURVE*)iline[0] )
-        || !isurf->SetGeneratrix( (IGES_CURVE*)iline[1] ) )
+    for( int i = 0; i < narcs; ++i )
     {
-        ERRMSG << "\n + [BUG] could not create surface of revolution\n";
-        CLEANUP;
-        return false;
-    }
+        int idx0 = i * 2;
+        int idx1 = idx0 + 1;
 
-    isurf->startAngle = 0.0;
-    isurf->endAngle = 2.0 * M_PI;
+        iline[idx0]->X1 = arcs[0].x;
+        iline[idx0]->Y1 = arcs[0].y;
+        iline[idx0]->Z1 = bot;
+        iline[idx0]->X2 = arcs[0].x;
+        iline[idx0]->Y2 = arcs[0].y;
+        iline[idx0]->Z2 = top;
+
+        iline[idx1]->X1 = arcs[0].x + radius;
+        iline[idx1]->Y1 = arcs[0].y;
+        iline[idx1]->Z1 = top;
+        iline[idx1]->X2 = arcs[0].x + radius;
+        iline[idx1]->Y2 = arcs[0].y;
+        iline[idx1]->Z2 = bot;
+
+        if( !isurf[i]->SetAxis( (IGES_CURVE*)iline[idx0] )
+            || !isurf[i]->SetGeneratrix( (IGES_CURVE*)iline[idx1] ) )
+        {
+            ERRMSG << "\n + [BUG] could not create surface of revolution\n";
+            CLEANUP;
+            return false;
+        }
+
+        isurf[i]->startAngle = 0.0;
+        isurf[i]->endAngle = 2.0 * M_PI;
+    }
 
     // create lines for geometric bounds
     // [bounds = ccw top arc + line->bot + cw bot  arc + line->top]
-    iline[2]->X1 = arcs[2].x;
-    iline[2]->Y1 = arcs[2].y;
-    iline[2]->Z1 = top;
-    iline[2]->X2 = arcs[2].x;
-    iline[2]->Y2 = arcs[2].y;
-    iline[2]->Z2 = bot;
+    int ibase = narcs * 2;
+    iline[ibase]->X1 = arcs[2].x;
+    iline[ibase]->Y1 = arcs[2].y;
+    iline[ibase]->Z1 = top;
+    iline[ibase]->X2 = arcs[2].x;
+    iline[ibase]->Y2 = arcs[2].y;
+    iline[ibase]->Z2 = bot;
 
-    iline[3]->X1 = arcs[1].x;
-    iline[3]->Y1 = arcs[1].y;
-    iline[3]->Z1 = bot;
-    iline[3]->X2 = arcs[1].x;
-    iline[3]->Y2 = arcs[1].y;
-    iline[3]->Z2 = top;
+    iline[ibase + 1]->X1 = arcs[1].x;
+    iline[ibase + 1]->Y1 = arcs[1].y;
+    iline[ibase + 1]->Z1 = bot;
+    iline[ibase + 1]->X2 = arcs[1].x;
+    iline[ibase + 1]->Y2 = arcs[1].y;
+    iline[ibase + 1]->Z2 = top;
 
     if( narcs > 1 )
     {
-        iline[4]->X1 = arcs[3].x;
-        iline[4]->Y1 = arcs[3].y;
-        iline[4]->Z1 = top;
-        iline[4]->X2 = arcs[3].x;
-        iline[4]->Y2 = arcs[3].y;
-        iline[4]->Z2 = bot;
+        iline[ibase + 2]->X1 = arcs[3].x;
+        iline[ibase + 2]->Y1 = arcs[3].y;
+        iline[ibase + 2]->Z1 = top;
+        iline[ibase + 2]->X2 = arcs[3].x;
+        iline[ibase + 2]->Y2 = arcs[3].y;
+        iline[ibase + 2]->Z2 = bot;
 
-        iline[5]->X1 = arcs[2].x;
-        iline[5]->Y1 = arcs[2].y;
-        iline[5]->Z1 = bot;
-        iline[5]->X2 = arcs[2].x;
-        iline[5]->Y2 = arcs[2].y;
-        iline[5]->Z2 = top;
+        iline[ibase + 3]->X1 = arcs[2].x;
+        iline[ibase + 3]->Y1 = arcs[2].y;
+        iline[ibase + 3]->Z1 = bot;
+        iline[ibase + 3]->X2 = arcs[2].x;
+        iline[ibase + 3]->Y2 = arcs[2].y;
+        iline[ibase + 3]->Z2 = top;
     }
 
     if( narcs > 2 )
     {
-        iline[6]->X1 = arcs[4].x;
-        iline[6]->Y1 = arcs[4].y;
-        iline[6]->Z1 = top;
-        iline[6]->X2 = arcs[4].x;
-        iline[6]->Y2 = arcs[4].y;
-        iline[6]->Z2 = bot;
+        iline[ibase + 4]->X1 = arcs[4].x;
+        iline[ibase + 4]->Y1 = arcs[4].y;
+        iline[ibase + 4]->Z1 = top;
+        iline[ibase + 4]->X2 = arcs[4].x;
+        iline[ibase + 4]->Y2 = arcs[4].y;
+        iline[ibase + 4]->Z2 = bot;
 
-        iline[7]->X1 = arcs[3].x;
-        iline[7]->Y1 = arcs[3].y;
-        iline[7]->Z1 = bot;
-        iline[7]->X2 = arcs[3].x;
-        iline[7]->Y2 = arcs[3].y;
-        iline[7]->Z2 = top;
+        iline[ibase + 5]->X1 = arcs[3].x;
+        iline[ibase + 5]->Y1 = arcs[3].y;
+        iline[ibase + 5]->Z1 = bot;
+        iline[ibase + 5]->X2 = arcs[3].x;
+        iline[ibase + 5]->Y2 = arcs[3].y;
+        iline[ibase + 5]->Z2 = top;
     }
 
     // arcs for geometric bound
@@ -736,9 +756,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     // compound curve for geometric bound
     if( !icc[narcs]->AddSegment( iarc[0] )
-        || !icc[narcs]->AddSegment( iline[2] )
+        || !icc[narcs]->AddSegment( iline[ibase] )
         || !icc[narcs]->AddSegment( iarc[1] )
-        || !icc[narcs]->AddSegment( iline[3] ) )
+        || !icc[narcs]->AddSegment( iline[ibase + 1] ) )
     {
         ERRMSG << "\n + [BUG] could not create geometric bound #1\n";
         CLEANUP;
@@ -748,9 +768,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     if( narcs > 1 )
     {
         if( !icc[narcs + 1]->AddSegment( iarc[2] )
-            || !icc[narcs + 1]->AddSegment( iline[4] )
+            || !icc[narcs + 1]->AddSegment( iline[ibase + 2] )
             || !icc[narcs + 1]->AddSegment( iarc[3] )
-            || !icc[narcs + 1]->AddSegment( iline[5] ) )
+            || !icc[narcs + 1]->AddSegment( iline[ibase + 3] ) )
         {
             ERRMSG << "\n + [BUG] could not create geometric bound #2\n";
             CLEANUP;
@@ -761,9 +781,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     if( narcs > 2 )
     {
         if( !icc[narcs + 2]->AddSegment( iarc[4] )
-            || !icc[narcs + 2]->AddSegment( iline[6] )
+            || !icc[narcs + 2]->AddSegment( iline[ibase + 4] )
             || !icc[narcs + 2]->AddSegment( iarc[5] )
-            || !icc[narcs + 2]->AddSegment( iline[7] ) )
+            || !icc[narcs + 2]->AddSegment( iline[ibase + 5] ) )
         {
             ERRMSG << "\n + [BUG] could not create geometric bound #3\n";
             CLEANUP;
@@ -877,7 +897,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         ibound[i]->CRTN = 1;
         ibound[i]->PREF = 1;
 
-        if( !ibound[i]->SetSPTR( (IGES_ENTITY*)isurf )
+        if( !ibound[i]->SetSPTR( (IGES_ENTITY*)isurf[i] )
             || !ibound[i]->SetBPTR( (IGES_ENTITY*)icc[i] )
             || !ibound[i]->SetCPTR( (IGES_ENTITY*)icc[i + narcs] ) )
         {
@@ -892,7 +912,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         itps[i]->N1 = 1;
         itps[i]->N2 = 0;
 
-        if( !itps[i]->SetPTS( (IGES_ENTITY*)isurf )
+        if( !itps[i]->SetPTS( (IGES_ENTITY*)isurf[i] )
             || !itps[i]->SetPTO( ibound[i] ) )
         {
             ERRMSG << "\n + [BUG] could not create trimmed surface #" << i << "\n";
@@ -909,6 +929,9 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     {
         for( int i = 0; i < N_ILINE; ++i )
             iline[i] = NULL;
+
+        for( int i = 0; i < N_ISURF; ++i )
+            isurf[i] = NULL;
 
         for( int i = 0; i < N_ICURVE; ++i )
             icurve[i] = NULL;

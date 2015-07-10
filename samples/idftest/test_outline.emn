@@ -1,0 +1,60 @@
+.HEADER
+BOARD_FILE 3.0 "Created by KiCad (2015-06-26 BZR 5832)-product" 2015/06/4.20:42:21 1
+"junk.kicad_pcb" MM
+.END_HEADER
+
+# NOTE: the overlapping outlines here cause
+# a failure in the outline code of libIGES.
+# In the part which is commented out the error
+# appears to be a mismatch between radii;
+# in the active part (loop order is 3, 1, 2)
+# the error states Point 0 is not on a line.
+# Loop 2 is extraneous and is not part of the
+# problem.
+#
+# The problem happens when an arc intersects
+# a non-tangent line at a single point.
+
+#1 -4.24264 -3.63604 0
+#1 6.36396 -14.24264 0
+#1 4.24264 -16.36396 -180.000
+#1 -6.36396 -5.75736 0
+#1 -4.24264 -3.63604 -180.000
+#2 27.86396 2.74264 0
+#2 17.25736 -7.86396 0
+#2 15.13604 -5.74264 -180.000
+#2 25.74264 4.86396 0
+#2 27.86396 2.74264 -180.000
+#3 -5.00000 3.00000 0
+#3 -5.00000 -12.00000 0
+#3 -8.00000 -12.00000 -180.000
+#3 -8.00000 3.00000 0
+#3 -5.00000 3.00000 -180.000
+
+.BOARD_OUTLINE UNOWNED
+1.60000
+0 34.50000 22.50000 0
+0 -34.50000 22.50000 0
+0 -34.50000 -22.50000 0
+0 34.50000 -22.50000 0
+0 34.50000 22.50000 0
+1 -5.00000 3.00000 0
+1 -5.00000 -12.00000 0
+1 -8.00000 -12.00000 -180.000
+1 -8.00000 3.00000 0
+1 -5.00000 3.00000 -180.000
+2 -4.24264 -3.63604 0
+2 6.36396 -14.24264 0
+2 4.24264 -16.36396 -180.000
+2 -6.36396 -5.75736 0
+2 -4.24264 -3.63604 -180.000
+3 27.86396 2.74264 0
+3 17.25736 -7.86396 0
+3 15.13604 -5.74264 -180.000
+3 25.74264 4.86396 0
+3 27.86396 2.74264 -180.000
+.END_BOARD_OUTLINE
+
+.DRILLED_HOLES
+2.500 -26.50000 14.50000 PTH "MH" PIN ECAD
+.END_DRILLED_HOLES

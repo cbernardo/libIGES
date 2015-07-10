@@ -995,19 +995,6 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
             {
                 IGES_GEOM_CYLINDER cyl;
 
-                /* XXX - Original; restore if there are problems
-                if( !aSegment->IsCW() )
-                {
-                    cyl.SetParams( aSegment->GetCenter(), aSegment->GetMStart(),
-                                   aSegment->GetMEnd() );
-                }
-                else
-                {
-                    cyl.SetParams( aSegment->GetCenter(), aSegment->GetMEnd(),
-                                   aSegment->GetMStart() );
-                }
-                */
-
                 cyl.SetParams( aSegment->GetCenter(), aSegment->GetStart(),
                     aSegment->GetEnd() );
 

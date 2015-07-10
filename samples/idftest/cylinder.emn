@@ -1,0 +1,41 @@
+.HEADER
+BOARD_FILE 3.0 "Created by KiCad (2015-04-08 BZR 5585)-product" 2015/04/25.16:58:30 1
+"no_file" MM
+.END_HEADER
+
+# NOTES:
+# There appears to be a problem with the cylindrical NURBS bounds which
+# is rather perplexing as to when it manifests. A circular PCB renders
+# fine but a circular IDF extrusion does not (the second and third
+# curved surfaces are incorrectly trimmed to 1mm height). It is unclear
+# as to where the code paths differ.
+
+# Update #1: The problem also affects the PCB but it is not evident until
+# the PCB thickness > 2.0.
+#
+# Update #2: The problem appears due to an inconsistency in MCADs
+# processing trimmed surfaces. In an ideal world the same surface can be
+# used multiple times; SolidWorks appears to handle that case correctly
+# but many MCAD systems do not, and yet the MCADs which have been tested
+# that do not trim correctly appear to perform a correct trim when only
+# geometric bounds are used. This can be verified by altering the order
+# of the trimmed surfaces; the first one rendered will always be correct
+# while the others will be trimmed to a height of 1mm.
+#
+# Update #3: When SolidWorks creates similar features, the underlying
+# surface is not reused (redundant surfaces are created). These models
+# are correctly processed on all the MCAD systems tried.
+
+.BOARD_OUTLINE UNOWNED
+3.0
+0 0 0 0
+0 5 0 360
+.END_BOARD_OUTLINE
+
+.DRILLED_HOLES
+.END_DRILLED_HOLES
+
+.PLACEMENT
+"TEST_CYL" "NOGEOM" C1
+0 0 0 0 TOP ECAD
+.END_PLACEMENT

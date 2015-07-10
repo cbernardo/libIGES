@@ -1,0 +1,442 @@
+.HEADER
+LIBRARY_FILE 3.0 "Created by KiCad (2015-03-26 BZR 5542)-product" 2015/03/26.11:5:0 1
+.END_HEADER
+
+.ELECTRICAL
+"BNC" "VIDEO" THOU 500.0
+0 -200.0 -180.0 0
+0 -180.0 -200.0 0
+0 180.0 -200.0 0
+0 200.0 -180.0 0
+0 200.0 -100.0 0
+0 700.0 -100.0 0
+0 700.0 100.0 0
+0 200.0 100.0 0
+0 200.0 180.0 0
+0 180.0 200.0 0
+0 -180.0 200.0 0
+0 -200.0 180.0 0
+0 -200.0 -180.0 0
+.END_ELECTRICAL
+
+# cylindrical outline, horiz., axial pins
+# file: "diode_030.idf"
+# dia: 70 THOU
+# length: 200 THOU
+# extra height: 20 THOU
+# wire dia: 35 THOU
+# pitch: 300 THOU
+.ELECTRICAL
+"CYLH_IN_AXI" "D0.070_H0.200_Z0.020_WD0.035_P0.300" THOU 90.0
+0 -100.0 35.0 0
+0 -100.0 17.0 0
+0 -150.0 17.0 0
+0 -150.0 -17.0 180.00
+0 -100.0 -17.0 0
+0 -100.0 -35.0 0
+0 100.0 -35.0 0
+0 100.0 -17.0 0
+0 150.0 -17.0 0
+0 150.0 17.0 180.00
+0 100.0 17.0 0
+0 100.0 35.0 0
+0 -100.0 35.0 0
+.END_ELECTRICAL
+
+# cylindrical outline, vertical, radial leads
+# file: "led_5mm.idf"
+# dia: 100 THOU
+# length: 200 THOU
+# board offset: 0 THOU
+.ELECTRICAL
+"CYLV_IN_RAD" "D0.100_H0.200_Z0.000" THOU 200.0
+0 0.0 0.0 0
+0 50.0 0.0 360
+.END_ELECTRICAL
+
+# cylindrical outline, vertical, radial leads
+# file: "CV1.idf"
+# dia: 300 THOU
+# length: 300 THOU
+# board offset: 20 THOU
+.ELECTRICAL
+"CYLV_IN_RAD" "D0.300_H0.300_Z0.020" THOU 320.0
+0 0.0 0.0 0
+0 150.0 0.0 360
+.END_ELECTRICAL
+
+.ELECTRICAL
+"DB9F" "VIDEO" THOU 520.0
+0 650.0 -100.0 0
+0 650.0 600.0 0
+0 300.0 600.0 0
+0 300.0 950.0 0
+0 -300.0 950.0 0
+0 -300.0 600.0 0
+0 -650.0 600.0 0
+0 -650.0 -100.0 0
+0 650.0 -100.0 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"DIL8X30" "VIDEO" MM 4.00000
+0 4.67500 -4.06000 0
+0 4.67500 -3.24000 0
+0 4.90000 -3.24000 0
+0 4.90000 3.24000 0
+0 4.67500 3.24000 0
+0 4.67500 4.06000 0
+0 -4.67500 4.06000 0
+0 -4.67500 3.24000 0
+0 -4.90000 3.24000 0
+0 -4.90000 -3.24000 0
+0 -4.67500 -3.24000 0
+0 -4.67500 -4.06000 0
+0 4.67500 -4.06000 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"L6" "VIDEO" THOU 250.0
+0 -600.0 0.0 0
+0 600.0 0.0 0
+0 600.0 450.0 0
+0 -600.0 450.0 0
+0 -600.0 0.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "hdr1x1.idf"
+# width: 100 THOU
+# length: 100 THOU
+# height: 350 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W100_L100_H350_C0" THOU 350.0
+0 50.0 50.0 0
+0 -50.0 50.0 0
+0 -50.0 -50.0 0
+0 50.0 -50.0 0
+0 50.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "U9.idf"
+# width: 1100 THOU
+# length: 1100 THOU
+# height: 120 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W1100_L1100_H120_C0" THOU 120.0
+0 550.0 550.0 0
+0 -550.0 550.0 0
+0 -550.0 -550.0 0
+0 550.0 -550.0 0
+0 550.0 550.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "PQ160.idf"
+# width: 1200 THOU
+# length: 1200 THOU
+# height: 60 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W1200_L1200_H60_C0" THOU 60.0
+0 600.0 600.0 0
+0 -600.0 600.0 0
+0 -600.0 -600.0 0
+0 600.0 -600.0 0
+0 600.0 600.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "U8.idf"
+# width: 1300 THOU
+# length: 1300 THOU
+# height: 120 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W1300_L1300_H120_C0" THOU 120.0
+0 650.0 650.0 0
+0 -650.0 650.0 0
+0 -650.0 -650.0 0
+0 650.0 -650.0 0
+0 650.0 650.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "smd0201.idf"
+# width: 160 THOU
+# length: 80 THOU
+# height: 18 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W160_L80_H18_C0" THOU 18.0
+0 80.0 40.0 0
+0 -80.0 40.0 0
+0 -80.0 -40.0 0
+0 80.0 -40.0 0
+0 80.0 40.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "smd2010.idf"
+# width: 190 THOU
+# length: 100 THOU
+# height: 24 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W190_L100_H24_C0" THOU 24.0
+0 95.0 50.0 0
+0 -95.0 50.0 0
+0 -95.0 -50.0 0
+0 95.0 -50.0 0
+0 95.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "cap20x10.idf"
+# width: 200 THOU
+# length: 100 THOU
+# height: 300 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W200_L100_H300_C0" THOU 300.0
+0 100.0 50.0 0
+0 -100.0 50.0 0
+0 -100.0 -50.0 0
+0 100.0 -50.0 0
+0 100.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "hdr1x2.idf"
+# width: 200 THOU
+# length: 100 THOU
+# height: 350 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W200_L100_H350_C0" THOU 350.0
+0 100.0 50.0 0
+0 -100.0 50.0 0
+0 -100.0 -50.0 0
+0 100.0 -50.0 0
+0 100.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "U7.idf"
+# width: 210 THOU
+# length: 210 THOU
+# height: 40 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W210_L210_H40_C0" THOU 40.0
+0 105.0 105.0 0
+0 -105.0 105.0 0
+0 -105.0 -105.0 0
+0 105.0 -105.0 0
+0 105.0 105.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "L2.idf"
+# width: 240 THOU
+# length: 170 THOU
+# height: 150 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W240_L170_H150_C0" THOU 150.0
+0 120.0 85.0 0
+0 -120.0 85.0 0
+0 -120.0 -85.0 0
+0 120.0 -85.0 0
+0 120.0 85.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "74LS245.idf"
+# width: 420 THOU
+# length: 500 THOU
+# height: 60 THOU
+# chamfer: 20 THOU
+.ELECTRICAL
+"RECTIN" "W420_L500_H60_C20" THOU 60.0
+0 210.0 250.0 0
+0 -190.0 250.0 0
+0 -210.0 230.0 0
+0 -210.0 -250.0 0
+0 210.0 -250.0 0
+0 210.0 250.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "hdr1x5.idf"
+# width: 500 THOU
+# length: 100 THOU
+# height: 350 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W500_L100_H350_C0" THOU 350.0
+0 250.0 50.0 0
+0 -250.0 50.0 0
+0 -250.0 -50.0 0
+0 250.0 -50.0 0
+0 250.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "X1.idf"
+# width: 500 THOU
+# length: 200 THOU
+# height: 500 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W500_L200_H500_C0" THOU 500.0
+0 250.0 100.0 0
+0 -250.0 100.0 0
+0 -250.0 -100.0 0
+0 250.0 -100.0 0
+0 250.0 100.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "smd0805.idf"
+# width: 50 THOU
+# length: 80 THOU
+# height: 18 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W50_L80_H18_C0" THOU 18.0
+0 25.0 40.0 0
+0 -25.0 40.0 0
+0 -25.0 -40.0 0
+0 25.0 -40.0 0
+0 25.0 40.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "U20.idf"
+# width: 600 THOU
+# length: 400 THOU
+# height: 60 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W600_L400_H60_C0" THOU 60.0
+0 300.0 200.0 0
+0 -300.0 200.0 0
+0 -300.0 -200.0 0
+0 300.0 -200.0 0
+0 300.0 200.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "VQ100.idf"
+# width: 600 THOU
+# length: 600 THOU
+# height: 60 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W600_L600_H60_C0" THOU 60.0
+0 300.0 300.0 0
+0 -300.0 300.0 0
+0 -300.0 -300.0 0
+0 300.0 -300.0 0
+0 300.0 300.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "U2.idf"
+# width: 700 THOU
+# length: 400 THOU
+# height: 60 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W700_L400_H60_C0" THOU 60.0
+0 350.0 200.0 0
+0 -350.0 200.0 0
+0 -350.0 -200.0 0
+0 350.0 -200.0 0
+0 350.0 200.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "rp8-sil.idf"
+# width: 900 THOU
+# length: 100 THOU
+# height: 350 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W900_L100_H350_C0" THOU 350.0
+0 450.0 50.0 0
+0 -450.0 50.0 0
+0 -450.0 -50.0 0
+0 450.0 -50.0 0
+0 450.0 50.0 0
+.END_ELECTRICAL
+
+# rectangular outline
+# file: "PQ100.idf"
+# width: 900 THOU
+# length: 600 THOU
+# height: 60 THOU
+# chamfer: 0 THOU
+.ELECTRICAL
+"RECTIN" "W900_L600_H60_C0" THOU 60.0
+0 450.0 300.0 0
+0 -450.0 300.0 0
+0 -450.0 -300.0 0
+0 450.0 -300.0 0
+0 450.0 300.0 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"SIM4X32" "VIDEO" THOU 630.0
+0 -2250.0 175.0 0
+0 -2250.0 -125.0 0
+0 2250.0 -125.0 0
+0 2250.0 175.0 0
+0 -2250.0 175.0 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"SOT23" "VIDEO" THOU 20.0
+0 -50.0 50.0 0
+0 -50.0 -25.0 0
+0 -10.0 -25.0 0
+0 -10.0 -50.0 0
+0 10.0 -50.0 0
+0 10.0 -25.0 0
+0 50.0 -25.0 0
+0 50.0 50.0 0
+0 -50.0 50.0 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"VR1" "VIDEO" THOU 80.0
+0 -100.0 -125.0 0
+0 100.0 -125.0 0
+0 100.0 75.0 0
+0 50.0 125.0 0
+0 -50.0 125.0 0
+0 -100.0 75.0 0
+0 -100.0 -125.0 0
+.END_ELECTRICAL
+
+.ELECTRICAL
+"X3" "VIDEO" THOU 180.0
+0 -125.0 0.0 0
+0 -125.0 -75.0 0
+0 -250.0 -75.0 0
+0 -250.0 -105.0 0
+0 -225.0 -105.0 0
+0 -225.0 -605.0 0
+0 225.0 -605.0 0
+0 225.0 -105.0 0
+0 250.0 -105.0 0
+0 250.0 -75.0 0
+0 125.0 -75.0 0
+0 125.0 0.0 0
+0 -125.0 0.0 0
+.END_ELECTRICAL
+

@@ -1,0 +1,36 @@
+.HEADER
+BOARD_FILE 3.0 "Created by KiCad (2015-06-26 BZR 5832)-product" 2015/06/4.20:42:21 1
+"junk.kicad_pcb" MM
+.END_HEADER
+
+# NOTE: the overlapping outlines here cause
+# a failure in the outline code of libIGES.
+#
+# The problem happens when an arc intersects
+# a non-tangent line at a single point.
+# This test file has the same data as
+# test_out1.emn but with the cutout order
+# reversed.
+#
+# Update: the problem was in incorrect transfer
+# of the intersecting point's data (bad indices)
+#
+
+.BOARD_OUTLINE UNOWNED
+1.60000
+0 34.50000 22.50000 0
+0 -34.50000 22.50000 0
+0 -34.50000 -22.50000 0
+0 34.50000 -22.50000 0
+0 34.50000 22.50000 0
+1 -5.00000 3.00000 0
+1 -5.00000 -12.00000 0
+1 -8.00000 -12.00000 -180.000
+1 -8.00000 3.00000 0
+1 -5.00000 3.00000 -180.000
+2 -4.24264 -3.63604 0
+2 6.36396 -14.24264 0
+2 4.24264 -16.36396 -180.000
+2 -6.36396 -5.75736 0
+2 -4.24264 -3.63604 -180.000
+.END_BOARD_OUTLINE

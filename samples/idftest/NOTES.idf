@@ -1,0 +1,50 @@
+IDF files used to check IDF->IGES conversion
+============================================
+
+arduino-due.emn : The original Arduino Due design files represents
+    slots as multiple overlapping drill holes; the geometry code
+    in mcad_outline and iges_pcb_geom must handle overlapping holes
+    correctly.
+
+crescent.emn : The board shape is a crescent. This file helps verify
+    that the geometry code handles the shape correctly.
+
+pic_programmer.emn : Pic Programmer demo project from KiCad;
+    includes component outlines to check that idf2igs correctly
+    renders the component extrusions.
+
+video.emn : Video board demo project from KiCad; includes
+    component outlines.
+
+test_strange.emn : Board with a strange cutout and overlapping
+    drill holes.
+
+test_out0.emn : Board with overlapping slotted holes; one hole
+    is vertical and the other placed so that one curved end is
+    intersected at one point by the vertical edge of the other
+    slot. This file was created to help track down a bug in the
+    geometry code.
+
+test_out1.emn : Same as test_out0 but with the slots defined
+    in a different order. The order is essential since a
+    geometry bug may depend on the order of the cutouts.
+
+test_out2.emn : Similar to test_out0 but with one arc
+    intersecting an arc on the other slot at one point.
+    This is to check the arc-arc geometry code as opposed
+    to the arc-line geometry code tested in test_out0.emn.
+
+test_out3.emn : Same as test_out2.emn but with the order of
+    the slots changed.
+
+test_outline.emn : Same as test_out2.emn but with an
+    additional non-overlapping slot and drill hole.
+
+cylinder.emn : Creates a 3mm thick circular PCB with a
+    trimmed cylindrical component. The file exposed a
+    deficiency in multiple MCAD systems where multiple
+    trimmed surfaces may not refer to the same underlying
+    surface or else the successive surfaces are incorrectly
+    trimmed. Action: libIGES must create redundant underlying
+    surfaces as necessary to ensure better interoperability
+    with problematic MCADs.

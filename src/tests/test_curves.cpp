@@ -247,7 +247,7 @@ int test_cyl_wall( void )
 
     vector<IGES_ENTITY_144*> tlist;
 
-    if( !cyl.Instantiate( &model, 1.5, -0.5, tlist ) )
+    if( !cyl.Instantiate( &model, 2.5, -1.5, tlist ) )
     {
         cerr << "[FAIL]: could not instantiate cylinder\n";
         return -1;

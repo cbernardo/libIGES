@@ -310,86 +310,95 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     // + [2xnarcs]xE102: icc, compound curve (1 for NURBS bound, 1 for geometric bound)
     // + (narcs)xE142: ibound, Curve on surface (bounds of E120)
     // + (narcs)xE144: itps, trimmed surface
-    // + (narcs)E124: transforms required for bottom part of simple bounding curve
+    // + (narcs)xE124: transforms required for bottom part of simple bounding curve
 
-    IGES_ENTITY_110* iline[8];
+    #define N_ILINE 8
+    #define N_ICURVE 12
+    #define N_IARC 6
+    #define N_ICC 6
+    #define N_IBOUNDS 3
+    #define N_ITPS 3
+    #define N_ITRANS 3
+    #define N_INURBS 12
+
+    IGES_ENTITY_110* iline[N_ILINE];
     IGES_ENTITY_120* isurf = NULL;
-    IGES_ENTITY_126* icurve[12];
-    IGES_ENTITY_100* iarc[6];
-    IGES_ENTITY_102* icc[6];
-    IGES_ENTITY_142* ibound[3];
-    IGES_ENTITY_144* itps[3];
-    IGES_ENTITY_124* itrans[3];
-    SISLCurve* inurbs[12];
+    IGES_ENTITY_126* icurve[N_ICURVE];
+    IGES_ENTITY_100* iarc[N_IARC];
+    IGES_ENTITY_102* icc[N_ICC];
+    IGES_ENTITY_142* ibound[N_IBOUNDS];
+    IGES_ENTITY_144* itps[N_ITPS];
+    IGES_ENTITY_124* itrans[N_ITRANS];
+    SISLCurve* inurbs[N_INURBS];
 
-    for( int i = 0; i < 8; ++i )
+    for( int i = 0; i < N_ILINE; ++i )
         iline[i] = NULL;
 
-    for( int i = 0; i < 12; ++i )
+    for( int i = 0; i < N_ICURVE; ++i )
         icurve[i] = NULL;
 
-    for( int i = 0; i < 6; ++i )
+    for( int i = 0; i < N_IARC; ++i )
         iarc[i] = NULL;
 
-    for( int i = 0; i < 6; ++i )
+    for( int i = 0; i < N_ICC; ++i )
         icc[i] = NULL;
 
-    for( int i = 0; i < 3; ++i )
+    for( int i = 0; i < N_IBOUNDS; ++i )
         ibound[i] = NULL;
 
-    for( int i = 0; i < 3; ++i )
+    for( int i = 0; i < N_ITPS; ++i )
         itps[i] = NULL;
 
-    for( int i = 0; i < 3; ++i )
+    for( int i = 0; i < N_ITRANS; ++i )
         itrans[i] = NULL;
 
-    for( int i = 0; i < 12; ++i )
+    for( int i = 0; i < N_INURBS; ++i )
         inurbs[i] = NULL;
 
 #define CLEANUP do { \
-    for( int i = 0; i < 8; ++i ) \
+    for( int i = 0; i < N_ILINE; ++i ) \
     { \
         if( iline[i] ) \
             model->DelEntity((IGES_ENTITY*)iline[i]); \
         iline[i] = NULL; \
     } \
-    for( int i = 0; i < 12; ++i ) \
+    for( int i = 0; i < N_ICURVE; ++i ) \
     { \
         if( icurve[i] ) \
             model->DelEntity((IGES_ENTITY*)icurve[i]); \
         icurve[i] = NULL; \
     } \
-    for( int i = 0; i < 6; ++i ) \
+    for( int i = 0; i < N_IARC; ++i ) \
     { \
         if( iarc[i] ) \
             model->DelEntity((IGES_ENTITY*)iarc[i]); \
         iarc[i] = NULL; \
     } \
-    for( int i = 0; i < 6; ++i ) \
+    for( int i = 0; i < N_ICC; ++i ) \
     { \
         if( icc[i] ) \
             model->DelEntity((IGES_ENTITY*)icc[i]); \
         icc[i] = NULL; \
     }\
-    for( int i = 0; i < 3; ++i ) \
+    for( int i = 0; i < N_IBOUNDS; ++i ) \
     { \
         if( ibound[i] ) \
             model->DelEntity((IGES_ENTITY*)ibound[i]); \
             ibound[i] = NULL; \
     }\
-    for( int i = 0; i < 3; ++i ) \
+    for( int i = 0; i < N_ITPS; ++i ) \
     { \
         if( itps[i] ) \
             model->DelEntity((IGES_ENTITY*)itps[i]); \
             itps[i] = NULL; \
     }\
-    for( int i = 0; i < 3; ++i ) \
+    for( int i = 0; i < N_ITRANS; ++i ) \
     { \
         if( itrans[i] ) \
             model->DelEntity((IGES_ENTITY*)itrans[i]); \
             itrans[i] = NULL; \
     }\
-    for( int i = 0; i < 12; ++i ) \
+    for( int i = 0; i < N_INURBS; ++i ) \
     { \
         if( inurbs[i] ) \
             freeCurve( inurbs[i] ); \
@@ -898,28 +907,28 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     // clean up on success
     do
     {
-        for( int i = 0; i < 8; ++i )
+        for( int i = 0; i < N_ILINE; ++i )
             iline[i] = NULL;
 
-        for( int i = 0; i < 12; ++i )
+        for( int i = 0; i < N_ICURVE; ++i )
             icurve[i] = NULL;
 
-        for( int i = 0; i < 6; ++i )
+        for( int i = 0; i < N_IARC; ++i )
             iarc[i] = NULL;
 
-        for( int i = 0; i < 6; ++i )
+        for( int i = 0; i < N_ICC; ++i )
             icc[i] = NULL;
 
-        for( int i = 0; i < 3; ++i )
+        for( int i = 0; i < N_IBOUNDS; ++i )
             ibound[i] = NULL;
 
-        for( int i = 0; i < 3; ++i )
+        for( int i = 0; i < N_ITPS; ++i )
             itps[i] = NULL;
 
-        for( int i = 0; i < 3; ++i )
+        for( int i = 0; i < N_ITRANS; ++i )
             itrans[i] = NULL;
 
-        for( int i = 0; i < 12; ++i )
+        for( int i = 0; i < N_INURBS; ++i )
         {
             if( inurbs[i] )
                 freeCurve( inurbs[i] );

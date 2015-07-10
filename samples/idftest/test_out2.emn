@@ -1,0 +1,37 @@
+.HEADER
+BOARD_FILE 3.0 "Created by KiCad (2015-06-26 BZR 5832)-product" 2015/06/4.21:27:49 1
+"junk.kicad_pcb" MM
+.END_HEADER
+
+# Note: This file causes a failure in the libIGES
+# curve merging routines. The cutouts have walls
+# but the surface is not rendered by FreeCAD, which
+# indicates a fault. The surface is rendered by
+# SolidWorks, which suggests that the problem is
+# either in the representation of the Curve on
+# Surface boundary or the model-space boundary curve.
+#
+# Update: the fault is definitely with the model-space
+# boundary curve and is due to not having a start angle
+# -M_PI < A <= M_PI
+#
+
+.BOARD_OUTLINE UNOWNED
+1.60000
+0 34.50000 22.50000 0
+0 -34.50000 22.50000 0
+0 -34.50000 -22.50000 0
+0 34.50000 -22.50000 0
+0 34.50000 22.50000 0
+1 -23.00000 2.50000 0
+1 -23.00000 -12.50000 0
+1 -26.00000 -12.50000 -180.000
+1 -26.00000 2.50000 0
+1 -23.00000 2.50000 -180.000
+2 -24.36396 3.25736 0
+2 -13.75736 13.86396 0
+2 -11.63604 11.74264 -180.000
+2 -22.24264 1.13604 0
+2 -24.36396 3.25736 -180.000
+.END_BOARD_OUTLINE
+

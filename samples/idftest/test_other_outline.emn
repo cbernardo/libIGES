@@ -1,0 +1,44 @@
+.HEADER
+BOARD_FILE 3.0 "Created by some software" 2014/02/01.15:09:15 1
+"test_other_outline" MM
+.END_HEADER
+
+# This file is intended to verify the behavior when handling
+# an OTHER_OUTLINE section. When the object is placed on the
+# bottom of the board its vertices should not be mirrored;
+# in contrast the vertices of a component placed on the bottom
+# are mirrored.
+
+# The board outline is a simple square with a small hole in it
+.BOARD_OUTLINE ECAD
+1.60000
+0 -100 100 0
+0 -100 -100 0
+0 100 -100 0
+0 100 100 0
+0 -100 100 0
+1 0 0 0
+1 5 0 360
+.END_BOARD_OUTLINE
+
+# This OTHER OUTLINE is a triangle
+.OTHER_OUTLINE UNOWNED
+MY_TRI1 30 TOP
+0 -75 75 0
+0 -75 -75 0
+0 75 0 0
+0 -75 75 0
+1 0 0 0
+1 30 0 360
+.END_OTHER_OUTLINE
+
+# This OTHER OUTLINE is on the bottom
+.OTHER_OUTLINE UNOWNED
+MY_TRI2 2 BOTTOM
+0 -75 75 0
+0 -75 -75 0
+0 75 0 0
+0 -75 75 0
+1 0 0 0
+1 30 0 360
+.END_OTHER_OUTLINE

@@ -162,13 +162,13 @@ void IGES_ENTITY_NULL::setEntityType( int aEntityID )
 }
 
 
-bool IGES_ENTITY_NULL::Associate(std::vector<IGES_ENTITY*>* entities)
+bool IGES_ENTITY_NULL::associate(std::vector<IGES_ENTITY *> *entities)
 {
     // Since a NULL entity knows nothing of the Parameter Data,
     // the only associations which can be formed are the ones
     // provided by the base class implementation of associate().
 
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] association failed; see messages above\n";
         return false;
@@ -178,7 +178,7 @@ bool IGES_ENTITY_NULL::Associate(std::vector<IGES_ENTITY*>* entities)
 }
 
 
-bool IGES_ENTITY_NULL::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY_NULL::unlink(IGES_ENTITY *aChild)
 {
     // there are no properly established links so in
     // effect this routine always succeeds
@@ -186,14 +186,14 @@ bool IGES_ENTITY_NULL::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY_NULL::IsOrphaned( void )
+bool IGES_ENTITY_NULL::isOrphaned( void )
 {
     // this entity can be deleted at any time
     return true;
 }
 
 
-bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_NULL::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     // note: Add Reference will be called by any parent entities;
     // returning false notifies those entities that this item
@@ -202,18 +202,18 @@ bool IGES_ENTITY_NULL::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplica
 }
 
 
-bool IGES_ENTITY_NULL::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_NULL::delReference(IGES_ENTITY *aParentEntity)
 {
-    ERRMSG << "\n + [BUG] invoking DelReference on NULL Entity\n";
+    ERRMSG << "\n + [BUG] invoking delReference on NULL Entity\n";
     return false;
 }
 
 
-bool IGES_ENTITY_NULL::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_NULL::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
     entityType = trueEntity;
 
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -225,7 +225,7 @@ bool IGES_ENTITY_NULL::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& 
 }
 
 
-bool IGES_ENTITY_NULL::ReadPD(std::ifstream& aFile, int& aSequenceVar)
+bool IGES_ENTITY_NULL::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
     if( parameterData < 1 || parameterData > 9999999 )
     {
@@ -299,14 +299,14 @@ bool IGES_ENTITY_NULL::format( int &index )
 }
 
 
-bool IGES_ENTITY_NULL::WriteDE(std::ofstream& aFile)
+bool IGES_ENTITY_NULL::writeDE(std::ofstream &aFile)
 {
     ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
     return false;
 }
 
 
-bool IGES_ENTITY_NULL::WritePD(std::ofstream& aFile)
+bool IGES_ENTITY_NULL::writePD(std::ofstream &aFile)
 {
     ERRMSG << "\n + [BUG] invoking function in NULL Entity\n";
     return true;    // do not interfere with other write operations

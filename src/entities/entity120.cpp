@@ -49,18 +49,18 @@ IGES_ENTITY_120::IGES_ENTITY_120( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_120::~IGES_ENTITY_120()
 {
     if( L )
-        L->DelReference( this );
+        L->delReference(this);
 
     if( C )
-        C->DelReference( this );
+        C->delReference(this);
 
     return;
 }
 
 
-bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_120::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not register associations\n";
         return false;
@@ -96,7 +96,7 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !L->AddReference( this, dup ) )
+        if( !L->addReference(this, dup) )
         {
             L = NULL;
             ERRMSG << "\n + [INFO] could not associate line entity with DE " << iL << "\n";
@@ -128,7 +128,7 @@ bool IGES_ENTITY_120::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !C->AddReference( this, dup ) )
+        if( !C->addReference(this, dup) )
         {
             C = NULL;
             ERRMSG << "\n + [INFO] could not associate curve (generatrix) with DE " << iC << "\n";
@@ -181,8 +181,8 @@ bool IGES_ENTITY_120::format( int &index )
 
     ostringstream ostr;
     ostr << entityType << pd;
-    ostr << L->GetDESequence() << pd;
-    ostr << C->GetDESequence() << pd;
+    ostr << L->getDESequence() << pd;
+    ostr << C->getDESequence() << pd;
     string lstr = ostr.str();
     string tstr;
 
@@ -241,9 +241,9 @@ bool IGES_ENTITY_120::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_120::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY_120::unlink(IGES_ENTITY *aChild)
 {
-    if( IGES_ENTITY::Unlink( aChild ) )
+    if(IGES_ENTITY::unlink(aChild) )
         return true;
 
     if( aChild == (IGES_ENTITY*)L )
@@ -262,7 +262,7 @@ bool IGES_ENTITY_120::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY_120::IsOrphaned( void )
+bool IGES_ENTITY_120::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT) || !L || !C )
         return true;
@@ -271,21 +271,21 @@ bool IGES_ENTITY_120::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_120::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_120::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_120::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_120::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_120::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_120::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -305,9 +305,9 @@ bool IGES_ENTITY_120::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_120::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_120::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
         pdout.clear();
@@ -449,13 +449,13 @@ bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
 
     if( L )
     {
-        L->DelReference( this );
+        L->delReference(this);
         L = NULL;
     }
 
     bool dup = false;
 
-    if( !aCurve->AddReference( this, dup ) )
+    if( !aCurve->addReference(this, dup) )
         return false;
 
     if( dup )
@@ -505,13 +505,13 @@ bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
 
     if( C )
     {
-        C->DelReference( this );
+        C->delReference(this);
         C = NULL;
     }
 
     bool dup = false;
 
-    if( !aCurve->AddReference( this, dup ) )
+    if( !aCurve->addReference(this, dup) )
         return false;
 
     if( dup )

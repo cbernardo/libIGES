@@ -65,7 +65,7 @@ bool IGES_ENTITY_TEMP::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_TEMP::IsOrphaned( void )
+bool IGES_ENTITY_TEMP::isOrphaned( void )
 {
     if( refs.empty() && depends != STAT_INDEPENDENT )
         return true;

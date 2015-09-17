@@ -53,9 +53,9 @@ IGES_ENTITY_502::~IGES_ENTITY_502()
 }
 
 
-bool IGES_ENTITY_502::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_502::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    return IGES_ENTITY::Associate( entities );
+    return IGES_ENTITY::associate(entities);
 }
 
 
@@ -179,13 +179,13 @@ bool IGES_ENTITY_502::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_502::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_502::unlink(IGES_ENTITY *aChildEntity)
 {
-    return IGES_ENTITY::Unlink( aChildEntity );
+    return IGES_ENTITY::unlink(aChildEntity);
 }
 
 
-bool IGES_ENTITY_502::IsOrphaned( void )
+bool IGES_ENTITY_502::isOrphaned( void )
 {
     if( refs.empty() || vertices.empty() )
         return true;
@@ -194,7 +194,7 @@ bool IGES_ENTITY_502::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_502::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_502::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     isDuplicate = false;
 
@@ -205,19 +205,19 @@ bool IGES_ENTITY_502::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_502::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_502::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_502::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_502::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -243,9 +243,9 @@ bool IGES_ENTITY_502::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_502::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_502::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Vertex Entity\n";
         pdout.clear();

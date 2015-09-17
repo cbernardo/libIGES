@@ -46,9 +46,9 @@ IGES_ENTITY_110::~IGES_ENTITY_110()
 }
 
 
-bool IGES_ENTITY_110::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_110::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;
@@ -57,7 +57,7 @@ bool IGES_ENTITY_110::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
@@ -154,13 +154,13 @@ bool IGES_ENTITY_110::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_110::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_110::unlink(IGES_ENTITY *aChildEntity)
 {
-    return IGES_ENTITY::Unlink( aChildEntity );
+    return IGES_ENTITY::unlink(aChildEntity);
 }
 
 
-bool IGES_ENTITY_110::IsOrphaned( void )
+bool IGES_ENTITY_110::isOrphaned( void )
 {
     if( refs.empty() && depends != STAT_INDEPENDENT )
         return true;
@@ -169,21 +169,21 @@ bool IGES_ENTITY_110::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_110::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_110::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_110::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_110::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_110::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_110::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -203,9 +203,9 @@ bool IGES_ENTITY_110::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_110::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_110::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Line Entity\n";
         pdout.clear();

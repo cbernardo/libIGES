@@ -96,17 +96,17 @@ IGES_ENTITY_144::IGES_ENTITY_144( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_144::~IGES_ENTITY_144()
 {
     if( PTS )
-        PTS->DelReference( this );
+        PTS->delReference(this);
 
     if( PTO )
-        PTO->DelReference( this );
+        PTO->delReference(this);
 
     std::list<IGES_ENTITY_142*>::iterator sPTI = PTI.begin();
     std::list<IGES_ENTITY_142*>::iterator ePTI = PTI.end();
 
     while( sPTI != ePTI )
     {
-        (*sPTI)->DelReference( this );
+        (*sPTI)->delReference(this);
         ++sPTI;
     }
 
@@ -114,9 +114,9 @@ IGES_ENTITY_144::~IGES_ENTITY_144()
 }
 
 
-bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_144::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not register associations\n";
         iPTI.clear();
@@ -146,7 +146,7 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !PTS->AddReference( this, dup ) )
+        if( !PTS->addReference(this, dup) )
         {
             PTS = NULL;
             ERRMSG << "\n + [INFO] could not associate surface entity with DE " << PTS << "\n";
@@ -190,7 +190,7 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !PTO->AddReference( this, dup ) )
+        if( !PTO->addReference(this, dup) )
         {
             PTO = NULL;
             ERRMSG << "\n + [INFO] could not associate outline entity with DE " << iPTO << "\n";
@@ -248,7 +248,7 @@ bool IGES_ENTITY_144::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !ep->AddReference( this, dup ) )
+        if( !ep->addReference(this, dup) )
         {
             ERRMSG << "\n + [INFO] could not associate cutout entity with DE " << iDE << "\n";
             iPTI.clear();
@@ -302,8 +302,8 @@ bool IGES_ENTITY_144::format( int &index )
 
 	N2 = (int)PTI.size();
 
-    iPTS = PTS->GetDESequence();
-    iPTO = PTO->GetDESequence();
+    iPTS = PTS->getDESequence();
+    iPTO = PTO->getDESequence();
 
     parameterData = index;
 
@@ -342,7 +342,7 @@ bool IGES_ENTITY_144::format( int &index )
 
         while( sPTI != ePTI )
         {
-            seqPTI = (*sPTI)->GetDESequence();
+            seqPTI = (*sPTI)->getDESequence();
 
             ++sPTI;
             ostr.str("");
@@ -385,9 +385,9 @@ bool IGES_ENTITY_144::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_144::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY_144::unlink(IGES_ENTITY *aChild)
 {
-    if( IGES_ENTITY::Unlink( aChild ) )
+    if(IGES_ENTITY::unlink(aChild) )
         return true;
 
     if( aChild == PTS )
@@ -424,7 +424,7 @@ bool IGES_ENTITY_144::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY_144::IsOrphaned( void )
+bool IGES_ENTITY_144::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT)
         || ( NULL == PTS ) || ( NULL == PTO ) )
@@ -434,7 +434,7 @@ bool IGES_ENTITY_144::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_144::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -465,19 +465,19 @@ bool IGES_ENTITY_144::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         }
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_144::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_144::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_144::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_144::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -498,9 +498,9 @@ bool IGES_ENTITY_144::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_144::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_144::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
         pdout.clear();
@@ -665,7 +665,7 @@ bool IGES_ENTITY_144::GetPTS( IGES_ENTITY** aPtr )
 bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
 {
     if( PTS )
-        PTS->DelReference( this );
+        PTS->delReference(this);
 
     PTS = aPtr;
 
@@ -681,7 +681,7 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
 
     bool dup = false;
 
-    if( !PTS->AddReference( this, dup ) )
+    if( !PTS->addReference(this, dup) )
     {
         PTS = NULL;
         return false;
@@ -714,7 +714,7 @@ bool IGES_ENTITY_144::GetPTO( IGES_ENTITY_142** aPtr )
 bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
 {
     if( PTO )
-        PTO->DelReference( this );
+        PTO->delReference(this);
 
     PTO = aPtr;
 
@@ -726,7 +726,7 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
 
     bool dup = false;
 
-    if( !PTO->AddReference( this, dup ) )
+    if( !PTO->addReference(this, dup) )
     {
         PTO = NULL;
         return false;
@@ -775,7 +775,7 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
 
     bool dup = false;
 
-    if( !aPtr->AddReference( this, dup ) )
+    if( !aPtr->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO] [BUG] could not add child reference\n";
         return false;

@@ -60,7 +60,7 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
         if( sE->curv )
         {
             ERRMSG << "\nXXX + [INFO] deleting ref to curve entity " << sE->curv << "\n";
-            sE->curv->DelReference( this );
+            sE->curv->delReference(this);
         }
 
         ++sE;
@@ -73,7 +73,7 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
 
     while( sV != eV )
     {
-        sV->first->DelReference( this );
+        sV->first->delReference(this);
         ++sV;
     }
 
@@ -82,9 +82,9 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
 }
 
 
-bool IGES_ENTITY_504::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_504::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         deItems.clear();
         ERRMSG << "\n + [INFO] could not establish associations\n";
@@ -198,10 +198,10 @@ bool IGES_ENTITY_504::format( int &index )
         }
 
         ostr.str("");
-        ostr << sV->curv->GetDESequence() << pd;
-        ostr << sV->svp->GetDESequence() << pd;
+        ostr << sV->curv->getDESequence() << pd;
+        ostr << sV->svp->getDESequence() << pd;
         ostr << sV->sv << pd;
-        ostr << sV->tvp->GetDESequence() << pd;
+        ostr << sV->tvp->getDESequence() << pd;
         ostr << sV->tv << pd;
         tStr = ostr.str();
 
@@ -230,10 +230,10 @@ bool IGES_ENTITY_504::format( int &index )
         idelim = pd;
 
     ostr.str("");
-    ostr << sV->curv->GetDESequence() << pd;
-    ostr << sV->svp->GetDESequence() << pd;
+    ostr << sV->curv->getDESequence() << pd;
+    ostr << sV->svp->getDESequence() << pd;
     ostr << sV->sv << pd;
-    ostr << sV->tvp->GetDESequence() << pd;
+    ostr << sV->tvp->getDESequence() << pd;
     ostr << sV->tv << idelim;
     tStr = ostr.str();
 
@@ -267,9 +267,9 @@ bool IGES_ENTITY_504::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_504::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     int eType = aChildEntity->GetEntityType();
@@ -285,7 +285,7 @@ bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
             {
                 if( aChildEntity == sE->svp )
                 {
-                    sE->curv->DelReference( this );
+                    sE->curv->delReference(this);
 
                     if( sE->tvp != sE->svp )
                         delVertexList( sE->tvp, false );
@@ -295,7 +295,7 @@ bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
                 }
                 else if( aChildEntity == sE->tvp )
                 {
-                    sE->curv->DelReference( this );
+                    sE->curv->delReference(this);
 
                     if( sE->tvp != sE->svp )
                         delVertexList( sE->svp, false );
@@ -310,7 +310,7 @@ bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
             return true;
         }
 
-        ERRMSG << "\n + [INFO] Unlink() invoked on an unowned Vertex List entity\n";
+        ERRMSG << "\n + [INFO] unlink() invoked on an unowned Vertex List entity\n";
         return false;
     }
 
@@ -328,12 +328,12 @@ bool IGES_ENTITY_504::Unlink( IGES_ENTITY* aChildEntity )
         ++sE;
     }
 
-    ERRMSG << "\n + [INFO] Unlink() invoked on an unowned entity\n";
+    ERRMSG << "\n + [INFO] unlink() invoked on an unowned entity\n";
     return false;
 }
 
 
-bool IGES_ENTITY_504::IsOrphaned( void )
+bool IGES_ENTITY_504::isOrphaned( void )
 {
     if( refs.empty() || edges.empty() )
         return true;
@@ -342,7 +342,7 @@ bool IGES_ENTITY_504::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_504::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_504::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     isDuplicate = false;
 
@@ -381,7 +381,7 @@ bool IGES_ENTITY_504::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         ++sE;
     }
 
-    bool ok = IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    bool ok = IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 
     if( ok )
         return true;
@@ -391,15 +391,15 @@ bool IGES_ENTITY_504::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
 }
 
 
-bool IGES_ENTITY_504::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_504::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_504::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_504::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -425,9 +425,9 @@ bool IGES_ENTITY_504::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_504::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_504::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
         pdout.clear();
@@ -582,14 +582,14 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
 
     if( !addVertexList( aSVP ) )
     {
-        aCurve->DelReference( this );
+        aCurve->delReference(this);
         ERRMSG << "\n + [INFO] could not add Vertex List aSVP to entity list\n";
         return false;
     }
 
     if( !addVertexList( aTVP ) )
     {
-        aCurve->DelReference( this );
+        aCurve->delReference(this);
         delVertexList( aSVP, false );
         ERRMSG << "\n + [INFO] could not add Vertex List aTVP to entity list\n";
         return false;
@@ -597,7 +597,7 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
 
     if( aSV < 1 || aSV > (int)aSVP->GetNVertices() )
     {
-        aCurve->DelReference( this );
+        aCurve->delReference(this);
         delVertexList( aSVP, false );
         delVertexList( aTVP, false );
         ERRMSG << "\n + [BUG] aSVP index (" << aSV << ") exceeds list size (";
@@ -607,7 +607,7 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
 
     if( aTV < 1 || aTV > (int)aTVP->GetNVertices() )
     {
-        aCurve->DelReference( this );
+        aCurve->delReference(this);
         delVertexList( aSVP, false );
         delVertexList( aTVP, false );
         ERRMSG << "\n + [BUG] aTVP index (" << aTV << ") exceeds list size (";
@@ -673,7 +673,7 @@ bool IGES_ENTITY_504::addCurve( IGES_ENTITY* aCurve )
 
     bool dup = false;
 
-    if( !aCurve->AddReference( this, dup ) )
+    if( !aCurve->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO] could not add parent reference to curve\n";
         return false;
@@ -714,7 +714,7 @@ bool IGES_ENTITY_504::addVertexList( IGES_ENTITY_502* aVertexList )
 
     bool dup = false;
 
-    if( !aVertexList->AddReference( this, dup ) )
+    if( !aVertexList->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO] could not add parent reference to vertex list\n";
         return false;
@@ -751,7 +751,7 @@ bool IGES_ENTITY_504::delVertexList( IGES_ENTITY_502* aVertexList, bool aFlagAll
 
             if( aFlagAll || 0 == sV->second )
             {
-                sV->first->DelReference( this );
+                sV->first->delReference(this);
                 vertices.erase( sV );
             }
 

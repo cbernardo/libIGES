@@ -157,52 +157,70 @@ protected:
     virtual bool rescale( double sf ) = 0;
 
 public:
-    IGES_ENTITY(IGES* aParent);
-    virtual ~IGES_ENTITY();
+    // public functions which must only be used internally by libIGES
 
     /**
-     * Function Associate
+     * Function getNRefs
+     * returns the number of unique parent entities referring to this entity
+     */
+    size_t       getNRefs( void );
+
+
+    /**
+     * Function getDESequence
+     * returns the first Directory Entry sequence associated with this entity;
+     * the returned value is only guaranteed to be valid immediately after
+     * reading or writing an IGES file.
+     */
+    int          getDESequence( void );
+
+
+    /**
+     * Function getFirstParentRef
+     * returns a pointer to the first parent entity in this
+     * entity's Reference List. If the entity has no parents
+     * then NULL is returned.  This function is used internally
+     * to decide how the parameters of a NURBS curve should be
+     * scaled.
+     */
+    IGES_ENTITY* getFirstParentRef( void );
+
+
+    /**
+     * Function associate
      * associates DE pointers with other entities after reading all data;
      * retrictions on types must be enforced to ensure data integrity and
      * software stability. Returns true on success.
      *
      * @param entities = vector of all instantiated entities
      */
-    virtual bool Associate(std::vector<IGES_ENTITY*>* entities) = 0;
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities) = 0;
 
 
     // Routines to manage reference deletion
 
     /**
-     * Function Unlink
+     * Function unlink
      * removes a child entity from the parent's list of children and
      * returns true on success.
      *
      * @param aChild = pointer to child entity to disassociate from
      * the parent.
      */
-    virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
-
-
-    /**
-     * Function IsOrphaned
-     * returns true if the entity is orphaned and may be deleted
-     * without affecting the integrity of the IGES file.
-     */
-    virtual bool IsOrphaned( void ) = 0;
+    virtual bool unlink(IGES_ENTITY *aChild) = 0;
 
 
     // Add/DelReference is needed for management of StatusNumber
 
     /**
-     * Function AddReference
+     * Function addReference
      * adds a reference to a parent entity and returns true on
      * success.
      *
      * @param aParentEntity = pointer to the parent IGES entity to be registered
      * @param isDuplicate = set to true if this entity already has a reference to aParentEntity
      */
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate ) = 0;
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate) = 0;
 
 
     /**
@@ -211,24 +229,67 @@ public:
      *
      * @param aParentEntity = the parent entity to be disassociated
      */
-    virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
+    virtual bool delReference(IGES_ENTITY *aParentEntity) = 0;
 
 
     /**
-     * Function GetNRefs
-     * returns the number of unique parent entities referring to this entity
+     * Function IsOrphaned
+     * returns true if the entity is orphaned and may be deleted
+     * without affecting the integrity of the IGES file.
      */
-    size_t       GetNRefs( void );
+    virtual bool isOrphaned( void ) = 0;
 
 
     /**
-     * Function GetDESequence
-     * returns the first Directory Entry sequence associated with this entity;
-     * the returned value is only guaranteed to be valid immediately after
-     * reading or writing an IGES file.
+     * Function readDE
+     * read the Directory Entry data starting at the given record;
+     * return true on success.
+     *
+     * @param aRecord = first DE record for the entity
+     * @param aFile = IGES input file
+     * @param aSequenceVar = (I/O) current DE sequence number
      */
-    int          GetDESequence( void );
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar) = 0;
 
+
+    /**
+     * Function readPD
+     * reads the Parameter Data from sequential records starting at
+     * the current position in the input stream; returns true on
+     * success.
+     *
+     * @param aFile = the IGES input file
+     * @param aSequenceVar = (I/O) the current Parameter Data sequence number
+     */
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar) = 0;
+
+
+    /**
+     * Function writeDE
+     * writes out a Directory Entry for this entity and returns true
+     * on success. Before invoking this function the sequenceNumber
+     * member must be correctly set and the format() function must
+     * have been called on every instantiated entity.
+     *
+     * @param aFile = IGES output file
+     */
+    virtual bool writeDE(std::ofstream &aFile);
+
+
+    /**
+     * Function writePD
+     * writes out a Parameter Data block; prior to invoking this method a valid
+     * Sequence Number must have been assigned and the format() method invoked;
+     * returns true on success.
+     *
+     * @param aFile = IGES output file
+     */
+    virtual bool writePD(std::ofstream &aFile);
+
+
+public:
+    IGES_ENTITY(IGES* aParent);
+    virtual ~IGES_ENTITY();
 
     // Routines for manipulating extra entity list
 
@@ -310,53 +371,6 @@ public:
      * deletes all optional comments associated with this entity
      */
     bool ClearComments( void );
-
-
-    /**
-     * Function ReadDE
-     * read the Directory Entry data starting at the given record;
-     * return true on success.
-     *
-     * @param aRecord = first DE record for the entity
-     * @param aFile = IGES input file
-     * @param aSequenceVar = (I/O) current DE sequence number
-     */
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
-
-
-    /**
-     * Function ReadPD
-     * reads the Parameter Data from sequential records starting at
-     * the current position in the input stream; returns true on
-     * success.
-     *
-     * @param aFile = the IGES input file
-     * @param aSequenceVar = (I/O) the current Parameter Data sequence number
-     */
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;
-
-
-    /**
-     * Function WriteDE
-     * writes out a Directory Entry for this entity and returns true
-     * on success. Before invoking this function the sequenceNumber
-     * member must be correctly set and the format() function must
-     * have been called on every instantiated entity.
-     *
-     * @param aFile = IGES output file
-     */
-    virtual bool WriteDE( std::ofstream& aFile );
-
-
-    /**
-     * Function WritePD
-     * writes out a Parameter Data block; prior to invoking this method a valid
-     * Sequence Number must have been assigned and the format() method invoked;
-     * returns true on success.
-     *
-     * @param aFile = IGES output file
-     */
-    virtual bool WritePD( std::ofstream& aFile );
 
 
     /**
@@ -767,17 +781,6 @@ public:
      * @param aHierarchy = variable to store the hierarchy flag value
      */
     bool         GetHierarchy( IGES_STAT_HIER& aHierarchy );
-
-
-    /**
-     * Function GetFirstParentRef
-     * returns a pointer to the first parent entity in this
-     * entity's Reference List. If the entity has no parents
-     * then NULL is returned.  This function is used internally
-     * to decide how the parameters of a NURBS curve should be
-     * scaled.
-     */
-    IGES_ENTITY* GetFirstParentRef( void );
 };
 
 #endif  // IGES_ENTITY_H

@@ -52,15 +52,15 @@ IGES_ENTITY_122::IGES_ENTITY_122( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_122::~IGES_ENTITY_122()
 {
     if( DE )
-        DE->DelReference( this );
+        DE->delReference(this);
 
     return;
 }
 
 
-bool IGES_ENTITY_122::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_122::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;
@@ -71,7 +71,7 @@ bool IGES_ENTITY_122::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
@@ -101,7 +101,7 @@ bool IGES_ENTITY_122::Associate( std::vector<IGES_ENTITY*>* entities )
 
         bool dup = false;
 
-        if( !DE->AddReference( this, dup ) )
+        if( !DE->addReference(this, dup) )
         {
             DE = NULL;
             ERRMSG << "\n + [INFO] could not add reference to directrix curve entity (" << iDE << ")\n";
@@ -144,7 +144,7 @@ bool IGES_ENTITY_122::format( int &index )
 
     ostringstream ostr;
     ostr << entityType << pd;
-    ostr << DE->GetDESequence() << pd;
+    ostr << DE->getDESequence() << pd;
     string lstr = ostr.str();
     string tstr;
 
@@ -206,7 +206,7 @@ bool IGES_ENTITY_122::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_122::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_122::unlink(IGES_ENTITY *aChildEntity)
 {
     if( !aChildEntity )
     {
@@ -214,7 +214,7 @@ bool IGES_ENTITY_122::Unlink( IGES_ENTITY* aChildEntity )
         return false;
     }
 
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     if( aChildEntity == DE )
@@ -227,7 +227,7 @@ bool IGES_ENTITY_122::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_122::IsOrphaned( void )
+bool IGES_ENTITY_122::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT) || NULL == DE )
         return true;
@@ -236,7 +236,7 @@ bool IGES_ENTITY_122::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_122::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -250,19 +250,19 @@ bool IGES_ENTITY_122::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_122::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_122::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_122::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_122::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -282,9 +282,9 @@ bool IGES_ENTITY_122::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_122::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_122::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
         pdout.clear();
@@ -397,13 +397,13 @@ bool IGES_ENTITY_122::SetDE( IGES_CURVE* aPtr )
 {
     if( DE )
     {
-        DE->DelReference( this );
+        DE->delReference(this);
         DE = NULL;
     }
 
     bool dup = false;
 
-    if( !aPtr->AddReference( this, dup ) )
+    if( !aPtr->addReference(this, dup) )
         return false;
 
     if( dup )

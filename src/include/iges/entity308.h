@@ -66,31 +66,34 @@ protected:
     virtual bool rescale( double sf );
 
 public:
-    IGES_ENTITY_308( IGES* aParent );
-    ~IGES_ENTITY_308();
-    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
+    // public functions for libIGES only
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities);
+    virtual bool unlink(IGES_ENTITY *aChild);
+    virtual bool isOrphaned( void );
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate);
+    virtual bool delReference(IGES_ENTITY *aParentEntity);
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar);
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
-    // Inherited virtual functions
-    virtual bool Unlink( IGES_ENTITY* aChild );
-    virtual bool IsOrphaned( void );
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
-    virtual bool DelReference( IGES_ENTITY* aParentEntity );
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetVisibility( bool isVisible );
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
-
-    // class-specific functions
+    // class-specific functions for libIGES use only
 
     /**
-     * Function GetDepthLevel
+     * Function getDepthLevel
      * calculates and returns the Depth Level of this entity;
      * this number is required to maintain a file which conforms
      * to the IGES specification.
      */
-    int GetDepthLevel( void );
+    int getDepthLevel( void );
+
+public:
+    IGES_ENTITY_308( IGES* aParent );
+    ~IGES_ENTITY_308();
+
+    // Inherited virtual functions
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetVisibility( bool isVisible );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
     int DEPTH;          //< Depth Level of this instance
@@ -104,7 +107,7 @@ public:
      *
      * @param aList = the list to which entity pointers will be added
      */
-    bool GetDEList( std::list<IGES_ENTITY*>& aList );
+    bool GetDEList(std::list<IGES_ENTITY *> &aList);
 
 
     /**
@@ -114,7 +117,7 @@ public:
      *
      * @param aPtr = a pointer to the entity to be added
      */
-    bool AddDE( IGES_ENTITY* aPtr );
+    bool AddDE(IGES_ENTITY *aPtr);
 
     /**
      * Function DelDE

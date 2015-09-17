@@ -64,9 +64,18 @@ protected:
     virtual bool rescale( double sf ) = 0;
 
 public:
+    // public functions for libIGES only
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities) = 0;
+    virtual bool unlink(IGES_ENTITY *aChild) = 0;
+    virtual bool isOrphaned( void ) = 0;
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate) = 0;
+    virtual bool delReference(IGES_ENTITY *aParentEntity) = 0;
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar) = 0;
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar) = 0;
+
+public:
     IGES_CURVE( IGES* aParent );
     virtual ~IGES_CURVE();
-    virtual bool Associate(std::vector<IGES_ENTITY*>* entities) = 0;
 
     // specialized members of this class
     // methods required of parameterized curve entities
@@ -145,12 +154,6 @@ public:
     virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
 
     // members inherited from IGES_ENTITY
-    virtual bool Unlink( IGES_ENTITY* aChild ) = 0;
-    virtual bool IsOrphaned( void ) = 0;
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate ) = 0;
-    virtual bool DelReference( IGES_ENTITY* aParentEntity ) = 0;
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar ) = 0;
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar ) = 0;
     virtual bool SetEntityForm( int aForm ) = 0;
     // XXX - consider adding a method to retrieve the LENGTH of Segment N;
     // this could be useful to aid in calculations for rendering entities.

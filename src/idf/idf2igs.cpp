@@ -347,7 +347,7 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
     while( sSL != eSL )
     {
         (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[0] );
-        subfig->AddDE( (IGES_ENTITY*)(*sSL) );
+        subfig->AddDE((IGES_ENTITY *) (*sSL));
         ++sSL;
     }
 
@@ -961,7 +961,7 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
         while( sSL != eSL )
         {
             (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
-            subfig->AddDE( (IGES_ENTITY*)(*sSL) );
+            subfig->AddDE((IGES_ENTITY *) (*sSL));
             ++sSL;
         }
 
@@ -1055,7 +1055,7 @@ bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308*
     while( sSL != eSL )
     {
         (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
-        (*subfig)->AddDE( (IGES_ENTITY*)(*sSL) );
+        (*subfig)->AddDE((IGES_ENTITY *) (*sSL));
         ++sSL;
     }
 

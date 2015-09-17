@@ -54,15 +54,15 @@ IGES_ENTITY_408::IGES_ENTITY_408( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_408::~IGES_ENTITY_408()
 {
     if( DE )
-        DE->DelReference( this );
+        DE->delReference(this);
 
     return;
 }
 
 
-bool IGES_ENTITY_408::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_408::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;
@@ -73,7 +73,7 @@ bool IGES_ENTITY_408::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
@@ -103,7 +103,7 @@ bool IGES_ENTITY_408::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !DE->AddReference( this, dup ) )
+        if( !DE->addReference(this, dup) )
         {
             DE = NULL;
             ERRMSG << "\n + [INFO] could not add reference to Subfigure Definition (" << iDE << ")\n";
@@ -153,7 +153,7 @@ bool IGES_ENTITY_408::format( int &index )
 
     ostringstream ostr;
     ostr << entityType << pd;
-    ostr << DE->GetDESequence() << pd;
+    ostr << DE->getDESequence() << pd;
     string lstr = ostr.str();
     string tstr;
 
@@ -214,7 +214,7 @@ bool IGES_ENTITY_408::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_408::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_408::unlink(IGES_ENTITY *aChildEntity)
 {
     if( !aChildEntity )
     {
@@ -222,7 +222,7 @@ bool IGES_ENTITY_408::Unlink( IGES_ENTITY* aChildEntity )
         return false;
     }
 
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     if( aChildEntity == DE )
@@ -235,7 +235,7 @@ bool IGES_ENTITY_408::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_408::IsOrphaned( void )
+bool IGES_ENTITY_408::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT) || NULL == DE )
         return true;
@@ -244,7 +244,7 @@ bool IGES_ENTITY_408::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_408::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -258,19 +258,19 @@ bool IGES_ENTITY_408::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_408::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_408::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_408::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_408::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -289,9 +289,9 @@ bool IGES_ENTITY_408::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_408::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_408::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Circle Entity\n";
         pdout.clear();
@@ -418,7 +418,7 @@ bool IGES_ENTITY_408::GetDE( IGES_ENTITY_308** aPtr )
 bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
 {
     if( DE )
-        DE->DelReference( this );
+        DE->delReference(this);
 
     DE = aPtr;
 
@@ -437,7 +437,7 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
 
     bool dup = false;
 
-    if( !DE->AddReference( this, dup ) )
+    if( !DE->addReference(this, dup) )
     {
         DE = NULL;
         ERRMSG << "\n + [INFO] could not add child entity reference\n";
@@ -455,17 +455,17 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
 }
 
 
-int IGES_ENTITY_408::GetDepthLevel( void )
+int IGES_ENTITY_408::getDepthLevel( void )
 {
     // note: the specification is not clear about whether Type IGES_ENTITY_308
     // (Subfigure Definition) may indirectly reference a Type 308 of the same
     // DEPTH via inclusion within Type 408. To be absolutely safe, it is best
-    // to implement a GetDepthLevel() in Type 408 to ensure that processors
+    // to implement a getDepthLevel() in Type 408 to ensure that processors
     // which expect strict ordering of indirect references will be able to
     // process the files which we create.
 
     if( DE )
-        return DE->GetDepthLevel();
+        return DE->getDepthLevel();
 
     return 0;
 }

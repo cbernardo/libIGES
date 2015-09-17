@@ -57,7 +57,7 @@ IGES_ENTITY_508::~IGES_ENTITY_508()
 
         while( sP != eP )
         {
-            sP->second->Unlink( this );
+            sP->second->unlink(this);
             ++sP;
         }
 
@@ -72,7 +72,7 @@ IGES_ENTITY_508::~IGES_ENTITY_508()
 
     while( sE != eE )
     {
-        sE->first->Unlink( this );
+        sE->first->unlink(this);
         ++sE;
     }
 
@@ -81,9 +81,9 @@ IGES_ENTITY_508::~IGES_ENTITY_508()
 }
 
 
-bool IGES_ENTITY_508::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_508::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         deItems.clear();
         ERRMSG << "\n + [INFO] could not establish associations\n";
@@ -209,7 +209,7 @@ bool IGES_ENTITY_508::format( int &index )
 
         // edge(n)
         ostr.str("");
-        ostr << sV->data->GetDESequence() << pd;
+        ostr << sV->data->getDESequence() << pd;
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
@@ -263,9 +263,9 @@ bool IGES_ENTITY_508::format( int &index )
             ostr.str("");
 
             if( sV == iV && sP == iP && extras.empty() )
-                ostr << sP->second->GetDESequence() << rd;
+                ostr << sP->second->getDESequence() << rd;
             else
-                ostr << sP->second->GetDESequence() << pd;
+                ostr << sP->second->getDESequence() << pd;
 
             tStr = ostr.str();
             AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
@@ -305,9 +305,9 @@ bool IGES_ENTITY_508::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_508::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_508::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     int eType = aChildEntity->GetEntityType();
@@ -330,7 +330,7 @@ bool IGES_ENTITY_508::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_508::IsOrphaned( void )
+bool IGES_ENTITY_508::isOrphaned( void )
 {
     if( refs.empty() || edges.empty() )
         return true;
@@ -339,7 +339,7 @@ bool IGES_ENTITY_508::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_508::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_508::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     isDuplicate = false;
 
@@ -378,7 +378,7 @@ bool IGES_ENTITY_508::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         ++sF;
     }
 
-    bool ok = IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    bool ok = IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 
     if( ok )
         return true;
@@ -388,15 +388,15 @@ bool IGES_ENTITY_508::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
 }
 
 
-bool IGES_ENTITY_508::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_508::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_508::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_508::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -418,9 +418,9 @@ bool IGES_ENTITY_508::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_508::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_508::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
         pdout.clear();
@@ -672,7 +672,7 @@ bool IGES_ENTITY_508::addEdge( IGES_ENTITY* aEdge )
 
     bool dup = false;
 
-    if( !aEdge->AddReference( this, dup ) )
+    if( !aEdge->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO]: could not add parent entity to edge\n";
         return false;
@@ -708,7 +708,7 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnli
             ok = true;
 
             if( !aFlagUnlink )
-                ep->DelReference( this );
+                ep->delReference(this);
 
             if( aFlagAll || (--sE->second == 0) )
             {
@@ -774,7 +774,7 @@ bool IGES_ENTITY_508::addPCurve( IGES_ENTITY* aCurve )
 
     bool dup = false;
 
-    if( !aCurve->AddReference( this, dup ) )
+    if( !aCurve->addReference(this, dup) )
     {
         ERRMSG << "\n +[INFO] could not add parent reference to PS curve\n";
         return false;
@@ -809,7 +809,7 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aF
                 {
                     while( !sF->pcurves.empty() )
                     {
-                        sF->pcurves.front().second->DelReference( this );
+                        sF->pcurves.front().second->delReference(this);
                         sF->pcurves.pop_front();
                     }
 
@@ -818,7 +818,7 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aF
                 else
                 {
                     if( !aFlagUnlink )
-                        sP->second->DelReference( this );
+                        sP->second->delReference(this);
 
                     sF->pcurves.erase( sP );
                 }
@@ -865,11 +865,11 @@ bool IGES_ENTITY_508::AddEdge( LOOP_DATA& aEdge )
         {
             while( sP != aEdge.pcurves.begin() )
             {
-                sP->second->DelReference( this );
+                sP->second->delReference(this);
                 --sP;
             }
 
-            sP->second->DelReference( this );
+            sP->second->delReference(this);
             ERRMSG << "\n +[INFO] could not add pcurve to list\n";
             return false;
         }

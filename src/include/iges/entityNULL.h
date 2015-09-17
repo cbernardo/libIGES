@@ -73,9 +73,20 @@ protected:
     virtual bool rescale( double sf );
 
 public:
+    // public functions for libIGES only
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities);
+    virtual bool unlink(IGES_ENTITY *aChild);
+    virtual bool isOrphaned( void );
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate);
+    virtual bool delReference(IGES_ENTITY *aParentEntity);
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar);
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
+    virtual bool writeDE(std::ofstream &aFile);
+    virtual bool writePD(std::ofstream &aFile);
+
+public:
     IGES_ENTITY_NULL( IGES* aParent );
     virtual ~IGES_ENTITY_NULL();
-    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
 
     /**
      * Function GetTrueEntityType
@@ -91,14 +102,6 @@ public:
     }
 
     // Inherited virtual functions
-    virtual bool Unlink( IGES_ENTITY* aChild );
-    virtual bool IsOrphaned( void );
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
-    virtual bool DelReference( IGES_ENTITY* aParentEntity );
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
-    virtual bool WriteDE( std::ofstream& aFile );
-    virtual bool WritePD( std::ofstream& aFile );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
     virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );

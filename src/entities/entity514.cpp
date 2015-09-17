@@ -52,7 +52,7 @@ IGES_ENTITY_514::~IGES_ENTITY_514()
 
     while( sF != eF )
     {
-        sF->first->DelReference(this);
+        sF->first->delReference(this);
         ++sF;
     }
 
@@ -61,9 +61,9 @@ IGES_ENTITY_514::~IGES_ENTITY_514()
 }
 
 
-bool IGES_ENTITY_514::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_514::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         return false;
@@ -106,7 +106,7 @@ bool IGES_ENTITY_514::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !ep->AddReference( this, dup ) )
+        if( !ep->addReference(this, dup) )
         {
             ERRMSG << "\n + [INFO] could not add reference to face\n";
             ifaces.clear();
@@ -163,7 +163,7 @@ bool IGES_ENTITY_514::format( int &index )
     while( sF != iF )
     {
         ostr.str("");
-        ostr << sF->first->GetDESequence() << pd;
+        ostr << sF->first->getDESequence() << pd;
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
         ostr.str("");
@@ -179,7 +179,7 @@ bool IGES_ENTITY_514::format( int &index )
     }
 
     ostr.str("");
-    ostr << sF->first->GetDESequence() << pd;
+    ostr << sF->first->getDESequence() << pd;
     tStr = ostr.str();
     AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
     ostr.str("");
@@ -229,9 +229,9 @@ bool IGES_ENTITY_514::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_514::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_514::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     list<pair<IGES_ENTITY_510*, bool> >::iterator sF = mfaces.begin();
@@ -252,7 +252,7 @@ bool IGES_ENTITY_514::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_514::IsOrphaned( void )
+bool IGES_ENTITY_514::isOrphaned( void )
 {
     if( (refs.empty() && depends) || mfaces.empty() )
         return true;
@@ -261,7 +261,7 @@ bool IGES_ENTITY_514::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_514::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_514::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -272,19 +272,19 @@ bool IGES_ENTITY_514::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
     // NOTE: TO BE IMPLEMENTED:
     // Checks for circular references have been omitted
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_514::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_514::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_514::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_514::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -308,9 +308,9 @@ bool IGES_ENTITY_514::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_514::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_514::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
         pdout.clear();

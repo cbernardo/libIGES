@@ -62,9 +62,9 @@ IGES_ENTITY_124::~IGES_ENTITY_124()
 }
 
 
-bool IGES_ENTITY_124::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_124::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] failed to establish associations\n";
         return false;
@@ -80,42 +80,42 @@ bool IGES_ENTITY_124::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
     if( pLineFontPattern )
     {
         ERRMSG << "\n + [VIOLATION] Line Font Pattern entity is set\n";
-        pLineFontPattern->DelReference( this );
+        pLineFontPattern->delReference(this);
         pLineFontPattern = NULL;
     }
 
     if( pLevel )
     {
         ERRMSG << "\n + [VIOLATION] Level entity is set\n";
-        pLevel->DelReference( this );
+        pLevel->delReference(this);
         pLevel = NULL;
     }
 
     if( pView )
     {
         ERRMSG << "\n + [VIOLATION] View entity is set\n";
-        pView->DelReference( this );
+        pView->delReference(this);
         pView = NULL;
     }
 
     if( pLabelAssoc )
     {
         ERRMSG << "\n + [VIOLATION] Label Associativity is set\n";
-        pLabelAssoc->DelReference( this );
+        pLabelAssoc->delReference(this);
         pLabelAssoc = NULL;
     }
 
     if( pColor )
     {
         ERRMSG << "\n + [VIOLATION] Color entity is set\n";
-        pColor->DelReference( this );
+        pColor->delReference(this);
         pColor = NULL;
     }
 
@@ -224,7 +224,7 @@ bool IGES_ENTITY_124::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_124::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_124::unlink(IGES_ENTITY *aChildEntity)
 {
     if( !aChildEntity )
     {
@@ -250,7 +250,7 @@ bool IGES_ENTITY_124::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_124::IsOrphaned( void )
+bool IGES_ENTITY_124::isOrphaned( void )
 {
     if( refs.empty() )
         return true;
@@ -259,21 +259,21 @@ bool IGES_ENTITY_124::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_124::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_124::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_124::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_124::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_124::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_124::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -298,9 +298,9 @@ bool IGES_ENTITY_124::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_124::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_124::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Transform Entity\n";
         pdout.clear();

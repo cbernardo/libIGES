@@ -54,14 +54,14 @@ IGES_ENTITY_510::IGES_ENTITY_510( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_510::~IGES_ENTITY_510()
 {
     if( msurface )
-        msurface->DelReference( this );
+        msurface->delReference(this);
 
     list<IGES_ENTITY_508*>::iterator sL = mloops.begin();
     list<IGES_ENTITY_508*>::iterator eL = mloops.end();
 
     while( sL != eL )
     {
-        (*sL)->DelReference( this );
+        (*sL)->delReference(this);
         ++sL;
     }
 
@@ -69,9 +69,9 @@ IGES_ENTITY_510::~IGES_ENTITY_510()
 }
 
 
-bool IGES_ENTITY_510::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_510::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         iloops.clear();
@@ -105,7 +105,7 @@ bool IGES_ENTITY_510::Associate( std::vector<IGES_ENTITY*>* entities )
     msurface = (*entities)[iEnt];
     bool dup = false;
 
-    if( !msurface->AddReference( this, dup ) )
+    if( !msurface->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO] could not add reference to surface entity\n";
         msurface = NULL;
@@ -135,7 +135,7 @@ bool IGES_ENTITY_510::Associate( std::vector<IGES_ENTITY*>* entities )
             return false;
         }
 
-        if( !(*entities)[iEnt]->AddReference( this, dup ) )
+        if( !(*entities)[iEnt]->addReference(this, dup) )
         {
             ERRMSG << "\n + [INFO] could not add reference to loop\n";
             iloops.clear();
@@ -181,7 +181,7 @@ bool IGES_ENTITY_510::format( int &index )
 
     ostringstream ostr;
     ostr << entityType << pd;
-    ostr << msurface->GetDESequence() << pd;
+    ostr << msurface->getDESequence() << pd;
     ostr << mloops.size() << pd;
 
     if( mOuterLoopFlag )
@@ -199,7 +199,7 @@ bool IGES_ENTITY_510::format( int &index )
     while( sL != iL )
     {
         ostr.str("");
-        ostr << (*sL)->GetDESequence() << pd;
+        ostr << (*sL)->getDESequence() << pd;
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
         ++sL;
@@ -213,7 +213,7 @@ bool IGES_ENTITY_510::format( int &index )
         idelim = pd;
 
     ostr.str("");
-    ostr << (*sL)->GetDESequence() << idelim;
+    ostr << (*sL)->getDESequence() << idelim;
     tStr = ostr.str();
     AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
@@ -245,9 +245,9 @@ bool IGES_ENTITY_510::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_510::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_510::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     if( aChildEntity == msurface )
@@ -274,7 +274,7 @@ bool IGES_ENTITY_510::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_510::IsOrphaned( void )
+bool IGES_ENTITY_510::isOrphaned( void )
 {
     if( refs.empty() || NULL == msurface || mloops.empty() )
         return true;
@@ -283,7 +283,7 @@ bool IGES_ENTITY_510::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_510::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_510::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -294,19 +294,19 @@ bool IGES_ENTITY_510::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
     // NOTE: TO BE IMPLEMENTED:
     // Checks for circular references have been omitted
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_510::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_510::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_510::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_510::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -331,9 +331,9 @@ bool IGES_ENTITY_510::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_510::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_510::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Edge Entity\n";
         pdout.clear();

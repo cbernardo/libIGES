@@ -57,7 +57,7 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 
         while( rbeg != rend )
         {
-            if( !((IGES_ENTITY*)(*rbeg))->DelReference( this ) )
+            if( !((IGES_ENTITY *) (*rbeg))->delReference(this) )
             {
                 ERRMSG << "\n + [BUG] could not delete reference from a child entity (type ";
                 cerr << ((IGES_ENTITY*)(*rbeg))->GetEntityType() << ")\n";
@@ -73,9 +73,9 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 }
 
 
-bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_102::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         return false;
@@ -84,7 +84,7 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
@@ -133,7 +133,7 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
 
         bool dup = false;
 
-        if( !(*entities)[iEnt]->AddReference( this, dup ) )
+        if( !(*entities)[iEnt]->addReference(this, dup) )
         {
             ERRMSG << "\n + [INFO] failed to add reference to child\n";
             cerr << "+ Entity type: ";
@@ -154,7 +154,7 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
         else if( !dup )
         {
             curves.push_back( cp );
-            ((*entities)[iEnt])->Associate( entities );
+            ((*entities)[iEnt])->associate(entities);
         }
         else
         {
@@ -274,7 +274,7 @@ bool IGES_ENTITY_102::Associate( std::vector<IGES_ENTITY*>* entities )
                 {
                     if( tt != NULL )
                     {
-                        cerr << " + [INFO] DE: " << tt->GetDESequence() << "\n";
+                        cerr << " + [INFO] DE: " << tt->getDESequence() << "\n";
                         print_transform( &((IGES_ENTITY_124*)tt)->T );
                     }
                 }
@@ -331,7 +331,7 @@ bool IGES_ENTITY_102::format( int &index )
 
     while( scur != ecur )
     {
-        iCurves.push_back( (*scur)->GetDESequence() );
+        iCurves.push_back( (*scur)->getDESequence() );
         ++scur;
     }
 
@@ -392,9 +392,9 @@ bool IGES_ENTITY_102::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_102::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     // check the list of curves; if one is unlinked and it
@@ -426,7 +426,7 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
 
         while( sp != ep )
         {
-            (*sp)->DelReference( this );
+            (*sp)->delReference(this);
             ++sp;
         }
 
@@ -437,7 +437,7 @@ bool IGES_ENTITY_102::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_102::IsOrphaned( void )
+bool IGES_ENTITY_102::isOrphaned( void )
 {
     // if this entity has no segments then it has no
     // purpose for existence
@@ -449,7 +449,7 @@ bool IGES_ENTITY_102::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_102::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -461,25 +461,25 @@ bool IGES_ENTITY_102::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
     {
         ERRMSG << "\n + [VIOLATION] may not reference Entity 102\n";
         cerr << " + [INFO] parent entity sequence number (may not be valid): ";
-        cerr << aParentEntity->GetDESequence() << "\n";
+        cerr << aParentEntity->getDESequence() << "\n";
         cerr << " + [INFO] this object's entity sequence number (may not be valid): ";
         cerr << sequenceNumber << "\n";
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_102::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_102::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_102::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_102::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -498,9 +498,9 @@ bool IGES_ENTITY_102::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_102::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_102::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Composite Curve Entity\n";
         pdout.clear();
@@ -747,7 +747,7 @@ bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
 
     bool dup = false;
 
-    if( !aSegment->AddReference( this, dup ) )
+    if( !aSegment->addReference(this, dup) )
     {
         ERRMSG << "\n + [ERROR] could not add reference\n";
         return false;

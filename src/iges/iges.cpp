@@ -509,7 +509,7 @@ bool IGES::Read( const char* aFileName )
 
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( !entities[iEnt]->Associate( &entities ) )
+        if( !entities[iEnt]->associate(&entities) )
         {
             ERRMSG << "\n + [INFO] could not establish file associations\n";
             return false;
@@ -630,7 +630,7 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
     // DIRECTORY ENTRY SECTION
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( !entities[iEnt]->WriteDE( file ) )
+        if( !entities[iEnt]->writeDE(file) )
         {
             ERRMSG << "\n + [INFO] could not write out Directory Entries\n";
             file.close();
@@ -641,7 +641,7 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
     // PARAMETER DATA SECTION
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( !entities[iEnt]->WritePD( file ) )
+        if( !entities[iEnt]->writePD(file) )
         {
             ERRMSG << "\n + [INFO] could not write out Parameter Data\n";
             file.close();
@@ -1466,7 +1466,7 @@ bool IGES::readDE( IGES_RECORD& rec, std::ifstream& file )
             return false;
         }
 
-        if( !ep->ReadDE( &rec, file, nDESecLines ) )
+        if( !ep->readDE(&rec, file, nDESecLines) )
         {
             ERRMSG << "\n + [INFO] could not read Directory Entry\n";
             return false;
@@ -1509,7 +1509,7 @@ bool IGES::readPD( IGES_RECORD& rec, std::ifstream& file )
 
     while( sEnt != eEnt )
     {
-        if( !(*sEnt)->ReadPD( file, nPDSecLines ) )
+        if( !(*sEnt)->readPD(file, nPDSecLines) )
         {
             ERRMSG << "\n + [INFO] could not read parameter data for Entity[DE:";
             cerr << (2 * i + 1) << "]\n";
@@ -1644,8 +1644,8 @@ void IGES::cull( bool vicious )
 
     for( iEnt = 0; iEnt < nEnt; ++iEnt )
     {
-        if( entities[iEnt]->IsOrphaned() ||
-            ( vicious && entities[iEnt]->GetNRefs() == 0
+        if( entities[iEnt]->isOrphaned() ||
+            ( vicious && entities[iEnt]->getNRefs() == 0
             && entities[iEnt]->GetEntityType() != ENT_SINGULAR_SUBFIGURE_INSTANCE ) )
         {
 #ifdef DEBUG
@@ -2332,7 +2332,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
     for( size_t i = 0; i < nEnt; ++ i )
     {
         tEnt = entities[i]->GetEntityType();
-        nRefs = entities[i]->GetNRefs();
+        nRefs = entities[i]->getNRefs();
 
         if( tEnt == ENT_TRIMMED_PARAMETRIC_SURFACE && 0 == nRefs )
         {
@@ -2344,7 +2344,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
             {
                 IGES_ENTITY* pref = entities[i]->refs.front();
 
-                if( pref->GetNRefs() > 0 || pref->GetEntityType() != ENT_SUBFIGURE_DEFINITION )
+                if( pref->getNRefs() > 0 || pref->GetEntityType() != ENT_SUBFIGURE_DEFINITION )
                     continue;
             }
 
@@ -2390,7 +2390,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
 
         while( sEnt != eEnt )
         {
-            if( !p308->AddDE( *sEnt ) )
+            if( !p308->AddDE(*sEnt) )
             {
                 ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
                 ep = p308;
@@ -2412,7 +2412,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
 
         while( sEnt != eEnt )
         {
-            if( !p308->AddDE( *sEnt ) )
+            if( !p308->AddDE(*sEnt) )
             {
                 ERRMSG << "\n + [INFO] could not transfer entity to Subfigure Definition\n";
                 sEnt = tplist.begin();
@@ -2433,7 +2433,7 @@ bool IGES::Export( IGES* newParent, IGES_ENTITY_308** packagedEntity )
 
         while( sEnt != eEnt )
         {
-            if( !p308->AddDE( *sEnt ) )
+            if( !p308->AddDE(*sEnt) )
             {
                 ERRMSG << "\n + [INFO] could not transfer MSBO entity to Subfigure Definition\n";
                 sEnt = brlist.begin();

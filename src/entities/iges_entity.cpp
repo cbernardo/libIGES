@@ -123,7 +123,7 @@ IGES_ENTITY::~IGES_ENTITY()
 
         while( rbeg != rend )
         {
-            if( !(*rbeg)->Unlink( this ) )
+            if( !(*rbeg)->unlink(this) )
                 ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
 
             ++rbeg;
@@ -142,16 +142,16 @@ IGES_ENTITY::~IGES_ENTITY()
             if( (*rbeg)->GetEntityType() == 402 )
             {
                 // If the entity type is 402 then the reference is a 'back pointer'
-                // and the item behaves as a parent, not a child, so Unlink() is used.
-                if( !(*rbeg)->Unlink( this ) )
+                // and the item behaves as a parent, not a child, so unlink() is used.
+                if( !(*rbeg)->unlink(this) )
                 {
                     ERRMSG << "\n + [BUG] could not unlink a parent entity\n";
                 }
             }
             else
             {
-                // All other entities are children so DelReference() must be called.
-                if( !(*rbeg)->DelReference( this ) )
+                // All other entities are children so delReference() must be called.
+                if( !(*rbeg)->delReference(this) )
                 {
                     ERRMSG << "\n + [BUG] could not delete reference from a child entity\n";
                 }
@@ -165,43 +165,43 @@ IGES_ENTITY::~IGES_ENTITY()
 
     if( pStructure )
     {
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
     if( pLineFontPattern )
     {
-        pLineFontPattern->DelReference( this );
+        pLineFontPattern->delReference(this);
         pLineFontPattern = NULL;
     }
 
     if( pLevel )
     {
-        pLevel->DelReference( this );
+        pLevel->delReference(this);
         pLevel = NULL;
     }
 
     if( pView )
     {
-        pView->DelReference( this );
+        pView->delReference(this);
         pView = NULL;
     }
 
     if( pTransform )
     {
-        pTransform->DelReference( this );
+        pTransform->delReference(this);
         pTransform = NULL;
     }
 
     if( pLabelAssoc )
     {
-        pLabelAssoc->DelReference( this );
+        pLabelAssoc->delReference(this);
         pLabelAssoc = NULL;
     }
 
     if( pColor )
     {
-        pColor->DelReference( this );
+        pColor->delReference(this);
         pColor = NULL;
     }
 
@@ -209,7 +209,7 @@ IGES_ENTITY::~IGES_ENTITY()
 }   // IGES_ENTITY::~IGES_ENTITY()
 
 
-bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY::unlink(IGES_ENTITY *aChild)
 {
     // unlink and return true if the child matches
     // one of:
@@ -224,7 +224,7 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
 
     if( !aChild )
     {
-        ERRMSG << "\n + [BUG] Unlink() invoked with NULL argument\n";
+        ERRMSG << "\n + [BUG] unlink() invoked with NULL argument\n";
         return false;
     }
 
@@ -291,7 +291,7 @@ bool IGES_ENTITY::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     isDuplicate = false;
 
@@ -345,7 +345,7 @@ bool IGES_ENTITY::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
 }
 
 
-bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY::delReference(IGES_ENTITY *aParentEntity)
 {
     if( NULL == aParentEntity )
     {
@@ -377,7 +377,7 @@ bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
             int eType = (*bref)->GetEntityType();
 
             if( eType != 402 )
-                (*bref)->DelReference( this );
+                (*bref)->delReference(this);
 
             extras.erase( bref );
             return true;
@@ -390,7 +390,7 @@ bool IGES_ENTITY::DelReference( IGES_ENTITY* aParentEntity )
 }
 
 
-bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
+bool IGES_ENTITY::associate(std::vector<IGES_ENTITY *> *entities)
 {
     // All entities must read in the following:
     //
@@ -433,7 +433,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pStructure->AddReference( this, dup ) )
+            if( !pStructure->addReference(this, dup) )
             {
                 if( pStructure->GetEntityType() != 0 )
                 {
@@ -494,7 +494,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLineFontPattern->AddReference( this, dup ) )
+            if( !pLineFontPattern->addReference(this, dup) )
             {
                 if( pLineFontPattern->GetEntityType() != 0 )
                 {
@@ -566,7 +566,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLevel->AddReference( this, dup ) )
+            if( !pLevel->addReference(this, dup) )
             {
                 if( pLevel->GetEntityType() != 0 )
                 {
@@ -638,7 +638,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pView->AddReference( this, dup ) )
+            if( !pView->addReference(this, dup) )
             {
                 if( pView->GetEntityType() != 0 )
                 {
@@ -718,7 +718,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pTransform->AddReference( this, dup ) )
+            if( !pTransform->addReference(this, dup) )
             {
                 if( pTransform->GetEntityType() != 0 )
                 {
@@ -789,7 +789,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pLabelAssoc->AddReference( this, dup ) )
+            if( !pLabelAssoc->addReference(this, dup) )
             {
                 if( pLabelAssoc->GetEntityType() != 0 )
                 {
@@ -861,7 +861,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
                 ok = false;
             }
 
-            if( !pColor->AddReference( this, dup ) )
+            if( !pColor->addReference(this, dup) )
             {
                 if( pColor->GetEntityType() != 0 )
                 {
@@ -938,7 +938,7 @@ bool IGES_ENTITY::Associate(std::vector<IGES_ENTITY*>* entities)
             {
                 case ENT_GENERAL_NOTE:
                 case ENT_TEXT_DISPLAY_TEMPLATE:
-                    if( !(*entities)[iEnt]->AddReference( this, dup ) )
+                    if( !(*entities)[iEnt]->addReference(this, dup) )
                     {
                         ERRMSG << "\n + [INFO] failed to add reference to child\n";
                         ok = false;
@@ -990,7 +990,7 @@ void IGES_ENTITY::unformat( void )
 }
 
 
-bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
     // Read in the basic DE data only; it is the responsibility of
     // the individual entities to impose any further checks on
@@ -1358,7 +1358,7 @@ bool IGES_ENTITY::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequ
     return true;
 }
 
-bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
+bool IGES_ENTITY::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
     pdout.clear();
 
@@ -1382,7 +1382,7 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 
     if( !parent )
     {
-        ERRMSG << "\n + [BUG] ReadPD invoked with no parent IGES object\n";
+        ERRMSG << "\n + [BUG] readPD invoked with no parent IGES object\n";
         return false;
     }
 
@@ -1506,10 +1506,10 @@ bool IGES_ENTITY::ReadPD(std::ifstream& aFile, int& aSequenceVar)
 #endif
 
     return true;
-}   // ReadPD()
+}   // readPD()
 
 
-bool IGES_ENTITY::WriteDE( std::ofstream& aFile )
+bool IGES_ENTITY::writeDE(std::ofstream &aFile)
 {
     std::string oln1;   // DE Line 1
     std::string oln2;   // DE Line 2
@@ -1773,7 +1773,7 @@ bool IGES_ENTITY::WriteDE( std::ofstream& aFile )
 }
 
 
-bool IGES_ENTITY::WritePD( std::ofstream& aFile )
+bool IGES_ENTITY::writePD(std::ofstream &aFile)
 {
     if( pdout.empty() || 0 != (pdout.length() % 81) )
     {
@@ -1811,13 +1811,13 @@ IGES* IGES_ENTITY::GetParentIGES(void)
 }
 
 
-size_t IGES_ENTITY::GetNRefs(void)
+size_t IGES_ENTITY::getNRefs(void)
 {
     return refs.size();
 }
 
 
-int IGES_ENTITY::GetDESequence( void )
+int IGES_ENTITY::getDESequence( void )
 {
     return sequenceNumber;
 }
@@ -1891,7 +1891,7 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 {
     if( pLineFontPattern )
     {
-        pLineFontPattern->DelReference( this );
+        pLineFontPattern->delReference(this);
         pLineFontPattern = NULL;
     }
 
@@ -1913,7 +1913,7 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
 
     if( pLineFontPattern )
     {
-        pLineFontPattern->DelReference( this );
+        pLineFontPattern->delReference(this);
         pLineFontPattern = NULL;
     }
 
@@ -1933,7 +1933,7 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
 
     bool dup = false;
 
-    if( !aPattern->AddReference( this, dup ) )
+    if( !aPattern->addReference(this, dup) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
@@ -1989,7 +1989,7 @@ bool IGES_ENTITY::SetLevel( int aLevel )
 {
     if( pLevel )
     {
-        pLevel->DelReference( this );
+        pLevel->delReference(this);
         pLevel = NULL;
     }
 
@@ -2011,7 +2011,7 @@ bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
 
     if( pLevel )
     {
-        pLevel->DelReference( this );
+        pLevel->delReference(this);
         pLevel = NULL;
     }
 
@@ -2032,7 +2032,7 @@ bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
 
     bool dup = false;
 
-    if( !aLevel->AddReference( this, dup ) )
+    if( !aLevel->addReference(this, dup) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
@@ -2069,7 +2069,7 @@ bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
 
     if( pView )
     {
-        pView->DelReference( this );
+        pView->delReference(this);
         pView = NULL;
     }
 
@@ -2090,7 +2090,7 @@ bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
 
     bool dup = false;
 
-    if( !aView->AddReference( this, dup ) )
+    if( !aView->addReference(this, dup) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
@@ -2127,7 +2127,7 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
 
     if( pTransform )
     {
-        pTransform->DelReference( this );
+        pTransform->delReference(this);
         pTransform = NULL;
     }
 
@@ -2155,7 +2155,7 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
 
     bool dup = false;
 
-    if( !pTransform->AddReference( this, dup ) )
+    if( !pTransform->addReference(this, dup) )
     {
         pTransform = NULL;
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
@@ -2198,7 +2198,7 @@ bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
 
     if( pLabelAssoc )
     {
-        pLabelAssoc->DelReference( this );
+        pLabelAssoc->delReference(this);
         pLabelAssoc = NULL;
     }
 
@@ -2219,7 +2219,7 @@ bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
 
     bool dup = false;
 
-    if( !aLabelAssoc->AddReference( this, dup ) )
+    if( !aLabelAssoc->addReference(this, dup) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
@@ -2278,7 +2278,7 @@ bool IGES_ENTITY::SetColor( IGES_COLOR aColor )
 {
     if( pColor )
     {
-        pColor->DelReference( this );
+        pColor->delReference(this);
         pColor = NULL;
     }
 
@@ -2300,7 +2300,7 @@ bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
 
     if( pColor )
     {
-        pColor->DelReference( this );
+        pColor->delReference(this);
         pColor = NULL;
     }
 
@@ -2320,7 +2320,7 @@ bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
 
     bool dup = false;
 
-    if( !aColor->AddReference( this, dup ) )
+    if( !aColor->addReference(this, dup) )
     {
         ERRMSG << "\n + [BUG] could not add reference to child entity\n";
         return false;
@@ -2752,7 +2752,7 @@ bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 
     if( eType != 402 )
     {
-        if( !aEntity->AddReference( this, dup ) )
+        if( !aEntity->addReference(this, dup) )
         {
             ERRMSG << "\n + [info] could not add reference to specified entity.\n";
             return false;
@@ -2786,7 +2786,7 @@ bool IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
         return false;
     }
 
-    if( !DelReference( aEntity ) )
+    if( !delReference(aEntity) )
     {
         ERRMSG << "\n + [INFO] could not delete reference\n";
         return false;
@@ -2877,7 +2877,7 @@ bool IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-IGES_ENTITY* IGES_ENTITY::GetFirstParentRef( void )
+IGES_ENTITY* IGES_ENTITY::getFirstParentRef( void )
 {
     if( refs.empty() )
         return NULL;

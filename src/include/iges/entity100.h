@@ -71,9 +71,18 @@ protected:
     double endAng;      // terminate angle
 
 public:
+    // public functions for internal libIGES use
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities);
+    virtual bool unlink(IGES_ENTITY *aChild);
+    virtual bool isOrphaned( void );
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate);
+    virtual bool delReference(IGES_ENTITY *aParentEntity);
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar);
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
+
+public:
     IGES_ENTITY_100( IGES* aParent );
     virtual ~IGES_ENTITY_100();
-    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
 
     // Inherited from IGES_CURVE
     virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
@@ -86,12 +95,6 @@ public:
     virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
-    virtual bool Unlink( IGES_ENTITY* aChild );
-    virtual bool IsOrphaned( void );
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
-    virtual bool DelReference( IGES_ENTITY* aParentEntity );
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 

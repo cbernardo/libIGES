@@ -63,17 +63,20 @@ protected:
     std::vector<MCAD_POINT> vertices;   //< list of vertices comprising this entity
 
 public:
+    // public functions for libIGES only
+    virtual bool associate(std::vector<IGES_ENTITY *> *entities);
+    virtual bool unlink(IGES_ENTITY *aChild);
+    virtual bool isOrphaned( void );
+    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate);
+    virtual bool delReference(IGES_ENTITY *aParentEntity);
+    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar);
+    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
+
+public:
     IGES_ENTITY_502( IGES* aParent );
     virtual ~IGES_ENTITY_502();
 
     // Inherited virtual functions
-    virtual bool Associate( std::vector<IGES_ENTITY*>* entities );
-    virtual bool Unlink( IGES_ENTITY* aChild );
-    virtual bool IsOrphaned( void );
-    virtual bool AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate );
-    virtual bool DelReference( IGES_ENTITY* aParentEntity );
-    virtual bool ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar );
-    virtual bool ReadPD( std::ifstream& aFile, int& aSequenceVar );
     virtual bool SetTransform( IGES_ENTITY* aTransform );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );

@@ -54,21 +54,21 @@ IGES_ENTITY_142::IGES_ENTITY_142( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_142::~IGES_ENTITY_142()
 {
     if( SPTR )
-        SPTR->DelReference( this );
+        SPTR->delReference(this);
 
     if( BPTR )
-        BPTR->DelReference( this );
+        BPTR->delReference(this);
 
     if( CPTR )
-        CPTR->DelReference( this );
+        CPTR->delReference(this);
 
     return;
 }
 
 
-bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_142::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not register associations\n";
         return false;
@@ -89,7 +89,7 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         SPTR = (*entities)[iEnt];
 
-        if( !SPTR->AddReference( this, dup ) )
+        if( !SPTR->addReference(this, dup) )
         {
             SPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate surface entity with DE " << iSPTR << "\n";
@@ -122,7 +122,7 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         BPTR = (*entities)[iEnt];
 
-        if( !BPTR->AddReference( this, dup ) )
+        if( !BPTR->addReference(this, dup) )
         {
             BPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate boundary entity with DE " << iBPTR << "\n";
@@ -154,7 +154,7 @@ bool IGES_ENTITY_142::Associate( std::vector<IGES_ENTITY*>* entities )
 
         CPTR = (*entities)[iEnt];
 
-        if( !CPTR->AddReference( this, dup ) )
+        if( !CPTR->addReference(this, dup) )
         {
             CPTR = NULL;
             ERRMSG << "\n + [INFO] could not associate bounding curve entity with DE " << iCPTR << "\n";
@@ -207,7 +207,7 @@ bool IGES_ENTITY_142::format( int &index )
     }
     else
     {
-        iBPTR = BPTR->GetDESequence();
+        iBPTR = BPTR->getDESequence();
     }
 
     if( NULL == CPTR )
@@ -217,7 +217,7 @@ bool IGES_ENTITY_142::format( int &index )
     }
     else
     {
-        iCPTR = CPTR->GetDESequence();
+        iCPTR = CPTR->getDESequence();
     }
 
     if( CRTN < 0 || CRTN >  3 )
@@ -232,7 +232,7 @@ bool IGES_ENTITY_142::format( int &index )
         return false;
     }
 
-    iSPTR = SPTR->GetDESequence();
+    iSPTR = SPTR->getDESequence();
 
     parameterData = index;
 
@@ -292,9 +292,9 @@ bool IGES_ENTITY_142::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_142::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY_142::unlink(IGES_ENTITY *aChild)
 {
-    if( IGES_ENTITY::Unlink( aChild ) )
+    if(IGES_ENTITY::unlink(aChild) )
         return true;
 
     if( aChild == SPTR )
@@ -319,7 +319,7 @@ bool IGES_ENTITY_142::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY_142::IsOrphaned( void )
+bool IGES_ENTITY_142::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT)
         || ( NULL == SPTR ) || ( NULL == BPTR && NULL == CPTR ) )
@@ -329,7 +329,7 @@ bool IGES_ENTITY_142::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_142::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_142::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -343,19 +343,19 @@ bool IGES_ENTITY_142::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         return false;
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_142::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_142::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_142::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_142::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -376,9 +376,9 @@ bool IGES_ENTITY_142::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_142::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_142::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
         pdout.clear();
@@ -557,7 +557,7 @@ bool IGES_ENTITY_142::GetSPTR( IGES_ENTITY** aPtr )
 bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
 {
     if( NULL != SPTR )
-        SPTR->DelReference( this );
+        SPTR->delReference(this);
 
     SPTR = aPtr;
 
@@ -566,7 +566,7 @@ bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
 
     bool dup;
 
-    if( !SPTR->AddReference( this, dup ) )
+    if( !SPTR->addReference(this, dup) )
     {
         SPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
@@ -600,7 +600,7 @@ bool IGES_ENTITY_142::GetBPTR( IGES_ENTITY** aPtr )
 bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
 {
     if( NULL != BPTR )
-        BPTR->DelReference( this );
+        BPTR->delReference(this);
 
     BPTR = aPtr;
 
@@ -609,7 +609,7 @@ bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
 
     bool dup = false;
 
-    if( !BPTR->AddReference( this, dup ) )
+    if( !BPTR->addReference(this, dup) )
     {
         BPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";
@@ -643,7 +643,7 @@ bool IGES_ENTITY_142::GetCPTR( IGES_ENTITY** aPtr )
 bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
 {
     if( NULL != CPTR )
-        CPTR->DelReference( this );
+        CPTR->delReference(this);
 
     CPTR = aPtr;
 
@@ -652,7 +652,7 @@ bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
 
     bool dup = false;
 
-    if( !CPTR->AddReference( this, dup ) )
+    if( !CPTR->addReference(this, dup) )
     {
         CPTR = NULL;
         ERRMSG << "\n + [INFO] could not add reference to child entity\n";

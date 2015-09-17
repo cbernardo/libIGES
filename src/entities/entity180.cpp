@@ -97,7 +97,7 @@ void IGES_ENTITY_180::ClearNodes( void )
             {
                 IGES_ENTITY* ip = (*rbeg)->pEnt;
 
-                if( ip && !ip->DelReference( this ) )
+                if( ip && !ip->delReference(this) )
                 {
                     ERRMSG << "\n + [BUG] could not delete reference from a child entity\n";
                 }
@@ -112,9 +112,9 @@ void IGES_ENTITY_180::ClearNodes( void )
 }
 
 
-bool IGES_ENTITY_180::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_180::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not establish associations\n";
         return false;
@@ -125,7 +125,7 @@ bool IGES_ENTITY_180::Associate( std::vector<IGES_ENTITY*>* entities )
     if( pStructure )
     {
         ERRMSG << "\n + [VIOLATION] Structure entity is set\n";
-        pStructure->DelReference( this );
+        pStructure->delReference(this);
         pStructure = NULL;
     }
 
@@ -155,7 +155,7 @@ bool IGES_ENTITY_180::Associate( std::vector<IGES_ENTITY*>* entities )
 
                 (*sn)->pEnt = (*entities)[iEnt];
 
-                if( !(*entities)[iEnt]->AddReference( this, dup ) )
+                if( !(*entities)[iEnt]->addReference(this, dup) )
                 {
                     ERRMSG << "\n + [INFO] unable to add reference to child entity\n";
                     return false;
@@ -242,7 +242,7 @@ bool IGES_ENTITY_180::format( int &index )
                 return false;
             }
 
-            ostr << (-(*sNode)->pEnt->GetDESequence());
+            ostr << (-(*sNode)->pEnt->getDESequence());
             ++nArg;
         }
 
@@ -292,9 +292,9 @@ bool IGES_ENTITY_180::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_180::Unlink( IGES_ENTITY* aChildEntity )
+bool IGES_ENTITY_180::unlink(IGES_ENTITY *aChildEntity)
 {
-    if( IGES_ENTITY::Unlink( aChildEntity ) )
+    if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
     // if one node is unlinked then we must relinquish
@@ -325,7 +325,7 @@ bool IGES_ENTITY_180::Unlink( IGES_ENTITY* aChildEntity )
 }
 
 
-bool IGES_ENTITY_180::IsOrphaned( void )
+bool IGES_ENTITY_180::isOrphaned( void )
 {
     if( refs.empty() && depends != STAT_INDEPENDENT )
         return true;
@@ -334,21 +334,21 @@ bool IGES_ENTITY_180::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_180::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_180::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_180::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_180::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_180::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_180::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -369,9 +369,9 @@ bool IGES_ENTITY_180::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_180::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_180::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Binary Trees Entity\n";
         pdout.clear();
@@ -590,7 +590,7 @@ bool IGES_ENTITY_180::AddArg( IGES_ENTITY* aOperand )
 
     bool dup = false;
 
-    if( !aOperand->AddReference( this, dup ) )
+    if( !aOperand->addReference(this, dup) )
     {
         ERRMSG << "\n + [ERROR] could not add reference to child entity\n";
         return false;
@@ -607,7 +607,7 @@ bool IGES_ENTITY_180::AddArg( IGES_ENTITY* aOperand )
     if( !np )
     {
         ERRMSG << "\n + [BUG] memory allocation failed\n";
-        aOperand->DelReference( this );
+        aOperand->delReference(this);
         return false;
     }
 

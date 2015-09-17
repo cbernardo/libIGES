@@ -52,7 +52,7 @@ IGES_ENTITY_308::~IGES_ENTITY_308()
 
     while( sDE != eDE )
     {
-        (*sDE)->DelReference( this );
+        (*sDE)->delReference(this);
         ++sDE;
     }
 
@@ -60,9 +60,9 @@ IGES_ENTITY_308::~IGES_ENTITY_308()
 }
 
 
-bool IGES_ENTITY_308::Associate( std::vector<IGES_ENTITY*>* entities )
+bool IGES_ENTITY_308::associate(std::vector<IGES_ENTITY *> *entities)
 {
-    if( !IGES_ENTITY::Associate( entities ) )
+    if( !IGES_ENTITY::associate(entities) )
     {
         ERRMSG << "\n + [INFO] could not register associations\n";
         iDE.clear();
@@ -101,7 +101,7 @@ bool IGES_ENTITY_308::Associate( std::vector<IGES_ENTITY*>* entities )
 
         ep = (*entities)[iEnt];
 
-        if( !ep->AddReference( this, dup ) )
+        if( !ep->addReference(this, dup) )
         {
             ERRMSG << "\n + [INFO] could not associate entity with DE " << tDE << "\n";
             iDE.clear();
@@ -143,7 +143,7 @@ bool IGES_ENTITY_308::format( int &index )
         return false;
     }
 
-    DEPTH = GetDepthLevel();
+    DEPTH = getDepthLevel();
     N = (int)DE.size();
 
     parameterData = index;
@@ -184,7 +184,7 @@ bool IGES_ENTITY_308::format( int &index )
 
     while( sDE != eDE )
     {
-        tEnt = (*sDE)->GetDESequence();
+        tEnt = (*sDE)->getDESequence();
 
         ++sDE;
         ostr.str("");
@@ -226,9 +226,9 @@ bool IGES_ENTITY_308::rescale( double sf )
 }
 
 
-bool IGES_ENTITY_308::Unlink( IGES_ENTITY* aChild )
+bool IGES_ENTITY_308::unlink(IGES_ENTITY *aChild)
 {
-    if( IGES_ENTITY::Unlink( aChild ) )
+    if(IGES_ENTITY::unlink(aChild) )
         return true;
 
     if( DE.empty() )
@@ -253,7 +253,7 @@ bool IGES_ENTITY_308::Unlink( IGES_ENTITY* aChild )
 }
 
 
-bool IGES_ENTITY_308::IsOrphaned( void )
+bool IGES_ENTITY_308::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT)
         || DE.empty() )
@@ -263,7 +263,7 @@ bool IGES_ENTITY_308::IsOrphaned( void )
 }
 
 
-bool IGES_ENTITY_308::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicate )
+bool IGES_ENTITY_308::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
 {
     if( !aParentEntity )
     {
@@ -288,19 +288,19 @@ bool IGES_ENTITY_308::AddReference( IGES_ENTITY* aParentEntity, bool& isDuplicat
         }
     }
 
-    return IGES_ENTITY::AddReference( aParentEntity, isDuplicate );
+    return IGES_ENTITY::addReference(aParentEntity, isDuplicate);
 }
 
 
-bool IGES_ENTITY_308::DelReference( IGES_ENTITY* aParentEntity )
+bool IGES_ENTITY_308::delReference(IGES_ENTITY *aParentEntity)
 {
-    return IGES_ENTITY::DelReference( aParentEntity );
+    return IGES_ENTITY::delReference(aParentEntity);
 }
 
 
-bool IGES_ENTITY_308::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_308::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadDE( aRecord, aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readDE(aRecord, aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] failed to read Directory Entry\n";
         return false;
@@ -320,9 +320,9 @@ bool IGES_ENTITY_308::ReadDE( IGES_RECORD* aRecord, std::ifstream& aFile, int& a
 }
 
 
-bool IGES_ENTITY_308::ReadPD( std::ifstream& aFile, int& aSequenceVar )
+bool IGES_ENTITY_308::readPD(std::ifstream &aFile, int &aSequenceVar)
 {
-    if( !IGES_ENTITY::ReadPD( aFile, aSequenceVar ) )
+    if( !IGES_ENTITY::readPD(aFile, aSequenceVar) )
     {
         ERRMSG << "\n + [INFO] could not read data for Surface of Revolution\n";
         pdout.clear();
@@ -464,14 +464,14 @@ bool IGES_ENTITY_308::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_308::GetDEList( std::list<IGES_ENTITY*>& aList )
+bool IGES_ENTITY_308::GetDEList(std::list<IGES_ENTITY *> &aList)
 {
     aList = DE;
     return true;
 }
 
 
-bool IGES_ENTITY_308::AddDE( IGES_ENTITY* aPtr )
+bool IGES_ENTITY_308::AddDE(IGES_ENTITY *aPtr)
 {
     if( NULL == aPtr )
     {
@@ -533,7 +533,7 @@ bool IGES_ENTITY_308::AddDE( IGES_ENTITY* aPtr )
 
     bool dup = false;
 
-    if( !aPtr->AddReference( this, dup ) )
+    if( !aPtr->addReference(this, dup) )
     {
         ERRMSG << "\n + [INFO] [BUG] could not add child reference\n";
         return false;
@@ -574,7 +574,7 @@ bool IGES_ENTITY_308::DelDE( IGES_ENTITY* aPtr )
 }
 
 
-int IGES_ENTITY_308::GetDepthLevel( void )
+int IGES_ENTITY_308::getDepthLevel( void )
 {
     if( DE.empty() )
         return 0;
@@ -591,7 +591,7 @@ int IGES_ENTITY_308::GetDepthLevel( void )
         {
             IGES_ENTITY_308* ep308;
             ep308 = (IGES_ENTITY_308*)(*bref);
-            tm = ep308->GetDepthLevel();
+            tm = ep308->getDepthLevel();
 
             if( tm >= nd )
                 nd = tm + 1;
@@ -600,7 +600,7 @@ int IGES_ENTITY_308::GetDepthLevel( void )
         {
             IGES_ENTITY_408* ep408;
             ep408 = (IGES_ENTITY_408*)(*bref);
-            tm = ep408->GetDepthLevel();
+            tm = ep408->getDepthLevel();
 
             if( tm >= nd )
                 nd = tm + 1;

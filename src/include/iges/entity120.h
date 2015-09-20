@@ -52,7 +52,7 @@ class IGES_CURVE;
  * 2D/3D Generatrix curve, an axis of revolution,
  * and a Start and Terminate angle.
  */
-class MCAD_API IGES_ENTITY_120 : public IGES_ENTITY
+class IGES_ENTITY_120 : public IGES_ENTITY
 {
 protected:
 
@@ -74,12 +74,12 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_120( IGES* aParent );
-    virtual ~IGES_ENTITY_120();
+    MCAD_API IGES_ENTITY_120( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_120();
 
     // Inherited virtual functions
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     int iL;         // DE pointer to line entity
     int iC;         // DE pointer to curve entity
@@ -91,7 +91,7 @@ public:
      *
      * @param aCurve = handle to store pointer to axis of revolution, a line entity (Type 110)
      */
-    bool GetL( IGES_CURVE** aCurve );
+    MCAD_API bool GetL( IGES_CURVE** aCurve );
 
     /**
      * Function GetAxis
@@ -100,7 +100,7 @@ public:
      *
      * @param aCurve = handle to store pointer to axis of revolution, a line entity (Type 110)
      */
-    bool GetAxis( IGES_CURVE** aCurve );
+    MCAD_API bool GetAxis( IGES_CURVE** aCurve );
 
     /**
      * Function SetL
@@ -108,7 +108,7 @@ public:
      *
      * @param aCurve = pointer to line entity (Type 110) representing the axis of revolution
      */
-    bool SetL( IGES_CURVE* aCurve );
+    MCAD_API bool SetL( IGES_CURVE* aCurve );
 
     /**
      * Function SetAxis
@@ -116,7 +116,7 @@ public:
      *
      * @param aCurve = pointer to line entity (Type 110) representing the axis of revolution
      */
-    bool SetAxis( IGES_CURVE* aCurve );
+    MCAD_API bool SetAxis( IGES_CURVE* aCurve );
 
     /**
      * Function GetC
@@ -125,7 +125,7 @@ public:
      *
      * @param aCurve = handle to store pointer to generatrix curve
      */
-    bool GetC( IGES_CURVE** aCurve );
+    MCAD_API bool GetC( IGES_CURVE** aCurve );
 
     /**
      * Function GetGeneratrix
@@ -134,7 +134,7 @@ public:
      *
      * @param aCurve = handle to store pointer to generatrix curve
      */
-    bool GetGeneratrix( IGES_CURVE** aCurve );
+    MCAD_API bool GetGeneratrix( IGES_CURVE** aCurve );
 
 
     /**
@@ -143,7 +143,7 @@ public:
      *
      * @param aCurve = pointer to generatrix curve
      */
-    bool SetC( IGES_CURVE* aCurve );
+    MCAD_API bool SetC( IGES_CURVE* aCurve );
 
     /**
      * Function SetGeneratrix
@@ -151,12 +151,12 @@ public:
      *
      * @param aCurve = pointer to generatrix curve
      */
-    bool SetGeneratrix( IGES_CURVE* aCurve );
+    MCAD_API bool SetGeneratrix( IGES_CURVE* aCurve );
 
     /**
      * Start Angle (radians)
      */
-    union
+    MCAD_API union
     {
         double SA;
         double startAngle;
@@ -165,7 +165,7 @@ public:
     /**
      * Terminal Angle (radians)
      */
-    union
+    MCAD_API union
     {
         double TA;
         double endAngle;

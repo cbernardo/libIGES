@@ -288,8 +288,8 @@ public:
 
 
 public:
-    IGES_ENTITY(IGES* aParent);
-    virtual ~IGES_ENTITY();
+    MCAD_API IGES_ENTITY(IGES* aParent);
+    virtual MCAD_API ~IGES_ENTITY();
 
     // Routines for manipulating extra entity list
 

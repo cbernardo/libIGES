@@ -52,7 +52,7 @@
  * directrix. The implied start point of the generatrix is the start
  * point of the directrix.
  */
-class MCAD_API IGES_ENTITY_122 : public IGES_ENTITY
+class IGES_ENTITY_122 : public IGES_ENTITY
 {
 protected:
 
@@ -74,17 +74,17 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_122( IGES* aParent );
-    virtual ~IGES_ENTITY_122();
+    MCAD_API IGES_ENTITY_122( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_122();
 
     // Inherited virtual functions
-    virtual bool SetEntityForm(int aForm);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual MCAD_API bool SetEntityForm(int aForm);
+    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // parameters
-    double LX;  //< X value of Generatrix end point
-    double LY;  //< Y value of Generatrix end point
-    double LZ;  //< Z value of Generatrix end point
+    MCAD_API double LX;  //< X value of Generatrix end point
+    MCAD_API double LY;  //< Y value of Generatrix end point
+    MCAD_API double LZ;  //< Z value of Generatrix end point
 
     /**
      * Function GetDE
@@ -93,7 +93,7 @@ public:
      *
      * @param aPtr = handle to store a pointer to the directrix curve
      */
-    bool GetDE( IGES_CURVE** aPtr );
+    MCAD_API bool GetDE( IGES_CURVE** aPtr );
 
     /**
      * Function SetDE
@@ -101,7 +101,7 @@ public:
      *
      * @param aPtr = pointer to the Directrix curve
      */
-    bool SetDE( IGES_CURVE* aPtr );
+    MCAD_API bool SetDE( IGES_CURVE* aPtr );
 };
 
 #endif  // ENTITY_122_H

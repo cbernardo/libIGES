@@ -42,7 +42,7 @@ class IGES_ENTITY_124;  // Transform entity
  * Class IGES_ENTITY
  * base class for all IGES entities.
  */
-class MCAD_API IGES_ENTITY
+class IGES_ENTITY
 {
 protected:
     IGES*               parent;             //< master IGES object; contains globals and manages entity I/O
@@ -163,7 +163,7 @@ public:
      * Function getNRefs
      * returns the number of unique parent entities referring to this entity
      */
-    size_t       getNRefs( void );
+    size_t MCAD_API getNRefs( void );
 
 
     /**
@@ -172,7 +172,7 @@ public:
      * the returned value is only guaranteed to be valid immediately after
      * reading or writing an IGES file.
      */
-    int          getDESequence( void );
+    int MCAD_API getDESequence( void );
 
 
     /**
@@ -183,7 +183,7 @@ public:
      * to decide how the parameters of a NURBS curve should be
      * scaled.
      */
-    IGES_ENTITY* getFirstParentRef( void );
+    IGES_ENTITY* MCAD_API getFirstParentRef( void );
 
 
     /**

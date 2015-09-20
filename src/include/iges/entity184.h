@@ -53,7 +53,7 @@
  * Class IGES_ENTITY_184
  * represents a Solid Assembly.
  */
-class MCAD_API IGES_ENTITY_184 : public IGES_ENTITY
+class IGES_ENTITY_184 : public IGES_ENTITY
 {
 protected:
 
@@ -74,10 +74,10 @@ public:
 
 public:
     // Inherited virtual functions
-    virtual bool SetEntityForm(int aForm);
-    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual MCAD_API bool SetEntityForm(int aForm);
+    virtual MCAD_API bool SetDependency(IGES_STAT_DEPENDS aDependency);
+    virtual MCAD_API bool SetEntityUse(IGES_STAT_USE aUseCase);
+    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // XXX - TO BE IMPLEMENTED
 

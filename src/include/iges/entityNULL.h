@@ -59,7 +59,7 @@
  * Class IGES_ENTITY_NULL
  * represents the NULL Entity (Type 0) and all non-implemented entities.
  */
-class MCAD_API IGES_ENTITY_NULL : IGES_ENTITY
+class IGES_ENTITY_NULL : IGES_ENTITY
 {
 private:
     int trueEntity;     // actual Entity Type; non-zero in the case of
@@ -85,8 +85,8 @@ public:
     virtual bool writePD(std::ofstream &aFile);
 
 public:
-    IGES_ENTITY_NULL( IGES* aParent );
-    virtual ~IGES_ENTITY_NULL();
+    MCAD_API IGES_ENTITY_NULL( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_NULL();
 
     /**
      * Function GetTrueEntityType
@@ -96,26 +96,26 @@ public:
      * while for unimplemented entities the return value will be
      * non-zero.
      */
-    int GetTrueEntityType(void)
+    MCAD_API int GetTrueEntityType(void)
     {
         return trueEntity;
     }
 
     // Inherited virtual functions
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual bool SetLevel( int aLevel );
-    virtual bool SetLevel( IGES_ENTITY* aLevel );
-    virtual bool SetView( IGES_ENTITY* aView );
-    virtual bool SetTransform( IGES_ENTITY* aTransform );
-    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
-    virtual bool SetColor( IGES_COLOR aColor );
-    virtual bool SetColor( IGES_ENTITY* aColor );
-    virtual bool SetLineWeightNum( int aLineWeight );
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual MCAD_API bool SetLevel( int aLevel );
+    virtual MCAD_API bool SetLevel( IGES_ENTITY* aLevel );
+    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
+    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
+    virtual MCAD_API bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
+    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
+    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 };
 
 #endif  // ENTITY_NULL_H

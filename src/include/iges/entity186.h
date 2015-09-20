@@ -47,7 +47,7 @@ class IGES_ENTITY_514;
  * Class IGES_ENTITY_186
  * represents a Manifold Solid B-Rep Object (MSBO)
  */
-class MCAD_API IGES_ENTITY_186 : public IGES_ENTITY
+class IGES_ENTITY_186 : public IGES_ENTITY
 {
 protected:
     friend class IGES;
@@ -71,11 +71,11 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_186( IGES* aParent );
-    virtual ~IGES_ENTITY_186();
+    MCAD_API IGES_ENTITY_186( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_186();
 
     // Inherited virtual functions
-    virtual bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetEntityForm( int aForm );
 
     // functions unique to E186
     // XXX - TO BE IMPLEMENTED

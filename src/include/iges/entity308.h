@@ -54,7 +54,7 @@
  * example, each occurrence of this entity is treated as
  * a Part or Subassembly.
  */
-class MCAD_API IGES_ENTITY_308 : public IGES_ENTITY
+class IGES_ENTITY_308 : public IGES_ENTITY
 {
 protected:
 
@@ -86,19 +86,19 @@ public:
     int getDepthLevel( void );
 
 public:
-    IGES_ENTITY_308( IGES* aParent );
-    ~IGES_ENTITY_308();
+    MCAD_API IGES_ENTITY_308( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_308();
 
     // Inherited virtual functions
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetVisibility( bool isVisible );
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetVisibility( bool isVisible );
+    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    int DEPTH;          //< Depth Level of this instance
-    std::string NAME;   //< Name of this Subfigure Definition (Part Name or Subassembly Name)
-    int N;              //< Number of entities comprising this Subfigure Definition
+    MCAD_API int DEPTH;          //< Depth Level of this instance
+    MCAD_API std::string NAME;   //< Name of this Subfigure Definition (Part Name or Subassembly Name)
+    MCAD_API int N;              //< Number of entities comprising this Subfigure Definition
 
     /**
      * Function GetDEList
@@ -107,7 +107,7 @@ public:
      *
      * @param aList = the list to which entity pointers will be added
      */
-    bool GetDEList(std::list<IGES_ENTITY *> &aList);
+    MCAD_API bool GetDEList(std::list<IGES_ENTITY *> &aList);
 
 
     /**
@@ -117,7 +117,7 @@ public:
      *
      * @param aPtr = a pointer to the entity to be added
      */
-    bool AddDE(IGES_ENTITY *aPtr);
+    MCAD_API bool AddDE(IGES_ENTITY *aPtr);
 
     /**
      * Function DelDE
@@ -127,7 +127,7 @@ public:
      *
      * @param aPtr = pointer of entity to be disassociated
      */
-    bool DelDE( IGES_ENTITY* aPtr );
+    MCAD_API bool DelDE( IGES_ENTITY* aPtr );
 };
 
 #endif  // ENTITY_308_H

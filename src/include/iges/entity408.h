@@ -53,7 +53,7 @@ class IGES_ENTITY_308;
  * entity is commonly used to instantiate a feature or part
  * within a part or subassembly.
  */
-class MCAD_API IGES_ENTITY_408 : public IGES_ENTITY
+class IGES_ENTITY_408 : public IGES_ENTITY
 {
 protected:
 
@@ -75,18 +75,18 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_408( IGES* aParent );
-    virtual ~IGES_ENTITY_408();
+    MCAD_API IGES_ENTITY_408( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_408();
 
     // Inherited virtual functions
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    double X;   //< X translation relative to type space of a referring entity
-    double Y;   //< Y translation relative to type space of a referring entity
-    double Z;   //< Z translation relative to type space of a referring entity
-    double S;   //< scale factor relative to type space of a referring entity
+    MCAD_API double X;   //< X translation relative to type space of a referring entity
+    MCAD_API double Y;   //< Y translation relative to type space of a referring entity
+    MCAD_API double Z;   //< Z translation relative to type space of a referring entity
+    MCAD_API double S;   //< scale factor relative to type space of a referring entity
 
 
     /**
@@ -97,7 +97,7 @@ public:
      *
      * @param aPtr = handle to store pointer to associated Subfigure Definition Entity
      */
-    bool GetDE( IGES_ENTITY_308** aPtr );
+    MCAD_API bool GetDE( IGES_ENTITY_308** aPtr );
 
 
     /**
@@ -107,14 +107,14 @@ public:
      *
      * @param aPtr = pointer to the Subfigure Definition Entity to associate
      */
-    bool SetDE( IGES_ENTITY_308* aPtr );
+    MCAD_API bool SetDE( IGES_ENTITY_308* aPtr );
 
     /**
      * Function GetDepthLevel
      * returns the nesting level of this entity; this function is used to
      * establish correct Depth Level values as per the IGES specification.
      */
-    int getDepthLevel( void );
+    MCAD_API int getDepthLevel( void );
 };
 
 #endif  // ENTITY_408_H

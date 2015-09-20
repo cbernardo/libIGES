@@ -75,7 +75,7 @@ struct LOOP_DEIDX
  * Struct LOOP_DATA
  * stores information on instantiated entities referenced by the Loop Entity
  */
-struct LOOP_DATA
+struct MCAD_API LOOP_DATA
 {
     bool isVertex;
     IGES_ENTITY* data;
@@ -97,7 +97,7 @@ struct LOOP_DATA
  * Class IGES_ENTITY_508
  * represents the Loop Entity
  */
-class MCAD_API IGES_ENTITY_508 : public IGES_ENTITY
+class IGES_ENTITY_508 : public IGES_ENTITY
 {
 private:
     /// add a parent reference to a Vertex or Edge list entity and maintain a refcount
@@ -141,16 +141,16 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_508( IGES* aParent );
-    virtual ~IGES_ENTITY_508();
+    MCAD_API IGES_ENTITY_508( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_508();
 
     // Inherited virtual functions
-    virtual bool SetTransform( IGES_ENTITY* aTransform );
-    virtual bool SetEntityForm( int aForm );
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
+    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     // parameters not supported by the specification:
-    virtual bool SetView( IGES_ENTITY* aView );
+    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
 
     // functions unique to E508
 
@@ -159,7 +159,7 @@ public:
      * returns a pointer to the list of data structures
      * representing this loop entity.
      */
-    const std::list<LOOP_DATA>* GetLoopData( void );
+    const MCAD_API std::list<LOOP_DATA>* GetLoopData( void );
 
 
     /**
@@ -170,7 +170,7 @@ public:
      * @param aEdge = pointer to data structure storing information
      * representing the edge to be added.
      */
-    bool AddEdge( LOOP_DATA& aEdge );
+    MCAD_API bool AddEdge( LOOP_DATA& aEdge );
 };
 
 #endif  // ENTITY_508_H

@@ -58,7 +58,7 @@ class IGES_ENTITY_510;
  * Class IGES_ENTITY_514
  * represents the Shell Entity
  */
-class MCAD_API IGES_ENTITY_514 : public IGES_ENTITY
+class IGES_ENTITY_514 : public IGES_ENTITY
 {
 protected:
 
@@ -80,19 +80,19 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    IGES_ENTITY_514( IGES* aParent );
-    virtual ~IGES_ENTITY_514();
+    MCAD_API IGES_ENTITY_514( IGES* aParent );
+    virtual MCAD_API ~IGES_ENTITY_514();
 
     // Inherited virtual functions
-    virtual bool SetTransform( IGES_ENTITY* aTransform );
-    virtual bool SetEntityForm( int aForm );
+    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
+    virtual MCAD_API bool SetEntityForm( int aForm );
     // parameters not supported by the specification:
-    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual bool SetView( IGES_ENTITY* aView );
-    virtual bool SetColor( IGES_COLOR aColor );
-    virtual bool SetColor( IGES_ENTITY* aColor );
-    virtual bool SetLineWeightNum( int aLineWeight );
+    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
+    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
+    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
+    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E514
     // XXX - TO BE IMPLEMENTED

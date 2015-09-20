@@ -41,7 +41,7 @@ class IGES_ENTITY_308;
  * contains the data read from or to be written to the IGES
  * file Global Section.
  */
-struct IGES_GLOBAL
+struct MCAD_API IGES_GLOBAL
 {
     char        pdelim;                     //< parameter delimeter; RD ','
     char        rdelim;                     //< record delimeter; RD ';'
@@ -80,7 +80,7 @@ struct IGES_GLOBAL
  * Class IGES
  * is the high level object for manipulating IGES data
  */
-class MCAD_API IGES
+class IGES
 {
 private:
     static int idxPartNum;                  //< index used to create Part Name
@@ -115,24 +115,24 @@ private:
     bool writeGlobals( std::ofstream& file );
 
 public:
-    IGES();
-    ~IGES();
+    MCAD_API IGES();
+    MCAD_API ~IGES();
 
-    struct IGES_GLOBAL     globalData;      //< Global Section data
+    struct MCAD_API IGES_GLOBAL     globalData;      //< Global Section data
 
     /**
      * Function Cull
      * culls all orphaned entities and top-level entities which
      * are not Type 408 (Singular Subfigure Instance)
      */
-    void Cull( void );
+    MCAD_API void Cull( void );
 
 
     /**
      * Function Clear
      * deletes all entities and reinitializes global data
      */
-    bool Clear( void );
+    MCAD_API bool Clear( void );
 
 
     /**
@@ -142,7 +142,7 @@ public:
      *
      * @param aFileName = path to file to be processed
      */
-    bool Read( const char* aFileName );
+    MCAD_API bool Read( const char* aFileName );
 
 
     /**
@@ -152,7 +152,7 @@ public:
      * @param aFileName = path to file to be written
      * @param fOverwrite = set to true if an existing file should be overwritten
      */
-    bool Write( const char* aFileName, bool fOverwrite = false );
+    MCAD_API bool Write( const char* aFileName, bool fOverwrite = false );
 
 
     /**
@@ -166,7 +166,7 @@ public:
      * to refer to the contents of this IGES file as a part or subassembly within an
      * assembly.
      */
-    bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
+    MCAD_API bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
 
 
     /**
@@ -177,7 +177,7 @@ public:
      *
      * @param name = variable to store the part name
      */
-    void GetNewPartName( std::string& name );
+    MCAD_API void GetNewPartName( std::string& name );
 
     // create a new (hopefully unique) assembly name; the name may not be unique
     // if a sub-assembly happens to have the same name
@@ -189,7 +189,7 @@ public:
      *
      * @param name = variable to store the assembly name
      */
-    void GetNewAssemblyName( std::string& name );
+    MCAD_API void GetNewAssemblyName( std::string& name );
 
 
     /**
@@ -204,7 +204,7 @@ public:
      * be a valid value of the IGES_ENTITY_TYPE enumeration.
      * @param aEntityPointer = handle to store the pointer to the new entity.
      */
-    bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
+    MCAD_API bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
 
 
     /**
@@ -215,7 +215,7 @@ public:
      *
      * @param aEntity = pointer to an entity to be owned by this IGES object
      */
-    bool AddEntity( IGES_ENTITY* aEntity );
+    MCAD_API bool AddEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -225,7 +225,7 @@ public:
      *
      * @param aEntity = pointer to the entity to be destroyed
      */
-    bool DelEntity( IGES_ENTITY* aEntity );
+    MCAD_API bool DelEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -240,7 +240,7 @@ public:
      *
      * @param aEntity = pointer to the entity to be disassociated
      */
-    bool UnlinkEntity( IGES_ENTITY* aEntity );
+    MCAD_API bool UnlinkEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -253,7 +253,7 @@ public:
      * @param newUnit = a unit as specified by the enumeration
      * IGES_UNIT, except for UNIT_EXTERN.
      */
-    bool ConvertUnits( IGES_UNIT newUnit );
+    MCAD_API bool ConvertUnits( IGES_UNIT newUnit );
 
 
     /**
@@ -267,7 +267,7 @@ public:
      *
      * @param aScale = the new Model Scale to be applied to the data
      */
-    bool ChangeModelScale( double aScale );
+    MCAD_API bool ChangeModelScale( double aScale );
 
 
     /**
@@ -275,7 +275,7 @@ public:
      * returns a pointer to the list of strings read from or to be
      * written to the Start Section of the IGES file.
      */
-    std::list<std::string>* GetHeaders(void);
+    MCAD_API std::list<std::string>* GetHeaders(void);
 
 
     /**
@@ -283,7 +283,7 @@ public:
      * returns the number of strings read from or to be written to
      * the Start Section of an IGES file.
      */
-    size_t GetNHeaderLines(void);
+    MCAD_API size_t GetNHeaderLines(void);
 
 
     /**
@@ -293,7 +293,7 @@ public:
      *
      * @param comments = text to be appended to the Start Section.
      */
-    bool AddToHeader( const std::string& comments );
+    MCAD_API bool AddToHeader( const std::string& comments );
 };
 
 

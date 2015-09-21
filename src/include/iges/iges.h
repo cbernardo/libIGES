@@ -41,34 +41,42 @@ class IGES_ENTITY_308;
  * contains the data read from or to be written to the IGES
  * file Global Section.
  */
-struct MCAD_API IGES_GLOBAL
+class IGES_GLOBAL
 {
-    char        pdelim;                     //< parameter delimeter; RD ','
-    char        rdelim;                     //< record delimeter; RD ';'
+public:
+    // publicly accessible by libIGES modules
     std::string productIDSS;                //< Product Identification used by Sending System (RN)
     std::string fileName;                   //< Name of this file (must match in order to support external refs.) (RN)
     std::string nativeSystemID;             //< Name of the software which created the IGES model (RN)
     std::string preprocessorVersion;        //< Version of the Preprocessor which created the IGES model (RN)
+    std::string productIDRS;                //< Product Identification used by Receiving System (RD: product IDSS)
+    std::string unitsName;                  //< String symbolizing units described by unitsFlag (RD: must match unitsFlag)
+    std::string creationDate;               //< [YY]YYMMDD.HHNNSS date of file creation (enforce UTC) (RN)
+    std::string author;                     //< name of author (RD: "")
+    std::string organization;               //< name of author's organization (RD: "")
+    std::string modificationDate;           //< [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
+    std::string applicationNote;            //< Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
+
+public:
+    // accessors for public items not accessible by DLL
+    // WARNING: TO BE IMPLEMENTED
+
+public:
+    char        pdelim;                     //< parameter delimeter; RD ','
+    char        rdelim;                     //< record delimeter; RD ';'
     int         nIntegerBits;               //< number of significant bits in an integer on the Sending System (RN)
     int         floatMaxExp;                //< max. exponent of a Float type (RN)
     int         floatMaxSig;                //< max. significant digits of a Float type (RN)
     int         doubleMaxExp;               //< max. exponent of a Double type (RN)
     int         doubleMaxSig;               //< max. significant digits of a Double type (RN)
-    std::string productIDRS;                //< Product Identification used by Receiving System (RD: product IDSS)
     double      modelScale;                 //< ModelUnits/RealWorldUnits : Ex. a 1:8 model must multiply units by 8 to get RWU (RD: 1.0)
     IGES_UNIT   unitsFlag;                  //< Internal unit representation of model on disk (RD: 1 (inch))
-    std::string unitsName;                  //< String symbolizing units described by unitsFlag (RD: must match unitsFlag)
     int         maxLinewidthGrad;           //< Max. linewidth gradations (RD: 1; min. = 1)
     double      maxLinewidth;               //< Max. linewidth in terms of internal units (RN)
-    std::string creationDate;               //< [YY]YYMMDD.HHNNSS date of file creation (enforce UTC) (RN)
     double      minResolution;              //< Min. user intended resolution (RN)
     double      maxCoordinateValue;         //< Max. used coordinate value (normally set to '0.0' = not determined) (RD: 0.0)
-    std::string author;                     //< name of author (RD: "")
-    std::string organization;               //< name of author's organization (RD: "")
     int         igesVersion;                //< flag indicating IGES version of the file; 3..11 (RD: 3)
     IGES_DRAFTING_STANDARD draftStandard;   //< flag indicating drafting standard (if any) (RD: 0)
-    std::string modificationDate;           //< [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
-    std::string applicationNote;            //< Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
 
     // derived scale to be applied to quantities to derive mm units with model scale 1.0
     double      cf;                         //< conversion factor for normalizing input when model scale != 1.0
@@ -118,7 +126,7 @@ public:
     MCAD_API IGES();
     MCAD_API ~IGES();
 
-    struct MCAD_API IGES_GLOBAL     globalData;      //< Global Section data
+    MCAD_API IGES_GLOBAL globalData;    //< Global Section data
 
     /**
      * Function Cull

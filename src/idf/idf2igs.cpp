@@ -137,8 +137,9 @@ int main( int argc, char **argv )
 
     // create an IGES model and set its parameters
     IGES model;
-    model.globalData.productIDSS = "idf2igs test";
-    model.globalData.nativeSystemID = "libIGES";
+    // WARNING: TO BE FIXED: iges.h/cpp needs accessro functions implemented
+    // model.globalData.productIDSS = "idf2igs test";
+    // model.globalData.nativeSystemID = "libIGES";
     model.globalData.modelScale = 1.0;
     model.globalData.unitsFlag = UNIT_MM;
     model.globalData.minResolution = 1e-8;

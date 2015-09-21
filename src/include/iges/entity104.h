@@ -96,17 +96,17 @@ public:
     virtual MCAD_API ~IGES_ENTITY_104();
 
     // public variables
-    MCAD_API double A;   //< 1st general conic parameter
-    MCAD_API double B;   //< 2nd general conic parameter
-    MCAD_API double C;   //< 3rd general conic parameter
-    MCAD_API double D;   //< 4th general conic parameter
-    MCAD_API double E;   //< 5th general conic parameter
-    MCAD_API double F;   //< 6th general conic parameter
-    MCAD_API double ZT;  //< Z coordinate of plane in which conic is defined
-    MCAD_API double X1;  //< X value, start point, abscissa
-    MCAD_API double Y1;  //< Y value, start point, abscissa
-    MCAD_API double X2;  //< X value, terminal point, abscissa
-    MCAD_API double Y2;  //< Y value, terminal point, abscissa
+    double MCAD_API A;   //< 1st general conic parameter
+    double MCAD_API B;   //< 2nd general conic parameter
+    double MCAD_API C;   //< 3rd general conic parameter
+    double MCAD_API D;   //< 4th general conic parameter
+    double MCAD_API E;   //< 5th general conic parameter
+    double MCAD_API F;   //< 6th general conic parameter
+    double MCAD_API ZT;  //< Z coordinate of plane in which conic is defined
+    double MCAD_API X1;  //< X value, start point, abscissa
+    double MCAD_API Y1;  //< Y value, start point, abscissa
+    double MCAD_API X2;  //< X value, terminal point, abscissa
+    double MCAD_API Y2;  //< Y value, terminal point, abscissa
 
     // Inherited from IGES_ENTITY
     virtual MCAD_API bool SetEntityForm(int aForm);

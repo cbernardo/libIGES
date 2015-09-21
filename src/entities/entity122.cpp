@@ -382,9 +382,9 @@ bool IGES_ENTITY_122::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_122::GetDE( IGES_CURVE** aPtr )
+bool IGES_ENTITY_122::GetDE( IGES_CURVE*& aPtr )
 {
-    *aPtr = DE;
+    aPtr = DE;
 
     if( DE )
         return true;

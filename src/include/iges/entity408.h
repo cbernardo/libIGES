@@ -97,7 +97,7 @@ public:
      *
      * @param aPtr = handle to store pointer to associated Subfigure Definition Entity
      */
-    MCAD_API bool GetDE( IGES_ENTITY_308** aPtr );
+    MCAD_API bool GetDE( IGES_ENTITY_308*& aPtr );
 
 
     /**

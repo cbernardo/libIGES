@@ -58,14 +58,16 @@ class IGES_ENTITY_308 : public IGES_ENTITY
 {
 protected:
 
-    std::list<int>iDE;
-    std::list<IGES_ENTITY*>DE;  //< associated entities
+    std::list< int > iDE;
+    std::vector< IGES_ENTITY* > m_DE;   // DE arranged for access across DLL
 
     friend class IGES;
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
 public:
+    std::list< IGES_ENTITY* > DE;       //< associated entities
+
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
     virtual bool unlink(IGES_ENTITY *aChild);
@@ -102,12 +104,14 @@ public:
 
     /**
      * Function GetDEList
-     * adds pointers to entities comprising this Subfigure Definition to the
-     * given entity pointer list and returns true on success.
+     * provides the caller with a list of entity pointers which comprise this
+     * Subfigure Definition entity and returns true on success.
      *
-     * @param aList = the list to which entity pointers will be added
+     * @param aDESize will hold the number of entities returned in aDEList
+     * @param aDEList will point to the first entity pointer
+     * @return true if this Subfigure Definition entity was not empty
      */
-    MCAD_API bool GetDEList(std::list<IGES_ENTITY *> &aList);
+    MCAD_API bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );
 
 
     /**

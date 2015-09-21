@@ -29,6 +29,7 @@
 #include <entity124.h>
 #include <entity502.h>
 #include <entity504.h>
+#include "../include/iges/entity504.h"
 
 using namespace std;
 
@@ -546,12 +547,15 @@ bool IGES_ENTITY_504::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-std::vector<EDGE_DATA>* IGES_ENTITY_504::GetEdges( void )
+MCAD_API bool
+IGES_ENTITY_504::GetEdges( size_t aListSize, EDGE_DATA const*& aEdgeList )
 {
     if( edges.empty() )
     {
         vedges.clear();
-        return &vedges;
+        aListSize = 0;
+        aEdgeList = NULL;
+        return false;
     }
 
     if( vedges.empty() || vedges.size() != edges.size() )
@@ -567,8 +571,11 @@ std::vector<EDGE_DATA>* IGES_ENTITY_504::GetEdges( void )
         }
     }
 
-    return &vedges;
+    aListSize = 0;
+    aEdgeList = &vedges[0];
+    return false;
 }
+
 
 bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
                                IGES_ENTITY_502* aSVP, int aSV,

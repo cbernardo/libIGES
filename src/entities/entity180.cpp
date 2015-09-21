@@ -624,7 +624,21 @@ int IGES_ENTITY_180::GetNNodes( void )
 }
 
 
-std::list<BTREE_NODE*>* IGES_ENTITY_180::GetNodes( void )
+MCAD_API BTREE_NODE* IGES_ENTITY_180::GetNode( int aIndex )
 {
-    return &nodes;
+    // XXX - due to the possibly large number of nodes,
+    // it may be worthwhile to create an internal vector<>
+    // to access all nodes; otherwise sequential access
+    // shall be a N^2-1 operation
+    int ne = (int)nodes.size();
+
+    if( aIndex < 0 || aIndex >= ne )
+        return NULL;
+
+    std::list< BTREE_NODE* >::iterator sI = nodes.begin();
+
+    for( int i = 0; i < aIndex; ++i )
+        ++sI;
+
+    return *sI;
 }

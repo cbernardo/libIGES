@@ -91,9 +91,9 @@ public:
      * retrieves a pointer to the Directrix Entity 2D/3D curve
      * and returns true on success.
      *
-     * @param aPtr = handle to store a pointer to the directrix curve
+     * @param aPtr = pointer to store a pointer to the directrix curve
      */
-    MCAD_API bool GetDE( IGES_CURVE** aPtr );
+    MCAD_API bool GetDE( IGES_CURVE*& aPtr );
 
     /**
      * Function SetDE

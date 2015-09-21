@@ -153,7 +153,7 @@ public:
      * Function GetNodes
      * returns a pointer to the internal list of BTREE operators and operands
      */
-    MCAD_API std::list<BTREE_NODE*>* GetNodes( void );
+    MCAD_API BTREE_NODE* GetNode( int aIndex );
 };
 
 #endif  // ENTITY_180_H

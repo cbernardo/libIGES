@@ -70,6 +70,9 @@ protected:
     virtual bool rescale( double sf );
 
 public:
+    std::string cname;  // optional name describing the color; known in specification as CNAME
+    std::string& CNAME;
+
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
     virtual bool unlink(IGES_ENTITY *aChild);
@@ -121,8 +124,8 @@ public:
         double CC3;
     };
 
-    MCAD_API std::string cname;  // optional name describing the color; known in specification as CNAME
-    MCAD_API std::string& CNAME;
+    MCAD_API const char* GetCName( void );
+    MCAD_API void SetCName( const char* aName );
 };
 
 #endif  // ENTITY314_H

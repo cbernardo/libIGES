@@ -404,9 +404,9 @@ bool IGES_ENTITY_408::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_408::GetDE( IGES_ENTITY_308** aPtr )
+bool IGES_ENTITY_408::GetDE( IGES_ENTITY_308*& aPtr )
 {
-    *aPtr = DE;
+    aPtr = DE;
 
     if( !DE )
         return false;

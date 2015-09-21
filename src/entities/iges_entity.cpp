@@ -2725,9 +2725,19 @@ int IGES_ENTITY::GetNOptionalEntities( void )
 }
 
 
-std::list<IGES_ENTITY*>* IGES_ENTITY::GetOptionalEntities( void )
+IGES_ENTITY* IGES_ENTITY::GetOptionalEntity( int aIndex )
 {
-    return &extras;
+    int ne = (int)extras.size();
+
+    if( aIndex < 0 || aIndex >= ne )
+        return NULL;
+
+    std::list< IGES_ENTITY* >::iterator sI = extras.begin();
+
+    for( int i = 0; i < aIndex; ++i )
+        ++sI;
+
+    return *sI;
 }
 
 
@@ -2802,9 +2812,19 @@ int IGES_ENTITY::GetNComments( void )
 }
 
 
-std::list<std::string>* IGES_ENTITY::GetComments( void )
+const char* IGES_ENTITY::GetComment( int aIndex )
 {
-    return &comments;
+    int ne = (int)comments.size();
+
+    if( aIndex < 0 || aIndex >= ne )
+        return NULL;
+
+    std::list< std::string >::iterator sI = comments.begin();
+
+    for( int i = 0; i < aIndex; ++i )
+        ++sI;
+
+    return sI->c_str();
 }
 
 

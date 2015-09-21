@@ -164,7 +164,7 @@ public:
      * Function GetEdges
      * returns a vector containing Edge data for convenient access by users
      */
-    MCAD_API std::vector<EDGE_DATA>* GetEdges( void );
+    MCAD_API bool GetEdges( size_t aListSize, EDGE_DATA const*& aEdgeList );
 
 
     /**

@@ -745,10 +745,25 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
 }
 
 
-bool IGES_ENTITY_144::GetPTIList( std::list<IGES_ENTITY_142*>& aList )
+int IGES_ENTITY_144::GetNPTI( void )
 {
-    aList = PTI;
-    return true;
+    return (int)PTI.size();
+}
+
+
+IGES_ENTITY_142* IGES_ENTITY_144::GetPTI( int aIndex )
+{
+    int ne = (int)PTI.size();
+
+    if( aIndex < 0 || aIndex >= ne )
+        return NULL;
+
+    std::list< IGES_ENTITY_142* >::iterator sI = PTI.begin();
+
+    for( int i = 0; i < aIndex; ++i )
+        ++sI;
+
+    return *sI;
 }
 
 

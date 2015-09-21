@@ -70,26 +70,30 @@ struct LOOP_DEIDX
     }
 };
 
+struct MCAD_API LOOP_PAIR
+{
+    MCAD_API bool orientFlag;
+    IGES_ENTITY*  curve;
+
+    LOOP_PAIR();
+    LOOP_PAIR( bool aOrientFlag, IGES_ENTITY* aCurve );
+};
 
 /**
  * Struct LOOP_DATA
  * stores information on instantiated entities referenced by the Loop Entity
  */
-struct MCAD_API LOOP_DATA
+struct LOOP_DATA
 {
-    bool isVertex;
-    IGES_ENTITY* data;
-    int  idx;
-    bool orientFlag;
+    MCAD_API bool isVertex;
+    MCAD_API IGES_ENTITY* data;
+    MCAD_API int  idx;
+    MCAD_API bool orientFlag;
     std::list< std::pair<bool, IGES_ENTITY*> > pcurves;
+    std::vector< LOOP_PAIR > vcurves;   // structure accessible to users across DLL bounds
 
-    LOOP_DATA()
-    {
-        isVertex = false;
-        orientFlag = true;
-        data = NULL;
-        idx = 0;
-    }
+    MCAD_API LOOP_DATA();
+    MCAD_API bool GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList );
 };
 
 
@@ -127,10 +131,12 @@ protected:
     virtual bool rescale( double sf );
 
     std::list<LOOP_DEIDX> deItems;  // Data for EDGE, including DE indices
-    std::list<LOOP_DATA> edges;
     std::list<std::pair<IGES_ENTITY*, int> > redges;   // refcounts for edges
+    std::vector<LOOP_DATA> vedges;  // loop data in a form a user can access via DLL
 
 public:
+    std::list<LOOP_DATA> edges;
+
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
     virtual bool unlink(IGES_ENTITY *aChild);
@@ -159,7 +165,7 @@ public:
      * returns a pointer to the list of data structures
      * representing this loop entity.
      */
-    const MCAD_API std::list<LOOP_DATA>* GetLoopData( void );
+    MCAD_API bool GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList );
 
 
     /**

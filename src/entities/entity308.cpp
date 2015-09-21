@@ -47,6 +47,7 @@ IGES_ENTITY_308::IGES_ENTITY_308( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_308::~IGES_ENTITY_308()
 {
+    m_DE.clear();
     std::list<IGES_ENTITY*>::iterator sDE = DE.begin();
     std::list<IGES_ENTITY*>::iterator eDE = DE.end();
 
@@ -464,9 +465,30 @@ bool IGES_ENTITY_308::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_308::GetDEList(std::list<IGES_ENTITY *> &aList)
+bool IGES_ENTITY_308::GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList )
 {
-    aList = DE;
+    if( DE.empty() )
+    {
+        aDESize = 0;
+        aDEList = NULL;
+        return false;
+    }
+
+    if( DE.size() != m_DE.size() )
+    {
+        m_DE.clear();
+        std::list< IGES_ENTITY* >::iterator sL = DE.begin();
+        std::list< IGES_ENTITY* >::iterator eL = DE.end();
+
+        while( sL != eL )
+        {
+            m_DE.push_back( *sL );
+            ++sL;
+        }
+    }
+
+    aDESize = m_DE.size();
+    aDEList = &m_DE[0];
     return true;
 }
 
@@ -526,7 +548,10 @@ bool IGES_ENTITY_308::AddDE(IGES_ENTITY *aPtr)
         // while this is a bug, we can do the right thing and simply ignore the
         // additional reference
         if( aPtr == *bref )
+        {
+            m_DE.clear();
             return true;
+        }
 
         ++bref;
     }
@@ -548,6 +573,7 @@ bool IGES_ENTITY_308::AddDE(IGES_ENTITY *aPtr)
     aPtr->SetDependency( STAT_DEP_PHY );
     DE.push_back( aPtr );
     N = (int)DE.size();
+    m_DE.clear();
 
     return true;
 }

@@ -754,7 +754,7 @@ bool initColors( IGES& model, IGES_ENTITY_314** colors )
         colors[i]->green = cdef[i][1] * 100.0 / 255.0 ;
         colors[i]->blue = cdef[i][2] * 100.0 / 255.0 ;
 
-        colors[i]->cname = cname[i];
+        colors[i]->SetCName( cname[i].c_str() );
     }
 
     return true;

@@ -28,8 +28,64 @@
 #include <iges_io.h>
 #include <entity124.h>
 #include <entity508.h>
+#include <bits/stl_list.h>
+#include "../include/iges/entity508.h"
 
 using namespace std;
+
+
+LOOP_PAIR::LOOP_PAIR()
+{
+    orientFlag = false;
+    curve = NULL;
+    return;
+}
+
+
+LOOP_PAIR::LOOP_PAIR( bool aOrientFlag, IGES_ENTITY* aCurve )
+{
+    orientFlag = aOrientFlag;
+    curve = aCurve;
+    return;
+}
+
+
+LOOP_DATA::LOOP_DATA()
+{
+    isVertex = false;
+    orientFlag = true;
+    data = NULL;
+    idx = 0;
+}
+
+bool LOOP_DATA::GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList )
+{
+    if( pcurves.empty() )
+    {
+        vcurves.clear();
+        aListSize = 0;
+        aPCurveList = NULL;
+        return false;
+    }
+
+    if( pcurves.size() != vcurves.size() )
+    {
+        vcurves.clear();
+
+        std::list< std::pair<bool, IGES_ENTITY*> >::iterator sL = pcurves.begin();
+        std::list< std::pair<bool, IGES_ENTITY*> >::iterator eL = pcurves.end();
+
+        while( sL != eL )
+        {
+            vcurves.push_back( LOOP_PAIR( sL->first, sL->second ) );
+            ++sL;
+        }
+    }
+
+    aListSize = vcurves.size();
+    aPCurveList = &vcurves[0];
+    return true;
+}
 
 
 IGES_ENTITY_508::IGES_ENTITY_508( IGES* aParent ) : IGES_ENTITY( aParent )
@@ -836,9 +892,33 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aF
 }
 
 
-const std::list<LOOP_DATA>* IGES_ENTITY_508::GetLoopData( void )
+MCAD_API bool IGES_ENTITY_508::GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList )
 {
-    return &edges;
+    if( edges.empty() )
+    {
+        vedges.clear();
+        aListSize = 0;
+        aEdgeList = NULL;
+        return false;
+    }
+
+    if( edges.size() != vedges.size() )
+    {
+        vedges.clear();
+
+        std::list<LOOP_DATA>::iterator sL = edges.begin();
+        std::list<LOOP_DATA>::iterator eL = edges.end();
+
+        while( sL != eL )
+        {
+            vedges.push_back( *sL );
+            ++sL;
+        }
+    }
+
+    aListSize = vedges.size();
+    aEdgeList = &vedges[0];
+    return true;
 }
 
 
@@ -878,5 +958,6 @@ bool IGES_ENTITY_508::AddEdge( LOOP_DATA& aEdge )
     }
 
     edges.push_back( aEdge );
+    vedges.clear();
     return true;
 }

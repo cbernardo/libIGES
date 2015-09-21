@@ -506,3 +506,20 @@ bool IGES_ENTITY_314::SetLineWeightNum( int aLineWeight )
     ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Line Weight\n";
     return true;
 }
+
+
+const char* IGES_ENTITY_314::GetCName( void )
+{
+    return cname.c_str();
+}
+
+
+void IGES_ENTITY_314::SetCName( const char* aName )
+{
+    if( NULL == aName )
+        cname.clear();
+    else
+    cname = aName;
+
+    return;
+}

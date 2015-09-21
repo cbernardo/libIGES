@@ -145,7 +145,8 @@ public:
      *
      * @param aList = list to store pointers
      */
-    MCAD_API bool GetPTIList( std::list<IGES_ENTITY_142*>& aList );
+    MCAD_API int GetNPTI( void );
+    MCAD_API IGES_ENTITY_142* GetPTI( int aIndex );
 
     /**
      * Function AddPTI

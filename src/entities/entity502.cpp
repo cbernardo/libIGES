@@ -361,9 +361,20 @@ bool IGES_ENTITY_502::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-const std::vector<MCAD_POINT>* IGES_ENTITY_502::GetVertices( void )
+const MCAD_API bool
+IGES_ENTITY_502::GetVertices( size_t& aListSize, MCAD_POINT const*& aPointList )
 {
-    return &vertices;
+    if( vertices.empty() )
+    {
+        aListSize = 0;
+        aPointList = NULL;
+        return false;
+    }
+
+    aListSize = vertices.size();
+    aPointList = &vertices[0];
+
+    return true;
 }
 
 

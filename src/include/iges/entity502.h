@@ -60,9 +60,9 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
+public:
     std::vector<MCAD_POINT> vertices;   //< list of vertices comprising this entity
 
-public:
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
     virtual bool unlink(IGES_ENTITY *aChild);
@@ -95,7 +95,7 @@ public:
      * Function GetVertices
      * returns a pointer to the group of vertices comprising this Vertex List entity
      */
-    const MCAD_API std::vector<MCAD_POINT>* GetVertices( void );
+    const MCAD_API bool GetVertices( size_t& aListSize, MCAD_POINT const*& aPointList );
 
 
     /**

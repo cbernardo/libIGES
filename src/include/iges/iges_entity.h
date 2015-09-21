@@ -306,7 +306,7 @@ public:
      * returns a pointer to the internal list of optional (extra)
      * entities associated with this entity.
      */
-    MCAD_API std::list<IGES_ENTITY*>* GetOptionalEntities( void );
+    MCAD_API IGES_ENTITY* GetOptionalEntity( int aIndex );
 
 
     /**
@@ -343,7 +343,7 @@ public:
      * returns a pointer to the internal list of optional
      * comments associated with this entity.
      */
-    MCAD_API std::list<std::string>* GetComments( void );
+    const MCAD_API char* GetComment( int aIndex );
 
 
     /**

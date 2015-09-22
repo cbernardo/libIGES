@@ -70,9 +70,6 @@ protected:
     virtual bool rescale( double sf );
 
 public:
-    std::string cname;  // optional name describing the color; known in specification as CNAME
-    std::string& CNAME;
-
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
     virtual bool unlink(IGES_ENTITY *aChild);
@@ -83,49 +80,50 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_314( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_314();
+    IGES_ENTITY_314( IGES* aParent );
+    virtual ~IGES_ENTITY_314();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // other virtuals to be overridden
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetLevel( int aLevel );
-    virtual MCAD_API bool SetLevel( IGES_ENTITY* aLevel );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetVisibility(bool isVisible);
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetLevel( int aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetVisibility(bool isVisible);
+    virtual bool SetLineWeightNum( int aLineWeight );
 
     // parameters
-    MCAD_API union
+    union
     {
         double red;     //< RED value (0..100); known in the specification as CC1
         double CC1;
     };
 
-    MCAD_API union
+    union
     {
         double green;   //< GREEN value (0..100); known in the specification as CC2
         double CC2;
     };
 
-    MCAD_API union
+    union
     {
         double blue;    //< BLUE value (0..100); known in the specification as CC3
         double CC3;
     };
 
-    MCAD_API const char* GetCName( void );
-    MCAD_API void SetCName( const char* aName );
+    std::string cname;  // optional name describing the color; known in specification as CNAME
+    std::string& CNAME;
 };
 
 #endif  // ENTITY314_H

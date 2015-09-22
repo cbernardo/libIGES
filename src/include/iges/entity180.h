@@ -54,37 +54,6 @@
 // to 1 if necessary.
 //
 
-/**
- * Enum BTREE_OPERATOR
- * represents the types of operators allowed in a Boolean Tree
- */
-MCAD_API enum BTREE_OPERATOR
-{
-    OP_START = 1,
-    OP_UNION = 1,
-    OP_INTERSECT,
-    OP_DIFFERENCE,
-    OP_END
-};
-
-/**
- * Struct BTREE_NODE
- * represents an IGES Boolean Tree parameter or operation.
- */
-struct MCAD_API BTREE_NODE
-{
-    bool op;    // true if this is an operation; false if an entity pointer
-    int  val;   // Operation code (1,2,3) or DE Sequence of entity
-    IGES_ENTITY* pEnt;  // pointer to entity (Primitive, Solid Instance, BTree, or manifold solid BREP
-
-    BTREE_NODE()
-    {
-        op = false;
-        val = 0;
-        pEnt = NULL;
-    }
-};
-
 
 /**
  * Class IGES_ENTITY_180
@@ -112,14 +81,15 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_180( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_180();
+    IGES_ENTITY_180( IGES* aParent );
+    virtual ~IGES_ENTITY_180();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual MCAD_API bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
+    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     /**
      * Function AddOp
@@ -127,7 +97,7 @@ public:
      *
      * @param op = Boolean Operation
      */
-    MCAD_API bool AddOp( BTREE_OPERATOR op );
+    bool AddOp( BTREE_OPERATOR op );
 
     /**
      * Function AddArg
@@ -135,25 +105,25 @@ public:
      *
      * @param aOperand = operand for the Boolean Tree
      */
-    MCAD_API bool AddArg( IGES_ENTITY* aOperand );
+    bool AddArg( IGES_ENTITY* aOperand );
 
     /**
      * Function ClearNodes
      * erases the current Boolean Tree operator/operand list
      */
-    MCAD_API void ClearNodes( void );
+    void ClearNodes( void );
 
     /**
      * Function GetNNodes
      * returns the number of nodes (operators and operands) in the BTREE list
      */
-    MCAD_API int GetNNodes( void );
+    int GetNNodes( void );
 
     /**
      * Function GetNodes
      * returns a pointer to the internal list of BTREE operators and operands
      */
-    MCAD_API BTREE_NODE* GetNode( int aIndex );
+    BTREE_NODE* GetNode( int aIndex );
 };
 
 #endif  // ENTITY_180_H

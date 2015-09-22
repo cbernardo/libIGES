@@ -81,67 +81,68 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_100( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_100();
+    IGES_ENTITY_100( IGES* aParent );
+    virtual ~IGES_ENTITY_100();
 
     // Inherited from IGES_CURVE
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
 
-    virtual MCAD_API int GetNSegments( void );
-    virtual MCAD_API bool IsClosed( void );
-    virtual MCAD_API int GetNCurves( void );
-    virtual MCAD_API IGES_CURVE* GetCurve( int index );
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     /// Z plane of the circular arc
-    MCAD_API union
+    union
     {
         double zOffset;     // ZT in the IGES spec
         double ZT;
     };
 
     /// X value, arc center
-    MCAD_API union
+    union
     {
         double xCenter;     // X1
         double X1;
     };
 
     /// Y value, arc center
-    MCAD_API union
+    union
     {
         double yCenter;     // Y1
         double Y1;
     };
 
     /// X value, arc start point
-    MCAD_API union
+    union
     {
         double xStart;      // X2
         double X2;
     };
 
     /// Y value, arc start point
-    MCAD_API union
+    union
     {
         double yStart;      // Y2
         double Y2;
     };
 
     /// X value, arc end point
-    MCAD_API union
+    union
     {
         double xEnd;        // X3
         double X3;
     };
 
     /// X value, arc end point
-    MCAD_API union
+    union
     {
         double yEnd;        // Y3
         double Y3;

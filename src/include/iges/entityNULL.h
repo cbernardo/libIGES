@@ -102,6 +102,7 @@ public:
     }
 
     // Inherited virtual functions
+    virtual void Compact( void );
     virtual MCAD_API bool SetEntityForm( int aForm );
     virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
     virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );

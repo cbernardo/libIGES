@@ -83,6 +83,13 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
 }
 
 
+void IGES_ENTITY_504::Compact( void )
+{
+    vedges.clear();
+    return;
+}
+
+
 bool IGES_ENTITY_504::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )

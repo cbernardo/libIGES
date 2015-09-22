@@ -96,20 +96,21 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_510( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_510();
+    IGES_ENTITY_510( IGES* aParent );
+    virtual ~IGES_ENTITY_510();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual void Compact( void );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
     // parameters not supported by the specification:
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
 
     /**
@@ -117,7 +118,7 @@ public:
      * returns a pointer to the list of loop entities which
      * bound this face.
      */
-    const MCAD_API std::list<IGES_ENTITY_508*>* GetBounds( void );
+    const std::list<IGES_ENTITY_508*>* GetBounds( void );
 
 
     /**
@@ -127,7 +128,7 @@ public:
      *
      * @param aLoop = loop to add to face boundaries
      */
-    MCAD_API bool AddBound( IGES_ENTITY_508* aLoop );
+    bool AddBound( IGES_ENTITY_508* aLoop );
 
 
     /**
@@ -137,7 +138,7 @@ public:
      *
      * @param aSurface = a pointer to a valid surface (see sec. 4.150 of the specification)
      */
-    MCAD_API bool SetSurface( IGES_ENTITY* aSurface );
+    bool SetSurface( IGES_ENTITY* aSurface );
 
 
     /**
@@ -145,21 +146,21 @@ public:
      * retrieves a pointer to the underlying surface entity or NULL
      * if no such entity has been provided.
      */
-    MCAD_API IGES_ENTITY* GetSurface( void );
+    IGES_ENTITY* GetSurface( void );
 
 
     /**
      * Function SetOuterLoopFlag
      * sets the value of the Outer Loop Flag 'OF'.
      */
-    MCAD_API void SetOuterLoopFlag( bool aFlag );
+    void SetOuterLoopFlag( bool aFlag );
 
 
     /**
      * Function GetOuterLoopFlag
      * returns the value of the Outer Loop Flag 'OF'.
      */
-    MCAD_API bool GetOuterLoopFlag( void );
+    bool GetOuterLoopFlag( void );
 };
 
 #endif  // ENTITY_510_H

@@ -74,17 +74,18 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_122( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_122();
+    IGES_ENTITY_122( IGES* aParent );
+    virtual ~IGES_ENTITY_122();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // parameters
-    MCAD_API double LX;  //< X value of Generatrix end point
-    MCAD_API double LY;  //< Y value of Generatrix end point
-    MCAD_API double LZ;  //< Z value of Generatrix end point
+    double LX;  //< X value of Generatrix end point
+    double LY;  //< Y value of Generatrix end point
+    double LZ;  //< Z value of Generatrix end point
 
     /**
      * Function GetDE
@@ -93,7 +94,7 @@ public:
      *
      * @param aPtr = pointer to store a pointer to the directrix curve
      */
-    MCAD_API bool GetDE( IGES_CURVE*& aPtr );
+    bool GetDE( IGES_CURVE*& aPtr );
 
     /**
      * Function SetDE
@@ -101,7 +102,7 @@ public:
      *
      * @param aPtr = pointer to the Directrix curve
      */
-    MCAD_API bool SetDE( IGES_CURVE* aPtr );
+    bool SetDE( IGES_CURVE* aPtr );
 };
 
 #endif  // ENTITY_122_H

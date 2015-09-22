@@ -110,23 +110,24 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_102( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_102();
+    IGES_ENTITY_102( IGES* aParent );
+    virtual ~IGES_ENTITY_102();
 
     // method for adding items to this compound curve
-    MCAD_API bool AddSegment( IGES_CURVE* aSegment );
+    bool AddSegment( IGES_CURVE* aSegment );
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    virtual MCAD_API bool IsClosed( void );
-    virtual MCAD_API int GetNCurves( void );
-    virtual MCAD_API IGES_CURVE* GetCurve( int index );
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API int GetNSegments( void );
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_102_H

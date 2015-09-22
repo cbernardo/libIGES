@@ -78,30 +78,6 @@ struct EDGE_DEIDX
 
 
 /**
- * Struct EDGE_DATA
- * stores information on instantiated entities representing
- * part of an Edge entity
- */
-struct MCAD_API EDGE_DATA
-{
-    IGES_ENTITY* curv;
-    IGES_ENTITY_502* svp;
-    IGES_ENTITY_502* tvp;
-    int sv;
-    int tv;
-
-    EDGE_DATA()
-    {
-        curv = NULL;
-        svp = NULL;
-        tvp = NULL;
-        sv = 0;
-        tv = 0;
-    }
-};
-
-
-/**
  * Class IGES_ENTITY_504
  * represents the Edge Entity
  */
@@ -142,21 +118,22 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_504( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_504();
+    IGES_ENTITY_504( IGES* aParent );
+    virtual ~IGES_ENTITY_504();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     // parameters not supported by the specification:
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E504
 
@@ -164,7 +141,7 @@ public:
      * Function GetEdges
      * returns a vector containing Edge data for convenient access by users
      */
-    MCAD_API bool GetEdges( size_t aListSize, EDGE_DATA const*& aEdgeList );
+    bool GetEdges( size_t aListSize, EDGE_DATA const*& aEdgeList );
 
 
     /**
@@ -178,7 +155,7 @@ public:
      * @param aTVP = pointer to a Vertex List entity which describes a section of this edge
      * @param aTV = index into the vertex list @param aTVP to specify the End Point of this edge segment
      */
-    MCAD_API bool AddEdge( IGES_ENTITY* aCurve, IGES_ENTITY_502* aSVP, int aSV,
+    bool AddEdge( IGES_ENTITY* aCurve, IGES_ENTITY_502* aSVP, int aSV,
                   IGES_ENTITY_502* aTVP, int aTV );
 };
 

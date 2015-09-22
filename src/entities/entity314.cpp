@@ -49,6 +49,12 @@ IGES_ENTITY_314::~IGES_ENTITY_314()
 }
 
 
+void IGES_ENTITY_314::Compact( void )
+{
+    return;
+}
+
+
 bool IGES_ENTITY_314::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -505,21 +511,4 @@ bool IGES_ENTITY_314::SetLineWeightNum( int aLineWeight )
 {
     ERRMSG << "\n + [WARNING] [BUG] Color Definition Entity does not support Line Weight\n";
     return true;
-}
-
-
-const char* IGES_ENTITY_314::GetCName( void )
-{
-    return cname.c_str();
-}
-
-
-void IGES_ENTITY_314::SetCName( const char* aName )
-{
-    if( NULL == aName )
-        cname.clear();
-    else
-    cname = aName;
-
-    return;
 }

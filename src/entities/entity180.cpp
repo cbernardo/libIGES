@@ -47,6 +47,12 @@ IGES_ENTITY_180::~IGES_ENTITY_180()
 }
 
 
+void IGES_ENTITY_180::Compact( void )
+{
+    return;
+}
+
+
 bool IGES_ENTITY_180::typeOK( int aTypeNum )
 {
     // ALLOWED ENTITIES:

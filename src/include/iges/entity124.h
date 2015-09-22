@@ -96,17 +96,18 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API MCAD_TRANSFORM T;   //< Transformation matrix data for this entity
+    MCAD_TRANSFORM T;   //< Transformation matrix data for this entity
 
-    MCAD_API IGES_ENTITY_124( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_124();
+    IGES_ENTITY_124( IGES* aParent );
+    virtual ~IGES_ENTITY_124();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetVisibility(bool isVisible);
-    virtual MCAD_API bool SetDependency(IGES_STAT_DEPENDS aDependency);
-    virtual MCAD_API bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetVisibility(bool isVisible);
+    virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
+    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     // items to be overridden; these items are not supported in this entity
     // + Line Font Pattern
@@ -115,15 +116,15 @@ public:
     // + Label Display Association
     // + Line weight
     // + Color number
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetLevel( int aLevel );
-    virtual MCAD_API bool SetLevel( IGES_ENTITY* aLevel );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetLevel( int aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
     /**
      * Function GetTransformMatrix
@@ -132,7 +133,7 @@ public:
      * overall transformation matrix of the referenced transform
      * entity if any.
      */
-    MCAD_API MCAD_TRANSFORM GetTransformMatrix( void );
+    MCAD_TRANSFORM GetTransformMatrix( void );
 };
 
 #endif  // ENTITY_124_H

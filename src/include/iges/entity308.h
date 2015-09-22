@@ -88,19 +88,20 @@ public:
     int getDepthLevel( void );
 
 public:
-    MCAD_API IGES_ENTITY_308( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_308();
+    IGES_ENTITY_308( IGES* aParent );
+    virtual ~IGES_ENTITY_308();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetVisibility( bool isVisible );
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetVisibility( bool isVisible );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    MCAD_API int DEPTH;          //< Depth Level of this instance
-    MCAD_API std::string NAME;   //< Name of this Subfigure Definition (Part Name or Subassembly Name)
-    MCAD_API int N;              //< Number of entities comprising this Subfigure Definition
+    int DEPTH;          //< Depth Level of this instance
+    std::string NAME;   //< Name of this Subfigure Definition (Part Name or Subassembly Name)
+    int N;              //< Number of entities comprising this Subfigure Definition
 
     /**
      * Function GetDEList
@@ -111,7 +112,7 @@ public:
      * @param aDEList will point to the first entity pointer
      * @return true if this Subfigure Definition entity was not empty
      */
-    MCAD_API bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );
+    bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );
 
 
     /**
@@ -121,7 +122,7 @@ public:
      *
      * @param aPtr = a pointer to the entity to be added
      */
-    MCAD_API bool AddDE(IGES_ENTITY *aPtr);
+    bool AddDE(IGES_ENTITY *aPtr);
 
     /**
      * Function DelDE
@@ -131,7 +132,7 @@ public:
      *
      * @param aPtr = pointer of entity to be disassociated
      */
-    MCAD_API bool DelDE( IGES_ENTITY* aPtr );
+    bool DelDE( IGES_ENTITY* aPtr );
 };
 
 #endif  // ENTITY_308_H

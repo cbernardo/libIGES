@@ -73,21 +73,22 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_502( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_502();
+    IGES_ENTITY_502( IGES* aParent );
+    virtual ~IGES_ENTITY_502();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     // parameters not supported by the specification:
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E502
 
@@ -95,21 +96,21 @@ public:
      * Function GetVertices
      * returns a pointer to the group of vertices comprising this Vertex List entity
      */
-    const MCAD_API bool GetVertices( size_t& aListSize, MCAD_POINT const*& aPointList );
+    const bool GetVertices( size_t& aListSize, MCAD_POINT const*& aPointList );
 
 
     /**
      * Function GetNVertices
      * returns the number of vertices comprising this Vertex List entity
      */
-    MCAD_API size_t GetNVertices( void );
+    size_t GetNVertices( void );
 
 
     /**
      * Function AddVertex
      * adds a Model Space vertex to this Vertex List entity
      */
-    MCAD_API void AddVertex( MCAD_POINT aPoint );
+    void AddVertex( MCAD_POINT aPoint );
 };
 
 #endif  // ENTITY_502_H

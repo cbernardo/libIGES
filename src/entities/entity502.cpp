@@ -53,6 +53,12 @@ IGES_ENTITY_502::~IGES_ENTITY_502()
 }
 
 
+void IGES_ENTITY_502::Compact( void )
+{
+    return;
+}
+
+
 bool IGES_ENTITY_502::associate(std::vector<IGES_ENTITY *> *entities)
 {
     return IGES_ENTITY::associate(entities);

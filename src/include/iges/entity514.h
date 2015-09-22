@@ -80,19 +80,20 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_514( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_514();
+    IGES_ENTITY_514( IGES* aParent );
+    virtual ~IGES_ENTITY_514();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual void Compact( void );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetEntityForm( int aForm );
     // parameters not supported by the specification:
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetView( IGES_ENTITY* aView );
+    virtual bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
     // functions unique to E514
     // WARNING: TO BE IMPLEMENTED

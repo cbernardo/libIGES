@@ -71,11 +71,12 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_186( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_186();
+    IGES_ENTITY_186( IGES* aParent );
+    virtual ~IGES_ENTITY_186();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
 
     // functions unique to E186
     // XXX - TO BE IMPLEMENTED

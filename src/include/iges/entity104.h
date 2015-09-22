@@ -92,34 +92,35 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_104( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_104();
+    IGES_ENTITY_104( IGES* aParent );
+    virtual ~IGES_ENTITY_104();
 
     // public variables
-    double MCAD_API A;   //< 1st general conic parameter
-    double MCAD_API B;   //< 2nd general conic parameter
-    double MCAD_API C;   //< 3rd general conic parameter
-    double MCAD_API D;   //< 4th general conic parameter
-    double MCAD_API E;   //< 5th general conic parameter
-    double MCAD_API F;   //< 6th general conic parameter
-    double MCAD_API ZT;  //< Z coordinate of plane in which conic is defined
-    double MCAD_API X1;  //< X value, start point, abscissa
-    double MCAD_API Y1;  //< Y value, start point, abscissa
-    double MCAD_API X2;  //< X value, terminal point, abscissa
-    double MCAD_API Y2;  //< Y value, terminal point, abscissa
+    double A;   //< 1st general conic parameter
+    double B;   //< 2nd general conic parameter
+    double C;   //< 3rd general conic parameter
+    double D;   //< 4th general conic parameter
+    double E;   //< 5th general conic parameter
+    double F;   //< 6th general conic parameter
+    double ZT;  //< Z coordinate of plane in which conic is defined
+    double X1;  //< X value, start point, abscissa
+    double Y1;  //< Y value, start point, abscissa
+    double X2;  //< X value, terminal point, abscissa
+    double Y2;  //< Y value, terminal point, abscissa
 
     // Inherited from IGES_ENTITY
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // Inherited from IGES_CURVE
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API int GetNSegments( void );
-    virtual MCAD_API bool IsClosed( void );
-    virtual MCAD_API int GetNCurves( void );
-    virtual MCAD_API IGES_CURVE* GetCurve( int index );
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_104_H

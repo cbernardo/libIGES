@@ -124,12 +124,13 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_128( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_128();
+    IGES_ENTITY_128( IGES* aParent );
+    virtual ~IGES_ENTITY_128();
 
     // virtual functions inherited from IGES_ENTITY
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     /**
      * Function GetNURBSData
@@ -151,7 +152,7 @@ public:
      * @param isPeriodic1 = set to true if the surface is periodic in U
      * @param isPeriodic2 = set to true if the surface is periodic in V
      */
-    MCAD_API bool GetNURBSData( int& nCoeff1, int& nCoeff2, int& order1, int& order2,
+    bool GetNURBSData( int& nCoeff1, int& nCoeff2, int& order1, int& order2,
                        double** knot1, double** knot2, double** coeff,
                        bool& isRational, bool& isClosed1, bool& isClosed2,
                        bool& isPeriodic1, bool& isPeriodic2 );
@@ -173,7 +174,7 @@ public:
      * @param isPeriodic1 = set to true if the surface is periodic in U
      * @param isPeriodic2 = set to true if the surface is periodic in V
      */
-    MCAD_API bool SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
+    bool SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
                        const double* knot1, const double* knot2,
                        const double* coeff, bool isRational,
                        bool isPeriodic1, bool isPeriodic2 );
@@ -183,31 +184,31 @@ public:
      * returns true if the surface is a rational B-Spline and
      * false if the surface is a polynomial.
      */
-    MCAD_API bool IsRational( void );
+    bool IsRational( void );
 
     /**
      * Function isClosed1
      * returns true if the surface is closed in Parameter U
      */
-    MCAD_API bool isClosed1( void );
+    bool isClosed1( void );
 
     /**
      * Function isClosed1
      * returns true if the surface is closed in Parameter V
      */
-    MCAD_API bool isClosed2( void );
+    bool isClosed2( void );
 
     /**
      * Function isPeriodic1
      * returns true if the surface has been flagged as periodic in Parameter U
      */
-    MCAD_API bool isPeriodic1( void );
+    bool isPeriodic1( void );
 
     /**
      * Function isPeriodic2
      * returns true if the surface has been flagged as periodic in Parameter V
      */
-    MCAD_API bool isPeriodic2( void );
+    bool isPeriodic2( void );
 
 };
 

@@ -61,6 +61,14 @@ IGES_ENTITY_514::~IGES_ENTITY_514()
 }
 
 
+void IGES_ENTITY_514::Compact( void )
+{
+#warning TO BE IMPLEMENTED
+    // XXX -
+    return;
+}
+
+
 bool IGES_ENTITY_514::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )

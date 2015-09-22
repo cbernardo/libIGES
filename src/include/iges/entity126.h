@@ -115,21 +115,22 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_126( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_126();
+    IGES_ENTITY_126( IGES* aParent );
+    virtual ~IGES_ENTITY_126();
 
     // virtual functions inherited from IGES_ENTITY
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // virtual functions inherited from IGES_CURVE
-    virtual MCAD_API bool IsClosed( void );
-    virtual MCAD_API int GetNCurves( void );
-    virtual MCAD_API IGES_CURVE* GetCurve( int index );
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API int GetNSegments( void );
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     /**
      * Function GetNURBSData
@@ -146,7 +147,7 @@ public:
      * @param isClosed = set to true if the curve is closed
      * @param isPeriodic = set to true if the curve has been flagged as periodic
      */
-    MCAD_API bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
+    bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
                                 bool& isRational, bool& isClosed, bool& isPeriodic );
 
     /**
@@ -160,34 +161,34 @@ public:
      * @param coeff = X, Y, Z, (and Weight if applicable) values for the curve
      * @param isRational = set to true if the curve is rational (unequal weights)
      */
-    MCAD_API bool SetNURBSData( int nCoeff, int order, const double* knot,
+    bool SetNURBSData( int nCoeff, int order, const double* knot,
                                 const double* coeff, bool isRational );
 
     /**
      * Function IsPlanar
      * returns true if the curve lies on a plane
      */
-    MCAD_API bool IsPlanar( void );
+    bool IsPlanar( void );
 
     /**
      * Function IsRational
      * returns true if the curve is a Rational B-Spline and
      * false if the curve is a Polynomial Curve.
      */
-    MCAD_API bool IsRational( void );
+    bool IsRational( void );
 
     /**
      * Function isPeriodic
      * returns true if the curve is periodic
      */
-    MCAD_API bool isPeriodic( void );
+    bool isPeriodic( void );
 
     /**
      * Function GetNormal
      * calculates the normal vector if the curve is planar and
      * returns true if the curve is planar.
      */
-    MCAD_API bool GetNormal( MCAD_POINT& aNorm );
+    bool GetNormal( MCAD_POINT& aNorm );
 };
 
 #endif  // ENTITY_126_H

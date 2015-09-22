@@ -69,13 +69,14 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_164( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_164();
+    IGES_ENTITY_164( IGES* aParent );
+    virtual ~IGES_ENTITY_164();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetEntityUse(IGES_STAT_USE aUseCase);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetEntityUse(IGES_STAT_USE aUseCase);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
     /**
      * Function GetClosedCurve
@@ -84,7 +85,7 @@ public:
      *
      * @param aCurve = handle to to store the reference to the closed curve
      */
-    MCAD_API bool GetClosedCurve( IGES_CURVE** aCurve );
+    bool GetClosedCurve( IGES_CURVE** aCurve );
 
     /**
      * Function SetClosedCurve
@@ -93,13 +94,13 @@ public:
      *
      * @param aCurve = pointer to the closed planar curve to be extruded
      */
-    MCAD_API bool SetClosedCurve( IGES_CURVE* aCurve );
+    bool SetClosedCurve( IGES_CURVE* aCurve );
 
-    MCAD_API int iPtr;  //< DE Sequence of the planar curve
-    MCAD_API double L;  //< length of extrusion
-    MCAD_API double I1; //< X unit vector of direction; default 0
-    MCAD_API double J1; //< Y unit vector of direction; default 0
-    MCAD_API double K1; //< Z unit vector of direction; default 1
+    int iPtr;  //< DE Sequence of the planar curve
+    double L;  //< length of extrusion
+    double I1; //< X unit vector of direction; default 0
+    double J1; //< Y unit vector of direction; default 0
+    double K1; //< Z unit vector of direction; default 1
 };
 
 #endif  // ENTITY_164_H

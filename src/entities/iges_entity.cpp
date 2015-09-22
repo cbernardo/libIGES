@@ -108,12 +108,18 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
     pLabelAssoc = NULL;
     pColor = NULL;
 
+    // ensure we do not have an invalid pointer to a DLL layer validation flag
+    m_valid = NULL;
+
     return;
 }   // IGES_ENTITY::IGES_ENTITY(IGES*)
 
 
 IGES_ENTITY::~IGES_ENTITY()
 {
+    if( m_valid )
+        *m_valid = false;
+
     comments.clear();
 
     if( !refs.empty() )
@@ -207,6 +213,20 @@ IGES_ENTITY::~IGES_ENTITY()
 
     return;
 }   // IGES_ENTITY::~IGES_ENTITY()
+
+
+void IGES_ENTITY::SetValidFlag( bool* aFlag )
+{
+    if( m_valid )
+        *m_valid = false;
+
+    m_valid = aFlag;
+
+    if( m_valid )
+        *m_valid = true;
+
+    return;
+}
 
 
 bool IGES_ENTITY::unlink(IGES_ENTITY *aChild)

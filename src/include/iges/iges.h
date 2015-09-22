@@ -41,42 +41,34 @@ class IGES_ENTITY_308;
  * contains the data read from or to be written to the IGES
  * file Global Section.
  */
-class IGES_GLOBAL
+struct IGES_GLOBAL
 {
-public:
-    // publicly accessible by libIGES modules
+    char        pdelim;                     //< parameter delimeter; RD ','
+    char        rdelim;                     //< record delimeter; RD ';'
     std::string productIDSS;                //< Product Identification used by Sending System (RN)
     std::string fileName;                   //< Name of this file (must match in order to support external refs.) (RN)
     std::string nativeSystemID;             //< Name of the software which created the IGES model (RN)
     std::string preprocessorVersion;        //< Version of the Preprocessor which created the IGES model (RN)
-    std::string productIDRS;                //< Product Identification used by Receiving System (RD: product IDSS)
-    std::string unitsName;                  //< String symbolizing units described by unitsFlag (RD: must match unitsFlag)
-    std::string creationDate;               //< [YY]YYMMDD.HHNNSS date of file creation (enforce UTC) (RN)
-    std::string author;                     //< name of author (RD: "")
-    std::string organization;               //< name of author's organization (RD: "")
-    std::string modificationDate;           //< [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
-    std::string applicationNote;            //< Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
-
-public:
-    // accessors for public items not accessible by DLL
-    // WARNING: TO BE IMPLEMENTED
-
-public:
-    char        pdelim;                     //< parameter delimeter; RD ','
-    char        rdelim;                     //< record delimeter; RD ';'
     int         nIntegerBits;               //< number of significant bits in an integer on the Sending System (RN)
     int         floatMaxExp;                //< max. exponent of a Float type (RN)
     int         floatMaxSig;                //< max. significant digits of a Float type (RN)
     int         doubleMaxExp;               //< max. exponent of a Double type (RN)
     int         doubleMaxSig;               //< max. significant digits of a Double type (RN)
+    std::string productIDRS;                //< Product Identification used by Receiving System (RD: product IDSS)
     double      modelScale;                 //< ModelUnits/RealWorldUnits : Ex. a 1:8 model must multiply units by 8 to get RWU (RD: 1.0)
     IGES_UNIT   unitsFlag;                  //< Internal unit representation of model on disk (RD: 1 (inch))
+    std::string unitsName;                  //< String symbolizing units described by unitsFlag (RD: must match unitsFlag)
     int         maxLinewidthGrad;           //< Max. linewidth gradations (RD: 1; min. = 1)
     double      maxLinewidth;               //< Max. linewidth in terms of internal units (RN)
+    std::string creationDate;               //< [YY]YYMMDD.HHNNSS date of file creation (enforce UTC) (RN)
     double      minResolution;              //< Min. user intended resolution (RN)
     double      maxCoordinateValue;         //< Max. used coordinate value (normally set to '0.0' = not determined) (RD: 0.0)
+    std::string author;                     //< name of author (RD: "")
+    std::string organization;               //< name of author's organization (RD: "")
     int         igesVersion;                //< flag indicating IGES version of the file; 3..11 (RD: 3)
     IGES_DRAFTING_STANDARD draftStandard;   //< flag indicating drafting standard (if any) (RD: 0)
+    std::string modificationDate;           //< [YY]YYMMDD.HHNNSS date of file creation/modification (RD: creationDate)
+    std::string applicationNote;            //< Application Protocol, Application Subset, MIL-STD-SPEC, User Protocol, etc (RD: "")
 
     // derived scale to be applied to quantities to derive mm units with model scale 1.0
     double      cf;                         //< conversion factor for normalizing input when model scale != 1.0
@@ -93,6 +85,8 @@ class IGES
 private:
     static int idxPartNum;                  //< index used to create Part Name
     static int idxAssyNum;                  //< index used to create Assembly Name
+    bool*      m_valid;                     //< valid flag to signal API container upon destruction
+    std::vector< const char* > vStartSection;   //< temp. vector table for DLL access
 
     std::list<std::string> startSection;    //< text from the Start section
     int                    nGlobSecLines;   //< number of lines in the Global section
@@ -123,24 +117,48 @@ private:
     bool writeGlobals( std::ofstream& file );
 
 public:
-    MCAD_API IGES();
-    MCAD_API ~IGES();
+    IGES();
+    ~IGES();
 
-    MCAD_API IGES_GLOBAL globalData;    //< Global Section data
+    IGES_GLOBAL globalData;    //< Global Section data
+
+    /**
+     * Function SetValidFlag
+     * sets a pointer to the boolean used to signal an
+     * API layer upon destruction or change of ownership
+     *
+     * @param aFlag is a pointer to an API layer's internal
+     * validation flag. Note that if the flag is not NULL
+     * when this function is invoked, the previous pointer's
+     * content is set to false before the new pointer is
+     * accepted; this can result in another API layer object
+     * being invalidated.
+     */
+    void SetValidFlag( bool* aFlag );
+
+
+    /**
+     * Function Compact
+     * iterates through all entities and deletes any temporary data
+     * which may have been created for the convenience of passing
+     * data across the DLL boundary.
+     */
+    void Compact( void );
+
 
     /**
      * Function Cull
      * culls all orphaned entities and top-level entities which
      * are not Type 408 (Singular Subfigure Instance)
      */
-    MCAD_API void Cull( void );
+    void Cull( void );
 
 
     /**
      * Function Clear
      * deletes all entities and reinitializes global data
      */
-    MCAD_API bool Clear( void );
+    bool Clear( void );
 
 
     /**
@@ -150,7 +168,7 @@ public:
      *
      * @param aFileName = path to file to be processed
      */
-    MCAD_API bool Read( const char* aFileName );
+    bool Read( const char* aFileName );
 
 
     /**
@@ -160,7 +178,7 @@ public:
      * @param aFileName = path to file to be written
      * @param fOverwrite = set to true if an existing file should be overwritten
      */
-    MCAD_API bool Write( const char* aFileName, bool fOverwrite = false );
+    bool Write( const char* aFileName, bool fOverwrite = false );
 
 
     /**
@@ -174,7 +192,7 @@ public:
      * to refer to the contents of this IGES file as a part or subassembly within an
      * assembly.
      */
-    MCAD_API bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
+    bool Export( IGES* newParent, IGES_ENTITY_308** packagedEntity );
 
 
     /**
@@ -185,7 +203,7 @@ public:
      *
      * @param name = variable to store the part name
      */
-    MCAD_API void GetNewPartName( std::string& name );
+    void GetNewPartName( std::string& name );
 
     // create a new (hopefully unique) assembly name; the name may not be unique
     // if a sub-assembly happens to have the same name
@@ -197,7 +215,7 @@ public:
      *
      * @param name = variable to store the assembly name
      */
-    MCAD_API void GetNewAssemblyName( std::string& name );
+    void GetNewAssemblyName( std::string& name );
 
 
     /**
@@ -212,7 +230,7 @@ public:
      * be a valid value of the IGES_ENTITY_TYPE enumeration.
      * @param aEntityPointer = handle to store the pointer to the new entity.
      */
-    MCAD_API bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
+    bool NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer );
 
 
     /**
@@ -223,7 +241,7 @@ public:
      *
      * @param aEntity = pointer to an entity to be owned by this IGES object
      */
-    MCAD_API bool AddEntity( IGES_ENTITY* aEntity );
+    bool AddEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -233,7 +251,7 @@ public:
      *
      * @param aEntity = pointer to the entity to be destroyed
      */
-    MCAD_API bool DelEntity( IGES_ENTITY* aEntity );
+    bool DelEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -248,7 +266,7 @@ public:
      *
      * @param aEntity = pointer to the entity to be disassociated
      */
-    MCAD_API bool UnlinkEntity( IGES_ENTITY* aEntity );
+    bool UnlinkEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -261,7 +279,7 @@ public:
      * @param newUnit = a unit as specified by the enumeration
      * IGES_UNIT, except for UNIT_EXTERN.
      */
-    MCAD_API bool ConvertUnits( IGES_UNIT newUnit );
+    bool ConvertUnits( IGES_UNIT newUnit );
 
 
     /**
@@ -275,7 +293,7 @@ public:
      *
      * @param aScale = the new Model Scale to be applied to the data
      */
-    MCAD_API bool ChangeModelScale( double aScale );
+    bool ChangeModelScale( double aScale );
 
 
     /**
@@ -283,7 +301,7 @@ public:
      * returns a pointer to the list of strings read from or to be
      * written to the Start Section of the IGES file.
      */
-    MCAD_API std::list<std::string>* GetHeaders(void);
+    bool GetHeaders( size_t aListSize, char const**& aHeaderList );
 
 
     /**
@@ -291,7 +309,7 @@ public:
      * returns the number of strings read from or to be written to
      * the Start Section of an IGES file.
      */
-    MCAD_API size_t GetNHeaderLines(void);
+    size_t GetNHeaderLines(void);
 
 
     /**
@@ -301,7 +319,7 @@ public:
      *
      * @param comments = text to be appended to the Start Section.
      */
-    MCAD_API bool AddToHeader( const std::string& comments );
+    bool AddToHeader( const char*& comments );
 };
 
 

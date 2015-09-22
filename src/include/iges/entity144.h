@@ -73,6 +73,7 @@ protected:
     IGES_ENTITY* PTS;               // surface entity
     IGES_ENTITY_142* PTO;           // outer curve
     std::list<IGES_ENTITY_142*>PTI; // inner cutouts
+    std::vector<IGES_ENTITY_142*>vPTI;  // convenience for passing data via DLL
 
     friend class IGES;
     virtual bool format( int &index );
@@ -89,16 +90,17 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_144( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_144();
+    IGES_ENTITY_144( IGES* aParent );
+    virtual ~IGES_ENTITY_144();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    MCAD_API int N1; //< 0 if the outer boundary is the boundary of the underlying untrimmed surface
-    MCAD_API int N2; //< Number of simple closed curves representing the inner boundary of the surface (0 if no inner boundaries)
+    int N1; //< 0 if the outer boundary is the boundary of the underlying untrimmed surface
+    int N2; //< Number of simple closed curves representing the inner boundary of the surface (0 if no inner boundaries)
 
     /**
      * Function GetPTS
@@ -107,7 +109,7 @@ public:
      *
      * @param aPtr = handle to store pointer to underlying untrimmed surface
      */
-    MCAD_API bool GetPTS( IGES_ENTITY** aPtr );
+    bool GetPTS( IGES_ENTITY*& aPtr );
 
     /**
      * Function SetPTS
@@ -115,7 +117,7 @@ public:
      *
      * @param aPtr = pointer to underlying untrimmed surface
      */
-    MCAD_API bool SetPTS( IGES_ENTITY* aPtr );
+    bool SetPTS( IGES_ENTITY* aPtr );
 
 
     /**
@@ -127,7 +129,7 @@ public:
      *
      * @param aPtr = handle to store pointer to outer boundary curve
      */
-    MCAD_API bool GetPTO( IGES_ENTITY_142** aPtr );
+    bool GetPTO( IGES_ENTITY_142*& aPtr );
 
     /**
      * Function SetPTO
@@ -136,7 +138,7 @@ public:
      *
      * @param aPtr = pointer to outer boundary curve or NULL for an untrimmed surface
      */
-    MCAD_API bool SetPTO( IGES_ENTITY_142* aPtr );
+    bool SetPTO( IGES_ENTITY_142* aPtr );
 
     /**
      * Function GetPTIList
@@ -145,8 +147,9 @@ public:
      *
      * @param aList = list to store pointers
      */
-    MCAD_API int GetNPTI( void );
-    MCAD_API IGES_ENTITY_142* GetPTI( int aIndex );
+    int GetNPTI( void );
+    IGES_ENTITY_142* GetPTI( int aIndex );
+    bool GetPTIList( size_t& aListSize, IGES_ENTITY_142**& aPTIList );
 
     /**
      * Function AddPTI
@@ -156,7 +159,7 @@ public:
      *
      * @param aPtr = pointer to the inner boundary curve
      */
-    MCAD_API bool AddPTI( IGES_ENTITY_142* aPtr );
+    bool AddPTI( IGES_ENTITY_142* aPtr );
 
 
     /**
@@ -167,7 +170,7 @@ public:
      *
      * @param aPtr = pointer to the inner boundary curve to be removed
      */
-    MCAD_API bool DelPTI( IGES_ENTITY_142* aPtr );
+    bool DelPTI( IGES_ENTITY_142* aPtr );
 };
 
 #endif  // ENTITY_144_H

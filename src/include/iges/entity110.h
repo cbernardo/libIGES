@@ -74,28 +74,29 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_110( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_110();
+    IGES_ENTITY_110( IGES* aParent );
+    virtual ~IGES_ENTITY_110();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm(int aForm);
-    virtual MCAD_API bool SetHierarchy(IGES_STAT_HIER aHierarchy);
+    virtual void Compact( void );
+    virtual bool SetEntityForm(int aForm);
+    virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 
-    MCAD_API double X1;  // X value, start point
-    MCAD_API double Y1;  // Y value, start point
-    MCAD_API double Z1;  // Z value, start point
-    MCAD_API double X2;  // X value, end point
-    MCAD_API double Y2;  // Y value, end point
-    MCAD_API double Z2;  // Z value, end point
+    double X1;  // X value, start point
+    double Y1;  // Y value, start point
+    double Z1;  // Z value, start point
+    double X2;  // X value, end point
+    double Y2;  // Y value, end point
+    double Z2;  // Z value, end point
 
     // methods required of parameterized curve entities
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
-    virtual MCAD_API int GetNSegments( void );
-    virtual MCAD_API bool IsClosed( void );
-    virtual MCAD_API int GetNCurves( void );
-    virtual MCAD_API IGES_CURVE* GetCurve( int index );
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    virtual int GetNSegments( void );
+    virtual bool IsClosed( void );
+    virtual int GetNCurves( void );
+    virtual IGES_CURVE* GetCurve( int index );
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_110_H

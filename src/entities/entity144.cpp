@@ -114,6 +114,13 @@ IGES_ENTITY_144::~IGES_ENTITY_144()
 }
 
 
+void IGES_ENTITY_144::Compact( void )
+{
+    vPTI.clear();
+    return;
+}
+
+
 bool IGES_ENTITY_144::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -651,9 +658,9 @@ bool IGES_ENTITY_144::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-bool IGES_ENTITY_144::GetPTS( IGES_ENTITY** aPtr )
+bool IGES_ENTITY_144::GetPTS( IGES_ENTITY*& aPtr )
 {
-    *aPtr = PTS;
+    aPtr = PTS;
 
     if( NULL == PTS )
         return false;
@@ -700,9 +707,9 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
 }
 
 
-bool IGES_ENTITY_144::GetPTO( IGES_ENTITY_142** aPtr )
+bool IGES_ENTITY_144::GetPTO( IGES_ENTITY_142*& aPtr )
 {
-    *aPtr = PTO;
+    aPtr = PTO;
 
     if( NULL == PTO && 0 != N1 )
         return false;
@@ -751,6 +758,34 @@ int IGES_ENTITY_144::GetNPTI( void )
 }
 
 
+bool IGES_ENTITY_144::GetPTIList( size_t& aListSize, IGES_ENTITY_142**& aPTIList )
+{
+    if( PTI.empty() )
+    {
+        aListSize = 0;
+        aPTIList = NULL;
+        return false;
+    }
+
+    if( PTI.size() != vPTI.size() )
+    {
+        vPTI.clear();
+        std::list<IGES_ENTITY_142*>::iterator sL = PTI.begin();
+        std::list<IGES_ENTITY_142*>::iterator eL = PTI.end();
+
+        while( sL != eL )
+        {
+            vPTI.push_back( *sL );
+            ++sL;
+        }
+    }
+
+    aListSize = vPTI.size();
+    aPTIList = &vPTI[0];
+    return true;
+}
+
+
 IGES_ENTITY_142* IGES_ENTITY_144::GetPTI( int aIndex )
 {
     int ne = (int)PTI.size();
@@ -783,7 +818,10 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
         // while this is a bug, we can do the right thing and simply ignore the
         // additional reference
         if( aPtr == *bref )
+        {
+            vPTI.clear();
             return true;
+        }
 
         ++bref;
     }
@@ -807,6 +845,7 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
     PTI.push_back( aPtr );
     N2 = (int)PTI.size();
 
+    vPTI.clear();
     return true;
 }
 

@@ -61,6 +61,12 @@ IGES_ENTITY_104::~IGES_ENTITY_104()
 }   // ~IGES_ENTITY_104()
 
 
+void IGES_ENTITY_104::Compact( void )
+{
+    return;
+}
+
+
 int IGES_ENTITY_104::getForm()
 {
     // General form of the conic:

@@ -50,6 +50,7 @@
 #include <iges_io.h>
 #include <all_entities.h>
 #include <boost/filesystem.hpp>
+#include "../include/iges/iges.h"
 
 using namespace std;
 
@@ -251,6 +252,7 @@ public:
 
 IGES::IGES()
 {
+    m_valid = NULL;
     init();
     return;
 }   // IGES()
@@ -258,9 +260,42 @@ IGES::IGES()
 
 IGES::~IGES()
 {
+    if( m_valid )
+        *m_valid = false;
+
     Clear();
     return;
 }
+
+
+void IGES::SetValidFlag( bool* aFlag )
+{
+    if( m_valid )
+        *m_valid = false;
+
+    m_valid = aFlag;
+
+    if( m_valid )
+        *m_valid = true;
+
+    return;
+}
+
+
+void IGES::Compact( void )
+{
+    std::vector<IGES_ENTITY*>::iterator sL = entities.begin();
+    std::vector<IGES_ENTITY*>::iterator eL = entities.end();
+
+    while( sL != eL )
+    {
+        (*sL)->Compact();
+        ++sL;
+    }
+
+    return;
+}
+
 
 bool IGES::init(void)
 {
@@ -1759,9 +1794,31 @@ bool IGES::ChangeModelScale( double aScale )
 }
 
 
-std::list<std::string>* IGES::GetHeaders(void)
+bool IGES::GetHeaders( size_t aListSize, char const**& aHeaderList )
 {
-    return &startSection;
+    if( startSection.empty() )
+    {
+        aListSize = 0;
+        aHeaderList = NULL;
+        return false;
+    }
+
+    if( vStartSection.size() != startSection.size() )
+    {
+        vStartSection.clear();
+        std::list<std::string>::iterator sL = startSection.begin();
+        std::list<std::string>::iterator eL = startSection.end();
+
+        while( sL != eL )
+        {
+            vStartSection.push_back( sL->c_str() );
+            ++sL;
+        }
+    }
+
+    aListSize = vStartSection.size();
+    aHeaderList = &vStartSection[0];
+    return true;
 }
 
 
@@ -1771,10 +1828,12 @@ size_t IGES::GetNHeaderLines(void)
 }
 
 
-bool IGES::AddToHeader( const std::string& comments )
+bool IGES::AddToHeader( const char*& comments )
 {
-    if( comments.empty() )
+    if( 0 == comments[0] )
         return true;
+
+    vStartSection.clear();
 
     std::string tStr = comments;
     std::string tStr1;

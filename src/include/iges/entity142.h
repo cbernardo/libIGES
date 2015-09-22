@@ -83,17 +83,18 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_142( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_142();
+    IGES_ENTITY_142( IGES* aParent );
+    virtual ~IGES_ENTITY_142();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
-    MCAD_API int CRTN;   //< Creation flag for the curve; 0=Unspecified, 1=Projection onto surface,
+    int CRTN;   //< Creation flag for the curve; 0=Unspecified, 1=Projection onto surface,
                 //< 2=Intersection of 2 surfaces, 3=Isoparametric curve
-    MCAD_API int PREF;   //< Preferred representation in the Sending System, 0=Unspecified,
+    int PREF;   //< Preferred representation in the Sending System, 0=Unspecified,
                 //< 1=Curve in Parameter Space (BPTR) is preferred, 2=Model space curve (CPTR)
                 //< is preferred, 3=BPTR and CPTR are equally preferred.
 
@@ -106,7 +107,7 @@ public:
      *
      * @param aPtr = handle to store pointer to the underlying surface entity
      */
-    MCAD_API bool GetSPTR( IGES_ENTITY** aPtr );
+    bool GetSPTR( IGES_ENTITY** aPtr );
 
     /**
      * Function SetSPTR
@@ -114,7 +115,7 @@ public:
      *
      * @param aPtr = pointer to the underlying surface entity
      */
-    MCAD_API bool SetSPTR( IGES_ENTITY* aPtr );
+    bool SetSPTR( IGES_ENTITY* aPtr );
 
     /**
      * Function GetBPTR
@@ -123,7 +124,7 @@ public:
      *
      * @param aPtr = handle to store pointer to the Parameter Space Curve
      */
-    MCAD_API bool GetBPTR( IGES_ENTITY** aPtr );
+    bool GetBPTR( IGES_ENTITY** aPtr );
 
 
     /**
@@ -133,7 +134,7 @@ public:
      *
      * @param aPtr = pointer to the Parameter Space Curve
      */
-    MCAD_API bool SetBPTR( IGES_ENTITY* aPtr );
+    bool SetBPTR( IGES_ENTITY* aPtr );
 
     /**
      * Function GetCPTR
@@ -142,7 +143,7 @@ public:
      *
      * @param aPtr = handle to store pointer to the Model Space Curve
      */
-    MCAD_API bool GetCPTR( IGES_ENTITY** aPtr );
+    bool GetCPTR( IGES_ENTITY** aPtr );
 
     /**
      * Function SetCPTR
@@ -151,7 +152,7 @@ public:
      *
      * @param aPtr = pointer to the Model Space Curve
      */
-    MCAD_API bool SetCPTR( IGES_ENTITY* aPtr );
+    bool SetCPTR( IGES_ENTITY* aPtr );
 };
 
 #endif  // ENTITY_142_H

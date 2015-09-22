@@ -70,23 +70,24 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_154( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_154();
+    IGES_ENTITY_154( IGES* aParent );
+    virtual ~IGES_ENTITY_154();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    MCAD_API double H;   //< cylinder height
-    MCAD_API double R;   //< cylinder radius
-    MCAD_API double X1;  //< X value, first face center coordinate, default 0
-    MCAD_API double Y1;  //< Y value, first face center coordinate, default 0
-    MCAD_API double Z1;  //< Z value, first face center coordinate, default 0
-    MCAD_API double I1;  //< X value, unit vector in axis direction, default 0
-    MCAD_API double J1;  //< Y value, unit vector in axis direction, default 0
-    MCAD_API double K1;  //< Z value, unit vector in axis direction, default 1
+    double H;   //< cylinder height
+    double R;   //< cylinder radius
+    double X1;  //< X value, first face center coordinate, default 0
+    double Y1;  //< Y value, first face center coordinate, default 0
+    double Z1;  //< Z value, first face center coordinate, default 0
+    double I1;  //< X value, unit vector in axis direction, default 0
+    double J1;  //< Y value, unit vector in axis direction, default 0
+    double K1;  //< Z value, unit vector in axis direction, default 1
 };
 
 #endif  // ENTITY_154_H

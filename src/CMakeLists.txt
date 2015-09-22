@@ -121,6 +121,7 @@ include_directories(
     "${LIBIGES_SOURCE_DIR}/include"
     "${LIBIGES_SOURCE_DIR}/include/iges"
     "${LIBIGES_SOURCE_DIR}/include/geom"
+    "${LIBIGES_SOURCE_DIR}/dllapi"
     "${SISL_INCLUDE_DIR}"
     )
 
@@ -141,6 +142,7 @@ endif()
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
+set( SRC_DLL "${CMAKE_CURRENT_SOURCE_DIR}/dllapi" )
 set( SRC_GEOM "${CMAKE_CURRENT_SOURCE_DIR}/geom" )
 
 add_library( iges SHARED
@@ -179,6 +181,7 @@ add_library( iges SHARED
     "${SRC_GEOM}/iges_geom_pcb.cpp"
     "${SRC_GEOM}/mcad_segment.cpp"
     "${SRC_GEOM}/mcad_outline.cpp"
+#    "${SRC_DLL}/dll_iges.cpp"
     )
 
 if( SISL_NEEDS_BUILD )

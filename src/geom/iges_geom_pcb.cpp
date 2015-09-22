@@ -395,7 +395,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     }
 
     IGES_ENTITY* pts;
-    plane->GetPTS( &pts );
+    plane->GetPTS( pts );
     scurve->SetSPTR( pts );
     list<IGES_ENTITY_126*>::iterator sBC = bcurves.begin();
     list<IGES_ENTITY_126*>::iterator eBC = bcurves.end();

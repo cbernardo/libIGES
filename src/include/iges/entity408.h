@@ -75,18 +75,19 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_408( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_408();
+    IGES_ENTITY_408( IGES* aParent );
+    virtual ~IGES_ENTITY_408();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
     // parameters
-    MCAD_API double X;   //< X translation relative to type space of a referring entity
-    MCAD_API double Y;   //< Y translation relative to type space of a referring entity
-    MCAD_API double Z;   //< Z translation relative to type space of a referring entity
-    MCAD_API double S;   //< scale factor relative to type space of a referring entity
+    double X;   //< X translation relative to type space of a referring entity
+    double Y;   //< Y translation relative to type space of a referring entity
+    double Z;   //< Z translation relative to type space of a referring entity
+    double S;   //< scale factor relative to type space of a referring entity
 
 
     /**
@@ -97,7 +98,7 @@ public:
      *
      * @param aPtr = handle to store pointer to associated Subfigure Definition Entity
      */
-    MCAD_API bool GetDE( IGES_ENTITY_308*& aPtr );
+    bool GetDE( IGES_ENTITY_308*& aPtr );
 
 
     /**
@@ -107,14 +108,14 @@ public:
      *
      * @param aPtr = pointer to the Subfigure Definition Entity to associate
      */
-    MCAD_API bool SetDE( IGES_ENTITY_308* aPtr );
+    bool SetDE( IGES_ENTITY_308* aPtr );
 
     /**
      * Function GetDepthLevel
      * returns the nesting level of this entity; this function is used to
      * establish correct Depth Level values as per the IGES specification.
      */
-    MCAD_API int getDepthLevel( void );
+    int getDepthLevel( void );
 };
 
 #endif  // ENTITY_408_H

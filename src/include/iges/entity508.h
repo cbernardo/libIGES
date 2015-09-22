@@ -70,9 +70,9 @@ struct LOOP_DEIDX
     }
 };
 
-struct MCAD_API LOOP_PAIR
+struct LOOP_PAIR
 {
-    MCAD_API bool orientFlag;
+    bool orientFlag;
     IGES_ENTITY*  curve;
 
     LOOP_PAIR();
@@ -85,15 +85,15 @@ struct MCAD_API LOOP_PAIR
  */
 struct LOOP_DATA
 {
-    MCAD_API bool isVertex;
-    MCAD_API IGES_ENTITY* data;
-    MCAD_API int  idx;
-    MCAD_API bool orientFlag;
+    bool isVertex;
+    IGES_ENTITY* data;
+    int  idx;
+    bool orientFlag;
     std::list< std::pair<bool, IGES_ENTITY*> > pcurves;
     std::vector< LOOP_PAIR > vcurves;   // structure accessible to users across DLL bounds
 
-    MCAD_API LOOP_DATA();
-    MCAD_API bool GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList );
+    LOOP_DATA();
+    bool GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList );
 };
 
 
@@ -147,16 +147,17 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar);
 
 public:
-    MCAD_API IGES_ENTITY_508( IGES* aParent );
-    virtual MCAD_API ~IGES_ENTITY_508();
+    IGES_ENTITY_508( IGES* aParent );
+    virtual ~IGES_ENTITY_508();
 
     // Inherited virtual functions
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
-    virtual MCAD_API bool SetEntityForm( int aForm );
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual void Compact( void );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetEntityForm( int aForm );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
     // parameters not supported by the specification:
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
+    virtual bool SetView( IGES_ENTITY* aView );
 
     // functions unique to E508
 
@@ -165,7 +166,7 @@ public:
      * returns a pointer to the list of data structures
      * representing this loop entity.
      */
-    MCAD_API bool GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList );
+    bool GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList );
 
 
     /**
@@ -176,7 +177,7 @@ public:
      * @param aEdge = pointer to data structure storing information
      * representing the edge to be added.
      */
-    MCAD_API bool AddEdge( LOOP_DATA& aEdge );
+    bool AddEdge( LOOP_DATA& aEdge );
 };
 
 #endif  // ENTITY_508_H

@@ -266,4 +266,63 @@ enum IGES_STAT_HIER
     STAT_HIER_END
 };
 
+
+/**
+ * Enum BTREE_OPERATOR
+ * represents the types of operators allowed in a Boolean Tree
+ */
+enum BTREE_OPERATOR
+{
+    OP_START = 1,
+    OP_UNION = 1,
+    OP_INTERSECT,
+    OP_DIFFERENCE,
+    OP_END
+};
+
+
+/**
+ * Struct BTREE_NODE
+ * represents an IGES Boolean Tree parameter or operation.
+ */
+class IGES_ENTITY;
+struct MCAD_API BTREE_NODE
+{
+    bool op;    // true if this is an operation; false if an entity pointer
+    int  val;   // Operation code (1,2,3) or DE Sequence of entity
+    IGES_ENTITY* pEnt;  // pointer to entity (Primitive, Solid Instance, BTree, or manifold solid BREP
+
+    BTREE_NODE()
+    {
+        op = false;
+        val = 0;
+        pEnt = NULL;
+    }
+};
+
+
+/**
+ * Struct EDGE_DATA
+ * stores information on instantiated entities representing
+ * part of an Edge entity
+ */
+class IGES_ENTITY_502;
+struct MCAD_API EDGE_DATA
+{
+    IGES_ENTITY* curv;
+    IGES_ENTITY_502* svp;
+    IGES_ENTITY_502* tvp;
+    int sv;
+    int tv;
+
+    EDGE_DATA()
+    {
+        curv = NULL;
+        svp = NULL;
+        tvp = NULL;
+        sv = 0;
+        tv = 0;
+    }
+};
+
 #endif  // IGES_BASE_H

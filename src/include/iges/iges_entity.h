@@ -74,6 +74,8 @@ protected:
     IGES_ENTITY*     pLabelAssoc;
     IGES_ENTITY*     pColor;
 
+    /// DLL layer validation flag
+    bool* m_valid;
     /// list of referring (parent) entities
     std::list<IGES_ENTITY*> refs;
     /// list of extra entities (optional PD entries)
@@ -288,8 +290,29 @@ public:
 
 
 public:
-    MCAD_API IGES_ENTITY(IGES* aParent);
-    virtual MCAD_API ~IGES_ENTITY();
+    IGES_ENTITY(IGES* aParent);
+    virtual ~IGES_ENTITY();
+
+    /**
+     * Function SetValidFlag
+     * sets a pointer to the boolean used to signal an
+     * API layer upon destruction or change of ownership
+     *
+     * @param aFlag is a pointer to an API layer's internal
+     * validation flag. Note that if the flag is not NULL
+     * when this function is invoked, the previous pointer's
+     * content is set to false before the new pointer is
+     * accepted; this can result in another API layer object
+     * being invalidated.
+     */
+    void SetValidFlag( bool* aFlag );
+
+    /**
+     * Function Compact
+     * deletes any temporary data which may have been created for the
+     * convenience of passing data across the DLL boundary.
+     */
+    virtual void Compact( void ) = 0;
 
     // Routines for manipulating extra entity list
 
@@ -298,7 +321,7 @@ public:
      * returns the number of optional (extra) entities associated
      * with this entity.
      */
-    MCAD_API int GetNOptionalEntities( void );
+    int GetNOptionalEntities( void );
 
 
     /**
@@ -306,7 +329,7 @@ public:
      * returns a pointer to the internal list of optional (extra)
      * entities associated with this entity.
      */
-    MCAD_API IGES_ENTITY* GetOptionalEntity( int aIndex );
+    IGES_ENTITY* GetOptionalEntity( int aIndex );
 
 
     /**
@@ -316,7 +339,7 @@ public:
      *
      * @param = a pointer to the optional IGES entity to be associated
      */
-    MCAD_API bool AddOptionalEntity( IGES_ENTITY* aEntity );
+    bool AddOptionalEntity( IGES_ENTITY* aEntity );
 
 
     /**
@@ -326,7 +349,7 @@ public:
      *
      * @param aEntity = a pointer to the optional IGES entity to be disassociated
      */
-    MCAD_API bool DelOptionalEntity( IGES_ENTITY* aEntity );
+    bool DelOptionalEntity( IGES_ENTITY* aEntity );
 
 
     // Routines for manipulating the optional comments
@@ -335,7 +358,7 @@ public:
      * Function GetNComments
      * returns the number of optional comments for this entity
      */
-    MCAD_API int GetNComments( void );
+    int GetNComments( void );
 
 
     /**
@@ -343,7 +366,7 @@ public:
      * returns a pointer to the internal list of optional
      * comments associated with this entity.
      */
-    const MCAD_API char* GetComment( int aIndex );
+    const char* GetComment( int aIndex );
 
 
     /**
@@ -353,7 +376,7 @@ public:
      *
      * @param aComment = comment to be added
      */
-    MCAD_API bool AddComment( const std::string& aComment );
+    bool AddComment( const std::string& aComment );
 
 
     /**
@@ -363,14 +386,14 @@ public:
      *
      * @param index = index to comment to be removed
      */
-    MCAD_API bool DelComment( int index );
+    bool DelComment( int index );
 
 
     /**
      * Function ClearComments
      * deletes all optional comments associated with this entity
      */
-    MCAD_API bool ClearComments( void );
+    bool ClearComments( void );
 
 
     /**
@@ -380,14 +403,14 @@ public:
      *
      * @param aParent = an instance of the IGES class
      */
-    MCAD_API bool SetParentIGES( IGES* aParent );
+    bool SetParentIGES( IGES* aParent );
 
 
     /**
      * Function GetParentIGES
      * returns a pointer to the parent IGES object
      */
-    MCAD_API IGES* GetParentIGES( void );
+    IGES* GetParentIGES( void );
 
 
     /**
@@ -397,14 +420,14 @@ public:
      * NULL Entity as per the IGES specification or an entity
      * which is currently not supported by the library.
      */
-    MCAD_API int GetEntityType( void );
+    int GetEntityType( void );
 
 
     /**
      * Function GetEntityForm
      * returns the Form number of this entity.
      */
-    MCAD_API int GetEntityForm( void );
+    int GetEntityForm( void );
 
 
     /**
@@ -413,7 +436,7 @@ public:
      *
      * @param aForm = the value to assign to this entity's Form number
      */
-    virtual MCAD_API bool SetEntityForm( int aForm ) = 0;
+    virtual bool SetEntityForm( int aForm ) = 0;
 
 
     /**
@@ -423,7 +446,7 @@ public:
      *
      * @param aStructure = pointer to the entity to associate
      */
-    virtual MCAD_API bool SetStructure( IGES_ENTITY* aStructure );
+    virtual bool SetStructure( IGES_ENTITY* aStructure );
 
 
     /**
@@ -434,7 +457,7 @@ public:
      *
      * @param aStructure = a handle to store a pointer to the Structure object
      */
-    virtual MCAD_API bool GetStructure( IGES_ENTITY** aStructure );
+    virtual bool GetStructure( IGES_ENTITY** aStructure );
 
 
     /**
@@ -444,7 +467,7 @@ public:
      *
      * @param aPattern = an IGES_LINEFONT_PATTERN enumeration
      */
-    virtual MCAD_API bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
 
 
     /**
@@ -454,7 +477,7 @@ public:
      *
      * @param aPattern = a pointer to an IGES LineFontPattern entity
      */
-    virtual MCAD_API bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
 
 
     /**
@@ -465,7 +488,7 @@ public:
      *
      * @param aPattern = variable to store the numeric LineFontPattern value
      */
-    MCAD_API bool GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern );
+    bool GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern );
 
 
     /**
@@ -478,7 +501,7 @@ public:
      *
      * @param aPattern = handle to store the associated LineFontPattern entity
      */
-    MCAD_API bool GetLineFontPatternEntity( IGES_ENTITY** aPattern );
+    bool GetLineFontPatternEntity( IGES_ENTITY** aPattern );
 
 
     /**
@@ -488,7 +511,7 @@ public:
      *
      * @param aLevel = the numeric level to assign to this entity
      */
-    virtual MCAD_API bool SetLevel( int aLevel );
+    virtual bool SetLevel( int aLevel );
 
 
     /**
@@ -498,7 +521,7 @@ public:
      *
      * @param aLevel = pointer to the Property Entity to be associated
      */
-    virtual MCAD_API bool SetLevel( IGES_ENTITY* aLevel );
+    virtual bool SetLevel( IGES_ENTITY* aLevel );
 
 
     /**
@@ -509,7 +532,7 @@ public:
      *
      * @param aLevel = variable to store the numeric level value
      */
-    MCAD_API bool GetLevel( int& aLevel );
+    bool GetLevel( int& aLevel );
 
 
     /**
@@ -520,7 +543,7 @@ public:
      *
      * @param aLevel = handle to store a pointer to the associated Property Entity
      */
-    MCAD_API bool GetLevelEntity( IGES_ENTITY** aLevel );
+    bool GetLevelEntity( IGES_ENTITY** aLevel );
 
 
     /**
@@ -530,7 +553,7 @@ public:
      *
      * @param aView = the VIEW or ASSOCIATIVITY INSTANCE to be associated
      */
-    virtual MCAD_API bool SetView( IGES_ENTITY* aView );
+    virtual bool SetView( IGES_ENTITY* aView );
 
 
     /**
@@ -541,7 +564,7 @@ public:
      *
      * @param aView = handle to store pointer to VIEW or ASSOCIATIVITY INSTANCE entity
      */
-    MCAD_API bool GetView( IGES_ENTITY** aView );
+    bool GetView( IGES_ENTITY** aView );
 
 
     /**
@@ -550,7 +573,7 @@ public:
      * on success; not all entities may accept a transform in which
      * case the return value will be false.
      */
-    virtual MCAD_API bool SetTransform( IGES_ENTITY* aTransform );
+    virtual bool SetTransform( IGES_ENTITY* aTransform );
 
     /**
      * Function GetTransform
@@ -561,7 +584,7 @@ public:
      *
      * @param aTransform = handle to store a pointer to the object's Transformation Entity
      */
-    MCAD_API bool GetTransform( IGES_ENTITY** aTransform );
+    bool GetTransform( IGES_ENTITY** aTransform );
 
 
     /**
@@ -569,7 +592,7 @@ public:
      * sets the ASSOCIATIVITY INSTANCE entity which refers to this entity
      * and returns true on success.
      */
-    virtual MCAD_API bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
 
 
     /**
@@ -580,7 +603,7 @@ public:
      *
      * @param aLabelAssoc = handle to store a pointer to an ASSOCIATIVITY INSTANCE entity
      */
-    MCAD_API bool GetLabelAssoc( IGES_ENTITY** aLabelAssoc );
+    bool GetLabelAssoc( IGES_ENTITY** aLabelAssoc );
 
 
     /**
@@ -590,7 +613,7 @@ public:
      *
      * @param aColor = enumerated color definition as per IGES specification
      */
-    virtual MCAD_API bool SetColor( IGES_COLOR aColor );
+    virtual bool SetColor( IGES_COLOR aColor );
 
 
     /**
@@ -600,7 +623,7 @@ public:
      *
      * @param aColor = pointer to a Color Definition entity which defines this entity's color.
      */
-    virtual MCAD_API bool SetColor( IGES_ENTITY* aColor );
+    virtual bool SetColor( IGES_ENTITY* aColor );
 
     /**
      * Function GetColor
@@ -613,7 +636,7 @@ public:
      *
      * @param aColor = variable to store the enumerated color value
      */
-    MCAD_API bool GetColor( IGES_COLOR& aColor );
+    bool GetColor( IGES_COLOR& aColor );
 
 
     /**
@@ -626,7 +649,7 @@ public:
      *
      * @param aColor = handle to store a pointer to the associated Color Definition Entity
      */
-    MCAD_API bool GetColorEntity( IGES_ENTITY** aColor );
+    bool GetColorEntity( IGES_ENTITY** aColor );
 
 
     /**
@@ -639,7 +662,7 @@ public:
      *
      * @param aLineWeight = line weight to assign
      */
-    virtual MCAD_API bool SetLineWeightNum( int aLineWeight );
+    virtual bool SetLineWeightNum( int aLineWeight );
 
 
     /**
@@ -649,7 +672,7 @@ public:
      *
      * @param aLineWeight = variable to store the line weight value
      */
-    MCAD_API bool GetLineWeightNum( int& aLineWeight );
+    bool GetLineWeightNum( int& aLineWeight );
 
 
     /**
@@ -661,7 +684,7 @@ public:
      *
      * @param aLabel = the text to use in the label
      */
-    MCAD_API bool SetLabel( const std::string aLabel );
+    bool SetLabel( const std::string aLabel );
 
 
     /**
@@ -672,7 +695,7 @@ public:
      *
      * @param aLabel = variable to store the label value.
      */
-    MCAD_API void GetLabel( std::string& aLabel );
+    void GetLabel( std::string& aLabel );
 
 
     /**
@@ -687,7 +710,7 @@ public:
      *
      * @param aSubscript = the value to assign to the entity subscript
      */
-    MCAD_API bool SetEntitySubscript( int aSubscript );
+    bool SetEntitySubscript( int aSubscript );
 
 
     /**
@@ -697,7 +720,7 @@ public:
      *
      * @param aSubscript = variable to store the value of the entity subscript
      */
-    MCAD_API bool GetEntitySubscript( int& aSubscript );
+    bool GetEntitySubscript( int& aSubscript );
 
 
     /**
@@ -709,7 +732,7 @@ public:
      *
      * @param isVisible = set to true to set the entity's visibility flag
      */
-    virtual MCAD_API bool SetVisibility( bool isVisible );
+    virtual bool SetVisibility( bool isVisible );
 
 
     /**
@@ -718,7 +741,7 @@ public:
      *
      * @param isVisible = variable to store the state of the visibility flag
      */
-    MCAD_API bool GetVisibility( bool& isVisible );
+    bool GetVisibility( bool& isVisible );
 
 
     /**
@@ -730,7 +753,7 @@ public:
      *
      * @param aDependency = the dependency value
      */
-    virtual MCAD_API bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
 
 
     /**
@@ -739,7 +762,7 @@ public:
      *
      * @param aDependency = variable to store the dependency value
      */
-    MCAD_API bool GetDependency( IGES_STAT_DEPENDS& aDependency );
+    bool GetDependency( IGES_STAT_DEPENDS& aDependency );
 
 
     /**
@@ -750,7 +773,7 @@ public:
      *
      * @param aUseCase = Use Case flag as per IGES specification
      */
-    virtual MCAD_API bool SetEntityUse( IGES_STAT_USE aUseCase );
+    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
 
     /**
      * Function GetEntityUse
@@ -759,7 +782,7 @@ public:
      *
      * @param aUseCase = variable to store the use case flag
      */
-    MCAD_API bool GetEntityUse( IGES_STAT_USE& aUseCase );
+    bool GetEntityUse( IGES_STAT_USE& aUseCase );
 
 
     /**
@@ -771,7 +794,7 @@ public:
      *
      * @param aHierarchy = hierarchy flag value to use
      */
-    virtual MCAD_API bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
 
     /**
@@ -780,7 +803,7 @@ public:
      *
      * @param aHierarchy = variable to store the hierarchy flag value
      */
-    MCAD_API bool GetHierarchy( IGES_STAT_HIER& aHierarchy );
+    bool GetHierarchy( IGES_STAT_HIER& aHierarchy );
 };
 
 #endif  // IGES_ENTITY_H

@@ -64,7 +64,7 @@ enum MCAD_INTERSECT_FLAG
 };
 
 
-class MCAD_API MCAD_SEGMENT
+class MCAD_SEGMENT
 {
 protected:
     friend class MCAD_OUTLINE;

@@ -47,12 +47,12 @@ IGES_ENTITY_514::IGES_ENTITY_514( IGES* aParent ) : IGES_ENTITY( aParent )
 
 IGES_ENTITY_514::~IGES_ENTITY_514()
 {
-    list<pair<IGES_ENTITY_510*, bool> >::iterator sF = mfaces.begin();
-    list<pair<IGES_ENTITY_510*, bool> >::iterator eF = mfaces.end();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator sF = mfaces.begin();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator eF = mfaces.end();
 
     while( sF != eF )
     {
-        sF->first->delReference(this);
+        sF->first->delReference( this );
         ++sF;
     }
 
@@ -63,8 +63,6 @@ IGES_ENTITY_514::~IGES_ENTITY_514()
 
 void IGES_ENTITY_514::Compact( void )
 {
-#warning TO BE IMPLEMENTED
-    // XXX -
     return;
 }
 
@@ -164,9 +162,9 @@ bool IGES_ENTITY_514::format( int &index )
     string fStr = ostr.str();
     string tStr;
 
-    list<pair<IGES_ENTITY_510*, bool> >::iterator sF = mfaces.begin();
-    list<pair<IGES_ENTITY_510*, bool> >::iterator eF = mfaces.end();
-    list<pair<IGES_ENTITY_510*, bool> >::iterator iF = --(mfaces.end());
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator sF = mfaces.begin();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator eF = mfaces.end();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator iF = --(mfaces.end());
 
     while( sF != iF )
     {
@@ -242,8 +240,8 @@ bool IGES_ENTITY_514::unlink(IGES_ENTITY *aChildEntity)
     if(IGES_ENTITY::unlink(aChildEntity) )
         return true;
 
-    list<pair<IGES_ENTITY_510*, bool> >::iterator sF = mfaces.begin();
-    list<pair<IGES_ENTITY_510*, bool> >::iterator eF = mfaces.end();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator sF = mfaces.begin();
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator eF = mfaces.end();
 
     while( sF != eF )
     {

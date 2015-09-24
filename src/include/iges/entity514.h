@@ -67,8 +67,8 @@ protected:
     virtual bool rescale( double sf );
 
 public:
-    std::list<std::pair<int, bool> > ifaces;                //< DE and OFlag for faces
-    std::list<std::pair<IGES_ENTITY_510*, bool> > mfaces;   //< faces of the shell
+    std::list< std::pair<int, bool> > ifaces;                   //< DE and OFlag for faces
+    std::vector< std::pair<IGES_ENTITY_510*, bool> > mfaces;    //< faces of the shell
 
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);

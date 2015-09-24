@@ -49,6 +49,7 @@
 #include <geom_cylinder.h>
 #include <mcad_segment.h>
 #include <iges_geom_pcb.h>
+#include <all_entities.h>
 
 
 using namespace std;

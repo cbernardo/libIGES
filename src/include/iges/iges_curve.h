@@ -74,8 +74,8 @@ public:
     virtual bool readPD(std::ifstream &aFile, int &aSequenceVar) = 0;
 
 public:
-    MCAD_API IGES_CURVE( IGES* aParent );
-    virtual MCAD_API ~IGES_CURVE();
+    IGES_CURVE( IGES* aParent );
+    virtual ~IGES_CURVE();
 
     // specialized members of this class
     // methods required of parameterized curve entities
@@ -84,7 +84,7 @@ public:
      * Function IsClosed
      * returns true if this entity represents a closed curve
      */
-    virtual MCAD_API bool IsClosed( void ) = 0;
+    virtual bool IsClosed( void ) = 0;
 
 
     /**
@@ -95,7 +95,7 @@ public:
      *  0 = simple curve entity such as a circle or NURBS curve
      * 1+ = # of internal curve entities, each of which may also be composite
      */
-    virtual MCAD_API int GetNCurves( void ) = 0;
+    virtual int GetNCurves( void ) = 0;
 
 
     /**
@@ -103,7 +103,7 @@ public:
      * returns the a pointer to the associated curve entity with the given index
      * or NULL if no such entity exists.
      */
-    virtual MCAD_API IGES_CURVE* GetCurve( int index ) = 0;
+    virtual IGES_CURVE* GetCurve( int index ) = 0;
 
 
     /**
@@ -114,7 +114,7 @@ public:
      * @param pt = variable to store the start point
      * @param xform = set to true to apply any associated transforms to the point
      */
-    virtual MCAD_API bool GetStartPoint( MCAD_POINT& pt, bool xform = true ) = 0;
+    virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true ) = 0;
 
 
     /**
@@ -125,7 +125,7 @@ public:
      * @param pt = variable to store the end point
      * @param xform = set to true to apply any associated transforms to the point
      */
-    virtual MCAD_API bool GetEndPoint( MCAD_POINT& pt, bool xform = true ) = 0;
+    virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true ) = 0;
 
 
     /**
@@ -135,7 +135,7 @@ public:
      * case of piece-wise linear collections this would be the number
      * of segments to iterate over
      */
-    virtual MCAD_API int GetNSegments( void ) = 0;
+    virtual int GetNSegments( void ) = 0;
 
 
     /**
@@ -151,10 +151,10 @@ public:
      * @param var = Parametric variable; the range 0 .. 1 represents the entire curve
      * @param xform = set to true if the point is to be transformed by associated transforms
      */
-    virtual MCAD_API bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
+    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
 
     // members inherited from IGES_ENTITY
-    virtual MCAD_API bool SetEntityForm( int aForm ) = 0;
+    virtual bool SetEntityForm( int aForm ) = 0;
     // XXX - consider adding a method to retrieve the LENGTH of Segment N;
     // this could be useful to aid in calculations for rendering entities.
 };

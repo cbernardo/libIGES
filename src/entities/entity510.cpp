@@ -32,6 +32,7 @@
 #include <entity504.h>
 #include <entity508.h>
 #include <entity510.h>
+#include "../include/iges/entity510.h"
 
 using namespace std;
 
@@ -56,8 +57,8 @@ IGES_ENTITY_510::~IGES_ENTITY_510()
     if( msurface )
         msurface->delReference(this);
 
-    list<IGES_ENTITY_508*>::iterator sL = mloops.begin();
-    list<IGES_ENTITY_508*>::iterator eL = mloops.end();
+    vector<IGES_ENTITY_508*>::iterator sL = mloops.begin();
+    vector<IGES_ENTITY_508*>::iterator eL = mloops.end();
 
     while( sL != eL )
     {
@@ -65,14 +66,13 @@ IGES_ENTITY_510::~IGES_ENTITY_510()
         ++sL;
     }
 
+    mloops.clear();
     return;
 }
 
 
 void IGES_ENTITY_510::Compact( void )
 {
-#warning TO BE IMPLEMENTED
-    // XXX -
     return;
 }
 
@@ -200,9 +200,9 @@ bool IGES_ENTITY_510::format( int &index )
     string fStr = ostr.str();
     string tStr;
 
-    list<IGES_ENTITY_508*>::iterator sL = mloops.begin();
-    list<IGES_ENTITY_508*>::iterator eL = mloops.end();
-    list<IGES_ENTITY_508*>::iterator iL = --(mloops.end());
+    vector< IGES_ENTITY_508* >::iterator sL = mloops.begin();
+    vector< IGES_ENTITY_508* >::iterator eL = mloops.end();
+    vector< IGES_ENTITY_508* >::iterator iL = --(mloops.end());
 
     while( sL != iL )
     {
@@ -264,8 +264,8 @@ bool IGES_ENTITY_510::unlink(IGES_ENTITY *aChildEntity)
         return true;
     }
 
-    list<IGES_ENTITY_508*>::iterator sL = mloops.begin();
-    list<IGES_ENTITY_508*>::iterator eL = mloops.end();
+    vector< IGES_ENTITY_508* >::iterator sL = mloops.begin();
+    vector< IGES_ENTITY_508* >::iterator eL = mloops.end();
 
     while( sL != eL )
     {
@@ -533,23 +533,42 @@ bool IGES_ENTITY_510::SetLineWeightNum( int aLineWeight )
 }
 
 
-const std::list<IGES_ENTITY_508*>* IGES_ENTITY_510::GetBounds( void )
+bool IGES_ENTITY_510::GetBounds( size_t& aListSize, IGES_ENTITY_508**& aBoundsList )
 {
-    return &mloops;
+    if( mloops.empty() )
+    {
+        aListSize = 0;
+        aBoundsList = NULL;
+    }
+
+    aListSize = mloops.size();
+    aBoundsList = &mloops[0];
+    return true;
 }
 
 
 bool IGES_ENTITY_510::AddBound( IGES_ENTITY_508* aLoop )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( NULL == aLoop )
+        return false;
+
+    // XXX - TO BE IMPLEMENTED:
+    // we may require refcounts for the bound though in principle
+    // it should not be necessary to use a boundary more than
+    // once
+    mloops.push_back( aLoop );
+
+    return true;
 }
 
 
 bool IGES_ENTITY_510::SetSurface( IGES_ENTITY* aSurface )
 {
-    // XXX - TO BE IMPLEMENTED
-    return false;
+    if( NULL == aSurface )
+        return false;
+
+    msurface = aSurface;
+    return true;
 }
 
 

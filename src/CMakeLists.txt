@@ -181,7 +181,10 @@ add_library( iges SHARED
     "${SRC_GEOM}/iges_geom_pcb.cpp"
     "${SRC_GEOM}/mcad_segment.cpp"
     "${SRC_GEOM}/mcad_outline.cpp"
-#    "${SRC_DLL}/dll_iges.cpp"
+    "${SRC_DLL}/dll_iges.cpp"
+    "${SRC_DLL}/dll_iges_entity.cpp"
+    "${SRC_DLL}/dll_iges_curve.cpp"
+    "${SRC_DLL}/dll_entity100.cpp"
     )
 
 if( SISL_NEEDS_BUILD )

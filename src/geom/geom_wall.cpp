@@ -26,6 +26,12 @@
 #include <error_macros.h>
 #include <iges.h>
 #include <geom_wall.h>
+#include <entity102.h>
+#include <entity110.h>
+#include <entity126.h>
+#include <entity128.h>
+#include <entity142.h>
+#include <entity144.h>
 #include <sisl.h>
 
 IGES_GEOM_WALL::IGES_GEOM_WALL()

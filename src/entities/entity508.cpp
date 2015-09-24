@@ -58,32 +58,17 @@ LOOP_DATA::LOOP_DATA()
     idx = 0;
 }
 
-bool LOOP_DATA::GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList )
+bool LOOP_DATA::GetPCurves( size_t& aListSize, LOOP_PAIR**& aPCurveList )
 {
     if( pcurves.empty() )
     {
-        vcurves.clear();
         aListSize = 0;
         aPCurveList = NULL;
         return false;
     }
 
-    if( pcurves.size() != vcurves.size() )
-    {
-        vcurves.clear();
-
-        std::list< std::pair<bool, IGES_ENTITY*> >::iterator sL = pcurves.begin();
-        std::list< std::pair<bool, IGES_ENTITY*> >::iterator eL = pcurves.end();
-
-        while( sL != eL )
-        {
-            vcurves.push_back( LOOP_PAIR( sL->first, sL->second ) );
-            ++sL;
-        }
-    }
-
-    aListSize = vcurves.size();
-    aPCurveList = &vcurves[0];
+    aListSize = pcurves.size();
+    aPCurveList = &pcurves[0];
     return true;
 }
 
@@ -103,28 +88,30 @@ IGES_ENTITY_508::IGES_ENTITY_508( IGES* aParent ) : IGES_ENTITY( aParent )
 IGES_ENTITY_508::~IGES_ENTITY_508()
 {
     // unlink all PS curves
-    list<LOOP_DATA>::iterator sF = edges.begin();
-    list<LOOP_DATA>::iterator eF = edges.end();
+    vector< LOOP_DATA* >::iterator sF = edges.begin();
+    vector< LOOP_DATA* >::iterator eF = edges.end();
 
     while( sF != eF )
     {
-        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
-        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+        vector< LOOP_PAIR* >::iterator sP = (*sF)->pcurves.begin();
+        vector< LOOP_PAIR* >::iterator eP = (*sF)->pcurves.end();
 
         while( sP != eP )
         {
-            sP->second->unlink(this);
+            (*sP)->curve->unlink(this);
+            delete *sP;
             ++sP;
         }
 
+        delete *sF;
         ++sF;
     }
 
     edges.clear();
 
     // unlink the edge entities
-    list<pair<IGES_ENTITY*, int> >::iterator sE = redges.begin();
-    list<pair<IGES_ENTITY*, int> >::iterator eE = redges.end();
+    list< pair< IGES_ENTITY*, int > >::iterator sE = redges.begin();
+    list< pair< IGES_ENTITY*, int > >::iterator eE = redges.end();
 
     while( sE != eE )
     {
@@ -139,8 +126,6 @@ IGES_ENTITY_508::~IGES_ENTITY_508()
 
 void IGES_ENTITY_508::Compact( void )
 {
-#warning TO BE IMPLEMENTED
-    // XXX -
     return;
 }
 
@@ -162,15 +147,16 @@ bool IGES_ENTITY_508::associate(std::vector<IGES_ENTITY *> *entities)
     list<LOOP_DEIDX>::iterator eI = deItems.end();
     int nI = (int)entities->size();
     int lI;
-    LOOP_DATA ldata;
+    LOOP_DATA* ldata;
 
     while( sI != eI )
     {
-        ldata.isVertex = sI->isVertex;
-        ldata.data = NULL;
-        ldata.idx  = sI->idx;
-        ldata.orientFlag = sI->orientFlag;
-        ldata.pcurves.clear();
+        ldata = new LOOP_DATA;
+        ldata->isVertex = sI->isVertex;
+        ldata->data = NULL;
+        ldata->idx  = sI->idx;
+        ldata->orientFlag = sI->orientFlag;
+        ldata->pcurves.clear();
         lI = sI->data >> 1;
 
         if( 0 > lI || nI <= lI )
@@ -181,7 +167,7 @@ bool IGES_ENTITY_508::associate(std::vector<IGES_ENTITY *> *entities)
             return false;
         }
 
-        ldata.data = (*entities)[lI];
+        ldata->data = (*entities)[lI];
         list< pair<bool, int> >::iterator sP = sI->pcurves.begin();
         list< pair<bool, int> >::iterator eP = sI->pcurves.end();
 
@@ -198,18 +184,23 @@ bool IGES_ENTITY_508::associate(std::vector<IGES_ENTITY *> *entities)
             }
 
             p0 = (*entities)[lI];
-            ldata.pcurves.push_back( pair<bool, IGES_ENTITY*>( sP->first, p0 ) );
+            LOOP_PAIR* lp = new LOOP_PAIR;
+            lp->orientFlag = sP->first;
+            lp->curve = p0;
+            ldata->pcurves.push_back( lp );
             ++sP;
         }
 
         if( !AddEdge( ldata ) )
         {
+            delete ldata;
             ERRMSG << "\n + [INFO] could not add edge data for entity ";
             cerr << sequenceNumber << "\n";
             deItems.clear();
             return false;
         }
 
+        ldata = NULL;
         ++sI;
     }
 
@@ -246,14 +237,14 @@ bool IGES_ENTITY_508::format( int &index )
     string fStr = ostr.str();
     string tStr;
 
-    list<LOOP_DATA>::iterator sV = edges.begin();
-    list<LOOP_DATA>::iterator eV = edges.end();
-    list<LOOP_DATA>::iterator iV = --edges.end();
+    vector< LOOP_DATA* >::iterator sV = edges.begin();
+    vector< LOOP_DATA* >::iterator eV = edges.end();
+    vector< LOOP_DATA* >::iterator iV = --edges.end();
     int acc = 0;
 
     while( sV != eV )
     {
-        if( !sV->data )
+        if( !(*sV)->data )
         {
             ERRMSG << "\n + [BUG] null pointer in Loop structure\n";
             pdout.clear();
@@ -263,7 +254,7 @@ bool IGES_ENTITY_508::format( int &index )
         // isVertex(n)
         ostr.str("");
 
-        if( sV->isVertex )
+        if( (*sV)->isVertex )
             ostr << "1" << pd;
         else
             ostr << "0" << pd;
@@ -273,20 +264,20 @@ bool IGES_ENTITY_508::format( int &index )
 
         // edge(n)
         ostr.str("");
-        ostr << sV->data->getDESequence() << pd;
+        ostr << (*sV)->data->getDESequence() << pd;
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
         // idx(n)
         ostr.str("");
-        ostr << sV->idx << pd;
+        ostr << (*sV)->idx << pd;
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
         // OF(n)
         ostr.str("");
 
-        if( sV->orientFlag )
+        if( (*sV)->orientFlag )
             ostr << "1" << pd;
         else
             ostr << "0" << pd;
@@ -298,24 +289,24 @@ bool IGES_ENTITY_508::format( int &index )
         ostr.str("");
 
         if( sV == iV && extras.empty() )
-            ostr << sV->pcurves.size() << rd;
+            ostr << (*sV)->pcurves.size() << rd;
         else
-            ostr << sV->pcurves.size() << pd;
+            ostr << (*sV)->pcurves.size() << pd;
 
         tStr = ostr.str();
         AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
 
         // write out PS curve data
-        list< pair<bool, IGES_ENTITY*> >::iterator sP = sV->pcurves.begin();
-        list< pair<bool, IGES_ENTITY*> >::iterator eP = sV->pcurves.end();
-        list< pair<bool, IGES_ENTITY*> >::iterator iP = --(sV->pcurves.end());
+        vector< LOOP_PAIR* >::iterator sP = (*sV)->pcurves.begin();
+        vector< LOOP_PAIR* >::iterator eP = (*sV)->pcurves.end();
+        vector< LOOP_PAIR* >::iterator iP = --((*sV)->pcurves.end());
 
         while( sP != iP )
         {
             // ISOP(n,k)
             ostr.str("");
 
-            if( sP->first )
+            if( (*sP)->orientFlag )
                 ostr << "1" << pd;
             else
                 ostr << "0" << pd;
@@ -327,9 +318,9 @@ bool IGES_ENTITY_508::format( int &index )
             ostr.str("");
 
             if( sV == iV && sP == iP && extras.empty() )
-                ostr << sP->second->getDESequence() << rd;
+                ostr << (*sP)->curve->getDESequence() << rd;
             else
-                ostr << sP->second->getDESequence() << pd;
+                ostr << (*sP)->curve->getDESequence() << pd;
 
             tStr = ostr.str();
             AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
@@ -414,23 +405,23 @@ bool IGES_ENTITY_508::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate
         return false;
     }
 
-    list<LOOP_DATA>::iterator sF = edges.begin();
-    list<LOOP_DATA>::iterator eF = edges.end();
+    vector< LOOP_DATA* >::iterator sF = edges.begin();
+    vector< LOOP_DATA* >::iterator eF = edges.end();
 
     while( sF != eF )
     {
-        if( aParentEntity == sF->data )
+        if( aParentEntity == (*sF)->data )
         {
             ERRMSG << "\n + [BUG] circular reference with curve entity requested\n";
             return false;
         }
 
-        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
-        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+        vector< LOOP_PAIR* >::iterator sP = (*sF)->pcurves.begin();
+        vector< LOOP_PAIR* >::iterator eP = (*sF)->pcurves.end();
 
         while( sP != eP )
         {
-            if( sP->second == aParentEntity )
+            if( (*sP)->curve == aParentEntity )
             {
                 ERRMSG << "\n + [BUG] circular reference with PS curve entity requested\n";
                 return false;
@@ -776,23 +767,26 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnli
 
             if( aFlagAll || (--sE->second == 0) )
             {
-                list<LOOP_DATA>::iterator sF = edges.begin();
-                list<LOOP_DATA>::iterator eF = edges.end();
+                vector< LOOP_DATA* >::reverse_iterator sF = edges.rbegin();
+                vector< LOOP_DATA* >::reverse_iterator eF = edges.rend();
 
                 while( sF != eF )
                 {
-                    if( sF->data == ep )
+                    if( (*sF)->data == ep )
                     {
-                        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
-                        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+                        vector< LOOP_PAIR* >::reverse_iterator sP = (*sF)->pcurves.rbegin();
+                        vector< LOOP_PAIR* >::reverse_iterator eP = (*sF)->pcurves.rend();
 
                         while( sP != eP )
                         {
-                            delPCurve( sP->second, false, false );
+                            delPCurve( (*sP)->curve, false, false );
+                            delete *sP;
                             ++sP;
                         }
 
-                        sF = edges.erase( sF );
+                        delete *sF;
+                        --sF;
+                        edges.pop_back();
                         continue;
                     }
 
@@ -814,17 +808,17 @@ bool IGES_ENTITY_508::delEdge( IGES_ENTITY* aEdge, bool aFlagAll, bool aFlagUnli
 // add a parent reference to a parameter space curve and ensure no duplicates
 bool IGES_ENTITY_508::addPCurve( IGES_ENTITY* aCurve )
 {
-    list<LOOP_DATA>::iterator sF = edges.begin();
-    list<LOOP_DATA>::iterator eF = edges.end();
+    vector< LOOP_DATA* >::iterator sF = edges.begin();
+    vector< LOOP_DATA* >::iterator eF = edges.end();
 
     while( sF != eF )
     {
-        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
-        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+        vector< LOOP_PAIR* >::iterator sP = (*sF)->pcurves.begin();
+        vector< LOOP_PAIR* >::iterator eP = (*sF)->pcurves.end();
 
         while( sP != eP )
         {
-            if( sP->second == aCurve )
+            if( (*sP)->curve == aCurve )
             {
                 ERRMSG << "\n + [BUG]: duplicate reference to PS curve\n";
                 return false;
@@ -857,34 +851,35 @@ bool IGES_ENTITY_508::addPCurve( IGES_ENTITY* aCurve )
 // delete parent reference from the given parameter space curve
 bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aFlagUnlink )
 {
-    list<LOOP_DATA>::iterator sF = edges.begin();
-    list<LOOP_DATA>::iterator eF = edges.end();
+    vector< LOOP_DATA* >::iterator sF = edges.begin();
+    vector< LOOP_DATA* >::iterator eF = edges.end();
 
     while( sF != eF )
     {
-        list< pair<bool, IGES_ENTITY*> >::iterator sP = sF->pcurves.begin();
-        list< pair<bool, IGES_ENTITY*> >::iterator eP = sF->pcurves.end();
+        vector< LOOP_PAIR* >::reverse_iterator sP = (*sF)->pcurves.rbegin();
+        vector< LOOP_PAIR* >::reverse_iterator eP = (*sF)->pcurves.rend();
 
         while( sP != eP )
         {
-            if( sP->second == aCurve )
+            if( (*sP)->curve == aCurve )
             {
                 if( aFlagDelEdge )
                 {
-                    while( !sF->pcurves.empty() )
+                    while( !(*sF)->pcurves.empty() )
                     {
-                        sF->pcurves.front().second->delReference(this);
-                        sF->pcurves.pop_front();
+                        (*sF)->pcurves.back()->curve->delReference(this);
+                        (*sF)->pcurves.pop_back();
                     }
 
-                    delEdge( sF->data, false, false );
+                    delEdge( (*sF)->data, false, false );
                 }
                 else
                 {
                     if( !aFlagUnlink )
-                        sP->second->delReference(this);
+                        (*sP)->curve->delReference(this);
 
-                    sF->pcurves.erase( sP );
+                    delete *sP;
+                    (*sF)->pcurves.pop_back();
                 }
 
                 return true;
@@ -900,64 +895,49 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aF
 }
 
 
-MCAD_API bool IGES_ENTITY_508::GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList )
+MCAD_API bool IGES_ENTITY_508::GetLoopData( size_t aListSize, LOOP_DATA**& aEdgeList )
 {
     if( edges.empty() )
     {
-        vedges.clear();
         aListSize = 0;
         aEdgeList = NULL;
         return false;
     }
 
-    if( edges.size() != vedges.size() )
-    {
-        vedges.clear();
-
-        std::list<LOOP_DATA>::iterator sL = edges.begin();
-        std::list<LOOP_DATA>::iterator eL = edges.end();
-
-        while( sL != eL )
-        {
-            vedges.push_back( *sL );
-            ++sL;
-        }
-    }
-
-    aListSize = vedges.size();
-    aEdgeList = &vedges[0];
+    aListSize = edges.size();
+    aEdgeList = &edges[0];
     return true;
 }
 
 
-bool IGES_ENTITY_508::AddEdge( LOOP_DATA& aEdge )
+bool IGES_ENTITY_508::AddEdge( LOOP_DATA*& aEdge )
 {
-    if( NULL == aEdge.data )
+    if( NULL == aEdge->data )
     {
         ERRMSG << "\n +[BUG] NULL pointer passed for edge\n";
         return false;
     }
 
-    if( !addEdge( aEdge.data ) )
+    if( !addEdge( aEdge->data ) )
     {
         ERRMSG << "\n +[INFO] could not add edge to list\n";
         return false;
     }
 
-    list< pair<bool, IGES_ENTITY*> >::iterator sP = aEdge.pcurves.begin();
-    list< pair<bool, IGES_ENTITY*> >::iterator eP = aEdge.pcurves.end();
+    vector< LOOP_PAIR* >::iterator sP = aEdge->pcurves.begin();
+    vector< LOOP_PAIR* >::iterator eP = aEdge->pcurves.end();
 
     while( sP != eP )
     {
-        if( !addPCurve( sP->second ) )
+        if( !addPCurve( (*sP)->curve ) )
         {
-            while( sP != aEdge.pcurves.begin() )
+            while( sP != aEdge->pcurves.begin() )
             {
-                sP->second->delReference(this);
+                (*sP)->curve->delReference(this);
                 --sP;
             }
 
-            sP->second->delReference(this);
+            (*sP)->curve->delReference(this);
             ERRMSG << "\n +[INFO] could not add pcurve to list\n";
             return false;
         }
@@ -966,6 +946,5 @@ bool IGES_ENTITY_508::AddEdge( LOOP_DATA& aEdge )
     }
 
     edges.push_back( aEdge );
-    vedges.clear();
     return true;
 }

@@ -89,11 +89,10 @@ struct LOOP_DATA
     IGES_ENTITY* data;
     int  idx;
     bool orientFlag;
-    std::list< std::pair<bool, IGES_ENTITY*> > pcurves;
-    std::vector< LOOP_PAIR > vcurves;   // structure accessible to users across DLL bounds
+    std::vector< LOOP_PAIR* > pcurves;
 
     LOOP_DATA();
-    bool GetPCurves( size_t& aListSize, LOOP_PAIR*& aPCurveList );
+    bool GetPCurves( size_t& aListSize, LOOP_PAIR**& aPCurveList );
 };
 
 
@@ -130,12 +129,11 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::list<LOOP_DEIDX> deItems;  // Data for EDGE, including DE indices
-    std::list<std::pair<IGES_ENTITY*, int> > redges;   // refcounts for edges
-    std::vector<LOOP_DATA> vedges;  // loop data in a form a user can access via DLL
+    std::list< LOOP_DEIDX > deItems;  // Data for EDGE, including DE indices
+    std::list< std::pair< IGES_ENTITY*, int > > redges;   // refcounts for edges
 
 public:
-    std::list<LOOP_DATA> edges;
+    std::vector< LOOP_DATA* > edges;
 
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);
@@ -166,7 +164,7 @@ public:
      * returns a pointer to the list of data structures
      * representing this loop entity.
      */
-    bool GetLoopData( size_t aListSize, LOOP_DATA*& aEdgeList );
+    bool GetLoopData( size_t aListSize, LOOP_DATA**& aEdgeList );
 
 
     /**
@@ -177,7 +175,7 @@ public:
      * @param aEdge = pointer to data structure storing information
      * representing the edge to be added.
      */
-    bool AddEdge( LOOP_DATA& aEdge );
+    bool AddEdge( LOOP_DATA*& aEdge );
 };
 
 #endif  // ENTITY_508_H

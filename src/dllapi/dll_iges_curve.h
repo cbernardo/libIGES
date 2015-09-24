@@ -1,10 +1,7 @@
 /*
- * file: geom_wall.h
+ * file: dll_iges_curve.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
- *
- * Description: object to aid in the creation of a rectangular
- * surface within IGES
  *
  * This file is part of libIGES.
  *
@@ -23,34 +20,35 @@
  *
  */
 
-#ifndef IGES_GEOM_WALL_H
-#define IGES_GEOM_WALL_H
+#ifndef DLL_IGES_CURVE_H
+#define DLL_IGES_CURVE_H
 
 #include <libigesconf.h>
+#include <dll_iges_entity.h>
 #include <mcad_elements.h>
 
-struct SISLSurf;
-struct SISLCurve;
+class IGES_ENTITY;
+class IGES_CURVE;
 
-class IGES;
-class IGES_ENTITY_144;
-
-class MCAD_API IGES_GEOM_WALL
+/**
+ * Class IGES_CURVE
+ * is the base class of all IGES Curve entities
+ */
+class MCAD_API DLL_IGES_CURVE : public DLL_IGES_ENTITY
 {
-private:
-    SISLSurf* plane;        // NURBS representation of the plane
-    SISLCurve* side[4];     // Representation of the 4 bounding edges
-    MCAD_POINT vertex[4];   // vertices as specified by the user
-
-    void init( void );
-    void clear( void );
-
 public:
-    IGES_GEOM_WALL();
-    ~IGES_GEOM_WALL();
+    DLL_IGES_CURVE();
+    virtual ~DLL_IGES_CURVE();
 
-    bool SetParams( MCAD_POINT p0, MCAD_POINT p1, MCAD_POINT p2, MCAD_POINT p3 );
-    IGES_ENTITY_144* Instantiate( IGES* model );
+    virtual bool Attach( IGES_ENTITY* ) = 0;
+
+    bool IsClosed( void );
+    int GetNCurves( void );
+    IGES_CURVE* GetCurve( int index );
+    bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
+    bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
+    int GetNSegments( void );
+    bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
-#endif  // IGES_GEOM_WALL_H
+#endif  // IGES_CURVE_H

@@ -34,6 +34,14 @@
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 #include <iges_geom_pcb.h>
+#include <entity100.h>
+#include <entity102.h>
+#include <entity110.h>
+#include <entity124.h>
+#include <entity126.h>
+#include <entity128.h>
+#include <entity142.h>
+#include <entity144.h>
 #include <sisl.h>
 
 

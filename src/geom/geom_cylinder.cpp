@@ -29,6 +29,14 @@
 #include <iges.h>
 #include <mcad_helpers.h>
 #include <geom_cylinder.h>
+#include <entity100.h>
+#include <entity102.h>
+#include <entity110.h>
+#include <entity120.h>
+#include <entity124.h>
+#include <entity126.h>
+#include <entity142.h>
+#include <entity144.h>
 #include <sisl.h>
 
 using namespace std;

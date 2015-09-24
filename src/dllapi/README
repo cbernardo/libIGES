@@ -1,0 +1,4 @@
+This directory contains the DLL API layer which is necessary
+to support builds using MSVC. For best portability results
+all code must use this layer rather than directly using the
+various lower level IGES modules.

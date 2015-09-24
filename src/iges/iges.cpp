@@ -50,7 +50,7 @@
 #include <iges_io.h>
 #include <all_entities.h>
 #include <boost/filesystem.hpp>
-#include "../include/iges/iges.h"
+#include <iges.h>
 
 using namespace std;
 
@@ -764,12 +764,12 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_100( this );
             break;
 
-        case ENT_CONIC_ARC:
-            ep = new IGES_ENTITY_104( this );
-            break;
-
         case ENT_COMPOSITE_CURVE:
             ep = new IGES_ENTITY_102( this );
+            break;
+
+        case ENT_CONIC_ARC:
+            ep = new IGES_ENTITY_104( this );
             break;
 
         case ENT_LINE:

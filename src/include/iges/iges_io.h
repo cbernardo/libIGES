@@ -126,7 +126,7 @@ bool ParseLString( const std::string& data, int& idx, std::string& param, bool& 
  * @param rd = IGES Record Delimeter
  * @param idefault = pointer to a variable with a default value if the variable may be defaulted
  */
-MCAD_API bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
+bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
 	char pd, char rd, int* idefault = NULL);
 
 
@@ -144,7 +144,7 @@ MCAD_API bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
  * @param rd = IGES Record Delimeter
  * @param ddefault = pointer to a variable with a default value if the variable may be defaulted
  */
-MCAD_API bool ParseReal( const std::string& data, int& idx, double& param, bool& eor,
+bool ParseReal( const std::string& data, int& idx, double& param, bool& eor,
 	char pd, char rd, double* ddefault = NULL );
 
 

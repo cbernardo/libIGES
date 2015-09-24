@@ -26,11 +26,11 @@
 #ifndef IGES_GEOM_CYLINDER_H
 #define IGES_GEOM_CYLINDER_H
 
-#include <vector>
 #include <libigesconf.h>
-#include <all_entities.h>
+#include <mcad_elements.h>
 
 class IGES;
+class IGES_ENTITY_144;
 
 class MCAD_API IGES_GEOM_CYLINDER
 {

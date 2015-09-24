@@ -533,18 +533,18 @@ bool IGES_ENTITY_308::AddDE(IGES_ENTITY *aPtr)
     }
 
     // check if the entity is a child in extras<>
-    bref = extras.begin();
-    eref = extras.end();
+    vector<IGES_ENTITY*>::iterator bExt = extras.begin();
+    vector<IGES_ENTITY*>::iterator eExt = extras.end();
 
-    while( bref != eref )
+    while( bExt != eExt)
     {
-        if( aPtr == *bref )
+        if( aPtr == *bExt )
         {
             ERRMSG << "\n + [BUG] invalid reference requested for DE list\n";
             return false;
         }
 
-        ++bref;
+        ++bExt;
     }
 
     bref = DE.begin();

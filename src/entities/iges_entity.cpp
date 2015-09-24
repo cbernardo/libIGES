@@ -108,18 +108,22 @@ IGES_ENTITY::IGES_ENTITY(IGES* aParent)
     pLabelAssoc = NULL;
     pColor = NULL;
 
-    // ensure we do not have an invalid pointer to a DLL layer validation flag
-    m_valid = NULL;
-
     return;
 }   // IGES_ENTITY::IGES_ENTITY(IGES*)
 
 
 IGES_ENTITY::~IGES_ENTITY()
 {
-    if( m_valid )
-        *m_valid = false;
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
 
+    while( sVF != eVF )
+    {
+        **sVF = false;
+        ++sVF;
+    }
+
+    m_validFlags.clear();
     comments.clear();
 
     if( !refs.empty() )
@@ -140,8 +144,8 @@ IGES_ENTITY::~IGES_ENTITY()
 
     if( !extras.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator rbeg = extras.begin();
-        std::list<IGES_ENTITY*>::iterator rend = extras.end();
+        vector<IGES_ENTITY*>::iterator rbeg = extras.begin();
+        vector<IGES_ENTITY*>::iterator rend = extras.end();
 
         while( rbeg != rend )
         {
@@ -215,17 +219,61 @@ IGES_ENTITY::~IGES_ENTITY()
 }   // IGES_ENTITY::~IGES_ENTITY()
 
 
-void IGES_ENTITY::SetValidFlag( bool* aFlag )
+void IGES_ENTITY::AttachValidFlag( bool* aFlag )
 {
-    if( m_valid )
-        *m_valid = false;
+    if( NULL == aFlag )
+        return;
 
-    m_valid = aFlag;
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
 
-    if( m_valid )
-        *m_valid = true;
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            // exit if we already have this registered
+            *aFlag = true;
+            return;
+        }
+
+        ++sVF;
+    }
+
+    m_validFlags.push_back( aFlag );
+    return;
+}
+
+
+void IGES_ENTITY::DetachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            *aFlag = false;
+            m_validFlags.erase( sVF );
+            return;
+        }
+
+        ++sVF;
+    }
 
     return;
+}
+
+
+bool IGES_ENTITY::HasAPIRefs( void )
+{
+    if( m_validFlags.empty() )
+        return false;
+
+    return true;
 }
 
 
@@ -292,8 +340,8 @@ bool IGES_ENTITY::unlink(IGES_ENTITY *aChild)
 
     if( !extras.empty() )
     {
-        std::list<IGES_ENTITY*>::iterator rbeg = extras.begin();
-        std::list<IGES_ENTITY*>::iterator rend = extras.end();
+        vector<IGES_ENTITY*>::iterator rbeg = extras.begin();
+        vector<IGES_ENTITY*>::iterator rend = extras.end();
 
         while( rbeg != rend )
         {
@@ -346,18 +394,18 @@ bool IGES_ENTITY::addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate)
     }
 
     // check if the entity is a child in extras<>
-    bref = extras.begin();
-    eref = extras.end();
+    vector<IGES_ENTITY*>::iterator bExt = extras.begin();
+    vector<IGES_ENTITY*>::iterator eExt = extras.end();
 
-    while( bref != eref )
+    while( bExt != eExt )
     {
-        if( aParentEntity == *bref )
+        if( aParentEntity == *bExt )
         {
             isDuplicate = true;
             return true;
         }
 
-        ++bref;
+        ++bExt;
     }
 
     refs.push_back( aParentEntity );
@@ -387,19 +435,19 @@ bool IGES_ENTITY::delReference(IGES_ENTITY *aParentEntity)
         ++bref;
     }
 
-    bref = extras.begin();
-    eref = extras.end();
+    vector<IGES_ENTITY*>::iterator bExt = extras.begin();
+    vector<IGES_ENTITY*>::iterator eExt = extras.end();
 
-    while( bref != eref )
+    while( bExt != eExt )
     {
-        if( aParentEntity == *bref )
+        if( aParentEntity == *bExt )
         {
-            int eType = (*bref)->GetEntityType();
+            int eType = (*bExt)->GetEntityType();
 
             if( eType != 402 )
-                (*bref)->delReference(this);
+                (*bExt)->delReference( this );
 
-            extras.erase( bref );
+            extras.erase( bExt );
             return true;
         }
 
@@ -2588,8 +2636,8 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
     std::list<int> secA;    // section for Types 402 and 212
     std::list<int> secB;    // section for Types 4312
 
-    std::list<IGES_ENTITY*>::iterator sExt = extras.begin();
-    std::list<IGES_ENTITY*>::iterator eExt = extras.end();
+    vector<IGES_ENTITY*>::iterator sExt = extras.begin();
+    vector<IGES_ENTITY*>::iterator eExt = extras.end();
     int eType;
 
     while( sExt != eExt )
@@ -2747,17 +2795,25 @@ int IGES_ENTITY::GetNOptionalEntities( void )
 
 IGES_ENTITY* IGES_ENTITY::GetOptionalEntity( int aIndex )
 {
-    int ne = (int)extras.size();
-
-    if( aIndex < 0 || aIndex >= ne )
+    if( aIndex < 0 || aIndex >= (int)extras.size() )
         return NULL;
 
-    std::list< IGES_ENTITY* >::iterator sI = extras.begin();
+    return extras[aIndex];
+}
 
-    for( int i = 0; i < aIndex; ++i )
-        ++sI;
 
-    return *sI;
+bool IGES_ENTITY::GetOptionalEntities( size_t& aListSize, IGES_ENTITY**& aEntityList )
+{
+    if( extras.empty() )
+    {
+        aListSize = 0;
+        aEntityList = NULL;
+        return false;
+    }
+
+    aListSize = extras.size();
+    aEntityList = &extras[0];
+    return true;
 }
 
 
@@ -2782,7 +2838,7 @@ bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 
     if( eType != 402 )
     {
-        if( !aEntity->addReference(this, dup) )
+        if( !aEntity->addReference( this, dup ) )
         {
             ERRMSG << "\n + [info] could not add reference to specified entity.\n";
             return false;
@@ -2822,7 +2878,22 @@ bool IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
         return false;
     }
 
-    return true;
+    vector< IGES_ENTITY* >::iterator sL = extras.begin();
+    vector< IGES_ENTITY* >::iterator eL = extras.end();
+
+    while( sL != eL )
+    {
+        if( *sL == aEntity )
+        {
+            extras.erase( sL );
+            return true;
+        }
+
+        ++sL;
+    }
+
+    ERRMSG << "\n + [BUG] reference deleted but no entry found in <extras>\n";
+    return false;
 }
 
 

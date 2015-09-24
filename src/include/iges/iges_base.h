@@ -29,6 +29,8 @@
 #ifndef IGES_BASE_H
 #define IGES_BASE_H
 
+#include <cstddef>
+
 // precision used to represent angles
 #define IGES_ANGLE_RES (1.0e-15)
 

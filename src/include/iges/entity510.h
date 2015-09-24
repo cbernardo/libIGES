@@ -79,11 +79,12 @@ protected:
     virtual bool format( int &index );
     virtual bool rescale( double sf );
 
-    std::list<int> iloops;              //< DE to loops bounding the face, LOOP(1..N) in the specification
-    std::list<IGES_ENTITY_508*> mloops; //< loops bounding the face
-    IGES_ENTITY* msurface;              //< associated surface entity
-    int mDEsurf;                        //< DE to associated surface entity, 'SURF' in the specification
-    bool mOuterLoopFlag;                //< Outer loop flag 'OF' in the specification
+    ///< DE to loops bounding the face, LOOP(1..N) in the specification
+    std::list< int > iloops;
+    std::vector< IGES_ENTITY_508* > mloops; //< loops bounding the face
+    IGES_ENTITY* msurface;                  //< associated surface entity
+    int mDEsurf;                            //< DE to associated surface entity, 'SURF' in the specification
+    bool mOuterLoopFlag;                    //< Outer loop flag 'OF' in the specification
 
 public:
     // public functions for libIGES only
@@ -118,7 +119,7 @@ public:
      * returns a pointer to the list of loop entities which
      * bound this face.
      */
-    const std::list<IGES_ENTITY_508*>* GetBounds( void );
+    bool GetBounds( size_t& aListSize, IGES_ENTITY_508**& aBoundsList );
 
 
     /**

@@ -1,9 +1,9 @@
 /*
- * file: iges_entity.h
+ * file: dll_iges_entity.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
- * Description: Base entity of all IGES Entity classes.
+ * Description: Base entity of all DLL_IGES Entity classes.
  *
  * This file is part of libIGES.
  *
@@ -23,302 +23,70 @@
  */
 
 
-#ifndef IGES_ENTITY_H
-#define IGES_ENTITY_H
-
-#include <iostream>
-#include <string>
-#include <list>
-#include <vector>
+#ifndef DLL_IGES_ENTITY_H
+#define DLL_IGES_ENTITY_H
 
 #include <libigesconf.h>
 #include <iges_base.h>
 
-class IGES;             // Overarching data structure and parent to all entities
-struct IGES_RECORD;     // Partially parsed single line of data from an IGES file
-class IGES_ENTITY_124;  // Transform entity
+class  IGES;
+class  DLL_IGES;            // Overarching data structure and parent to all entities
+class  DLL_IGES_ENTITY_124; // Transform entity
+class  IGES_ENTITY;
+class DLL_IGES_ENTITY_314;
+
 
 /**
  * Class IGES_ENTITY
  * base class for all IGES entities.
  */
-class IGES_ENTITY
+class MCAD_API DLL_IGES_ENTITY
 {
 protected:
-    IGES*               parent;             //< master IGES object; contains globals and manages entity I/O
-    int                 entityType;         //< #, Entity Type (values are somewhat restricted but Implementor Macros require 'int' rather than 'enum')
-    int                 parameterData;      //< P, first sequence number of associated parameterData
-    int                 structure;          //< 0P, index to DirEnt of the definition entity which specifies this entity's meaning
-    int                 lineFontPattern;    //< 0#P, 0 (def), Line font pattern number, or index to Line Font Definition (304)
-    int                 level;              //< 0#P, Level number for this entity, else index to Definition Levels Property (406-1)
-    int                 view;               //< 0P, 0 (def) or index to DirEnt for one of (a) View Entity (410) or (b) Views Visible Associativity Instance (402-3/4/19)
-    int                 transform;          //< 0P, 0 (def) or index to Transformation Matrix (124)
-    int                 labelAssoc;         //< 0P, 0 (def) or index to label Display Associativity (402-5)
-    bool                visible;            //< Status Number: Blank Status (default 0: visible == true)
-    IGES_STAT_DEPENDS   depends;            //< Status Number: Subordinate Entity Switch (default 0 = independent)
-    IGES_STAT_USE       use;                //< Status Number: Entity Use (default 0 = Geometry)
-    IGES_STAT_HIER      hierarchy;          //< Status Number: Hierarchy (default 0 = all DE attributes apply to subordinates)
-    int                 lineWeightNum;      //< #, System line width thickness, 0 .. Global::maxLinewidthGrad
-    int                 colorNum;           //< #P, 0 (def), Color ID, or index to Color Definition (314)
-    int                 paramLineCount;     //< #, number of associated Parameter Lines
-    int                 form;               //< 0#, 0 (def) or Form Number for entities with more than one form
-    std::string         label;              //< max. 8 character alphanumeric label
-    int                 entitySubscript;    //< #, 1..8 digit unsigned int associated with the label
-
-    // pointers to be linked to other entities as necessary
-    IGES_ENTITY*     pStructure;
-    IGES_ENTITY*     pLineFontPattern;
-    IGES_ENTITY*     pLevel;
-    IGES_ENTITY*     pView;
-    IGES_ENTITY_124* pTransform;
-    IGES_ENTITY*     pLabelAssoc;
-    IGES_ENTITY*     pColor;
-
-    /// DLL layer validation flags
-    std::list< bool* > m_validFlags;
-    /// list of referring (parent) entities
-    std::list<IGES_ENTITY*> refs;
-    /// list of extra entities (optional PD entries)
-    std::vector<IGES_ENTITY*> extras;
-    std::list<int> iExtras;
-    /// list of optional comments
-    std::list<std::string> comments;
-    /// data formatted for output (also used for reading PDs from file)
-    std::string pdout;
-
-    friend class IGES;
-    int sequenceNumber;     //< first sequence number of this entity's Directory Entry
-    bool massoc;            //< set true after associate() is invoked
-
-
-    /**
-     * Function format
-     * prepares data for writing; Parameter Data is formatted using @param index and
-     * Directory Entry items are updated; each Entity must have been previously assigned
-     * a correct DE Sequence Number before invoking this function. The function returns
-     * true to indicate success.
-     *
-     * @param index = (I/O) current Parameter Data Index
-     */
-    virtual bool format( int &index ) = 0;
-
-
-    /**
-     * Function unformat
-     * clears any Parameter Data which has been read in or prepared for output.
-     */
-    void         unformat( void );
-
-
-    /**
-     * Function readExtraParams
-     * reads optional (extra) PD parameters and returns true on success.
-     *
-     * @param index = (I/O) current Parameter Data Index
-     */
-    bool readExtraParams( int& index );
-
-
-    /**
-     * Function readComments
-     * reads optional comments associated with the entity and returns true on success.
-     *
-     * @param index = (I/O) current Parameter Data Index
-     */
-    bool readComments( int& index );
-
-
-    /**
-     * Function formatExtraParams
-     * formats any optional extra entity parameters for output and returns true on success.
-     *
-     * @param fStr = current Parameter Data entry under construction
-     * @param pdSeq = (I/O) current Parameter Data Index
-     * @param pd = IGES Parameter Delimeter
-     * @param rd = IGES Record Delimeter
-     */
-    bool formatExtraParams( std::string& fStr, int& pdSeq, char pd, char rd );
-
-
-    /**
-     * Function formatComments
-     * formats any optional entity comments for output and returns true on success.
-     *
-     * @param pdSeq = (I/O) current Parameter Data Index
-     */
-    bool formatComments( int& pdSeq );
-
-
-    /**
-     * Function rescale
-     * changes the internal scale; this routine may be invoked by the parent IGES object
-     * to change the internal units or the Model Scale; returns true on success.
-     *
-     * @param sf = scaling factor to apply to data
-     */
-    virtual bool rescale( double sf ) = 0;
+    IGES_ENTITY* m_entity;
+    bool         m_valid;   // set to false if m_entity is deleted
 
 public:
-    // public functions which must only be used internally by libIGES
+    // note: all implementations must have constructors which:
+    // a. takes a IGES* and creation flag
+    // b. takes a DLL_IGES& and creation flag
+    // If the creation flag is 'true' then a new IGES_ENTITY
+    // of the specified type is created; otherwise the DLL entity
+    // serves as a convenient manipulator of an IGES_ENTITY to
+    // be specified by the user.
+    DLL_IGES_ENTITY( );
+    virtual ~DLL_IGES_ENTITY();
 
     /**
-     * Function getNRefs
-     * returns the number of unique parent entities referring to this entity
+     * Function GetRawPtr()
+     * returns the internal IGES_ENTITY pointer
      */
-    size_t getNRefs( void );
-
+    IGES_ENTITY* GetRawPtr( void );
 
     /**
-     * Function getDESequence
-     * returns the first Directory Entry sequence associated with this entity;
-     * the returned value is only guaranteed to be valid immediately after
-     * reading or writing an IGES file.
+     * Function IsValid
+     * returns true if the object holds a valid IGES_ENTITY pointer
      */
-    int getDESequence( void );
-
-
-    /**
-     * Function getFirstParentRef
-     * returns a pointer to the first parent entity in this
-     * entity's Reference List. If the entity has no parents
-     * then NULL is returned.  This function is used internally
-     * to decide how the parameters of a NURBS curve should be
-     * scaled.
-     */
-    IGES_ENTITY* getFirstParentRef( void );
+    bool IsValid( void );
 
 
     /**
-     * Function associate
-     * associates DE pointers with other entities after reading all data;
-     * retrictions on types must be enforced to ensure data integrity and
-     * software stability. Returns true on success.
-     *
-     * @param entities = vector of all instantiated entities
+     * Function Detach
+     * detaches the DLL_IGES_ENTITY from the IGES_ENTITY pointer which it
+     * holds and returns the value of that pointer. This is useful in
+     * situations where we wish to delete the DLL_IGES_ENTITY instance
+     * but preserve the related entity object.
      */
-    virtual bool associate(std::vector<IGES_ENTITY *> *entities) = 0;
-
-
-    // Routines to manage reference deletion
+    IGES_ENTITY* Detach( void );
 
     /**
-     * Function unlink
-     * removes a child entity from the parent's list of children and
-     * returns true on success.
-     *
-     * @param aChild = pointer to child entity to disassociate from
-     * the parent.
+     * Function Attach
+     * associates the DLL_IGES_ENTITY with the given IGES_ENTITY.
+     * All derived classes must implement this function and perform
+     * checks to ensure that the given entity is valid for the derived
+     * class.
      */
-    virtual bool unlink(IGES_ENTITY *aChild) = 0;
-
-
-    // Add/DelReference is needed for management of StatusNumber
-
-    /**
-     * Function addReference
-     * adds a reference to a parent entity and returns true on
-     * success.
-     *
-     * @param aParentEntity = pointer to the parent IGES entity to be registered
-     * @param isDuplicate = set to true if this entity already has a reference to aParentEntity
-     */
-    virtual bool addReference(IGES_ENTITY *aParentEntity, bool &isDuplicate) = 0;
-
-
-    /**
-     * Function DelReference
-     * deletes all references to a parent and returns true on success.
-     *
-     * @param aParentEntity = the parent entity to be disassociated
-     */
-    virtual bool delReference(IGES_ENTITY *aParentEntity) = 0;
-
-
-    /**
-     * Function IsOrphaned
-     * returns true if the entity is orphaned and may be deleted
-     * without affecting the integrity of the IGES file.
-     */
-    virtual bool isOrphaned( void ) = 0;
-
-
-    /**
-     * Function readDE
-     * read the Directory Entry data starting at the given record;
-     * return true on success.
-     *
-     * @param aRecord = first DE record for the entity
-     * @param aFile = IGES input file
-     * @param aSequenceVar = (I/O) current DE sequence number
-     */
-    virtual bool readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aSequenceVar) = 0;
-
-
-    /**
-     * Function readPD
-     * reads the Parameter Data from sequential records starting at
-     * the current position in the input stream; returns true on
-     * success.
-     *
-     * @param aFile = the IGES input file
-     * @param aSequenceVar = (I/O) the current Parameter Data sequence number
-     */
-    virtual bool readPD(std::ifstream &aFile, int &aSequenceVar) = 0;
-
-
-    /**
-     * Function writeDE
-     * writes out a Directory Entry for this entity and returns true
-     * on success. Before invoking this function the sequenceNumber
-     * member must be correctly set and the format() function must
-     * have been called on every instantiated entity.
-     *
-     * @param aFile = IGES output file
-     */
-    virtual bool writeDE(std::ofstream &aFile);
-
-
-    /**
-     * Function writePD
-     * writes out a Parameter Data block; prior to invoking this method a valid
-     * Sequence Number must have been assigned and the format() method invoked;
-     * returns true on success.
-     *
-     * @param aFile = IGES output file
-     */
-    virtual bool writePD(std::ofstream &aFile);
-
-
-public:
-    IGES_ENTITY(IGES* aParent);
-    virtual ~IGES_ENTITY();
-
-    /**
-     * Function SetValidFlag
-     * sets a pointer to the boolean used to signal an
-     * API layer upon destruction
-     *
-     * @param aFlag is a pointer to an API layer's internal
-     * validation flag; the IGES_ENTITY will set the pointer's
-     * content to true on success, and false on failure or
-     * in the future if the object is deleted.
-     */
-    void AttachValidFlag( bool* aFlag );
-    void DetachValidFlag( bool* aFlag );
-
-    /**
-     * Function HasAPIRefs
-     * returns true if the entity still has references held
-     * by an API layer entity
-     */
-    bool HasAPIRefs( void );
-
-    /**
-     * Function Compact
-     * deletes any temporary data which may have been created for the
-     * convenience of passing data across the DLL boundary.
-     */
-    virtual void Compact( void ) = 0;
+    virtual bool Attach( IGES_ENTITY* ) = 0;
 
     // Routines for manipulating extra entity list
 
@@ -327,17 +95,20 @@ public:
      * returns the number of optional (extra) entities associated
      * with this entity.
      */
-    int GetNOptionalEntities( void );
+    bool GetNOptionalEntities( int& aNOptEnt );
 
 
     /**
      * Function GetOptionalEntities
-     * returns a pointer to the internal list of optional (extra)
+     * retrieves a pointer to the internal list of optional (extra)
      * entities associated with this entity.
+     *
+     * @return true if the call was executed, otherwise false.
+     * Note that if the return value is true but there were no
+     * optional entities or the index was invalid, the pointer
+     * value will be set to NULL.
      */
-    IGES_ENTITY* GetOptionalEntity( int aIndex );
     bool GetOptionalEntities( size_t& aListSize, IGES_ENTITY**& aEntityList );
-
 
     /**
      * Function AddOptionalEntity
@@ -347,16 +118,20 @@ public:
      * @param = a pointer to the optional IGES entity to be associated
      */
     bool AddOptionalEntity( IGES_ENTITY* aEntity );
+    bool AddOptionalEntity( DLL_IGES_ENTITY* aEntity );
 
 
     /**
      * Function DelOptionalEntity
      * removes the given IGES entity from the list of optional (extra)
      * entities associated with this entity and returns true on success.
+     * The entity is not destroyed, only removed from the internal list
+     * of optional entities.
      *
      * @param aEntity = a pointer to the optional IGES entity to be disassociated
      */
     bool DelOptionalEntity( IGES_ENTITY* aEntity );
+    bool DelOptionalEntity( DLL_IGES_ENTITY* aEntity );
 
 
     // Routines for manipulating the optional comments
@@ -371,9 +146,10 @@ public:
     /**
      * Function GetComments
      * returns a pointer to the internal list of optional
-     * comments associated with this entity.
+     * comments associated with this entity; the user must
+     * delete[] this pointer when it is no longer needed.
      */
-    const char* GetComment( int aIndex );
+    const char* GetComments( size_t& aListSize, char const**& aCommentList );
 
 
     /**
@@ -383,7 +159,7 @@ public:
      *
      * @param aComment = comment to be added
      */
-    bool AddComment( const std::string& aComment );
+    bool AddComment( const char*& aComment );
 
 
     /**
@@ -411,6 +187,7 @@ public:
      * @param aParent = an instance of the IGES class
      */
     bool SetParentIGES( IGES* aParent );
+    bool SetParentIGES( DLL_IGES* aParent );
 
 
     /**
@@ -443,7 +220,7 @@ public:
      *
      * @param aForm = the value to assign to this entity's Form number
      */
-    virtual bool SetEntityForm( int aForm ) = 0;
+    bool SetEntityForm( int aForm );
 
 
     /**
@@ -453,7 +230,8 @@ public:
      *
      * @param aStructure = pointer to the entity to associate
      */
-    virtual bool SetStructure( IGES_ENTITY* aStructure );
+    bool SetStructure( IGES_ENTITY* aStructure );
+    bool SetStructure( DLL_IGES_ENTITY* aStructure );
 
 
     /**
@@ -464,7 +242,7 @@ public:
      *
      * @param aStructure = a handle to store a pointer to the Structure object
      */
-    virtual bool GetStructure( IGES_ENTITY** aStructure );
+    bool GetStructure( IGES_ENTITY*& aStructure );
 
 
     /**
@@ -474,7 +252,7 @@ public:
      *
      * @param aPattern = an IGES_LINEFONT_PATTERN enumeration
      */
-    virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
+    bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
 
 
     /**
@@ -484,7 +262,8 @@ public:
      *
      * @param aPattern = a pointer to an IGES LineFontPattern entity
      */
-    virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );
+    bool SetLineFontPattern( DLL_IGES_ENTITY* aPattern );
+    bool SetLineFontPattern( IGES_ENTITY* aPattern );
 
 
     /**
@@ -508,7 +287,7 @@ public:
      *
      * @param aPattern = handle to store the associated LineFontPattern entity
      */
-    bool GetLineFontPatternEntity( IGES_ENTITY** aPattern );
+    bool GetLineFontPatternEntity( IGES_ENTITY*& aPattern );
 
 
     /**
@@ -518,7 +297,7 @@ public:
      *
      * @param aLevel = the numeric level to assign to this entity
      */
-    virtual bool SetLevel( int aLevel );
+    bool SetLevel( int aLevel );
 
 
     /**
@@ -528,7 +307,8 @@ public:
      *
      * @param aLevel = pointer to the Property Entity to be associated
      */
-    virtual bool SetLevel( IGES_ENTITY* aLevel );
+    bool SetLevel( DLL_IGES_ENTITY* aLevel );
+    bool SetLevel( IGES_ENTITY* aLevel );
 
 
     /**
@@ -550,7 +330,7 @@ public:
      *
      * @param aLevel = handle to store a pointer to the associated Property Entity
      */
-    bool GetLevelEntity( IGES_ENTITY** aLevel );
+    bool GetLevelEntity( IGES_ENTITY*& aLevel );
 
 
     /**
@@ -560,7 +340,8 @@ public:
      *
      * @param aView = the VIEW or ASSOCIATIVITY INSTANCE to be associated
      */
-    virtual bool SetView( IGES_ENTITY* aView );
+    bool SetView( DLL_IGES_ENTITY* aView );
+    bool SetView( IGES_ENTITY* aView );
 
 
     /**
@@ -571,7 +352,7 @@ public:
      *
      * @param aView = handle to store pointer to VIEW or ASSOCIATIVITY INSTANCE entity
      */
-    bool GetView( IGES_ENTITY** aView );
+    bool GetView( IGES_ENTITY*& aView );
 
 
     /**
@@ -580,7 +361,8 @@ public:
      * on success; not all entities may accept a transform in which
      * case the return value will be false.
      */
-    virtual bool SetTransform( IGES_ENTITY* aTransform );
+    bool SetTransform( DLL_IGES_ENTITY* aTransform );
+    bool SetTransform( IGES_ENTITY* aTransform );
 
     /**
      * Function GetTransform
@@ -591,7 +373,7 @@ public:
      *
      * @param aTransform = handle to store a pointer to the object's Transformation Entity
      */
-    bool GetTransform( IGES_ENTITY** aTransform );
+    bool GetTransform( IGES_ENTITY*& aTransform );
 
 
     /**
@@ -599,7 +381,8 @@ public:
      * sets the ASSOCIATIVITY INSTANCE entity which refers to this entity
      * and returns true on success.
      */
-    virtual bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
+    bool SetLabelAssoc( DLL_IGES_ENTITY* aLabelAssoc );
+    bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
 
 
     /**
@@ -610,7 +393,7 @@ public:
      *
      * @param aLabelAssoc = handle to store a pointer to an ASSOCIATIVITY INSTANCE entity
      */
-    bool GetLabelAssoc( IGES_ENTITY** aLabelAssoc );
+    bool GetLabelAssoc( IGES_ENTITY*& aLabelAssoc );
 
 
     /**
@@ -620,7 +403,7 @@ public:
      *
      * @param aColor = enumerated color definition as per IGES specification
      */
-    virtual bool SetColor( IGES_COLOR aColor );
+    bool SetColor( IGES_COLOR aColor );
 
 
     /**
@@ -630,7 +413,8 @@ public:
      *
      * @param aColor = pointer to a Color Definition entity which defines this entity's color.
      */
-    virtual bool SetColor( IGES_ENTITY* aColor );
+    bool SetColor( DLL_IGES_ENTITY_314*& aColor );
+    bool SetColor( IGES_ENTITY* aColor );
 
     /**
      * Function GetColor
@@ -656,7 +440,7 @@ public:
      *
      * @param aColor = handle to store a pointer to the associated Color Definition Entity
      */
-    bool GetColorEntity( IGES_ENTITY** aColor );
+    bool GetColorEntity( IGES_ENTITY*& aColor );
 
 
     /**
@@ -669,7 +453,7 @@ public:
      *
      * @param aLineWeight = line weight to assign
      */
-    virtual bool SetLineWeightNum( int aLineWeight );
+    bool SetLineWeightNum( int aLineWeight );
 
 
     /**
@@ -691,18 +475,17 @@ public:
      *
      * @param aLabel = the text to use in the label
      */
-    bool SetLabel( const std::string aLabel );
+    bool SetLabel( const char*& aLabel );
 
 
     /**
      * Function GetLabel
      * retrieves the 8-character optional label associated
-     * with this entity and returns true on success. If there
-     * is no label text then the function returns false.
+     * with this entity.
      *
-     * @param aLabel = variable to store the label value.
+     * @return a pointer to the label text
      */
-    void GetLabel( std::string& aLabel );
+    const char* GetLabel( void );
 
 
     /**
@@ -739,7 +522,7 @@ public:
      *
      * @param isVisible = set to true to set the entity's visibility flag
      */
-    virtual bool SetVisibility( bool isVisible );
+    bool SetVisibility( bool isVisible );
 
 
     /**
@@ -760,7 +543,7 @@ public:
      *
      * @param aDependency = the dependency value
      */
-    virtual bool SetDependency( IGES_STAT_DEPENDS aDependency );
+    bool SetDependency( IGES_STAT_DEPENDS aDependency );
 
 
     /**
@@ -780,7 +563,7 @@ public:
      *
      * @param aUseCase = Use Case flag as per IGES specification
      */
-    virtual bool SetEntityUse( IGES_STAT_USE aUseCase );
+    bool SetEntityUse( IGES_STAT_USE aUseCase );
 
     /**
      * Function GetEntityUse
@@ -801,7 +584,7 @@ public:
      *
      * @param aHierarchy = hierarchy flag value to use
      */
-    virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
+    bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
 
     /**
@@ -813,4 +596,4 @@ public:
     bool GetHierarchy( IGES_STAT_HIER& aHierarchy );
 };
 
-#endif  // IGES_ENTITY_H
+#endif  // DLL_IGES_ENTITY_H

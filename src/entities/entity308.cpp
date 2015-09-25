@@ -29,6 +29,7 @@
 #include <entity124.h>
 #include <entity408.h>
 #include <entity308.h>
+#include "../include/iges/iges_entity.h"
 
 using namespace std;
 
@@ -63,6 +64,7 @@ IGES_ENTITY_308::~IGES_ENTITY_308()
 
 void IGES_ENTITY_308::Compact( void )
 {
+    IGES_ENTITY::Compact();
     m_DE.clear();
     return;
 }

@@ -22,14 +22,14 @@
  *
  */
 
-#include <error_macros.h>
 #include <sstream>
+
+#include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
 #include <entity124.h>
 #include <entity508.h>
-#include <bits/stl_list.h>
-#include "../include/iges/entity508.h"
+
 
 using namespace std;
 

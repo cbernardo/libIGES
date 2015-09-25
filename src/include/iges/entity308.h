@@ -59,7 +59,6 @@ class IGES_ENTITY_308 : public IGES_ENTITY
 protected:
 
     std::list< int > iDE;
-    std::vector< IGES_ENTITY* > m_DE;   // DE arranged for access across DLL
 
     friend class IGES;
     virtual bool format( int &index );
@@ -67,6 +66,7 @@ protected:
 
 public:
     std::list< IGES_ENTITY* > DE;       //< associated entities
+    std::vector< IGES_ENTITY* > m_DE;   // DE arranged for access across DLL
 
     // public functions for libIGES only
     virtual bool associate(std::vector<IGES_ENTITY *> *entities);

@@ -95,7 +95,6 @@ public:
     virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
-    virtual void Compact( void );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 

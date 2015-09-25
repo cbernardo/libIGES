@@ -1,5 +1,5 @@
 /*
- * file: dll_entity308.h
+ * file: dll_entity314.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -21,34 +21,27 @@
  */
 
 /*
- * Description: IGES Entity 308: Subfigure Definition Entity, Section 4.74, p.377(405+)
+ * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
  */
 
-#ifndef DLL_ENTITY_308_H
-#define DLL_ENTITY_308_H
+#ifndef DLL_ENTITY314_H
+#define DLL_ENTITY314_H
 
 #include <libigesconf.h>
 #include <dll_iges_entity.h>
 
-
-class DLL_IGES_ENTITY_308 : public DLL_IGES_ENTITY
+class DLL_IGES_ENTITY_314 : public DLL_IGES_ENTITY
 {
-public:
-    DLL_IGES_ENTITY_308( IGES* aParent, bool create );
-    DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create );
-    virtual ~DLL_IGES_ENTITY_308();
+    DLL_IGES_ENTITY_314( IGES* aParent, bool create );
+    DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create );
+    virtual ~DLL_IGES_ENTITY_314();
 
     bool Attach( IGES_ENTITY* aEntity );
 
-    bool GetNumDE( size_t& aDESize );
-    bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );
-    bool AddDE(IGES_ENTITY* aPtr);
-    bool AddDE(DLL_IGES_ENTITY*& aPtr);
-    bool DelDE( IGES_ENTITY* aPtr );
-    bool DelDE(DLL_IGES_ENTITY*& aPtr);
-    bool GetNestDepth( int& aNestDepth );
+    bool GetColor( double& aRed, double& aGreen, double& aBlue );
+    bool SetColor( double aRed, double aGreen, double aBlue );
     bool GetName( const char*& aName );
     bool SetName( const char*& aName );
 };
 
-#endif  // DLL_ENTITY_308_H
+#endif  // DLL_ENTITY314_H

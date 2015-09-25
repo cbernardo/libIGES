@@ -30,6 +30,7 @@
 #include <iges.h>
 #include <all_entities.h>
 #include <iges_io.h>
+#include "../include/iges/iges_entity.h"
 
 
 using namespace std;
@@ -274,6 +275,12 @@ bool IGES_ENTITY::HasAPIRefs( void )
         return false;
 
     return true;
+}
+
+
+void IGES_ENTITY::Compact( void )
+{
+    vcomments.clear();
 }
 
 
@@ -2462,6 +2469,12 @@ void IGES_ENTITY::GetLabel(std::string& aLabel)
 }
 
 
+const char* IGES_ENTITY::GetLabel()
+{
+    return label.c_str();
+}
+
+
 bool IGES_ENTITY::SetEntitySubscript(int aSubscript)
 {
     if( aSubscript >= 0 && aSubscript <= 99999999 )
@@ -2919,6 +2932,35 @@ const char* IGES_ENTITY::GetComment( int aIndex )
 }
 
 
+bool IGES_ENTITY::GetComments( size_t& aListSize, char const**& aCommentList )
+{
+    if( comments.empty() )
+    {
+        aListSize = 0;
+        aCommentList = NULL;
+        return false;
+    }
+
+    if( comments.size() != vcomments.size() )
+    {
+        vcomments.clear();
+
+        list< string >::iterator sCL = comments.begin();
+        list< string >::iterator eCL = comments.end();
+
+        while( sCL != eCL )
+        {
+            vcomments.push_back( sCL->c_str() );
+            ++sCL;
+        }
+    }
+
+    aListSize = vcomments.size();
+    aCommentList = &vcomments[0];
+    return true;
+}
+
+
 bool IGES_ENTITY::AddComment( const std::string& aComment )
 {
     if( aComment.empty() )
@@ -2927,6 +2969,7 @@ bool IGES_ENTITY::AddComment( const std::string& aComment )
     }
 
     comments.push_back( aComment );
+    vcomments.clear();
     return true;
 }
 

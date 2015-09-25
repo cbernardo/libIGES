@@ -41,6 +41,7 @@ public:
     DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_100();
 
+    bool Attach( IGES_ENTITY* aEntity );
 
     bool GetCircleCenter( double& aX, double& aY, double& aZ ) const;
     bool GetCircleCenter( MCAD_POINT& aPoint ) const;

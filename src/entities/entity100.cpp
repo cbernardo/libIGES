@@ -30,6 +30,7 @@
 #include <mcad_helpers.h>
 #include <entity100.h>
 #include <entity124.h>
+#include "../include/iges/iges_entity.h"
 
 using namespace std;
 
@@ -59,12 +60,6 @@ IGES_ENTITY_100::~IGES_ENTITY_100()
 {
     return;
 }   // ~IGES_ENTITY_100()
-
-
-void IGES_ENTITY_100::Compact( void )
-{
-    return;
-}
 
 
 bool IGES_ENTITY_100::associate(std::vector<IGES_ENTITY *> *entities)

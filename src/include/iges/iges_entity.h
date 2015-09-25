@@ -83,6 +83,7 @@ protected:
     std::list<int> iExtras;
     /// list of optional comments
     std::list<std::string> comments;
+    std::vector< const char* > vcomments;
     /// data formatted for output (also used for reading PDs from file)
     std::string pdout;
 
@@ -317,8 +318,10 @@ public:
      * Function Compact
      * deletes any temporary data which may have been created for the
      * convenience of passing data across the DLL boundary.
+     * All classes which have their own temporary data mus implement
+     * this function and invoke the base class function from within.
      */
-    virtual void Compact( void ) = 0;
+    virtual void Compact( void );
 
     // Routines for manipulating extra entity list
 
@@ -369,11 +372,20 @@ public:
 
 
     /**
-     * Function GetComments
-     * returns a pointer to the internal list of optional
-     * comments associated with this entity.
+     * Function GetComment
+     * returns a pointer to a single comment entity or NULL if none at index
      */
     const char* GetComment( int aIndex );
+
+    /**
+     * Function GetComments
+     * returns pointers to all available comments or NULL if none
+     *
+     * @param aListSize [out] the number of comments
+     * @param aCommentList [out] array pointer to comment strings
+     * @return false if no comments
+     */
+    bool GetComments( size_t& aListSize, char const**& aCommentList );
 
 
     /**
@@ -703,6 +715,7 @@ public:
      * @param aLabel = variable to store the label value.
      */
     void GetLabel( std::string& aLabel );
+    const char*GetLabel( void );
 
 
     /**

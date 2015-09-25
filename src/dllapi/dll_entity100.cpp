@@ -67,6 +67,26 @@ DLL_IGES_ENTITY_100::~DLL_IGES_ENTITY_100()
 }
 
 
+bool DLL_IGES_ENTITY_100::Attach( IGES_ENTITY* aEntity )
+{
+    if( NULL == aEntity )
+        return false;
+
+    if( ENT_CIRCULAR_ARC != aEntity->GetEntityType() )
+        return false;
+
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    m_entity = aEntity;
+    m_entity->AttachValidFlag( &m_valid );
+    return true;
+}
+
+
 bool DLL_IGES_ENTITY_100::GetCircleCenter( double& aX, double& aY, double& aZ ) const
 {
     if( !m_valid || NULL == m_entity )

@@ -23,7 +23,9 @@
  */
 
 
+#include <dll_iges.h>
 #include <dll_iges_entity.h>
+#include <dll_entity314.h>
 #include <iges.h>
 #include <entity124.h>
 #include <error_macros.h>
@@ -119,390 +121,459 @@ bool DLL_IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return true;
+    return m_entity->AddOptionalEntity( aEntity );
 }
 
 
-bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY* aEntity )
+bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY*& aEntity )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->AddOptionalEntity( aEntity->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->DelOptionalEntity( aEntity );
 }
 
 
-bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY* aEntity )
+bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY*& aEntity )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->DelOptionalEntity( aEntity->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::GetNComments( int& nComments )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    nComments = m_entity->GetNComments();
+    return true;
 }
 
 
 bool DLL_IGES_ENTITY::GetComments( size_t& aListSize, char const**& aCommentList )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetComments( aListSize, aCommentList );
 }
 
 
 bool DLL_IGES_ENTITY::AddComment( const char*& aComment )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->AddComment( aComment );
 }
 
 
 bool DLL_IGES_ENTITY::DelComment( int index )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->DelComment( index );
 }
 
 
 bool DLL_IGES_ENTITY::ClearComments( void )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->ClearComments();
 }
 
 
 bool DLL_IGES_ENTITY::SetParentIGES( IGES* aParent )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetParentIGES( aParent );
 }
 
 
-bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES* aParent )
+bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES*& aParent )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    // note: no check for validity of aParent->GetRawPtr()
+    // since NULL is a valid argument for this function
+    return m_entity->SetParentIGES( aParent->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::GetParentIGES( IGES*& aParent )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    aParent = m_entity->GetParentIGES();
+    return true;
 }
 
 
 bool DLL_IGES_ENTITY::GetEntityType( int& aType )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    aType = m_entity->GetEntityType();
+    return true;
 }
 
 
 bool DLL_IGES_ENTITY::GetEntityForm( int& aForm )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    aForm = m_entity->GetEntityForm();
+    return true;
 }
 
 
 bool DLL_IGES_ENTITY::SetEntityForm( int aForm )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetEntityForm( aForm );
 }
 
 
 bool DLL_IGES_ENTITY::SetStructure( IGES_ENTITY* aStructure )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetStructure( aStructure );
 }
 
 
-bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY* aStructure )
+bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY*& aStructure )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetStructure( aStructure->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::GetStructure( IGES_ENTITY*& aStructure )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetStructure( &aStructure );
 }
 
 
 bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLineFontPattern( aPattern );
 }
 
 
-bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY* aPattern )
+bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY*& aPattern )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLineFontPattern( aPattern->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLineFontPattern( aPattern );
 }
 
 
 bool DLL_IGES_ENTITY::GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLineFontPattern( aPattern );
 }
 
 
 bool DLL_IGES_ENTITY::GetLineFontPatternEntity( IGES_ENTITY*& aPattern )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLineFontPatternEntity( &aPattern );
 }
 
 
 bool DLL_IGES_ENTITY::SetLevel( int aLevel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLevel( aLevel );
 }
 
 
-bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY* aLevel )
+bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY*& aLevel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLevel( aLevel->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLevel( aLevel );
 }
 
 
 bool DLL_IGES_ENTITY::GetLevel( int& aLevel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLevel( aLevel );
 }
 
 
 bool DLL_IGES_ENTITY::GetLevelEntity( IGES_ENTITY*& aLevel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLevelEntity( &aLevel );
 }
 
 
-bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY* aView )
+bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY*& aView )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetView( aView->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetView( IGES_ENTITY* aView )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetView( aView );
 }
 
 
 bool DLL_IGES_ENTITY::GetView( IGES_ENTITY*& aView )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetView( &aView );
 }
 
 
-bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY* aTransform )
+bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY*& aTransform )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetTransform( aTransform->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetTransform( aTransform );
 }
 
 
 bool DLL_IGES_ENTITY::GetTransform( IGES_ENTITY*& aTransform )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetTransform( &aTransform );
 }
 
 
-bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY* aLabelAssoc )
+bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY*& aLabelAssoc )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLabelAssoc( aLabelAssoc->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLabelAssoc( aLabelAssoc );
 }
 
 
 bool DLL_IGES_ENTITY::GetLabelAssoc( IGES_ENTITY*& aLabelAssoc )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLabelAssoc( &aLabelAssoc );
 }
 
 
 bool DLL_IGES_ENTITY::SetColor( IGES_COLOR aColor )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetColor( aColor );
 }
 
 
 bool DLL_IGES_ENTITY::SetColor( DLL_IGES_ENTITY_314*& aColor )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetColor( aColor->GetRawPtr() );
 }
 
 
 bool DLL_IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetColor( aColor );
 }
 
 
 bool DLL_IGES_ENTITY::GetColor( IGES_COLOR& aColor )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetColor( aColor );
 }
 
 
 bool DLL_IGES_ENTITY::GetColorEntity( IGES_ENTITY*& aColor )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetColorEntity( &aColor );
 }
 
 
 bool DLL_IGES_ENTITY::SetLineWeightNum( int aLineWeight )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLineWeightNum( aLineWeight );
 }
 
 
 bool DLL_IGES_ENTITY::GetLineWeightNum( int& aLineWeight )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetLineWeightNum( aLineWeight );
 }
 
 
 bool DLL_IGES_ENTITY::SetLabel( const char*& aLabel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetLabel( aLabel );
 }
 
 
 bool DLL_IGES_ENTITY::GetLabel( char const*& aLabel )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    aLabel = m_entity->GetLabel();
+
+    if( NULL == aLabel || 0 == aLabel[0] )
+    {
+        aLabel = NULL;
+        return false;
+    }
+
+    return true;
 }
 
 
 bool DLL_IGES_ENTITY::SetEntitySubscript( int aSubscript )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetEntitySubscript( aSubscript );
 }
 
 
 bool DLL_IGES_ENTITY::GetEntitySubscript( int& aSubscript )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetEntitySubscript( aSubscript );
 }
 
 
 bool DLL_IGES_ENTITY::SetVisibility( bool isVisible )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetVisibility( isVisible );
 }
 
 
 bool DLL_IGES_ENTITY::GetVisibility( bool& isVisible )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetVisibility( isVisible );
 }
 
 
 bool DLL_IGES_ENTITY::SetDependency( IGES_STAT_DEPENDS aDependency )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetDependency( aDependency );
 }
 
 
 bool DLL_IGES_ENTITY::GetDependency( IGES_STAT_DEPENDS& aDependency )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetDependency( aDependency );
 }
 
 
 bool DLL_IGES_ENTITY::SetEntityUse( IGES_STAT_USE aUseCase )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetEntityUse( aUseCase );
 }
 
 
 bool DLL_IGES_ENTITY::GetEntityUse( IGES_STAT_USE& aUseCase )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetEntityUse( aUseCase );
 }
 
 
 bool DLL_IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->SetHierarchy( aHierarchy );
 }
 
 
 bool DLL_IGES_ENTITY::GetHierarchy( IGES_STAT_HIER& aHierarchy )
 {
-#warning TO BE IMPLEMENTED
-    return false;
+    CHECK_VALID_RETURN_FALSE;
+
+    return m_entity->GetHierarchy( aHierarchy );
 }

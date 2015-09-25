@@ -630,7 +630,7 @@ int IGES_ENTITY_180::GetNNodes( void )
 }
 
 
-MCAD_API BTREE_NODE* IGES_ENTITY_180::GetNode( int aIndex )
+BTREE_NODE* IGES_ENTITY_180::GetNode( int aIndex )
 {
     // XXX - due to the possibly large number of nodes,
     // it may be worthwhile to create an internal vector<>

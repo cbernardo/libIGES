@@ -895,7 +895,7 @@ bool IGES_ENTITY_508::delPCurve( IGES_ENTITY* aCurve, bool aFlagDelEdge, bool aF
 }
 
 
-MCAD_API bool IGES_ENTITY_508::GetLoopData( size_t aListSize, LOOP_DATA**& aEdgeList )
+bool IGES_ENTITY_508::GetLoopData( size_t aListSize, LOOP_DATA**& aEdgeList )
 {
     if( edges.empty() )
     {

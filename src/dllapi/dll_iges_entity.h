@@ -85,14 +85,18 @@ public:
      * All derived classes must implement this function and perform
      * checks to ensure that the given entity is valid for the derived
      * class.
+     *
+     * @param aEntity is a pointer to the entity to be associated
+     * with this API wrapper
+     * @return true if the operation succeeds
      */
-    virtual bool Attach( IGES_ENTITY* ) = 0;
+    virtual bool Attach( IGES_ENTITY* aEntity ) = 0;
 
     // Routines for manipulating extra entity list
 
     /**
      * Function GetNOptionalEntities
-     * returns the number of optional (extra) entities associated
+     * retrieves the number of optional (extra) entities associated
      * with this entity.
      */
     bool GetNOptionalEntities( int& aNOptEnt );
@@ -103,10 +107,9 @@ public:
      * retrieves a pointer to the internal list of optional (extra)
      * entities associated with this entity.
      *
-     * @return true if the call was executed, otherwise false.
-     * Note that if the return value is true but there were no
-     * optional entities or the index was invalid, the pointer
-     * value will be set to NULL.
+     * @return false if there is no valid entity or the underlying operation failed.
+     * Note that if the return value is true but there were no optional entities or
+     * the index was invalid, the pointer value will be set to NULL.
      */
     bool GetOptionalEntities( size_t& aListSize, IGES_ENTITY**& aEntityList );
 
@@ -116,6 +119,7 @@ public:
      * entities associated with this entity and returns true on success.
      *
      * @param = a pointer to the optional IGES entity to be associated
+     * @return false if there is no valid entity or the underlying operation failed.
      */
     bool AddOptionalEntity( IGES_ENTITY* aEntity );
     bool AddOptionalEntity( DLL_IGES_ENTITY* aEntity );
@@ -129,6 +133,7 @@ public:
      * of optional entities.
      *
      * @param aEntity = a pointer to the optional IGES entity to be disassociated
+     * @return false if there is no valid entity or the underlying operation failed.
      */
     bool DelOptionalEntity( IGES_ENTITY* aEntity );
     bool DelOptionalEntity( DLL_IGES_ENTITY* aEntity );
@@ -138,18 +143,24 @@ public:
 
     /**
      * Function GetNComments
-     * returns the number of optional comments for this entity
+     * retrieves the number of optional comments for this entity
+     *
+     * @param nComments will hold the number of comments
+     * @return false if there is no valid entity
      */
-    int GetNComments( void );
+    bool GetNComments( int& nComments );
 
 
     /**
      * Function GetComments
-     * returns a pointer to the internal list of optional
-     * comments associated with this entity; the user must
-     * delete[] this pointer when it is no longer needed.
+     * retrieves a pointer to the internal list of optional
+     * comments associated with this entity.
+     *
+     * @param aListSize will hold the number of comment items
+     * @param aCommentList will point to the array of comments
+     * @return false if there is no valid entity
      */
-    const char* GetComments( size_t& aListSize, char const**& aCommentList );
+    bool GetComments( size_t& aListSize, char const**& aCommentList );
 
 
     /**
@@ -158,6 +169,7 @@ public:
      * associated with this entity and returns true on success.
      *
      * @param aComment = comment to be added
+     * @return false if there is no valid entity
      */
     bool AddComment( const char*& aComment );
 
@@ -168,6 +180,8 @@ public:
      * and returns true on success.
      *
      * @param index = index to comment to be removed
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool DelComment( int index );
 
@@ -175,16 +189,18 @@ public:
     /**
      * Function ClearComments
      * deletes all optional comments associated with this entity
+     * @return false if there is no valid entity
      */
     bool ClearComments( void );
 
 
     /**
      * Function SetParentIGES
-     * sets the parent object; the parent must be a valid instance
-     * of the IGES class; returns true on success.
+     * sets the parent object of the underlying entity; the parent must
+     * be a valid instance of the IGES class; returns true on success.
      *
      * @param aParent = an instance of the IGES class
+     * @return false if there is no valid entity
      */
     bool SetParentIGES( IGES* aParent );
     bool SetParentIGES( DLL_IGES* aParent );
@@ -192,9 +208,12 @@ public:
 
     /**
      * Function GetParentIGES
-     * returns a pointer to the parent IGES object
+     * retrieves a pointer to the underlying entity's parent IGES object
+     *
+     * @param aParent [out] will hold a pointer to the parent IGES (if any)
+     * @return false if there is no valid entity
      */
-    IGES* GetParentIGES( void );
+    bool GetParentIGES( IGES*& aParent );
 
 
     /**
@@ -203,15 +222,29 @@ public:
      * a value of zero is a special case and may represent a
      * NULL Entity as per the IGES specification or an entity
      * which is currently not supported by the library.
+     *
+     * @param aType [out] will hold the underlying entity's type
+     * enumerator; if a valid entity exists but the return value
+     * is '0' then the underlying IGES Entity may not be cirrently
+     * supported; in such a case invoke 'GetTrueEntityType()' to
+     * retrieve the entity type -- if the return value is non-zero
+     * then the entity is not currently supported but if the type
+     * is zero then the item had been set to NULL ENTITY within an
+     * input IGES file.
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
-    int GetEntityType( void );
+    bool GetEntityType( int& aType );
 
 
     /**
      * Function GetEntityForm
-     * returns the Form number of this entity.
+     * retrieves the Form number of this entity.
+     *
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
-    int GetEntityForm( void );
+    bool GetEntityForm( int& aForm );
 
 
     /**
@@ -219,6 +252,8 @@ public:
      * sets the Form number of this entity and returns true on success.
      *
      * @param aForm = the value to assign to this entity's Form number
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetEntityForm( int aForm );
 
@@ -229,6 +264,8 @@ public:
      * Structure parameter and returns true on success.
      *
      * @param aStructure = pointer to the entity to associate
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetStructure( IGES_ENTITY* aStructure );
     bool SetStructure( DLL_IGES_ENTITY* aStructure );
@@ -241,6 +278,8 @@ public:
      * has a Structure entity.
      *
      * @param aStructure = a handle to store a pointer to the Structure object
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetStructure( IGES_ENTITY*& aStructure );
 
@@ -251,6 +290,8 @@ public:
      * in the IGES specification and returns true on success.
      *
      * @param aPattern = an IGES_LINEFONT_PATTERN enumeration
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
 
@@ -261,6 +302,8 @@ public:
      * and returns true on success.
      *
      * @param aPattern = a pointer to an IGES LineFontPattern entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLineFontPattern( DLL_IGES_ENTITY* aPattern );
     bool SetLineFontPattern( IGES_ENTITY* aPattern );
@@ -273,6 +316,8 @@ public:
      * enumeration the return value is false.
      *
      * @param aPattern = variable to store the numeric LineFontPattern value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern );
 
@@ -286,6 +331,8 @@ public:
      * set via a non-zero enumeration then the function returns false.
      *
      * @param aPattern = handle to store the associated LineFontPattern entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLineFontPatternEntity( IGES_ENTITY*& aPattern );
 
@@ -296,6 +343,8 @@ public:
      * all entities initially default to zero.
      *
      * @param aLevel = the numeric level to assign to this entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLevel( int aLevel );
 
@@ -306,6 +355,8 @@ public:
      * returns true on success.
      *
      * @param aLevel = pointer to the Property Entity to be associated
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLevel( DLL_IGES_ENTITY* aLevel );
     bool SetLevel( IGES_ENTITY* aLevel );
@@ -318,6 +369,8 @@ public:
      * this function returns false,
      *
      * @param aLevel = variable to store the numeric level value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLevel( int& aLevel );
 
@@ -329,6 +382,8 @@ public:
      * returns false.
      *
      * @param aLevel = handle to store a pointer to the associated Property Entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLevelEntity( IGES_ENTITY*& aLevel );
 
@@ -339,6 +394,8 @@ public:
      * and returns true on success.
      *
      * @param aView = the VIEW or ASSOCIATIVITY INSTANCE to be associated
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetView( DLL_IGES_ENTITY* aView );
     bool SetView( IGES_ENTITY* aView );
@@ -351,6 +408,8 @@ public:
      * entity the return value is false.
      *
      * @param aView = handle to store pointer to VIEW or ASSOCIATIVITY INSTANCE entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetView( IGES_ENTITY*& aView );
 
@@ -360,6 +419,9 @@ public:
      * sets the associated Transformation Entity and returns true
      * on success; not all entities may accept a transform in which
      * case the return value will be false.
+     *
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetTransform( DLL_IGES_ENTITY* aTransform );
     bool SetTransform( IGES_ENTITY* aTransform );
@@ -372,6 +434,8 @@ public:
      * set to false.
      *
      * @param aTransform = handle to store a pointer to the object's Transformation Entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetTransform( IGES_ENTITY*& aTransform );
 
@@ -380,6 +444,9 @@ public:
      * Function SetLabelAssoc
      * sets the ASSOCIATIVITY INSTANCE entity which refers to this entity
      * and returns true on success.
+     *
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLabelAssoc( DLL_IGES_ENTITY* aLabelAssoc );
     bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
@@ -392,6 +459,8 @@ public:
      * parameter is set to NULL and the return value is false.
      *
      * @param aLabelAssoc = handle to store a pointer to an ASSOCIATIVITY INSTANCE entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLabelAssoc( IGES_ENTITY*& aLabelAssoc );
 
@@ -402,6 +471,8 @@ public:
      * the IGES specification and returns true on success.
      *
      * @param aColor = enumerated color definition as per IGES specification
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetColor( IGES_COLOR aColor );
 
@@ -412,6 +483,8 @@ public:
      * and returns true on success.
      *
      * @param aColor = pointer to a Color Definition entity which defines this entity's color.
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetColor( DLL_IGES_ENTITY_314*& aColor );
     bool SetColor( IGES_ENTITY* aColor );
@@ -426,6 +499,8 @@ public:
      * be zero.
      *
      * @param aColor = variable to store the enumerated color value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetColor( IGES_COLOR& aColor );
 
@@ -439,6 +514,8 @@ public:
      * false.
      *
      * @param aColor = handle to store a pointer to the associated Color Definition Entity
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetColorEntity( IGES_ENTITY*& aColor );
 
@@ -452,6 +529,8 @@ public:
      * function returns true on success.
      *
      * @param aLineWeight = line weight to assign
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLineWeightNum( int aLineWeight );
 
@@ -462,6 +541,8 @@ public:
      * returns true on success.
      *
      * @param aLineWeight = variable to store the line weight value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetLineWeightNum( int& aLineWeight );
 
@@ -474,6 +555,8 @@ public:
      * characters.
      *
      * @param aLabel = the text to use in the label
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetLabel( const char*& aLabel );
 
@@ -483,9 +566,11 @@ public:
      * retrieves the 8-character optional label associated
      * with this entity.
      *
-     * @return a pointer to the label text
+     * @param aLabel is a pointer to the label text
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
-    const char* GetLabel( void );
+    bool GetLabel( char const*& aLabel);
 
 
     /**
@@ -499,6 +584,8 @@ public:
      * ignored by most contemporary MCAD systems.
      *
      * @param aSubscript = the value to assign to the entity subscript
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetEntitySubscript( int aSubscript );
 
@@ -509,6 +596,8 @@ public:
      * returns true.
      *
      * @param aSubscript = variable to store the value of the entity subscript
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetEntitySubscript( int& aSubscript );
 
@@ -521,6 +610,8 @@ public:
      * just one part of the Directory Entry Status Number.
      *
      * @param isVisible = set to true to set the entity's visibility flag
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetVisibility( bool isVisible );
 
@@ -530,6 +621,8 @@ public:
      * retrieves the visibility flag of this entity and returns true.
      *
      * @param isVisible = variable to store the state of the visibility flag
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetVisibility( bool& isVisible );
 
@@ -542,6 +635,8 @@ public:
      * just one part of the Directory Entry Status Number
      *
      * @param aDependency = the dependency value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetDependency( IGES_STAT_DEPENDS aDependency );
 
@@ -551,6 +646,8 @@ public:
      * retrieves the entity's dependency value and returns true.
      *
      * @param aDependency = variable to store the dependency value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetDependency( IGES_STAT_DEPENDS& aDependency );
 
@@ -562,6 +659,8 @@ public:
      * is just one part of the Directory Entry Status Number
      *
      * @param aUseCase = Use Case flag as per IGES specification
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetEntityUse( IGES_STAT_USE aUseCase );
 
@@ -571,6 +670,8 @@ public:
      * returns true.
      *
      * @param aUseCase = variable to store the use case flag
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetEntityUse( IGES_STAT_USE& aUseCase );
 
@@ -583,6 +684,8 @@ public:
      * values.
      *
      * @param aHierarchy = hierarchy flag value to use
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 
@@ -592,6 +695,8 @@ public:
      * retrieves the value of the hierarchy flag and returns true.
      *
      * @param aHierarchy = variable to store the hierarchy flag value
+     * @return false if there is no valid entity or the underlying
+     * operation failed.
      */
     bool GetHierarchy( IGES_STAT_HIER& aHierarchy );
 };

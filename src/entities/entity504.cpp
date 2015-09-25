@@ -554,7 +554,7 @@ bool IGES_ENTITY_504::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-MCAD_API bool
+bool
 IGES_ENTITY_504::GetEdges( size_t aListSize, EDGE_DATA const*& aEdgeList )
 {
     if( edges.empty() )

@@ -367,7 +367,7 @@ bool IGES_ENTITY_502::SetHierarchy( IGES_STAT_HIER aHierarchy )
 }
 
 
-const MCAD_API bool
+const bool
 IGES_ENTITY_502::GetVertices( size_t& aListSize, MCAD_POINT const*& aPointList )
 {
     if( vertices.empty() )

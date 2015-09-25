@@ -121,60 +121,388 @@ bool DLL_IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 
     return true;
 }
-/*
-bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY* aEntity );
-bool DLL_IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity );
-bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY* aEntity );
-int DLL_IGES_ENTITY::GetNComments( void );
-const char* DLL_IGES_ENTITY::GetComments( size_t& aListSize, char const**& aCommentList );
-bool DLL_IGES_ENTITY::AddComment( const char*& aComment );
-bool DLL_IGES_ENTITY::DelComment( int index );
-bool DLL_IGES_ENTITY::ClearComments( void );
-bool DLL_IGES_ENTITY::SetParentIGES( IGES* aParent );
-bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES* aParent );
-IGES* DLL_IGES_ENTITY::GetParentIGES( void );
-int DLL_IGES_ENTITY::GetEntityType( void );
-int DLL_IGES_ENTITY::GetEntityForm( void );
-bool DLL_IGES_ENTITY::SetEntityForm( int aForm ) = 0;
-bool DLL_IGES_ENTITY::SetStructure( IGES_ENTITY* aStructure );
-bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY* aStructure );
-bool DLL_IGES_ENTITY::GetStructure( IGES_ENTITY*& aStructure );
-bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
-bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY* aPattern );
-bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern );
-bool DLL_IGES_ENTITY::GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern );
-bool DLL_IGES_ENTITY::GetLineFontPatternEntity( IGES_ENTITY*& aPattern );
-bool DLL_IGES_ENTITY::SetLevel( int aLevel );
-bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY* aLevel );
-bool DLL_IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel );
-bool DLL_IGES_ENTITY::GetLevel( int& aLevel );
-bool DLL_IGES_ENTITY::GetLevelEntity( IGES_ENTITY*& aLevel );
-bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY* aView );
-bool DLL_IGES_ENTITY::SetView( IGES_ENTITY* aView );
-bool DLL_IGES_ENTITY::GetView( IGES_ENTITY*& aView );
-bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY* aTransform );
-bool DLL_IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform );
-bool DLL_IGES_ENTITY::GetTransform( IGES_ENTITY*& aTransform );
-bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY* aLabelAssoc );
-bool DLL_IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
-bool DLL_IGES_ENTITY::GetLabelAssoc( IGES_ENTITY*& aLabelAssoc );
-bool DLL_IGES_ENTITY::SetColor( IGES_COLOR aColor );
-bool DLL_IGES_ENTITY::SetColor( DLL_IGES_ENTITY_314*& aColor );
-bool DLL_IGES_ENTITY::SetColor( IGES_ENTITY* aColor );
-bool DLL_IGES_ENTITY::GetColor( IGES_COLOR& aColor );
-bool DLL_IGES_ENTITY::GetColorEntity( IGES_ENTITY*& aColor );
-bool DLL_IGES_ENTITY::SetLineWeightNum( int aLineWeight );
-bool DLL_IGES_ENTITY::GetLineWeightNum( int& aLineWeight );
-bool DLL_IGES_ENTITY::SetLabel( const char*& aLabel );
-const char* DLL_IGES_ENTITY::GetLabel( void );
-bool DLL_IGES_ENTITY::SetEntitySubscript( int aSubscript );
-bool DLL_IGES_ENTITY::GetEntitySubscript( int& aSubscript );
-bool DLL_IGES_ENTITY::SetVisibility( bool isVisible );
-bool DLL_IGES_ENTITY::GetVisibility( bool& isVisible );
-bool DLL_IGES_ENTITY::SetDependency( IGES_STAT_DEPENDS aDependency );
-bool DLL_IGES_ENTITY::GetDependency( IGES_STAT_DEPENDS& aDependency );
-bool DLL_IGES_ENTITY::SetEntityUse( IGES_STAT_USE aUseCase );
-bool DLL_IGES_ENTITY::GetEntityUse( IGES_STAT_USE& aUseCase );
-bool DLL_IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy );
-bool DLL_IGES_ENTITY::GetHierarchy( IGES_STAT_HIER& aHierarchy );
-*/
+
+
+bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY* aEntity )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY* aEntity )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetNComments( int& nComments )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetComments( size_t& aListSize, char const**& aCommentList )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::AddComment( const char*& aComment )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::DelComment( int index )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::ClearComments( void )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetParentIGES( IGES* aParent )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES* aParent )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetParentIGES( IGES*& aParent )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetEntityType( int& aType )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetEntityForm( int& aForm )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetEntityForm( int aForm )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetStructure( IGES_ENTITY* aStructure )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY* aStructure )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetStructure( IGES_ENTITY*& aStructure )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY* aPattern )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLineFontPattern( IGES_LINEFONT_PATTERN& aPattern )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLineFontPatternEntity( IGES_ENTITY*& aPattern )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLevel( int aLevel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY* aLevel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLevel( int& aLevel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLevelEntity( IGES_ENTITY*& aLevel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY* aView )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetView( IGES_ENTITY* aView )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetView( IGES_ENTITY*& aView )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY* aTransform )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetTransform( IGES_ENTITY*& aTransform )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY* aLabelAssoc )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLabelAssoc( IGES_ENTITY*& aLabelAssoc )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetColor( IGES_COLOR aColor )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetColor( DLL_IGES_ENTITY_314*& aColor )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetColor( IGES_COLOR& aColor )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetColorEntity( IGES_ENTITY*& aColor )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLineWeightNum( int aLineWeight )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLineWeightNum( int& aLineWeight )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetLabel( const char*& aLabel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetLabel( char const*& aLabel )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetEntitySubscript( int aSubscript )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetEntitySubscript( int& aSubscript )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetVisibility( bool isVisible )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetVisibility( bool& isVisible )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetDependency( IGES_STAT_DEPENDS aDependency )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetDependency( IGES_STAT_DEPENDS& aDependency )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetEntityUse( IGES_STAT_USE aUseCase )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetEntityUse( IGES_STAT_USE& aUseCase )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::SetHierarchy( IGES_STAT_HIER aHierarchy )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}
+
+
+bool DLL_IGES_ENTITY::GetHierarchy( IGES_STAT_HIER& aHierarchy )
+{
+#warning TO BE IMPLEMENTED
+    return false;
+}

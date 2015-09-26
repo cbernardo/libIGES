@@ -703,6 +703,11 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
 
     PTS->SetDependency( STAT_DEP_PHY );
 
+    if( NULL == PTO )
+        N1 = 0;
+    else
+        N1 = 1;
+
     return true;
 }
 
@@ -724,12 +729,10 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
         PTO->delReference(this);
 
     PTO = aPtr;
+    N1 = 0;
 
     if( NULL == aPtr )
-    {
-        N1 = 0;
         return true;
-    }
 
     bool dup = false;
 
@@ -747,6 +750,7 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
     }
 
     PTO->SetDependency( STAT_DEP_PHY );
+    N1 = 1;
 
     return true;
 }

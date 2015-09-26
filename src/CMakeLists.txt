@@ -194,8 +194,10 @@ add_library( iges SHARED
     "${SRC_DLL}/dll_entity126.cpp"
     "${SRC_DLL}/dll_entity128.cpp"
     "${SRC_DLL}/dll_entity142.cpp"
+    "${SRC_DLL}/dll_entity144.cpp"
     "${SRC_DLL}/dll_entity308.cpp"
     "${SRC_DLL}/dll_entity314.cpp"
+    "${SRC_DLL}/dll_entity408.cpp"
     )
 
 if( SISL_NEEDS_BUILD )

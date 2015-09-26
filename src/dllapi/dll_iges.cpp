@@ -261,7 +261,6 @@ bool DLL_IGES::NewAPIEntity( IGES_ENTITY_TYPE aEntityType, DLL_IGES_ENTITY*& aEn
         aEntityPointer = new DLL_IGES_ENTITY_128( this->m_iges, true );
         break;
 
-    /*
     case ENT_CURVE_ON_PARAMETRIC_SURFACE:
         aEntityPointer = new DLL_IGES_ENTITY_142( this->m_iges, true );
         break;
@@ -270,6 +269,7 @@ bool DLL_IGES::NewAPIEntity( IGES_ENTITY_TYPE aEntityType, DLL_IGES_ENTITY*& aEn
         aEntityPointer = new DLL_IGES_ENTITY_144( this->m_iges, true );
         break;
 
+    /*
     case ENT_RIGHT_CIRCULAR_CYLINDER:
         aEntityPointer = new DLL_IGES_ENTITY_154( this->m_iges, true );
         break;
@@ -295,11 +295,11 @@ bool DLL_IGES::NewAPIEntity( IGES_ENTITY_TYPE aEntityType, DLL_IGES_ENTITY*& aEn
         aEntityPointer = new DLL_IGES_ENTITY_314( this->m_iges, true );
         break;
 
-    /*
     case ENT_SINGULAR_SUBFIGURE_INSTANCE:
         aEntityPointer = new DLL_IGES_ENTITY_408( this->m_iges, true );
         break;
 
+    /*
     case ENT_VERTEX:
         aEntityPointer = new DLL_IGES_ENTITY_502( this->m_iges, true );
         break;

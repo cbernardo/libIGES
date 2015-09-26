@@ -1,5 +1,5 @@
 /*
- * file: entity110.cpp
+ * file: entity120.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *

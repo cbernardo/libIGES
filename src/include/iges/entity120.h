@@ -1,5 +1,5 @@
 /*
- * file: entity110.h
+ * file: entity120.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *

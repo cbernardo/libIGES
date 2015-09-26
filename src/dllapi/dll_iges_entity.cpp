@@ -41,6 +41,7 @@ DLL_IGES_ENTITY::DLL_IGES_ENTITY( )
 {
     m_entity = NULL;
     m_valid = false;
+    m_type = ENT_NULL;
     return;
 }
 
@@ -56,6 +57,12 @@ DLL_IGES_ENTITY::~DLL_IGES_ENTITY()
     }
 
     return;
+}
+
+
+IGES_ENTITY_TYPE DLL_IGES_ENTITY::GetEntityType() const
+{
+    return m_type;
 }
 
 
@@ -89,6 +96,26 @@ IGES_ENTITY* DLL_IGES_ENTITY::Detach( void )
     m_entity = NULL;
     m_valid = false;
     return NULL;
+}
+
+
+bool DLL_IGES_ENTITY::Attach( IGES_ENTITY* aEntity )
+{
+    if( NULL == aEntity )
+        return false;
+
+    if( m_type != aEntity->GetEntityType() )
+        return false;
+
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    m_entity = aEntity;
+    m_entity->AttachValidFlag( &m_valid );
+    return true;
 }
 
 

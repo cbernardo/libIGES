@@ -1,5 +1,5 @@
 /*
- * file: dll_entity314.h
+ * file: dll_entity102.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -21,26 +21,24 @@
  */
 
 /*
- * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
+ * Description: IGES Entity 102: Composite Curve, Section 4.4, p.69+ (97+)
  */
 
-#ifndef DLL_ENTITY314_H
-#define DLL_ENTITY314_H
+#ifndef DLL_ENTITY_102_H
+#define DLL_ENTITY_102_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
+#include <dll_iges_curve.h>
 
-class MCAD_API DLL_IGES_ENTITY_314 : public DLL_IGES_ENTITY
+
+class MCAD_API DLL_IGES_ENTITY_102 : public DLL_IGES_CURVE
 {
 public:
-    DLL_IGES_ENTITY_314( IGES* aParent, bool create );
-    DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create );
-    virtual ~DLL_IGES_ENTITY_314();
+    DLL_IGES_ENTITY_102( IGES* aParent, bool create );
+    DLL_IGES_ENTITY_102( DLL_IGES& aParent, bool create );
+    virtual ~DLL_IGES_ENTITY_102();
 
-    bool GetColor( double& aRed, double& aGreen, double& aBlue );
-    bool SetColor( double aRed, double aGreen, double aBlue );
-    bool GetName( const char*& aName );
-    bool SetName( const char*& aName );
+    bool AddSegment( IGES_CURVE* aSegment );
 };
 
-#endif  // DLL_ENTITY314_H
+#endif  // DLL_ENTITY_102_H

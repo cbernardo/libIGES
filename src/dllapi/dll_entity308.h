@@ -31,14 +31,12 @@
 #include <dll_iges_entity.h>
 
 
-class DLL_IGES_ENTITY_308 : public DLL_IGES_ENTITY
+class MCAD_API DLL_IGES_ENTITY_308 : public DLL_IGES_ENTITY
 {
 public:
     DLL_IGES_ENTITY_308( IGES* aParent, bool create );
     DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_308();
-
-    bool Attach( IGES_ENTITY* aEntity );
 
     bool GetNumDE( size_t& aDESize );
     bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );

@@ -1,5 +1,5 @@
 /*
- * file: dll_iges_curve.h
+ * file: dll_entity126.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -20,33 +20,28 @@
  *
  */
 
-#ifndef DLL_IGES_CURVE_H
-#define DLL_IGES_CURVE_H
+#ifndef DLL_ENTITY_126_H
+#define DLL_ENTITY_126_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
+#include <dll_iges_curve.h>
 #include <mcad_elements.h>
 
-class IGES_ENTITY;
-class IGES_CURVE;
-
-/**
- * Class IGES_CURVE
- * is the base class of all IGES Curve entities
- */
-class MCAD_API DLL_IGES_CURVE : public DLL_IGES_ENTITY
+class MCAD_API DLL_IGES_ENTITY_126 : public DLL_IGES_CURVE
 {
 public:
-    DLL_IGES_CURVE();
-    virtual ~DLL_IGES_CURVE();
+    DLL_IGES_ENTITY_126( IGES* aParent, bool create );
+    DLL_IGES_ENTITY_126( DLL_IGES& aParent, bool create );
+    virtual ~DLL_IGES_ENTITY_126();
 
-    bool IsClosed( void );
-    int GetNCurves( void );
-    IGES_CURVE* GetCurve( int index );
-    bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
-    bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
-    int GetNSegments( void );
-    bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
+    bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
+                       bool& isRational, bool& isClosed, bool& isPeriodic );
+    bool SetNURBSData( int nCoeff, int order, const double* knot,
+                       const double* coeff, bool isRational );
+    bool IsPlanar( bool& aResult );
+    bool IsRational( bool& aResult );
+    bool isPeriodic( bool& aResult );
+    bool GetNormal( MCAD_POINT& aNorm );
 };
 
-#endif  // IGES_CURVE_H
+#endif  // DLL_ENTITY_126_H

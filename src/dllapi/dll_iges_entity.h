@@ -44,7 +44,8 @@ class MCAD_API DLL_IGES_ENTITY
 {
 protected:
     IGES_ENTITY* m_entity;
-    bool         m_valid;   // set to false if m_entity is deleted
+    bool         m_valid;       // set to false if m_entity is deleted
+    IGES_ENTITY_TYPE m_type;    // IGES type exposed by this class
 
 public:
     // note: all implementations must have constructors which:
@@ -56,6 +57,12 @@ public:
     // be specified by the user.
     DLL_IGES_ENTITY( );
     virtual ~DLL_IGES_ENTITY();
+
+    /**
+     * Function GetEntityType
+     * returns the type of IGES entity exposed by this object
+     */
+    IGES_ENTITY_TYPE GetEntityType() const;
 
     /**
      * Function GetRawPtr()
@@ -82,15 +89,12 @@ public:
     /**
      * Function Attach
      * associates the DLL_IGES_ENTITY with the given IGES_ENTITY.
-     * All derived classes must implement this function and perform
-     * checks to ensure that the given entity is valid for the derived
-     * class.
      *
      * @param aEntity is a pointer to the entity to be associated
      * with this API wrapper
      * @return true if the operation succeeds
      */
-    virtual bool Attach( IGES_ENTITY* aEntity ) = 0;
+    bool Attach( IGES_ENTITY* aEntity );
 
     // Routines for manipulating extra entity list
 

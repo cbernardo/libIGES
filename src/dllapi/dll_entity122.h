@@ -1,5 +1,5 @@
 /*
- * file: dll_entity314.h
+ * file: dll_entity122.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -21,26 +21,29 @@
  */
 
 /*
- * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
+ * Description: IGES Entity 122: Tabulated Cylinder, Section 4.19, p.119(147+)
  */
 
-#ifndef DLL_ENTITY314_H
-#define DLL_ENTITY314_H
+#ifndef DLL_ENTITY_122_H
+#define DLL_ENTITY_122_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
+#include <mcad_elements.h>
+#include <dll_iges_curve.h>
 
-class MCAD_API DLL_IGES_ENTITY_314 : public DLL_IGES_ENTITY
+class MCAD_API DLL_IGES_ENTITY_122 : public DLL_IGES_ENTITY
 {
 public:
-    DLL_IGES_ENTITY_314( IGES* aParent, bool create );
-    DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create );
-    virtual ~DLL_IGES_ENTITY_314();
+    DLL_IGES_ENTITY_122( IGES* aParent, bool create );
+    DLL_IGES_ENTITY_122( DLL_IGES& aParent, bool create );
+    virtual ~DLL_IGES_ENTITY_122();
 
-    bool GetColor( double& aRed, double& aGreen, double& aBlue );
-    bool SetColor( double aRed, double aGreen, double aBlue );
-    bool GetName( const char*& aName );
-    bool SetName( const char*& aName );
+    bool GetGeneratrixEnd( MCAD_POINT& pt );
+    bool GetGeneratrixEnd( double& aX, double& aY, double& aZ );
+    bool GetDirectrix( IGES_CURVE*& aPtr );
+    bool SetGeneratrixEnd( MCAD_POINT pt );
+    bool SetGeneratrixEnd( double aX, double aY, double aZ );
+    bool SetDirectrix( IGES_CURVE* aPtr );
 };
 
-#endif  // DLL_ENTITY314_H
+#endif  // DLL_ENTITY_122_H

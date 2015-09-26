@@ -30,6 +30,8 @@
 
 DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( IGES* aParent, bool create )
 {
+    m_type = ENT_CIRCULAR_ARC;
+
     if( create )
     {
         if( NULL != aParent )
@@ -47,6 +49,8 @@ DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( IGES* aParent, bool create )
 
 DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create )
 {
+    m_type = ENT_CIRCULAR_ARC;
+
     IGES* ip = aParent.GetRawPtr();
 
     if( !create || NULL == ip )
@@ -64,26 +68,6 @@ DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_100::~DLL_IGES_ENTITY_100()
 {
     return;
-}
-
-
-bool DLL_IGES_ENTITY_100::Attach( IGES_ENTITY* aEntity )
-{
-    if( NULL == aEntity )
-        return false;
-
-    if( ENT_CIRCULAR_ARC != aEntity->GetEntityType() )
-        return false;
-
-    if( m_valid && NULL != m_entity )
-    {
-        m_entity->DetachValidFlag( &m_valid );
-        m_entity = NULL;
-    }
-
-    m_entity = aEntity;
-    m_entity->AttachValidFlag( &m_valid );
-    return true;
 }
 
 

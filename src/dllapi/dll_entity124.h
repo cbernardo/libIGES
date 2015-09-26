@@ -1,5 +1,5 @@
 /*
- * file: dll_entity314.h
+ * file: dll_entity124.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -21,26 +21,26 @@
  */
 
 /*
- * Description: IGES Entity 314: Color, Section 4.77, p.386 (414)
+ * Description: IGES Entity 124: Transformation Matrix, Section 4.21, p.123+ (151+)
  */
 
-#ifndef DLL_ENTITY314_H
-#define DLL_ENTITY314_H
+#ifndef DLL_ENTITY_124_H
+#define DLL_ENTITY_124_H
 
 #include <libigesconf.h>
+#include <mcad_elements.h>
 #include <dll_iges_entity.h>
 
-class MCAD_API DLL_IGES_ENTITY_314 : public DLL_IGES_ENTITY
+class MCAD_API DLL_IGES_ENTITY_124 : public DLL_IGES_ENTITY
 {
 public:
-    DLL_IGES_ENTITY_314( IGES* aParent, bool create );
-    DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create );
-    virtual ~DLL_IGES_ENTITY_314();
+    DLL_IGES_ENTITY_124( IGES* aParent, bool create );
+    DLL_IGES_ENTITY_124( DLL_IGES& aParent, bool create );
+    virtual ~DLL_IGES_ENTITY_124();
 
-    bool GetColor( double& aRed, double& aGreen, double& aBlue );
-    bool SetColor( double aRed, double aGreen, double aBlue );
-    bool GetName( const char*& aName );
-    bool SetName( const char*& aName );
+    bool GetOverallTransform( MCAD_TRANSFORM& aTX );
+    bool GetRootTransform( MCAD_TRANSFORM& aTX );
+    bool SetRootTransform( MCAD_TRANSFORM*& aTX );
 };
 
-#endif  // DLL_ENTITY314_H
+#endif  // DLL_ENTITY_124_H

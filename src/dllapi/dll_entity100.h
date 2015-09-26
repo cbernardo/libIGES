@@ -27,7 +27,7 @@
 #include <libigesconf.h>
 #include <dll_iges_curve.h>
 
-class DLL_IGES_ENTITY_100 : public DLL_IGES_CURVE
+class MCAD_API DLL_IGES_ENTITY_100 : public DLL_IGES_CURVE
 {
 public:
     // note: all implementations must have constructors which:
@@ -40,8 +40,6 @@ public:
     DLL_IGES_ENTITY_100( IGES* aParent, bool create );
     DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_100();
-
-    bool Attach( IGES_ENTITY* aEntity );
 
     bool GetCircleCenter( double& aX, double& aY, double& aZ ) const;
     bool GetCircleCenter( MCAD_POINT& aPoint ) const;

@@ -226,100 +226,104 @@ bool DLL_IGES::NewAPIEntity( IGES_ENTITY_TYPE aEntityType, DLL_IGES_ENTITY*& aEn
     switch( aEntityType )
     {
     case ENT_CIRCULAR_ARC:
-        //aEntityPointer = new DLL_IGES_ENTITY_100( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_100( this->m_iges, true );
         break;
 
-    /*
     case ENT_COMPOSITE_CURVE:
-        aEntityPointer = new DLL_IGES_ENTITY_102( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_102( this->m_iges, true );
         break;
 
     case ENT_CONIC_ARC:
-        aEntityPointer = new DLL_IGES_ENTITY_104( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_104( this->m_iges, true );
         break;
 
     case ENT_LINE:
-        aEntityPointer = new DLL_IGES_ENTITY_110( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_110( this->m_iges, true );
         break;
 
     case ENT_SURFACE_OF_REVOLUTION:
-        aEntityPointer = new DLL_IGES_ENTITY_120( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_120( this->m_iges, true );
         break;
 
     case ENT_TABULATED_CYLINDER:
-        aEntityPointer = new DLL_IGES_ENTITY_122( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_122( this->m_iges, true );
         break;
 
     case ENT_TRANSFORMATION_MATRIX:
-        aEntityPointer = new DLL_IGES_ENTITY_124( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_124( this->m_iges, true );
         break;
 
     case ENT_NURBS_CURVE:
-        aEntityPointer = new DLL_IGES_ENTITY_126( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_126( this->m_iges, true );
         break;
 
     case ENT_NURBS_SURFACE:
-        aEntityPointer = new DLL_IGES_ENTITY_128( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_128( this->m_iges, true );
         break;
 
+    /*
     case ENT_CURVE_ON_PARAMETRIC_SURFACE:
-        aEntityPointer = new DLL_IGES_ENTITY_142( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_142( this->m_iges, true );
         break;
 
     case ENT_TRIMMED_PARAMETRIC_SURFACE:
-        aEntityPointer = new DLL_IGES_ENTITY_144( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_144( this->m_iges, true );
         break;
 
     case ENT_RIGHT_CIRCULAR_CYLINDER:
-        aEntityPointer = new DLL_IGES_ENTITY_154( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_154( this->m_iges, true );
         break;
 
     case ENT_SOLID_OF_LINEAR_EXTRUSION:
-        aEntityPointer = new DLL_IGES_ENTITY_164( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_164( this->m_iges, true );
         break;
 
     case ENT_BOOLEAN_TREE:
-        aEntityPointer = new DLL_IGES_ENTITY_180( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_180( this->m_iges, true );
         break;
 
     case ENT_MANIFOLD_SOLID_BREP:
-        aEntityPointer = new DLL_IGES_ENTITY_186( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_186( this->m_iges, true );
         break;
+    */
 
     case ENT_SUBFIGURE_DEFINITION:
-        aEntityPointer = new DLL_IGES_ENTITY_308( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_308( this->m_iges, true );
         break;
 
     case ENT_COLOR_DEFINITION:
-        aEntityPointer = new DLL_IGES_ENTITY_314( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_314( this->m_iges, true );
         break;
 
+    /*
     case ENT_SINGULAR_SUBFIGURE_INSTANCE:
-        aEntityPointer = new DLL_IGES_ENTITY_408( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_408( this->m_iges, true );
         break;
 
     case ENT_VERTEX:
-        aEntityPointer = new DLL_IGES_ENTITY_502( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_502( this->m_iges, true );
         break;
 
     case ENT_EDGE:
-        aEntityPointer = new DLL_IGES_ENTITY_504( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_504( this->m_iges, true );
         break;
 
     case ENT_LOOP:
-        aEntityPointer = new DLL_IGES_ENTITY_508( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_508( this->m_iges, true );
         break;
 
     case ENT_FACE:
-        aEntityPointer = new DLL_IGES_ENTITY_510( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_510( this->m_iges, true );
         break;
 
     case ENT_SHELL:
-        aEntityPointer = new DLL_IGES_ENTITY_514( this->m_iges );
+        aEntityPointer = new DLL_IGES_ENTITY_514( this->m_iges, true );
         break;
         */
 
     default:
+        delete ep;
+        ERRMSG << "\n + [INFO] entity unsupported in API, ID " << aEntityType << "\n";
         return false;
         break;
     }

@@ -320,6 +320,8 @@ public:
      * @param comments = text to be appended to the Start Section.
      */
     bool AddToHeader( const char*& comments );
+
+    const char* GetUnitName( void );
 };
 
 

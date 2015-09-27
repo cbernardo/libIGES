@@ -2592,3 +2592,8 @@ void IGES::GetNewAssemblyName( std::string& name )
 
     return;
 }
+
+const char* IGES::GetUnitName( void )
+{
+    return UNIT_NAMES[globalData.unitsFlag].c_str();
+}

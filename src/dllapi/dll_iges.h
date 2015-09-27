@@ -133,7 +133,6 @@ public:
      */
     char* GetNewAssemblyName( char* );
 
-
     /**
      * Function NewEntity
      * creates a new IGES entity with the specified type and returns
@@ -149,7 +148,6 @@ public:
     bool NewAPIEntity( IGES_ENTITY_TYPE aEntityType, DLL_IGES_ENTITY*& aEntityPointer );
     bool NewIGESEntity( IGES_ENTITY_TYPE aEntityType, IGES_ENTITY** aEntityPointer );
 
-
     /**
      * Function AddEntity
      * adds an entity from another IGES object or an entity created
@@ -161,7 +159,6 @@ public:
     bool AddEntity( DLL_IGES_ENTITY* aEntity );
     bool AddEntity( IGES_ENTITY* aEntity );
 
-
     /**
      * Function DelEntity
      * removes the entity specified by the pointer, frees associated
@@ -171,7 +168,6 @@ public:
      */
     bool DelEntity( DLL_IGES_ENTITY* aEntity );
     bool DelEntity( IGES_ENTITY* aEntity );
-
 
     /**
      * Function UnlinkEntity
@@ -188,7 +184,6 @@ public:
     bool UnlinkEntity( DLL_IGES_ENTITY* aEntity );
     bool UnlinkEntity( IGES_ENTITY* aEntity );
 
-
     /**
      * Function ConvertUnits
      * scales all entities owned by this IGES object to conform to
@@ -200,7 +195,6 @@ public:
      * IGES_UNIT, except for UNIT_EXTERN.
      */
     bool ConvertUnits( IGES_UNIT newUnit );
-
 
     /**
      * Function ChangeModelScale
@@ -215,7 +209,6 @@ public:
      */
     bool ChangeModelScale( double aScale );
 
-
     /**
      * Function GetHeaders
      * returns a pointer to the list of strings read from or to be
@@ -223,14 +216,12 @@ public:
      */
     bool GetHeaders( size_t& aListSize, char const**& aHeaderList );
 
-
     /**
      * Function GetNHeaderLines
      * returns the number of strings read from or to be written to
      * the Start Section of an IGES file.
      */
     size_t GetNHeaderLines(void);
-
 
     /**
      * Function AddToHeader
@@ -240,6 +231,77 @@ public:
      * @param comments = text to be appended to the Start Section.
      */
     bool AddToHeader( char const*& comment );
+
+    // Accessors for IGES global header
+    // ===
+    // A. Parameter Delimeter: shall not be exposed to the user
+    // B. Record Delimeter: shall not be exposed to the user
+    // C. Product IDSS
+    bool GetProductID_SendingSystem( char const*& aProductIDSS );
+    bool SetProductID_SendingSystem( char const* aProductIDSS );
+
+    // D. File Name: shall not be exposed to the user
+    // E. Native System ID
+    bool GetNativeSystemID( char const*& aNativeSoftwareName );
+    bool SetNativeSystemID( char const* aNativeSoftwareName );
+
+    // F. IGES Preprocessor Version: [no SET accessor]
+    bool GetPreprocessorVersion( char const*& aIGES_PreprocessorVersion );
+
+    // G. Number of significant bits in an integer: not exposed
+    // H. Max exponent of a float type: not exposed
+    // I. Max sig. digits of a float type: not exposed
+    // J. Max exponent of a double type: not exposed
+    // K. Max sig. digits of a double type: not exposed
+    // L. Product ID, Receiving System
+    bool GetProductID_ReceivingSystem( char const*& aProductIDRS );
+    bool SetProductID_ReceivingSystem( char const* aProductIDRS );
+
+    // M. modelScale: everyone uses 1.0 so this will not be exposed to the user
+    // N. Units Flag: in Set routine UNIT_EXTERN shall not be allowed
+    bool GetUnitsFlag( IGES_UNIT& aUnitFlag );
+    bool SetUnitsFlag( IGES_UNIT aUnitFlag );
+
+    // O. Units name: read only
+    bool GetUnitsName( char const*& aUnitName );
+
+    // P. Max Linewidth Gradations
+    bool GetMaxLineWidthGrad( int& aMaxLWGrad );
+    bool SetMaxLineWidthGrad( int aMaxLWGrad );
+
+    // Q. Max. line width
+    bool GetMaxLineWidth( double& aMaxLineWidth );
+    bool SetMaxLineWidth( double aMaxLineWidth );
+
+    // R. Creation Date: read only
+    bool GetCreationDate( char const*& aDate );
+
+    // S. Min. Intended Resolution
+    bool GetMinResolution( double& aMinRes );
+    bool SetMinResolution( double aMinRes );
+
+    // T. Max. coordinate value: not exposed; everyone uses default 0.0
+    // U. Author
+    bool GetAuthor( char const*& anAuthor );
+    bool SetAuthor( char const* anAuthor );
+
+    // V. Organization
+    bool GetOrganization( char const*& anOrganization );
+    bool SetOrganization( char const* anOrganization );
+
+    // W. IGES Version: read only
+    bool GetIGESVersionFlag( int& aIGESVersion );
+
+    // X. Drafting Standard
+    bool GetDraftingStandard( IGES_DRAFTING_STANDARD& aDraftingStd );
+    bool SetDraftingStandard( IGES_DRAFTING_STANDARD aDraftingStd );
+
+    // Y. Modification Date: read only
+    bool GetModificationDate( char const*& aDate );
+
+    // Z. Application Note
+    bool GetApplicationNote( char const*& aNote );
+    bool SetApplicationNote( char const* aNote );
 };
 
 #endif  // DLL_IGES_H

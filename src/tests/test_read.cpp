@@ -31,8 +31,8 @@
 
 #include <iostream>
 #include <iomanip>
-#include <iges.h>
-#include "all_entities.h"
+#include <dll_iges.h>
+#include "all_api_entities.h"
 
 #define ONAME "test_out_read.igs"
 
@@ -53,7 +53,7 @@ int main( int argc, char **argv )
         return -1;
     }
 
-    IGES model;
+    DLL_IGES model;
 
     if( !model.Read( argv[1] ) )
     {

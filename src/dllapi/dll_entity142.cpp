@@ -143,7 +143,8 @@ bool DLL_IGES_ENTITY_142::SetCurvePreference( BOUND_CURVE_PREF aPref )
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_142*)m_entity)->PREF = (int)aPref;
+    ((IGES_ENTITY_142*)m_entity)->PREF = (int)aPref;
+    return true;
 }
 
 
@@ -168,5 +169,6 @@ bool DLL_IGES_ENTITY_142::SetCurveCreationFlag( CURVE_CREATION aFlag )
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_142*)m_entity)->CRTN = (int)aFlag;
+    ((IGES_ENTITY_142*)m_entity)->CRTN = (int)aFlag;
+    return true;
 }

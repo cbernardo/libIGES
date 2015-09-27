@@ -41,6 +41,7 @@ public:
     bool GetOverallTransform( MCAD_TRANSFORM& aTX );
     bool GetRootTransform( MCAD_TRANSFORM& aTX );
     bool SetRootTransform( MCAD_TRANSFORM*& aTX );
+    // XXX - add DLL_ENTITY accessors
 };
 
 #endif  // DLL_ENTITY_124_H

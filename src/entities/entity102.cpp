@@ -726,13 +726,6 @@ bool IGES_ENTITY_102::IsClosed( void )
 }
 
 
-bool IGES_ENTITY_102::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
-{
-    ERRMSG << "\n + [WARNING] method invoked on composite curve\n";
-    return false;
-}
-
-
 bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
 {
     if( !aSegment )

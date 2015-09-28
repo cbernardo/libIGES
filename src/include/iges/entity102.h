@@ -129,7 +129,6 @@ public:
     virtual bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
     virtual bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
     virtual int GetNSegments( void );
-    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // ENTITY_102_H

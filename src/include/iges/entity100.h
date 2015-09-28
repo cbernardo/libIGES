@@ -92,7 +92,6 @@ public:
     virtual bool IsClosed( void );
     virtual int GetNCurves( void );
     virtual IGES_CURVE* GetCurve( int index );
-    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 
     // Inherited from IGES_ENTITY
     virtual bool SetEntityForm( int aForm );

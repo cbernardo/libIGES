@@ -140,21 +140,6 @@ public:
     virtual int GetNSegments( void ) = 0;
 
 
-    /**
-     * Function Interpolate
-     * calculates a point interpolated along the segment with index
-     * @param nSeg and returns true on success. Only simple curves
-     * (linear piecewise curve included) return an interpolated value;
-     * composite curves shall return false; a composite curve can be
-     * identified by a non-zero return from GetNCurves().
-     *
-     * @param pt = variable to store the interpolated point
-     * @param nSeg = segment index (1 .. GetNSegments() - 1)
-     * @param var = Parametric variable; the range 0 .. 1 represents the entire curve
-     * @param xform = set to true if the point is to be transformed by associated transforms
-     */
-    virtual bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true ) = 0;
-
     // members inherited from IGES_ENTITY
     virtual bool SetEntityForm( int aForm ) = 0;
     // XXX - consider adding a method to retrieve the LENGTH of Segment N;

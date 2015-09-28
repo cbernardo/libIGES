@@ -113,15 +113,3 @@ int DLL_IGES_CURVE::GetNSegments( void )
 
     return ((IGES_CURVE*)m_entity)->GetNSegments();
 }
-
-
-bool DLL_IGES_CURVE::Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform )
-{
-    if( !m_valid || NULL == m_entity )
-    {
-        ERRMSG << "\n + [BUG] invalid IGES_ENTITY object\n";
-        return false;
-    }
-
-    return ((IGES_CURVE*)m_entity)->Interpolate( pt, nSeg, var, xform );
-}

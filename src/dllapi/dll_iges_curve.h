@@ -48,7 +48,6 @@ public:
     bool GetStartPoint( MCAD_POINT& pt, bool xform = true );
     bool GetEndPoint( MCAD_POINT& pt, bool xform = true );
     int GetNSegments( void );
-    bool Interpolate( MCAD_POINT& pt, int nSeg, double var, bool xform = true );
 };
 
 #endif  // IGES_CURVE_H

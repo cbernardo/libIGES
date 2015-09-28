@@ -198,6 +198,7 @@ add_library( iges SHARED
     "${SRC_DLL}/dll_entity308.cpp"
     "${SRC_DLL}/dll_entity314.cpp"
     "${SRC_DLL}/dll_entity408.cpp"
+    "${SRC_DLL}/dll_mcad_segment.cpp"
     )
 
 if( SISL_NEEDS_BUILD )

@@ -1,16 +1,38 @@
 /*
+ * file: test_segs.cpp
+ *
+ * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
+ *
  * Description:
  *  This is a test suite for the intersection algorithms of
  * the segment object. Various cases are explored and the
  * results tested against the expected result.
+ *
+ * This file is part of libIGES.
+ *
+ * libIGES is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * libIGES is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, If not, see
+ * <http://www.gnu.org/licenses/> or write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 #include <iostream>
 #include <cmath>
-#include <iges.h>
+#include <dll_iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
-#include <mcad_segment.h>
+#include <dll_mcad_segment.h>
 
 using namespace std;
 
@@ -91,8 +113,8 @@ int main()
 
 void testCircles( void )
 {
-    MCAD_SEGMENT seg1;
-    MCAD_SEGMENT seg2;
+    DLL_MCAD_SEGMENT seg1( true );
+    DLL_MCAD_SEGMENT seg2( true );
 
     MCAD_POINT c1[3];   // parameters for Circle 1
     MCAD_POINT c2[3];   // parameters for Circle 2
@@ -120,9 +142,10 @@ void testCircles( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<MCAD_POINT> ilist;
+    MCAD_POINT* iList = NULL;
+    int nIntersects = 0;
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2.GetRawPtr(), iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -132,7 +155,10 @@ void testCircles( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: C1 encircled by C2\n";
@@ -147,7 +173,7 @@ void testCircles( void )
 
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_ENCIRCLES );
         cout << "[expected failure: encircles] ";
@@ -157,7 +183,10 @@ void testCircles( void )
     else
     {
         cout << "  [FAIL]: expected failure with 'encircles'\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: C2 inside C1\n";
@@ -172,7 +201,7 @@ void testCircles( void )
 
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_INSIDE );
         cout << "[expected failure: inside] ";
@@ -182,7 +211,10 @@ void testCircles( void )
     else
     {
         cout << "  [FAIL]: expected failure with 'inside'\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: no intersection\n";
@@ -197,7 +229,7 @@ void testCircles( void )
 
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
@@ -207,7 +239,10 @@ void testCircles( void )
     else
     {
         cout << "  [FAIL]: expected failure with 'none' (no intersection)\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: intersect at (0, 1), (0, -1)\n";
@@ -222,7 +257,7 @@ void testCircles( void )
 
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success --";
         print_flag( flag );
@@ -232,9 +267,12 @@ void testCircles( void )
     {
         checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "found intersections at:\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     return;
@@ -244,8 +282,8 @@ void testCircles( void )
 // test intersecting circles and line segments
 void testCircleSeg( void )
 {
-    MCAD_SEGMENT seg1;
-    MCAD_SEGMENT seg2;
+    DLL_MCAD_SEGMENT seg1( true );
+    DLL_MCAD_SEGMENT seg2( true );
 
     MCAD_POINT c1[3];   // parameters for Circle 1
     MCAD_POINT l1[2];   // parameters for Line 1
@@ -271,9 +309,10 @@ void testCircleSeg( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<MCAD_POINT> ilist;
+    MCAD_POINT* iList = NULL;
+    int nIntersects = 0;
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -283,7 +322,10 @@ void testCircleSeg( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: tangent to circle (L1, C1)\n";
@@ -291,7 +333,7 @@ void testCircleSeg( void )
     l1[0].y += 5.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg2.GetIntersections( seg1, ilist, flag ) )
+    if( !seg2.GetIntersections( seg1, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -301,7 +343,10 @@ void testCircleSeg( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: 1 point on circle\n";
@@ -311,7 +356,7 @@ void testCircleSeg( void )
     l1[1].y = l1[0].y + 5.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg2.GetIntersections( seg1, ilist, flag ) )
+    if( !seg2.GetIntersections( seg1, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success -- ";
         print_flag( flag );
@@ -319,18 +364,21 @@ void testCircleSeg( void )
     }
     else
     {
-        if( ilist.size() != 1 )
+        if( nIntersects != 1 )
         {
-            cout << "  [FAIL]: expected single point, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected single point, got " << nIntersects << "\n";
         }
         else
         {
             checkFlags( flag, MCAD_IFLAG_ENDPOINT );
             cout << " expected single endpoint (67.5994, 67.5994) ";
             print_flag( flag );
-            cout << "\n  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
+            cout << "\n  p1: " << iList[0].x << ", " << iList[0].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: 2 points on circle\n";
@@ -338,7 +386,7 @@ void testCircleSeg( void )
     l1[0].y = -l1[1].y;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg2.GetIntersections( seg1, ilist, flag ) )
+    if( !seg2.GetIntersections( seg1, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success -- ";
         print_flag( flag );
@@ -346,18 +394,21 @@ void testCircleSeg( void )
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
             checkFlags( flag, MCAD_IFLAG_NONE );
             cout << "expected 2 points (67.5994, 67.5994), (-67.5994, -67.5994)\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     return;
@@ -367,8 +418,8 @@ void testCircleSeg( void )
 // test arcs and line segments
 void testArcSeg( void )
 {
-    MCAD_SEGMENT seg1;
-    MCAD_SEGMENT seg2;
+    DLL_MCAD_SEGMENT seg1( true );
+    DLL_MCAD_SEGMENT seg2( true );
 
     MCAD_POINT c1[3];   // parameters for Arc 1
     MCAD_POINT l1[2];   // parameters for Line 1
@@ -394,9 +445,10 @@ void testArcSeg( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<MCAD_POINT> ilist;
+    MCAD_POINT* iList = NULL;
+    int nIntersects = 0;
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -406,7 +458,10 @@ void testArcSeg( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: horizontal tangent to arc (A1, L1)\n";
@@ -418,7 +473,7 @@ void testArcSeg( void )
     l1[1].y = 1.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -428,7 +483,10 @@ void testArcSeg( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: tangent not on arc (A1, L1)\n";
@@ -439,7 +497,7 @@ void testArcSeg( void )
     l1[1].y = 1.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
@@ -449,7 +507,10 @@ void testArcSeg( void )
     else
     {
         cout << "  [FAIL]: expected failure flag 'none'\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: endpoint arc (A1, L1), single point\n";
@@ -460,15 +521,15 @@ void testArcSeg( void )
     l1[1].y = 2.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 1 )
+        if( nIntersects != 1 )
         {
-            cout << "  [FAIL]: expected 1 point, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 1 point, got " << nIntersects << "\n";
         }
         else
         {
@@ -476,9 +537,12 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: endpoint arc (A1, L1), 2 points\n";
@@ -489,15 +553,15 @@ void testArcSeg( void )
     l1[1].y = -1.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
@@ -505,10 +569,13 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: endpoint arc (A1, L1), 2 points (one is not on an arc endpoint)\n";
@@ -519,15 +586,15 @@ void testArcSeg( void )
     l1[1].y = 0.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
@@ -535,10 +602,13 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: segment intersects arc at 2 endpoints of arc (but not endpoints of segment)\n";
@@ -549,15 +619,15 @@ void testArcSeg( void )
     l1[1].y = 2.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
@@ -565,10 +635,13 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: segment intersects arc at 1 endpoint of arc (but not endpoints of segment)\n";
@@ -579,15 +652,15 @@ void testArcSeg( void )
     l1[1].y = 2.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 1 )
+        if( nIntersects != 1 )
         {
-            cout << "  [FAIL]: expected 1 point, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 1 point, got " << nIntersects << "\n";
         }
         else
         {
@@ -595,9 +668,12 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: segment intersects arc at 2 endpoints of segment (but not endpoints of arc)\n";
@@ -608,15 +684,15 @@ void testArcSeg( void )
     l1[1].y = l1[0].x;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with endpoint flag\n";
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
@@ -624,10 +700,13 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: segment intersects arc at 2 points; none are endpoints\n";
@@ -636,15 +715,15 @@ void testArcSeg( void )
     l1[1].y = 1.0;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with flag 'none'\n";
     }
     else
     {
-        if( ilist.size() != 2 )
+        if( nIntersects != 2 )
         {
-            cout << "  [FAIL]: expected 2 points, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 2 points, got " << nIntersects << "\n";
         }
         else
         {
@@ -652,10 +731,13 @@ void testArcSeg( void )
             cout << "[expected flag: none] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-            cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+            cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: segment intersects arc at 1 endpoint of the segment\n";
@@ -664,15 +746,15 @@ void testArcSeg( void )
     l1[1].y = l1[1].x;
     seg2.SetParams( l1[0], l1[1] );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: expected success with flag 'endpoint'\n";
     }
     else
     {
-        if( ilist.size() != 1 )
+        if( nIntersects != 1 )
         {
-            cout << "  [FAIL]: expected 1 point, got " << ilist.size() << "\n";
+            cout << "  [FAIL]: expected 1 point, got " << nIntersects << "\n";
         }
         else
         {
@@ -680,9 +762,12 @@ void testArcSeg( void )
             cout << "[expected flag: endpoint] ";
             print_flag( flag );
             cout << "\n";
-            cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
+            cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
         }
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     return;
@@ -692,8 +777,8 @@ void testArcSeg( void )
 // test arcs on arcs
 void testArcs( void )
 {
-    MCAD_SEGMENT seg1;
-    MCAD_SEGMENT seg2;
+    DLL_MCAD_SEGMENT seg1( true );
+    DLL_MCAD_SEGMENT seg2( true );
 
     MCAD_POINT c1[3];   // parameters for Arc 1
     MCAD_POINT c2[3];   // parameters for Arc 2
@@ -719,9 +804,10 @@ void testArcs( void )
 
     // expect invalid geometry: tangent
     MCAD_INTERSECT_FLAG flag;
-    std::list<MCAD_POINT> ilist;
+    MCAD_POINT* iList = NULL;
+    int nIntersects = 0;
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_TANGENT );
         cout << "[expected failure: tangent] ";
@@ -731,7 +817,10 @@ void testArcs( void )
     else
     {
         cout << "  [FAIL]: expected failure with tangent flag\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: tangent non-intersecting arcs\n";
@@ -746,7 +835,7 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expected result: no intersection. no flags set
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         checkFlags( flag, MCAD_IFLAG_NONE );
         cout << "[expected failure: none] ";
@@ -756,14 +845,17 @@ void testArcs( void )
     else
     {
         cout << "  [FAIL]: expected failure with flag 'none' (no intersection)\n";
-        ilist.clear();
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: C1 == C2\n";
 
     seg2.SetParams( c1[0], c1[1], c1[2], false );
 
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: edge] ";
         print_flag( flag );
@@ -775,9 +867,12 @@ void testArcs( void )
         cout << "[expected flag: edge] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: partially overlapping arcs\n";
@@ -800,7 +895,7 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expected result: intersection on an edge
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: edge] ";
         print_flag( flag );
@@ -812,9 +907,12 @@ void testArcs( void )
         cout << "[expected flag: edge] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: non-overlapping arcs with same radius and coincident edges, r1 = r2\n";
@@ -837,7 +935,7 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expected result: fail with no flags set
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: endpoint] ";
         print_flag( flag );
@@ -849,9 +947,12 @@ void testArcs( void )
         cout << "[expected success with flag: endpoint] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: non-overlapping arcs, first arc is outside second arc, r1 > r2\n";
@@ -875,7 +976,7 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expected result: success with flag OUTSIDE
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: outside] ";
         print_flag( flag );
@@ -887,9 +988,12 @@ void testArcs( void )
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: non-overlapping arcs, first arc is inside second arc, r1 < r2\n";
@@ -897,7 +1001,7 @@ void testArcs( void )
     seg2.SetParams( c1[0], c1[1], c1[2], false );
 
     // expected result: success with flag INSIDE
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: inside] ";
         print_flag( flag );
@@ -909,9 +1013,12 @@ void testArcs( void )
         cout << "[expected success with flag: inside] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[1].y << "\n";
+        cout << "  p2: " << iList[0].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: non-overlapping arcs, first arc is outside second arc, r1 > r2\n";
@@ -927,7 +1034,7 @@ void testArcs( void )
     seg2.SetParams( c2[0], c2[1], c2[2], false );
 
     // expected result: success with flag OUTSIDE
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: outside] ";
         print_flag( flag );
@@ -939,9 +1046,12 @@ void testArcs( void )
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     cout << "* Test: non-overlapping arcs, first arc is outside second arc, r1 < r2\n";
@@ -950,7 +1060,7 @@ void testArcs( void )
     seg2.SetParams( c1[0], c1[1], c1[2], false );
 
     // expected result: success with flag OUTSIDE
-    if( !seg1.GetIntersections( seg2, ilist, flag ) )
+    if( !seg1.GetIntersections( seg2, iList, nIntersects, flag ) )
     {
         cout << "  [FAIL]: [expected success with flag: outside] ";
         print_flag( flag );
@@ -962,9 +1072,12 @@ void testArcs( void )
         cout << "[expected success with flag: outside] ";
         print_flag( flag );
         cout << "\n";
-        cout << "  p1: " << ilist.front().x << ", " << ilist.front().y << "\n";
-        cout << "  p2: " << ilist.back().x << ", " << ilist.back().y << "\n";
-        ilist.clear();
+        cout << "  p1: " << iList[0].x << ", " << iList[0].y << "\n";
+        cout << "  p2: " << iList[1].x << ", " << iList[1].y << "\n";
+
+        delete [] iList;
+        iList = NULL;
+        nIntersects = 0;
     }
 
     // XXX -

@@ -50,7 +50,7 @@
 #include <cmath>
 #include <iostream>
 #include <error_macros.h>
-#include <dll_iges.h>
+#include <iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 #include <mcad_segment.h>

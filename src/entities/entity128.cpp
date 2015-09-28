@@ -26,7 +26,6 @@
 
 #include <sstream>
 #include <error_macros.h>
-#include <sisl.h>
 #include <iges.h>
 #include <iges_io.h>
 #include <mcad_helpers.h>
@@ -60,7 +59,6 @@ IGES_ENTITY_128::IGES_ENTITY_128( IGES* aParent ) : IGES_ENTITY( aParent )
     knots1 = NULL;
     knots2 = NULL;
     coeffs = NULL;
-    ssurf = NULL;
 
     return;
 }
@@ -76,9 +74,6 @@ IGES_ENTITY_128::~IGES_ENTITY_128()
 
     if( coeffs )
         delete [] coeffs;
-
-    if( ssurf )
-        freeSurf( ssurf );
 
     return;
 }
@@ -1031,12 +1026,6 @@ bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int or
     M1 = order1 - 1;
     M2 = order2 - 1;
 
-    if( ssurf )
-    {
-        freeSurf( ssurf );
-        ssurf = NULL;
-    }
-
     if( knots1 )
     {
         delete [] knots1;
@@ -1150,80 +1139,27 @@ bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int or
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];
 
-    ssurf = newSurf( nCoeffs1, nCoeffs2, M1 + 1, M2 + 1,
-                     knots1, knots2, coeffs, PROP3 ? 1 : 2, 3, 0 );
 
-    if( !ssurf )
-    {
-        ERRMSG << "\n + [INFO] memory allocation failed in SISL newSurf()\n";
-        return false;
-    }
-
-    int stat = 0;
-    s1603( ssurf, &U0, &V0, &U1, &V1, &stat );
-
-    switch ( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified problems determining U,V parameter values\n";
-            break;
-
-        default:
-            ERRMSG << "\n + [INFO] could not determine U,V parameter values\n";
-            return false;
-            break;
-    }
-
-    // determine closure; we rely on the user to supply the correct periodicity
-    double uir = 1e-8;
-    stat = 0;
-
-    if( parent )
-        uir = parent->globalData.minResolution;
-
-    do
-    {
-        int dg1, dg2, dg3, dg4;
-        s1450( ssurf, uir, &PROP1, &PROP2, &dg1, &dg2, &dg3, &dg4, &stat );
-    } while( 0 );
-
-    switch ( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified problems determining closure\n";
-            break;
-
-        default:
-            ERRMSG << "\n + [INFO] could not determine closure\n";
-            return false;
-            break;
-    }
-
-    if( !PROP1 && isPeriodic1 )
-    {
-        ERRMSG << "\n + [WARNING] surface open in Parameter 1 specified as periodic\n";
-        isPeriodic1 = false;
-    }
-
-    if( !PROP2 && isPeriodic2 )
-    {
-        ERRMSG << "\n + [WARNING] surface open in Parameter 2 specified as periodic\n";
-        isPeriodic2 = false;
-    }
+    // XXX - TO BE IMPLEMENTED: determine closure on U (PROP1) and V (PROP2)
+    // for now we set the surface as Open in U and Open in V unless the user
+    // specified periodicity in U, V in which case the surface must also
+    // be closed in those parameters
+    PROP1 = 0;
+    PROP2 = 0;
 
     if( isPeriodic1 )
+    {
         PROP4 = 1;
+        PROP1 = 1;  // closed surface in U
+    }
     else
         PROP4 = 0;
 
     if( isPeriodic2 )
+    {
         PROP5 = 1;
+        PROP2 = 1;  // closed surface in V
+    }
     else
         PROP5 = 0;
 

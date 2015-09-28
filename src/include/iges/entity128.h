@@ -74,8 +74,6 @@
 // + Structure
 //
 
-struct SISLSurf;
-
 
 /**
  * Class IGES_ENTITY_128
@@ -83,9 +81,6 @@ struct SISLSurf;
  */
 class IGES_ENTITY_128 : public IGES_ENTITY
 {
-private:
-    SISLSurf* ssurf;
-
 protected:
 
     friend class IGES;

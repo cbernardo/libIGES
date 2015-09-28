@@ -33,7 +33,6 @@
 #include <iges_curve.h>
 #include <mcad_elements.h>
 
-struct SISLCurve;
 
 // NOTE:
 // The associated parameter data are:
@@ -76,8 +75,6 @@ struct SISLCurve;
 class IGES_ENTITY_126 : public IGES_CURVE
 {
 private:
-    SISLCurve* scurve;
-
     // norm: if provided the normal to the plane will be returned
     bool hasUniquePlane( MCAD_POINT* norm = NULL );
 

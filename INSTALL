@@ -28,7 +28,8 @@ II. Cloning with git:
     git clone https://github.com/cbernardo/libIGES.git
 
 III. Cloning the SINTEF SISL libraries: (only required if
-     you do not have a pre-built library installed)
+     you wish to build with -DUSE_SISL=ON and do not have a
+     pre-built library installed)
     cd libIGES
     git submodule init
     git submodule update
@@ -36,21 +37,31 @@ III. Cloning the SINTEF SISL libraries: (only required if
 
 IV. Build: create a build directory and run cmake then make:
 
-    CASE 1: building with the SISL submodule OR a pre-installed
-            SISL library which can be found by CMake's find_package():
+    CASE 1: building WITHOUT the SISL library; various tools
+            and test programs which depend on SISL will not be built:
         cd src
         mkdir build
         cd build
         cmake ..
         make
         (alt: "make -j 8" or similar to use multiple cores to compile)
+    
+    CASE 2: building WITH the SISL submodule OR a pre-installed
+            SISL library which can be found by CMake's find_package():
+        cd src
+        mkdir build
+        cd build
+        cmake -DUSE_SISL=ON ..
+        make
+        (alt: "make -j 8" or similar to use multiple cores to compile)
 
-    CASE 2: building with a pre-built SISL library which cannot
+    CASE 3: building WITH a pre-built SISL library which cannot
             be found by find_package():
         cd src
         mkdir build
         cd build
-        cmake -DSISL_INCLUDE_DIR=PATH_TO_SISL_INCLUDE_DIR -DSISL_LIBRARIES=PATH_TO_SISL_LIBRARY ..
+        cmake -DUSE_SISL=ON -DSISL_INCLUDE_DIR=PATH_TO_SISL_INCLUDE_DIR \
+              -DSISL_LIBRARIES=PATH_TO_SISL_LIBRARY ..
         make
 
     OPTION: By default a release build is built; this can be changed by passing
@@ -102,20 +113,30 @@ II. Cloning with git:
     git clone https://github.com/cbernardo/libIGES.git
 
 III. Cloning the SINTEF SISL libraries: (only required if
-     you do not have a pre-built library installed)
+     you wish to use the SISL libraries)
     cd libIGES
     git submodule init
     git submodule update
 
 IV. Build: create a build directory and run cmake then make:
 
-    CASE 1: building with the SISL submodule OR a pre-installed
+    CASE 1: building WITHOUT the SISL library; various tools
+            and test programs which depend on SISL will not be built:
+        cd src
+        mkdir build
+        cd build
+        cmake ..
+        make
+        (alt: "make -j 8" or similar to use multiple cores to compile)
+
+    CASE 2: building with the SISL submodule OR a pre-installed
             SISL library which can be found by CMake's find_package():
         cd src
         mkdir build
         cd build
-        cmake -G "Visual Studio 12 2013 Win64"
-              -DBOOST_INCLUDEDIR=[path to boost source dir]
+        cmake -G "Visual Studio 12 2013 Win64" \
+              -DUSE_SISL=ON \
+              -DBOOST_INCLUDEDIR=[path to boost source dir] \
               -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib  ..
         cmake --build . -- /p:Configuration=Release /m:8
 
@@ -123,15 +144,16 @@ IV. Build: create a build directory and run cmake then make:
         the /m:8 option specifies a maximum of 8 cores to be used for
         the compilation.
 
-    CASE 2: building with a pre-built SISL library which cannot
+    CASE 3: building with a pre-built SISL library which cannot
             be found by find_package():
         cd src
         mkdir build
         cd build
-        cmake -G "Visual Studio 12 2013 Win64"
-              -DBOOST_INCLUDEDIR=[path to boost source dir]
-              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib
-              -DSISL_INCLUDE_DIR=[path to sisl include directory]
+        cmake -G "Visual Studio 12 2013 Win64" \
+              -DBOOST_INCLUDEDIR=[path to boost source dir] \
+              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib \
+              -DUSE_SISL=ON \
+              -DSISL_INCLUDE_DIR=[path to sisl include directory] \
               -DSISL_LIBRARIES=[path to SISL Release (or Debug) library] ..
         cmake --build . -- /p:Configuration=Release /m:8
 
@@ -191,12 +213,21 @@ BUILDING ON MS WINDOWS WITH MINGW64
   cd ~/libIGES
   mkdir build
   cd build
+  (OPTION: No SISL)
   /mingw64/bin/cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
     -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
     -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
     -DCMAKE_AR=/mingw64/bin/ar.exe \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_VERBOSE_MAKEFILE=ON ..
+  (OPTION: with SISL)
+  /mingw64/bin/cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    -DCMAKE_AR=/mingw64/bin/ar.exe \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DUSE_SISL=ON ..
 
   Note: most test programs will be in the build directory
   while the idf2igs tool will be in the build/idf directory.

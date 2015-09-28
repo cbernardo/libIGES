@@ -16,4 +16,8 @@
     #define MCAD_API
 #endif  // defined( _MSC_VER )
 
+// SISL
+#cmakedefine USE_SISL
+#cmakedefine HAS_NURBS_LIB
+
 #endif  // LIBIGESCONF_H

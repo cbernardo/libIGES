@@ -1,12 +1,16 @@
 28 Sep 2015
   + CHANGE OF LICENSE:
     As sole author of libIGES I am changing the license from
-    GPLv3+ to LGPLv2+ to offer greater freedom to the users
+    GPLv3+ to LGPLv2.1+ to offer greater freedom to the users
     of this library.  Note that the SINTEF SISL library uses
     the GNU Affero GPL Version 3 and that its terms apply to
-    libIGES if libIGES is compiled with SISL support. At the
-    moment it is not possible to build libIGES without SISL
-    but this will be rectified soon.
+    libIGES if libIGES is compiled with SISL support.
+    
+  + Use of SISL:
+    SISL has been removed from the base IGES objects to allow
+    users to take advantage of the LGPLv2.1+ license of libIGES.
+    The INSTALL instructions have been updated to show build
+    configurations with and without SISL.
     
 30 May 2015
   + The idf2igs tool now exports IGES assemblies which

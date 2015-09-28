@@ -1,0 +1,9 @@
+Known bugs:
+
+Sep 26 2015:
+
+    1. MSBO and related entities:
+        The MSBO object is buggy; although models are largely preserved and rendered as
+        expected, some features are damaged and in FreeCAD they can be seen as points
+        scattered in space. The logic must be checked to ensure a faithful copy of the
+        data.

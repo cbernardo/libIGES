@@ -25,7 +25,6 @@
  */
 
 #include <sstream>
-#include <sisl.h>
 #include <error_macros.h>
 #include <iges.h>
 #include <iges_io.h>
@@ -33,6 +32,7 @@
 #include <entity124.h>
 #include <entity126.h>
 #include <entity142.h>
+#include "../include/iges/entity126.h"
 
 using namespace std;
 
@@ -53,7 +53,6 @@ IGES_ENTITY_126::IGES_ENTITY_126( IGES* aParent ) : IGES_CURVE( aParent )
     nCoeffs = 0;
     knots = NULL;
     coeffs = NULL;
-    scurve = NULL;
 
     return;
 }
@@ -66,9 +65,6 @@ IGES_ENTITY_126::~IGES_ENTITY_126()
 
     if( coeffs )
         delete [] coeffs;
-
-    if( scurve )
-        freeCurve( scurve );
 
     return;
 }
@@ -675,6 +671,9 @@ bool IGES_ENTITY_126::readPD(std::ifstream &aFile, int &aSequenceVar)
         return false;
     }
 
+
+    /* NOTE: do not alter the knot vectors until
+     * the maths have been double-checked
     if( V0 < -1e-10 || V0 > 1e-10 )
     {
         // shift the knot values
@@ -693,6 +692,7 @@ bool IGES_ENTITY_126::readPD(std::ifstream &aFile, int &aSequenceVar)
 
         V1 = 1.0;
     }
+    */
 
     if( !eor )
     {
@@ -850,43 +850,8 @@ bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
     if( nCoeffs < 2 )
         return false;
 
-    if( !scurve )
-    {
-        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
-
-        if( !scurve )
-        {
-            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
-            return false;
-        }
-    }
-
-    double vals[6];
-    int kt = 0;
-    double r = 0;
-    int stat = 0;
-
-    s1225( scurve, 0, V0, &kt, vals, &vals[3], &r, &stat );
-
-    switch( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
-            stat = 0;
-            break;
-
-        default:
-            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
-            return false;
-            break;
-    }
-
-    pt.x = vals[0];
-    pt.y = vals[1];
-    pt.z = vals[2];
+    // XXX -
+    // To be implemented: evaluate first point
 
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
@@ -900,43 +865,8 @@ bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
     if( nCoeffs < 2 )
         return false;
 
-    if( !scurve )
-    {
-        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
-
-        if( !scurve )
-        {
-            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
-            return false;
-        }
-    }
-
-    double vals[6];
-    int kt = 0;
-    double r = 0;
-    int stat = 0;
-
-    s1225( scurve, 0, V1, &kt, vals, &vals[3], &r, &stat );
-
-    switch( stat )
-    {
-        case 0:
-            break;
-
-        case 1:
-            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
-            stat = 0;
-            break;
-
-        default:
-            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
-            return false;
-            break;
-    }
-
-    pt.x = vals[0];
-    pt.y = vals[1];
-    pt.z = vals[2];
+    // XXX -
+    // To be implemented: evaluate last point
 
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
@@ -1017,12 +947,6 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     K = nCoeff - 1;
     M = order - 1;
 
-    if( scurve )
-    {
-        freeCurve( scurve );
-        scurve = NULL;
-    }
-
     if( knots )
     {
         delete [] knots;
@@ -1072,6 +996,8 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     V0 = knots[0];
     V1 = knots[nKnots - 1];
 
+    /* NOTE: do not alter the knot vectors until
+     * the maths have been double-checked
     if( V0 < -1e-10 || V0 > 1e-10 )
     {
         // shift the knot values
@@ -1090,36 +1016,10 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
 
         V1 = 1.0;
     }
+    */
 
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];
-
-    scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
-
-    if( !scurve )
-    {
-        ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
-        return false;
-    }
-
-    int stat = 0;
-    s1363( scurve, &V0, &V1, &stat );
-
-    switch ( stat )
-    {
-    case 0:
-        break;
-
-    case 1:
-        ERRMSG << "\n + [WARNING] unspecified problems determining V0, V1 parameter values\n";
-        stat = 0;
-        break;
-
-    default:
-        ERRMSG << "\n + [INFO] could not determine V0, V1 parameter values\n";
-        return false;
-        break;
-    }
 
     // determine planarity
     if( hasUniquePlane( &vnorm ) )
@@ -1127,39 +1027,12 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     else
         PROP1 = 0;
 
-    // determine periodicity, and closure
-    double uir = 1e-8;
-    stat = 0;
+    PROP2 = 0;  // assume an open curve (PROP2 value required by spec; unknown if anyone uses it)
+    PROP4 = 0;  // assume a non-periodic curve (PROP4 value is purely informational)
 
-    if( parent )
-        uir = parent->globalData.minResolution;
+    // XXX - TO BE IMPLEMENTED: evaluate the NURBS at the first and last points
 
-    s1364( scurve, uir, &stat );
-
-    switch( stat )
-    {
-        case 2:
-            // closed and periodic
-            PROP2 = 1;
-            PROP4 = 1;
-            break;
-
-        case 1:
-            // curve is closed
-            PROP2 = 1;
-            PROP4 = 0;
-            break;
-
-        case 0:
-            // curve is open
-            PROP2 = 0;
-            PROP4 = 0;
-            break;
-
-        default:
-            ERRMSG << "\n + [ERROR] s1364() failed\n";
-            return false;
-    }
+    // note: Since PROP4 is only informational there will be no attempt to determine periodicity
 
     return true;
 }

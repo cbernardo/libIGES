@@ -1,9 +1,18 @@
+28 Sep 2015
+  + CHANGE OF LICENSE:
+    As sole author of libIGES I am changing the license from
+    GPLv3+ to LGPLv2+ to offer greater freedom to the users
+    of this library.  Note that the SINTEF SISL library uses
+    the GNU Affero GPL Version 3 and that its terms apply to
+    libIGES if libIGES is compiled with SISL support. At the
+    moment it is not possible to build libIGES without SISL
+    but this will be rectified soon.
+    
 30 May 2015
   + The idf2igs tool now exports IGES assemblies which
     include the PCB and component models. If your MCAD
     supports the color attribute of IGES then your
-    model will be displayed in glorious color. If you
-    use FreeCAD you will only see grey.
+    model will be displayed in glorious color.
 
 29 May 2015
   + Added the "idf2igs" tool (work in progress) based on

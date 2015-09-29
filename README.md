@@ -1,3 +1,11 @@
+29 Sep 2015
+  + Boost:
+    All Boost dependencies have been removed.
+  + Notes:
+    If the library is configured with -DUSE_SISL=ON, a number
+    of test programs will fail until IGES_ENTITY_126::GetStartPoint()
+    and IGES_ENTITY_126::GetEndPoint() have been implemented.
+
 28 Sep 2015
   + CHANGE OF LICENSE:
     As sole author of libIGES I am changing the license from

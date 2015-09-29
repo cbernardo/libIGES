@@ -671,29 +671,6 @@ bool IGES_ENTITY_126::readPD(std::ifstream &aFile, int &aSequenceVar)
         return false;
     }
 
-
-    /* NOTE: do not alter the knot vectors until
-     * the maths have been double-checked
-    if( V0 < -1e-10 || V0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots; ++i )
-            knots[i] -= V0;
-
-        V1 -= V0;
-        V0 = 0.0;
-    }
-
-    if( 1.0 != V1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots; ++i )
-            knots[i] /= V1;
-
-        V1 = 1.0;
-    }
-    */
-
     if( !eor )
     {
         // unit normal vector (required but ignored if curve is not planar)
@@ -883,8 +860,9 @@ int IGES_ENTITY_126::GetNSegments( void )
 }
 
 
-bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff, bool& isRational,
-                                    bool& isClosed, bool& isPeriodic )
+bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot,
+    double** coeff, bool& isRational, bool& isClosed, bool& isPeriodic,
+    double& v0, double& v1 )
 {
     nCoeff = 0;
     order =0 ;
@@ -898,6 +876,8 @@ bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, doub
     *coeff = coeffs;
     nCoeff = nCoeffs;
     order = M + 1;
+    v0 = V0;
+    v1 = V1;
 
     if( PROP2 )
         isClosed = true;
@@ -918,7 +898,8 @@ bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot, doub
 }
 
 
-bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff, bool isRational )
+bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot,
+    const double* coeff, bool isRational, double v0, double v1 )
 {
     if( !knot || !coeff )
     {
@@ -946,6 +927,19 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     nCoeffs = nCoeff;
     K = nCoeff - 1;
     M = order - 1;
+
+    // ensure V0, V1 are within the knot range
+    if( v0 < knot[0] || v0 >= knot[nKnots -1] )
+    {
+        ERRMSG << "\n + [INFO] v0 does not satisfy the requirement T(-M) <= v0 < T(N+M)\n";
+        return false;
+    }
+
+    if( v1 <= v0 || v1 > knot[nKnots -1] )
+    {
+        ERRMSG << "\n + [INFO] v1 does not satisfy the requirement v0 < v1 <= T(N+M)\n";
+        return false;
+    }
 
     if( knots )
     {
@@ -993,30 +987,8 @@ bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot, c
     for( int i = 0; i < nKnots; ++i )
         knots[i] = knot[i];
 
-    V0 = knots[0];
-    V1 = knots[nKnots - 1];
-
-    /* NOTE: do not alter the knot vectors until
-     * the maths have been double-checked
-    if( V0 < -1e-10 || V0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots; ++i )
-            knots[i] -= V0;
-
-        V1 -= V0;
-        V0 = 0.0;
-    }
-
-    if( 1.0 != V1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots; ++i )
-            knots[i] /= V1;
-
-        V1 = 1.0;
-    }
-    */
+    V0 = v0;
+    V1 = v1;
 
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];

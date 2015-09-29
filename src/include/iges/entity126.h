@@ -146,7 +146,7 @@ public:
      * @param isPeriodic = set to true if the curve has been flagged as periodic
      */
     bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
-                                bool& isRational, bool& isClosed, bool& isPeriodic );
+        bool& isRational, bool& isClosed, bool& isPeriodic, double& v0, double& v1 );
 
     /**
      * Function SetNURBSData
@@ -160,7 +160,7 @@ public:
      * @param isRational = set to true if the curve is rational (unequal weights)
      */
     bool SetNURBSData( int nCoeff, int order, const double* knot,
-                                const double* coeff, bool isRational );
+        const double* coeff, bool isRational, double v0, double v1 );
 
     /**
      * Function IsPlanar

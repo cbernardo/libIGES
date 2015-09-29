@@ -51,8 +51,9 @@
 #include <iges.h>
 #include <iges_io.h>
 #include <all_entities.h>
-#include <boost/filesystem.hpp>
 #include <iges.h>
+#include <mcad_utils.h>
+
 
 using namespace std;
 
@@ -480,8 +481,15 @@ bool IGES::Read( const char* aFileName )
     std::string fName;
     do
     {
-        boost::filesystem::path bp( aFileName );
-        fName = bp.filename().string();
+        MCAD_FILEPATH mp;
+        mp.SetPath( aFileName );
+        const char* cp = mp.GetFileName();
+
+        if( NULL != cp )
+            fName = cp;
+        else
+            fName.clear();
+
     } while(0);
 
     if( fName.compare( globalData.fileName ) )
@@ -644,8 +652,15 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
 
     do
     {
-        boost::filesystem::path bp( aFileName );
-        globalData.fileName = bp.filename().string();
+        MCAD_FILEPATH mp;
+        mp.SetPath( aFileName );
+        const char* cp = mp.GetFileName();
+
+        if( NULL != cp )
+            globalData.fileName = cp;
+        else
+            globalData.fileName.clear();
+
     } while(0);
 
     // START SECTION

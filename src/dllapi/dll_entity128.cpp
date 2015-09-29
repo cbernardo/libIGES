@@ -74,26 +74,29 @@ DLL_IGES_ENTITY_128::~DLL_IGES_ENTITY_128()
 bool DLL_IGES_ENTITY_128::GetNURBSData( int& nCoeff1, int& nCoeff2,
     int& order1, int& order2, double** knot1, double** knot2,
     double** coeff, bool& isRational, bool& isClosed1, bool& isClosed2,
-    bool& isPeriodic1, bool& isPeriodic2 )
+    bool& isPeriodic1, bool& isPeriodic2,
+    double& u0, double& u1, double& v0, double& v1 )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
     return ((IGES_ENTITY_128*)m_entity)->GetNURBSData( nCoeff1, nCoeff2,
         order1, order2, knot1, knot2, coeff, isRational, isClosed1,
-        isClosed2, isPeriodic1, isPeriodic2 );
+        isClosed2, isPeriodic1, isPeriodic2, u0, u1, v0, v1 );
 }
 
 
 bool DLL_IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2,
     int order1, int order2, const double* knot1, const double* knot2,
-    const double* coeff, bool isRational, bool isPeriodic1, bool isPeriodic2 )
+    const double* coeff, bool isRational, bool isPeriodic1, bool isPeriodic2,
+    double u0, double u1, double v0, double v1 )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
     return ((IGES_ENTITY_128*)m_entity)->SetNURBSData( nCoeff1, nCoeff2,
-        order1, order2, knot1, knot2, coeff, isRational, isPeriodic1, isPeriodic2 );
+        order1, order2, knot1, knot2, coeff, isRational, isPeriodic1, isPeriodic2,
+        u0, u1, v0, v1 );
 }
 
 

@@ -878,8 +878,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     for( int i = 0; i < nsegs; ++i )
     {
+        int iKE = inurbs[i]->in + inurbs[i]->ik - 1;
+
         if( !icurve[i]->SetNURBSData( inurbs[i]->in, inurbs[i]->ik, inurbs[i]->et,
-            inurbs[i]->ecoef, false ) )
+            inurbs[i]->ecoef, false, inurbs[i]->et[0], inurbs[i]->et[iKE] ) )
         {
             ERRMSG << "\n + [BUG] could not transfer bounds data to NURBS #" << i << "\n";
             CLEANUP;

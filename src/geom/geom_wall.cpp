@@ -458,8 +458,12 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
     }
 
     // copy the NURBS surface data to isurf
+    int ike1 = plane->in1 + plane->ik1 - 1;
+    int ike2 = plane->in2 + plane->ik2 - 1;
+
     if( !isurf->SetNURBSData( plane->in1, plane->in2, plane->ik1, plane->ik2,
-        plane->et1, plane->et2, plane->ecoef, false, false, false ) )
+        plane->et1, plane->et2, plane->ecoef, false, false, false,
+        plane->et1[0], plane->et1[ike1], plane->et2[0], plane->et2[ike2] ) )
     {
         ERRMSG << "\n + [BUG] failed to transfer data to surface entity\n";
 
@@ -481,8 +485,10 @@ IGES_ENTITY_144* IGES_GEOM_WALL::Instantiate( IGES* model )
     // copy side[n] to ibound[n]
     for( int i = 0; i < 4; ++i )
     {
+        int iKE = side[i]->in + side[i]->ik - 1;
+
         if( !ibound[i]->SetNURBSData( side[i]->in, side[i]->ik, side[i]->et,
-            side[i]->ecoef, false ) )
+            side[i]->ecoef, false, side[i]->et[0], side[i]->et[iKE] ) )
         {
             ERRMSG << "\n + [BUG] failed to transfer data to surface entity\n";
 

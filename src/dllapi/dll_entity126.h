@@ -37,9 +37,9 @@ public:
     virtual ~DLL_IGES_ENTITY_126();
 
     bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
-                       bool& isRational, bool& isClosed, bool& isPeriodic );
-    bool SetNURBSData( int nCoeff, int order, const double* knot,
-                       const double* coeff, bool isRational );
+        bool& isRational, bool& isClosed, bool& isPeriodic, double& v0, double& v1 );
+    bool SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff,
+       bool isRational, double v0, double v1 );
     bool IsPlanar( bool& aResult );
     bool IsRational( bool& aResult );
     bool isPeriodic( bool& aResult );

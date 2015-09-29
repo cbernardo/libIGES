@@ -71,24 +71,25 @@ DLL_IGES_ENTITY_126::~DLL_IGES_ENTITY_126()
 
 
 bool DLL_IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot,
-    double** coeff, bool& isRational, bool& isClosed, bool& isPeriodic )
+    double** coeff, bool& isRational, bool& isClosed, bool& isPeriodic,
+    double& v0, double& v1 )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
     return ((IGES_ENTITY_126*)m_entity)->GetNURBSData( nCoeff, order, knot,
-        coeff, isRational, isClosed, isPeriodic );
+        coeff, isRational, isClosed, isPeriodic, v0, v1 );
 }
 
 
 bool DLL_IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot,
-    const double* coeff, bool isRational )
+    const double* coeff, bool isRational, double v0, double v1 )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
     return ((IGES_ENTITY_126*)m_entity)->SetNURBSData( nCoeff, order, knot,
-        coeff, isRational );
+        coeff, isRational, v0, v1 );
 }
 
 

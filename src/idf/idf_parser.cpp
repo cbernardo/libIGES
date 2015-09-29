@@ -29,14 +29,35 @@
 #include <cmath>
 #include <cerrno>
 #include <algorithm>
-#include <boost/filesystem.hpp>
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <ctime>
 
 #include <idf_parser.h>
 #include <idf_helpers.h>
+#include <mcad_utils.h>
 
 using namespace std;
 using namespace IDF3;
+
+
+static void GetIDFDate( string& date )
+{
+    time_t lt;
+    time( &lt );
+#if defined( _MSC_VER )
+    struct tm ltime;
+     localtime_s( &ltime, &lt );
+#else
+    struct tm ltime = *localtime( &lt );
+#endif
+
+    ostringstream fileDate;
+    fileDate << setfill( '0' ) << setw(4) << ltime.tm_year + 1900;
+    fileDate << "/" << setw(2) << ltime.tm_mon + 1 << "/" << ltime.tm_mday;
+    fileDate << "." << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
+    date = fileDate.str();
+
+    return;
+}
 
 
 static bool MatchCompOutline( IDF3_COMP_OUTLINE* aOutlineA, IDF3_COMP_OUTLINE* aOutlineB )
@@ -2722,18 +2743,18 @@ bool IDF3_BOARD::ReadFile( const std::string& aFullFileName, bool aNoSubstituteO
     // 2. Check if a file with extension 'emp' exists and read it
     // 3. Open the specified filename and read it
 
-    boost::filesystem::path bpbname( aFullFileName );
-    boost::filesystem::path bplname( aFullFileName );
+    MCAD_FILEPATH bpbname( aFullFileName.c_str() );
+    MCAD_FILEPATH bplname( aFullFileName.c_str() );
 
-    bpbname.replace_extension( "emn" );
-    bplname.replace_extension( "emp" );
+    bpbname.SetExtension( "emn" );
+    bplname.SetExtension( "emp" );
 
-    std::string bfname = bpbname.filename().string();
-    std::string lfname = bplname.filename().string();
+    std::string bfname = bpbname.GetFullPath();
+    std::string lfname = bplname.GetFullPath();
 
     try
     {
-        if ( !exists( bpbname ) || !is_regular_file( bpbname ) )
+        if ( !bpbname.FileExists() )
         {
             ostringstream ostr;
             ostr << "\n* invalid file name: '" << bfname << "'";
@@ -2741,7 +2762,7 @@ bool IDF3_BOARD::ReadFile( const std::string& aFullFileName, bool aNoSubstituteO
             throw( IDF_ERROR( __FILE__, __FUNCTION__, __LINE__, ostr.str() ) );
         }
 
-        if ( !exists( bplname ) || !is_regular_file( bplname ) )
+        if ( !bplname.FileExists() )
         {
             // NOTE: Since this is a common case we simply proceed
             // with the assumption that there is no library file;
@@ -2780,18 +2801,10 @@ bool IDF3_BOARD::writeLibFile( const std::string& aFileName )
     {
         lib.open( aFileName.c_str(), std::ios_base::out );
 
-        boost::posix_time::ptime tdate( boost::posix_time::second_clock::local_time() );
-        struct tm ltime = to_tm( tdate );
-
         if( idfSource.empty() )
             idfSource = "KiCad-IDF Framework";
 
-        ostringstream fileDate;
-        fileDate << setfill( '0' ) << setw(4) << ltime.tm_year + 1900;
-        fileDate << "/" << setw(2) << ltime.tm_mon + 1 << "/" << ltime.tm_mday;
-        fileDate << "." << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
-        libDate = fileDate.str();
-
+        GetIDFDate( libDate );
         lib << ".HEADER\n";
         lib << "LIBRARY_FILE 3.0 \"Created by " << idfSource;
         lib << "\" " << libDate << " " << (++libFileVersion) << "\n";
@@ -2832,18 +2845,10 @@ void IDF3_BOARD::writeBoardFile( const std::string& aFileName )
     {
         brd.open( aFileName.c_str(), std::ios_base::out );
 
-        boost::posix_time::ptime tdate( boost::posix_time::second_clock::local_time() );
-        struct tm ltime = to_tm( tdate );
-
         if( idfSource.empty() )
             idfSource = "KiCad-IDF Framework";
 
-        ostringstream fileDate;
-        fileDate << setfill( '0' ) << setw(4) << ltime.tm_year + 1900;
-        fileDate << "/" << setw(2) << ltime.tm_mon + 1 << "/" << ltime.tm_mday;
-        fileDate << "." << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
-        brdDate = fileDate.str();
-
+        GetIDFDate( brdDate );
         brd << ".HEADER\n";
         brd << "BOARD_FILE 3.0 \"Created by " << idfSource;
         brd << "\" " << brdDate << " " << (++brdFileVersion) << "\n";
@@ -3102,14 +3107,14 @@ bool IDF3_BOARD::WriteFile( const std::string& aFullFileName, bool aUnitMM, bool
     // 2. Write the *.emn file according to the IDFv3 spec
     // 3. Write the *.emp file according to the IDFv3 spec
 
-    boost::filesystem::path bpbname( aFullFileName );
-    boost::filesystem::path bplname( aFullFileName );
+    MCAD_FILEPATH bpbname( aFullFileName.c_str() );
+    MCAD_FILEPATH bplname( aFullFileName.c_str() );
 
-    bpbname.replace_extension( "emn" );
-    bplname.replace_extension( "emp" );
+    bpbname.SetExtension( "emn" );
+    bplname.SetExtension( "emp" );
 
-    std::string bfname = bpbname.filename().string();
-    std::string lfname = bplname.filename().string();
+    std::string bfname = bpbname.GetFullPath();
+    std::string lfname = bplname.GetFullPath();
 
     try
     {
@@ -3764,10 +3769,10 @@ IDF3_COMPONENT* IDF3_BOARD::FindComponent( std::string aRefDes )
 // if the object doesn't exist
 IDF3_COMP_OUTLINE* IDF3_BOARD::GetComponentOutline( const std::string aFullFileName )
 {
-    boost::filesystem::path bponame( aFullFileName );
-    std::string fname = bponame.filename().string();
+    MCAD_FILEPATH bponame( aFullFileName.c_str() );
+    std::string fname = bponame.GetFullPath();
 
-    if ( !exists( bponame ) || !is_regular_file( bponame ) )
+    if ( !bponame.FileExists() )
     {
         ostringstream ostr;
         ostr << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "(): \n";

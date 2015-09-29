@@ -830,8 +830,12 @@ IGES_ENTITY_144* IGES_GEOM_PCB::getUntrimmedPlane( IGES* aModel, double aHeight 
     }
 
     // copy the NURBS surface data to isurf
+    int ike1 = plane->in1 + plane->ik1 - 1;
+    int ike2 = plane->in2 + plane->ik2 - 1;
+
     if( !isurf->SetNURBSData( plane->in1, plane->in2, plane->ik1, plane->ik2,
-        plane->et1, plane->et2, plane->ecoef, false, false, false ) )
+        plane->et1, plane->et2, plane->ecoef, false, false, false,
+        plane->et1[0], plane->et1[ike1], plane->et2[0], plane->et2[ike2] ) )
     {
         ostringstream msg;
         GEOM_ERR( msg );
@@ -1531,8 +1535,10 @@ bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurve
 
     for( int i = 0; i < 2; ++i )
     {
+        int iKE = pCurve[i]->in + pCurve[i]->ik - 1;
+
         if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
-            pCurve[i]->ecoef, false ) )
+            pCurve[i]->ecoef, false, pCurve[i]->et[0], pCurve[i]->et[iKE]) )
         {
             for( int j = 0; j < 2; ++j )
             {
@@ -1823,8 +1829,10 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
 
     for( int i = 0; i < na; ++i )
     {
+        int iKE = pCurve[i]->in + pCurve[i]->ik - 1;
+
         if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
-            pCurve[i]->ecoef, false ) )
+            pCurve[i]->ecoef, false, pCurve[i]->et[0], pCurve[i]->et[iKE] ) )
         {
             for( int j = 0; j < na; ++j )
             {
@@ -1899,7 +1907,10 @@ bool IGES_GEOM_PCB::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
             break;
     }
 
-    if( !cp->SetNURBSData( pCurve->in, pCurve->ik, pCurve->et, pCurve->ecoef, false ) )
+    int iKE = pCurve->in + pCurve->ik - 1;
+
+    if( !cp->SetNURBSData( pCurve->in, pCurve->ik, pCurve->et, pCurve->ecoef, false,
+        pCurve->et[0], pCurve->et[iKE] ) )
     {
         ERRMSG << "\n + [WARNING] problems setting data in NURBS curve\n";
         aModel->DelEntity( (IGES_ENTITY*)cp );

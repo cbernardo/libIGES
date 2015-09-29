@@ -800,44 +800,6 @@ bool IGES_ENTITY_128::readPD(std::ifstream &aFile, int &aSequenceVar)
         return false;
     }
 
-    if( U0 < -1e-10 || U0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots1; ++i )
-            knots1[i] -= U0;
-
-        U1 -= U0;
-        U0 = 0.0;
-    }
-
-    if( 1.0 != U1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots1; ++i )
-            knots1[i] /= U1;
-
-        U1 = 1.0;
-    }
-
-    if( V0 < -1e-10 || V0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots2; ++i )
-            knots2[i] -= V0;
-
-        V1 -= V0;
-        V0 = 0.0;
-    }
-
-    if( 1.0 != V1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots2; ++i )
-            knots2[i] /= V1;
-
-        V1 = 1.0;
-    }
-
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";
@@ -924,11 +886,10 @@ bool IGES_ENTITY_128::isPeriodic2( void )
 
 
 bool IGES_ENTITY_128::GetNURBSData( int& nCoeff1, int& nCoeff2,
-                                    int& order1, int& order2,
-                                    double** knot1, double** knot2,
-                                    double** coeff, bool& isRational,
-                                    bool& isClosed1, bool& isClosed2,
-                                    bool& isPeriodic1, bool& isPeriodic2 )
+    int& order1, int& order2, double** knot1, double** knot2,
+    double** coeff, bool& isRational, bool& isClosed1, bool& isClosed2,
+    bool& isPeriodic1, bool& isPeriodic2, double& u0, double& u1,
+    double& v0, double& v1 )
 {
     nCoeff1 = 0;
     nCoeff2 = 0;
@@ -974,14 +935,18 @@ bool IGES_ENTITY_128::GetNURBSData( int& nCoeff1, int& nCoeff2,
     else
         isPeriodic2 = false;
 
+    u0 = U0;
+    u1 = U1;
+    v0 = V0;
+    v1 = V1;
+
     return true;
 }
 
 
 bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
-                                    const double* knot1, const double* knot2,
-                                    const double* coeff, bool isRational,
-                                    bool isPeriodic1, bool isPeriodic2 )
+    const double* knot1, const double* knot2, const double* coeff, bool isRational,
+    bool isPeriodic1, bool isPeriodic2, double u0, double u1, double v0, double v1 )
 {
     if( !knot1 || !knot2 || !coeff )
     {
@@ -1025,6 +990,31 @@ bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int or
     K2 = nCoeff2 - 1;
     M1 = order1 - 1;
     M2 = order2 - 1;
+
+    // check validity of (u, v)
+    if( u0 < knot1[0] || u0 >= knot1[nKnots1 -1] )
+    {
+        ERRMSG << "\n + [INFO] u0 is invalid\n";
+        return false;
+    }
+
+    if( u1 <= u0 || u1 > knot1[nKnots1 -1] )
+    {
+        ERRMSG << "\n + [INFO] u1 is invalid\n";
+        return false;
+    }
+
+    if( v0 < knot2[0] || v0 >= knot2[nKnots2 -1] )
+    {
+        ERRMSG << "\n + [INFO] v0 is invalid\n";
+        return false;
+    }
+
+    if( v1 <= v0 || v1 > knot2[nKnots2 -1] )
+    {
+        ERRMSG << "\n + [INFO] v1 is invalid\n";
+        return false;
+    }
 
     if( knots1 )
     {
@@ -1093,48 +1083,10 @@ bool IGES_ENTITY_128::SetNURBSData( int nCoeff1, int nCoeff2, int order1, int or
     for( int i = 0; i < nKnots2; ++i )
         knots2[i] = knot2[i];
 
-    U0 = knots1[0];
-    U1 = knots1[nKnots1 -1];
-    V0 = knots2[0];
-    V1 = knots2[nKnots2 -1];
-
-    if( U0 < -1e-10 || U0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots1; ++i )
-            knots1[i] -= U0;
-
-        U1 -= U0;
-        U0 = 0.0;
-    }
-
-    if( 1.0 != U1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots1; ++i )
-            knots1[i] /= U1;
-
-        U1 = 1.0;
-    }
-
-    if( V0 < -1e-10 || V0 > 1e-10 )
-    {
-        // shift the knot values
-        for( int i = 0; i < nKnots2; ++i )
-            knots2[i] -= V0;
-
-        V1 -= V0;
-        V0 = 0.0;
-    }
-
-    if( 1.0 != V1 )
-    {
-        // normalize the knot vector
-        for( int i = 0; i < nKnots2; ++i )
-            knots2[i] /= V1;
-
-        V1 = 1.0;
-    }
+    U0 = u0;
+    U1 = u1;
+    V0 = v0;
+    V1 = v1;
 
     for( int i = 0; i < nDbls; ++i )
         coeffs[i] = coeff[i];

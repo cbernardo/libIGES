@@ -37,7 +37,6 @@
 #include <utility>
 #include <clocale>
 #include <vector>
-#include <boost/filesystem.hpp>
 
 #include <idf_helpers.h>
 #include <idf_common.h>
@@ -50,6 +49,7 @@
 #include <mcad_segment.h>
 #include <iges_geom_pcb.h>
 #include <all_entities.h>
+#include <mcad_utils.h>
 
 
 using namespace std;
@@ -157,10 +157,11 @@ int main( int argc, char **argv )
     globs.colors = colors;
 
     // Create the VRML file and write the header
-    boost::filesystem::path bofname( inputFilename );
-    bofname.replace_extension( "igs" );
-    string fname = bofname.filename().string();
-    globs.basename = boost::filesystem::basename( bofname );
+    MCAD_FILEPATH mofname;
+    mofname.SetPath( inputFilename.c_str() );
+    mofname.SetExtension( "igs" );
+    string fname = mofname.GetFullPath();
+    globs.basename = mofname.GetBaseName();
 
     cout << "Output file: '" << fname << "'\n";
 

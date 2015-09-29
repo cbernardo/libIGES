@@ -44,12 +44,14 @@ public:
     bool GetNURBSData( int& nCoeff1, int& nCoeff2, int& order1, int& order2,
                        double** knot1, double** knot2, double** coeff,
                        bool& isRational, bool& isClosed1, bool& isClosed2,
-                       bool& isPeriodic1, bool& isPeriodic2 );
+                       bool& isPeriodic1, bool& isPeriodic2,
+                       double& u0, double& u1, double& v0, double& v1 );
 
     bool SetNURBSData( int nCoeff1, int nCoeff2, int order1, int order2,
                        const double* knot1, const double* knot2,
                        const double* coeff, bool isRational,
-                       bool isPeriodic1, bool isPeriodic2 );
+                       bool isPeriodic1, bool isPeriodic2,
+                       double u0, double u1, double v0, double v1 );
 
     bool IsRational( bool& aResult );
     bool isClosed1( bool& aResult );

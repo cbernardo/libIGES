@@ -142,8 +142,6 @@ public:
 
     // members inherited from IGES_ENTITY
     virtual bool SetEntityForm( int aForm ) = 0;
-    // XXX - consider adding a method to retrieve the LENGTH of Segment N;
-    // this could be useful to aid in calculations for rendering entities.
 };
 
 #endif  // IGES_CURVE_H

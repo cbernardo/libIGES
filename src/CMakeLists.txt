@@ -102,8 +102,6 @@ if( USE_SISL )
 endif( USE_SISL )
 
 
-find_package( Boost 1.55 REQUIRED COMPONENTS filesystem system date_time )
-
 set( LIBIGES_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( LIBIGES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -121,7 +119,6 @@ configure_file(
 
 # ensure that the newly created k3dconfig.h can be found
 include_directories(
-    "${Boost_INCLUDE_DIRS}"
     "${LIBIGES_BINARY_DIR}"
     "${LIBIGES_SOURCE_DIR}/include"
     "${LIBIGES_SOURCE_DIR}/include/iges"
@@ -136,7 +133,7 @@ endif()
 if( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
 elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    add_definitions( -D_USE_MATH_DEFINES -DBOOST_ALL_DYN_LINK -DBOOST_EXCEPTION_DISABLE )
+    add_definitions( -D_USE_MATH_DEFINES )
 endif()
 
 if( NOT CMAKE_BUILD_TYPE )
@@ -193,6 +190,7 @@ add_library( iges SHARED
     "${SRC_ENT}/entity514.cpp"
     "${SRC_IGS}/iges_io.cpp"
     "${SRC_IGS}/iges.cpp"
+    "${SRC_IGS}/mcad_utils.cpp"
     "${SRC_DLL}/dll_iges.cpp"
     "${SRC_DLL}/dll_iges_entity.cpp"
     "${SRC_DLL}/dll_iges_curve.cpp"
@@ -223,9 +221,7 @@ endif()
 # fail on windows target bulds, both GCC cross compilation and MSVC
 # native.
 if( USE_SISL )
-    target_link_libraries( iges ${SISL_LIBRARIES} ${Boost_LIBRARIES} )
-else()
-    target_link_libraries( iges ${Boost_LIBRARIES} )
+    target_link_libraries( iges ${SISL_LIBRARIES} )
 endif()
 
 add_executable( readtest

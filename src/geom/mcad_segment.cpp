@@ -89,6 +89,56 @@ void MCAD_SEGMENT::init( void )
 }
 
 
+void MCAD_SEGMENT::AttachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            // exit if we already have this registered
+            *aFlag = true;
+            return;
+        }
+
+        ++sVF;
+    }
+
+    *aFlag = true;
+    m_validFlags.push_back( aFlag );
+    return;
+}
+
+
+void MCAD_SEGMENT::DetachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            *aFlag = false;
+            m_validFlags.erase( sVF );
+            return;
+        }
+
+        ++sVF;
+    }
+
+    return;
+}
+
+
 // set the parameters for a line
 bool MCAD_SEGMENT::SetParams( MCAD_POINT aStart, MCAD_POINT aEnd )
 {

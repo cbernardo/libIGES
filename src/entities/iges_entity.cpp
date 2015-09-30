@@ -242,6 +242,7 @@ void IGES_ENTITY::AttachValidFlag( bool* aFlag )
         ++sVF;
     }
 
+    *aFlag = true;
     m_validFlags.push_back( aFlag );
     return;
 }

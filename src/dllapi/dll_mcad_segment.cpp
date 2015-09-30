@@ -37,10 +37,11 @@
 
 DLL_MCAD_SEGMENT::DLL_MCAD_SEGMENT( bool create )
 {
+    m_valid = false;
+    m_segment = NULL;
+
     if( create )
-        m_segment = new MCAD_SEGMENT;
-    else
-        m_segment = NULL;
+        NewSegment();
 
     return;
 }
@@ -48,54 +49,93 @@ DLL_MCAD_SEGMENT::DLL_MCAD_SEGMENT( bool create )
 
 DLL_MCAD_SEGMENT::~DLL_MCAD_SEGMENT()
 {
-    if( NULL != m_segment )
+    if( NULL != m_segment && m_valid )
+    {
+        m_segment->DetachValidFlag( &m_valid );
         delete m_segment;
+    }
+
+    return;
 }
 
 
-void DLL_MCAD_SEGMENT::NewSegment( void )
+bool DLL_MCAD_SEGMENT::IsValid( void )
 {
+    return m_valid;
+}
+
+
+bool DLL_MCAD_SEGMENT::NewSegment( void )
+{
+    if( m_valid && m_segment )
+        delete m_segment;
+
+    m_segment = NULL;
+    m_valid = false;
+
     m_segment = new MCAD_SEGMENT;
-    return;
+
+    if( NULL != m_segment )
+    {
+        m_segment->AttachValidFlag( &m_valid );
+        return true;
+    }
+
+    return false;
 }
 
 
 void DLL_MCAD_SEGMENT::DelSegment( void )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return;
 
+    m_segment->DetachValidFlag( &m_valid );
     delete m_segment;
     m_segment = NULL;
+
     return;
 }
 
 
 void DLL_MCAD_SEGMENT::Detach( void )
 {
+    if( NULL != m_segment && m_valid )
+        m_segment->DetachValidFlag( &m_valid );
+
+    m_valid = false;
     m_segment = NULL;
+    return;
 }
 
 
 bool DLL_MCAD_SEGMENT::Attach( MCAD_SEGMENT* aSegment )
 {
+    if( NULL != m_segment && m_valid )
+        return false;
+
     if( NULL == aSegment )
         return false;
 
     m_segment = aSegment;
+    m_segment->AttachValidFlag( &m_valid );
+
     return true;
 }
 
 
 MCAD_SEGMENT* DLL_MCAD_SEGMENT::GetRawPtr()
 {
+    if( !m_valid )
+        m_segment = NULL;
+
     return m_segment;
 }
 
 
 bool DLL_MCAD_SEGMENT::GetSegType( MCAD_SEGTYPE& aSegType ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aSegType = m_segment->GetSegType();
@@ -105,7 +145,7 @@ bool DLL_MCAD_SEGMENT::GetSegType( MCAD_SEGTYPE& aSegType ) const
 
 bool DLL_MCAD_SEGMENT::GetRadius( double& aRadius ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aRadius = m_segment->GetRadius();
@@ -115,7 +155,7 @@ bool DLL_MCAD_SEGMENT::GetRadius( double& aRadius ) const
 
 bool DLL_MCAD_SEGMENT::GetStartAngle( double& aStartAngle ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aStartAngle = m_segment->GetStartAngle();
@@ -125,7 +165,7 @@ bool DLL_MCAD_SEGMENT::GetStartAngle( double& aStartAngle ) const
 
 bool DLL_MCAD_SEGMENT::GetEndAngle( double& aEndAngle ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aEndAngle = m_segment->GetEndAngle();
@@ -135,7 +175,7 @@ bool DLL_MCAD_SEGMENT::GetEndAngle( double& aEndAngle ) const
 
 bool DLL_MCAD_SEGMENT::GetFirstAngle( double& aFirstAngle ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aFirstAngle = m_segment->GetMSAngle();
@@ -145,7 +185,7 @@ bool DLL_MCAD_SEGMENT::GetFirstAngle( double& aFirstAngle ) const
 
 bool DLL_MCAD_SEGMENT::GetLastAngle( double& aLastAngle ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aLastAngle = m_segment->GetMEAngle();
@@ -155,7 +195,7 @@ bool DLL_MCAD_SEGMENT::GetLastAngle( double& aLastAngle ) const
 
 bool DLL_MCAD_SEGMENT::GetCenter( MCAD_POINT& aPoint ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aPoint = m_segment->GetCenter();
@@ -165,7 +205,7 @@ bool DLL_MCAD_SEGMENT::GetCenter( MCAD_POINT& aPoint ) const
 
 bool DLL_MCAD_SEGMENT::GetStart( MCAD_POINT& aPoint ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aPoint = m_segment->GetStart();
@@ -175,7 +215,7 @@ bool DLL_MCAD_SEGMENT::GetStart( MCAD_POINT& aPoint ) const
 
 bool DLL_MCAD_SEGMENT::GetEnd( MCAD_POINT& aPoint ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aPoint = m_segment->GetEnd();
@@ -185,7 +225,7 @@ bool DLL_MCAD_SEGMENT::GetEnd( MCAD_POINT& aPoint ) const
 
 bool DLL_MCAD_SEGMENT::GetFirstPoint( MCAD_POINT& aPoint ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aPoint = m_segment->GetMStart();
@@ -195,7 +235,7 @@ bool DLL_MCAD_SEGMENT::GetFirstPoint( MCAD_POINT& aPoint ) const
 
 bool DLL_MCAD_SEGMENT::GetLastPoint( MCAD_POINT& aPoint ) const
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aPoint = m_segment->GetMEnd();
@@ -205,7 +245,7 @@ bool DLL_MCAD_SEGMENT::GetLastPoint( MCAD_POINT& aPoint ) const
 
 bool DLL_MCAD_SEGMENT::SetParams( MCAD_POINT aStart, MCAD_POINT aEnd )
 {
-    if( NULL == m_segment )
+    if( ( NULL == m_segment || !m_valid ) && !NewSegment() )
         return false;
 
     return m_segment->SetParams( aStart, aEnd );
@@ -215,7 +255,7 @@ bool DLL_MCAD_SEGMENT::SetParams( MCAD_POINT aStart, MCAD_POINT aEnd )
 bool DLL_MCAD_SEGMENT::SetParams( MCAD_POINT aCenter, MCAD_POINT aStart,
     MCAD_POINT aEnd, bool isCW )
 {
-    if( NULL == m_segment )
+    if( ( NULL == m_segment || !m_valid ) && !NewSegment() )
         return false;
 
     return m_segment->SetParams( aCenter, aStart, aEnd, isCW );
@@ -224,7 +264,7 @@ bool DLL_MCAD_SEGMENT::SetParams( MCAD_POINT aCenter, MCAD_POINT aStart,
 
 bool DLL_MCAD_SEGMENT::GetLength( double& aLength )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     aLength = m_segment->GetLength();
@@ -234,7 +274,7 @@ bool DLL_MCAD_SEGMENT::GetLength( double& aLength )
 
 bool DLL_MCAD_SEGMENT::IsCW( bool& aResult )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
     {
         aResult = false;
         return false;
@@ -248,8 +288,13 @@ bool DLL_MCAD_SEGMENT::IsCW( bool& aResult )
 bool DLL_MCAD_SEGMENT::GetIntersections( MCAD_SEGMENT const* aSegment,
     MCAD_POINT*& aIntersectList, int& aNumIntersections, MCAD_INTERSECT_FLAG& flags )
 {
-    if( NULL == m_segment )
+    flags = MCAD_IFLAG_NONE;
+
+    if( NULL == m_segment || !m_valid )
+    {
+        ERRMSG << "\n + [BUG] invalid segment\n";
         return false;
+    }
 
     if( NULL != aIntersectList || 0 != aNumIntersections )
     {
@@ -268,7 +313,8 @@ bool DLL_MCAD_SEGMENT::GetIntersections( MCAD_SEGMENT const* aSegment,
     if( !m_segment->GetIntersections( *aSegment, ilist, flags ) )
         return false;
 
-    aIntersectList = new MCAD_POINT[ilist.size()];
+    aNumIntersections = ilist.size();
+    aIntersectList = new MCAD_POINT[aNumIntersections];
     std::list<MCAD_POINT>::iterator sL = ilist.begin();
     std::list<MCAD_POINT>::iterator eL = ilist.end();
     int idx = 0;
@@ -286,8 +332,13 @@ bool DLL_MCAD_SEGMENT::GetIntersections( MCAD_SEGMENT const* aSegment,
 bool DLL_MCAD_SEGMENT::GetIntersections( DLL_MCAD_SEGMENT& aSegment,
     MCAD_POINT*& aIntersectList, int& aNumIntersections, MCAD_INTERSECT_FLAG& flags )
 {
-    if( NULL == m_segment )
+    flags = MCAD_IFLAG_NONE;
+
+    if( NULL == m_segment || !m_valid )
+    {
+        ERRMSG << "\n + [BUG] invalid segment\n";
         return false;
+    }
 
     if( NULL != aIntersectList || 0 != aNumIntersections || NULL == aSegment.GetRawPtr() )
     {
@@ -300,7 +351,8 @@ bool DLL_MCAD_SEGMENT::GetIntersections( DLL_MCAD_SEGMENT& aSegment,
     if( !m_segment->GetIntersections( *aSegment.GetRawPtr(), ilist, flags ) )
         return false;
 
-    aIntersectList = new MCAD_POINT[ilist.size()];
+    aNumIntersections = ilist.size();
+    aIntersectList = new MCAD_POINT[aNumIntersections];
     std::list<MCAD_POINT>::iterator sL = ilist.begin();
     std::list<MCAD_POINT>::iterator eL = ilist.end();
     int idx = 0;
@@ -317,7 +369,7 @@ bool DLL_MCAD_SEGMENT::GetIntersections( DLL_MCAD_SEGMENT& aSegment,
 
 bool DLL_MCAD_SEGMENT::GetBoundingBox( MCAD_POINT& p0, MCAD_POINT& p1 )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     return m_segment->GetBoundingBox( p0, p1 );
@@ -326,7 +378,7 @@ bool DLL_MCAD_SEGMENT::GetBoundingBox( MCAD_POINT& p0, MCAD_POINT& p1 )
 
 bool DLL_MCAD_SEGMENT::GetMidpoint( MCAD_POINT& p0 )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     return m_segment->GetMidpoint( p0 );
@@ -335,7 +387,7 @@ bool DLL_MCAD_SEGMENT::GetMidpoint( MCAD_POINT& p0 )
 bool DLL_MCAD_SEGMENT::Split( MCAD_POINT** aIntersectList, int aNumIntersects,
     MCAD_SEGMENT**& aNewSegmentList, int& aNumNewSegs )
 {
-    if( NULL == m_segment )
+    if( NULL == m_segment || !m_valid )
         return false;
 
     if( aNumIntersects == 0 )
@@ -360,16 +412,19 @@ bool DLL_MCAD_SEGMENT::Split( MCAD_POINT** aIntersectList, int aNumIntersects,
     int idx = 0;
     MCAD_SEGMENT** sp = NULL;
 
-    if( aNumNewSegs > 0 )
+    if( aNumNewSegs > 0 && NULL != aNewSegmentList )
     {
         sp = new MCAD_SEGMENT*[ aNumNewSegs + slist.size() ];
 
         for( idx = 0; idx < aNumNewSegs; ++idx )
             sp[idx] = aNewSegmentList[idx];
-    }
 
-    if( NULL != aNewSegmentList )
         delete [] aNewSegmentList;
+    }
+    else
+    {
+        sp = new MCAD_SEGMENT*[ slist.size() ];
+    }
 
     int j = (int) slist.size();
     std::list<MCAD_SEGMENT*>::iterator sL = slist.begin();

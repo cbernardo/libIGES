@@ -1,5 +1,5 @@
 /*
- * file: iges_geom_pcb.h
+ * file: dll_iges_geom_pcb.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -64,49 +64,27 @@
  *   dividing the offending cutout into at least 2 separate bodies.
  */
 
-#ifndef IGES_GEOM_OUTLINE_H
-#define IGES_GEOM_OUTLINE_H
+#ifndef DLL_IGES_GEOM_OUTLINE_H
+#define DLL_IGES_GEOM_OUTLINE_H
 
-#include <list>
-#include <string>
 #include <libigesconf.h>
-#include <mcad_outline.h>
+#include <dll_mcad_outline.h>
 
 class IGES_CURVE;
 class IGES_ENTITY_126;
 class IGES_ENTITY_144;
+class IGES_GEOM_PCB;
+class MCAD_SEGMENT;
+class IGES;
 
-class IGES_GEOM_PCB : public MCAD_OUTLINE
+class DLL_IGES_GEOM_PCB : public DLL_MCAD_OUTLINE
 {
-private:
-    // routines to create curves suitable as subordinates to the CPTR of
-    // a trimmed parametric surface
-    bool getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                         double zHeight, MCAD_SEGMENT* aSegment );
-    bool getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                      double zHeight, MCAD_SEGMENT* aSegment );
-    bool getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                       double zHeight, MCAD_SEGMENT* aSegment );
-
-    // routines to create curves suitable as subordinates to the BPTR of
-    // a trimmed parametric surface
-    bool copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                    double offX, double offY, double aScale,
-                    double zHeight, MCAD_SEGMENT* aSegment );
-    bool copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                 double offX, double offY, double aScale,
-                 double zHeight, MCAD_SEGMENT* aSegment );
-    bool copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
-                  double offX, double offY, double aScale,
-                  double zHeight, MCAD_SEGMENT* aSegment );
-
-protected:
-   // create a Trimmed Parametric Surface entity with only the PTS member instantiated
-   IGES_ENTITY_144* getUntrimmedPlane( IGES* aModel, double aHeight );
-
 public:
-    IGES_GEOM_PCB();
-    virtual ~IGES_GEOM_PCB();
+    DLL_IGES_GEOM_PCB( bool create );
+    virtual ~DLL_IGES_GEOM_PCB();
+
+    virtual bool NewOutline( void );
+    virtual bool Attach( MCAD_OUTLINE* aOutline );
 
     /**
      * Function GetVerticalSurface
@@ -116,26 +94,31 @@ public:
      * @param aModel is a pointer to the IGES object which shall own all entities created
      * @param error is set to true if an error is encountered; extended error information
      * is available via GetErrors().
-     * @param aSurface [in, out] is a list of surfaces to append to
+     * @param aSurface [in, out] is a dynamic array of surfaces to append to; the caller is
+     * responsible for deleting the array (but not its contents) when it is no longer required.
      * @param aTopZ is the top height of the plane
      * @param aBotZ is the bottom height of the plane
      * @return true on success
      */
     bool GetVerticalSurface( IGES* aModel, bool& error,
-                             std::vector<IGES_ENTITY_144*>& aSurface,
-                             double aTopZ, double aBotZ );
+                             IGES_ENTITY_144**& aSurfaceList,
+                             int& nSurfaces, double aTopZ, double aBotZ );
 
     // retrieve the trimmed parametric surfaces representing the
     // top or bottom plane of the board
+    // note: aSurfaceList [in/out] must be deleted [] by the caller
+    // when no longer needed
     bool GetTrimmedPlane( IGES* aModel, bool& error,
-                          std::vector<IGES_ENTITY_144*>& aSurface,
-                          double aHeight );
+                          IGES_ENTITY_144**& aSurfaceList,
+                          int& nSurfaces, double aHeight );
 
     // retrieve the representation of the curve as IGES
     // 2D primitives (Entity 100 or Entity 110). An arc
     // or circle is automatically divided into multiple
     // segments for the consumption of MCADs.
-    bool GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
+    // note: aCurveList [in/out] must be deletd [] by the
+    // caller when no longer needed
+    bool GetCurves( IGES* aModel, IGES_CURVE**& aCurveList, int& nCurves,
                     double zHeight, MCAD_SEGMENT* aSegment );
 
     // retrieve the curve as a list of parametric curves on plane; it is
@@ -149,13 +132,17 @@ public:
     // 2. The plane must encompass all points in the curve or else the
     //    operation shall fail since an out-of-bounds parameter would be
     //    calculated.
-    bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
+    // note: aCurveList [in/out] must be deletd [] by the
+    // caller when no longer needed
+    bool GetCurveOnPlane(  IGES* aModel, IGES_ENTITY_126**& aCurveList, int& nCurves,
                            double aMinX, double aMaxX, double aMinY, double aMaxY,
                            double zHeight, MCAD_SEGMENT* aSegment );
 
     // retrieve a trimmed parametric surface representing a vertical side
-    bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
+    // note: aSurfaceLIst [in/out] must be deletd [] by the
+    // caller when no longer needed
+    bool GetSegmentWall( IGES* aModel, IGES_ENTITY_144**& aSurfaceList, int& nSurfaces,
                          double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment );
 };
 
-#endif  // IGES_GEOM_PCB_H
+#endif  // DLL_IGES_GEOM_PCB_H

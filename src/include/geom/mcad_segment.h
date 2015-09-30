@@ -37,6 +37,9 @@
 
 class MCAD_SEGMENT
 {
+private:
+    std::list< bool* > m_validFlags;
+
 protected:
     friend class MCAD_OUTLINE;
     MCAD_SEGTYPE msegtype;  // segment type,
@@ -105,6 +108,19 @@ public:
     MCAD_POINT GetMStart( void ) const;
     MCAD_POINT GetMEnd( void ) const;
 
+    /**
+     * Function AttachValidFlag
+     * sets a pointer to the boolean used to signal an
+     * API layer upon destruction
+     *
+     * @param aFlag is a pointer to an API layer's internal
+     * validation flag; this object will set the pointer's
+     * content to true on success, and false on failure or
+     * in the future if the object is deleted.
+     */
+    void AttachValidFlag( bool* aFlag );
+    void DetachValidFlag( bool* aFlag );
+
     // set the parameters for a line
     bool SetParams( MCAD_POINT aStart, MCAD_POINT aEnd );
 
@@ -146,6 +162,8 @@ public:
     //            original segment such that 't' is monotonically increasing
     //            from 0 .. 1.
     bool Split( std::list<MCAD_POINT>& aIntersectList, std::list<MCAD_SEGMENT*>& aNewSegmentList );
+
+    //
 };
 
 #endif  // MCAD_SEGMENT_H

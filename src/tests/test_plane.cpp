@@ -4,7 +4,10 @@
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
  * Description:
- *  This is a test suite for the IGES_GEOM_PCB class
+ *  This is a test suite for the IGES_GEOM_PCB class; in addition
+ * to creating the vertical walls as in test_outline.cpp, the
+ * objects should be enclosed solids with the appropriately trimmed
+ * planes at the top and bottom of the vertical walls.
  *
  * This file is part of libIGES.
  *

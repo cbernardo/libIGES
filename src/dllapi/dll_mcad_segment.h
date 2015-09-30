@@ -35,20 +35,27 @@
 
 class MCAD_SEGMENT;
 
-class MCAD_API DLL_MCAD_SEGMENT
+class DLL_MCAD_SEGMENT
 {
 private:
     MCAD_SEGMENT* m_segment;
+    bool m_valid;
 
 public:
     DLL_MCAD_SEGMENT( bool create );
     ~DLL_MCAD_SEGMENT();
 
+    /**
+     * Function IsValid
+     * returns true if the object holds a valid MCAD_SEGMENT pointer
+     */
+    bool IsValid( void );
+
     // create a new segment type; if a segment already
     // exists then it is detached; if the user wishes to
     // destroy the segment then DelSegment() must be
     // invoked first
-    void NewSegment( void );
+    bool NewSegment( void );
 
     // delete the currently associated segment
     void DelSegment( void );

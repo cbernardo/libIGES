@@ -46,6 +46,7 @@
 #include <entity144.h>
 #include <sisl.h>
 #include "../include/iges/iges_entity.h"
+#include "../include/geom/mcad_outline.h"
 
 
 using namespace std;
@@ -156,6 +157,7 @@ IGES_GEOM_PCB::IGES_GEOM_PCB()
     mIsClosed = false;
     mWinding = 0.0;
     mBBisOK = false;
+    m_OutlineType = MCAD_OT_PCB;
     return;
 }
 

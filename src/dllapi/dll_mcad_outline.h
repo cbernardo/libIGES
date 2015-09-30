@@ -1,5 +1,5 @@
 /*
- * file: mcad_outline.h
+ * file: dll_mcad_outline.h
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -64,124 +64,115 @@
  *   dividing the offending cutout into at least 2 separate bodies.
  */
 
-#ifndef MCAD_OUTLINE_H
-#define MCAD_OUTLINE_H
+#ifndef DLL_MCAD_OUTLINE_H
+#define DLL_MCAD_OUTLINE_H
 
-#include <list>
-#include <string>
 #include <libigesconf.h>
+#include <mcad_elements.h>
+#include <dll_mcad_segment.h>
 
 class MCAD_SEGMENT;
+class MCAD_OUTLINE;
 
-enum MCAD_OUTLINE_TYPE
+class DLL_MCAD_OUTLINE
 {
-    MCAD_OT_BASE = 0,
-    MCAD_OT_PCB
-};
-
-struct MCAD_INTERSECT
-{
-    MCAD_POINT vertex;
-    MCAD_SEGMENT* segA;     // pointer to the segment operated upon
-    MCAD_SEGMENT* segB;     // pointer to the segment modifying segA
-    std::list<MCAD_SEGMENT*>::iterator iSegA;   // iterator to the segment operated upon
-    std::list<MCAD_SEGMENT*>::iterator iSegB;   // iterator to the segment operation's argument, else = iSegA
-
-    MCAD_INTERSECT()
-    {
-        segA = NULL;
-        segB = NULL;
-    }
-};
-
-class MCAD_OUTLINE
-{
-private:
-    std::list< bool* > m_validFlags;
-
 protected:
-    std::list< std::string > errors;
-    bool mIsClosed;     // true if the outline is closed
-    double mWinding;    // accumulator to test for CW/CCW winding
-    // operate on the circular outline (add/subtract)
-    bool opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub );
-    // operate on the generic outline (add/subtract)
-    bool opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub );
-    // recalculate the bounding box
-    void calcBoundingBox( void );
-    // adjust the bounding box in preparation for rendering a surface
-    void adjustBoundingBox( void );
-    bool mBBisOK;       // true if the bounding box has been calculated and
-                        // no operations have been performed on the outline
-
-    MCAD_OUTLINE_TYPE m_OutlineType;    // set to indicate base or derived class type
-
-    MCAD_POINT mBottomLeft; // bottom left coordinate
-    MCAD_POINT mTopRight;   // top right coordinate of bounding box
-    std::list<MCAD_SEGMENT*> msegments; // list of segments
-    std::list<MCAD_OUTLINE*> mcutouts;  // list of non-overlapping cutouts
-    std::list<MCAD_SEGMENT*> mholes;    // list of non-overlapping holes
+    MCAD_OUTLINE* m_outline;
+    bool m_valid;
 
 public:
-    MCAD_OUTLINE();
-    virtual ~MCAD_OUTLINE();
-
-    MCAD_OUTLINE_TYPE GetOutlineType( void );
+    DLL_MCAD_OUTLINE( bool create );
+    virtual~DLL_MCAD_OUTLINE();
 
     /**
-     * Function AttachValidFlag
-     * sets a pointer to the boolean used to signal an
-     * API layer upon destruction
-     *
-     * @param aFlag is a pointer to an API layer's internal
-     * validation flag; this object will set the pointer's
-     * content to true on success, and false on failure or
-     * in the future if the object is deleted.
+     * Function IsValid
+     * returns true if the object holds a valid MCAD_SEGMENT pointer
      */
-    void AttachValidFlag( bool* aFlag );
-    void DetachValidFlag( bool* aFlag );
+    bool IsValid( void );
 
-    std::list<MCAD_SEGMENT*>* GetSegments( void );
-    std::list<MCAD_OUTLINE*>* GetCutouts( void );
-    std::list<MCAD_SEGMENT*>* GetDrillHoles( void );
+    // create a new segment type; if a segment already
+    // exists then it is detached; if the user wishes to
+    // destroy the segment then DelSegment() must be
+    // invoked first
+    virtual bool NewOutline( void );
 
-    // Retrieve the error stack
-    const std::list< std::string >* GetErrors( void );
+    // delete the currently associated segment
+    void DelOutline( void );
 
-    // Clear the error stack
+    // detach from the wrapped segment; if the segment is not
+    // detached upon destruction then the segment itself will
+    // also be destroyed
+    void Detach( void );
+
+    // attach
+    virtual bool Attach( MCAD_OUTLINE* aOutline );
+
+    // retrieve the raw pointer to the internal MCAD_OUTLINE object
+    MCAD_OUTLINE* GetRawPtr();
+
+    // retrieve the segments currently in the main outline;
+    // the user must delete [] aSegmentList when it is no longer needed
+    bool GetSegments( MCAD_SEGMENT**& aSegmentList, int& aListSize );
+    // retrieve the cutouts;
+    // the user must delete [] aCutoutList when it is no longer needed
+    bool GetCutouts( MCAD_OUTLINE**& aCutoutList, int& aListSize );
+    // retrieve the circular holes;
+    // the user must delete [] aDrillHoleList when it is no longer needed
+    bool GetDrillHoles( MCAD_SEGMENT**& aDrillHoleList, int& aListSize );
+    // retrieve the array of error messages;
+    // the user must delete [] anErrorList when it is no longer needed
+    bool GetErrors( char const**& anErrorList, int& aListSize );
+    // clear all error messages
     void ClearErrors( void );
+    // sets aResult to 'true' if the outline is closed
+    bool IsClosed( bool& aResult );
+    // sets aResult to 'true' if the (closed) outline is contiguous
+    bool IsContiguous( bool& aResult );
 
-    // Returns 'true' if the outline is closed
-    bool IsClosed( void );
-
-    // Returns 'true' if the (closed) outline is contiguous
-    bool IsContiguous( void );
-
-    // Returns 'true' if the point is on or inside this outline
+    // sets aResult to 'true' if the point is on or inside this outline
     bool IsInside( MCAD_POINT aPoint, bool& error );
 
     // Add a segment to this outline; the user must ensure that
     // the outline is closed before performing any other type
     // of operation.
     bool AddSegment( MCAD_SEGMENT* aSegment, bool& error );
+    bool AddSegment( DLL_MCAD_SEGMENT& aSegment, bool& error );
 
     // Merge the given closed outline with this one; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
+    // On success aOutline becomes part of this object's list
+    // and the MCAD_OUTLINE container is automatically destroyed;
+    // in the case of a DLL_MCAD_OUTLINE the user may reuse the
+    // container. On failure the aOutline object may be corrupted
+    // and in the case of an MCAD_OUTLINE the user should destroy it;
+    // for a DLL_MCAD_OUTLINE the user may call DelOutline() and
+    // reuse the container.
     bool AddOutline( MCAD_OUTLINE* aOutline, bool& error );
+    bool AddOutline( DLL_MCAD_OUTLINE& aOutline, bool& error );
 
     // Merge the given circle with this outline
+    // On success aCircle becomes part of this object's list
+    // and the MCAD_SEGMENT container is automatically destroyed;
+    // in the case of a DLL_MCAD_SEGMENT the user may reuse the
+    // container. On failure aCircle remains unchanged and the user
+    // is responsible for disposing of it.
     bool AddOutline( MCAD_SEGMENT* aCircle, bool& error );
+    bool AddOutline( DLL_MCAD_SEGMENT& aCircle, bool& error );
 
     // Subtract the given outline from this one; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
+    // On success/failure behavior is similar to AddOutline( MCAD_OUTLINE* ... )
     bool SubOutline( MCAD_OUTLINE* aOutline, bool& error );
+    bool SubOutline( DLL_MCAD_OUTLINE& aOutline, bool& error );
 
     // Subtract the given circular segment from this outline; to keep the
     // code simple, the following restriction is imposed:
     // the two outlines may only intersect at 2 points.
+    // On success/failure behavior is similar to AddOutline( MCAD_SEGMENT* ... )
     bool SubOutline( MCAD_SEGMENT* aCircle, bool& error );
+    bool SubOutline( DLL_MCAD_SEGMENT& aCircle, bool& error );
 
     // Add the given cutout in preparation for exporting a solid model.
     // If the cutout is known to be non-overlapping then the 'overlaps'
@@ -195,6 +186,7 @@ public:
     // ensure that the cutouts do not overlap with any other cutouts,
     // otherwise the geometry will be invalid.
     bool AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& error );
+    bool AddCutout( DLL_MCAD_OUTLINE& aCutout, bool overlaps, bool& error );
 
     // Add the given circular segment as a cutout; if the segment is
     // known to be non-overlapping then 'overlaps' may be set to 'false',
@@ -204,12 +196,8 @@ public:
     // It is the caller's responsibility to ensure that the cutouts do not
     // overlap with any other cutouts, otherwise the geometry will be invalid.
     bool AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& error );
-
-    // print routines for testing/debugging
-    void PrintPoint( MCAD_POINT p0 );
-    void PrintSeg( MCAD_SEGMENT* seg );
-    void PrintGeomIntersects( const std::list<MCAD_INTERSECT>& aList );
+    bool AddCutout( DLL_MCAD_SEGMENT& aCircle, bool overlaps, bool& error );
 
 };
 
-#endif  // MCAD_OUTLINE_H
+#endif  // DLL_MCAD_OUTLINE_H

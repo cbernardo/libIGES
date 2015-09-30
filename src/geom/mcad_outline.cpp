@@ -115,6 +115,7 @@ MCAD_OUTLINE::MCAD_OUTLINE()
     mIsClosed = false;
     mWinding = 0.0;
     mBBisOK = false;
+    m_OutlineType = MCAD_OT_BASE;
     return;
 }
 
@@ -137,6 +138,62 @@ MCAD_OUTLINE::~MCAD_OUTLINE()
     {
         delete mholes.back();
         mholes.pop_back();
+    }
+
+    return;
+}
+
+
+MCAD_OUTLINE_TYPE MCAD_OUTLINE::GetOutlineType( void )
+{
+    return m_OutlineType;
+}
+
+
+void MCAD_OUTLINE::AttachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            // exit if we already have this registered
+            *aFlag = true;
+            return;
+        }
+
+        ++sVF;
+    }
+
+    *aFlag = true;
+    m_validFlags.push_back( aFlag );
+    return;
+}
+
+
+void MCAD_OUTLINE::DetachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            *aFlag = false;
+            m_validFlags.erase( sVF );
+            return;
+        }
+
+        ++sVF;
     }
 
     return;

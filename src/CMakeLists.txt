@@ -158,6 +158,8 @@ if( HAS_NURBS_LIB )
             "${SRC_GEOM}/mcad_segment.cpp"
             "${SRC_GEOM}/mcad_outline.cpp"
             "${SRC_DLL}/dll_mcad_segment.cpp"
+            "${SRC_DLL}/dll_mcad_outline.cpp"
+            "${SRC_DLL}/dll_iges_geom_pcb.cpp"
     )
 endif( HAS_NURBS_LIB )
 

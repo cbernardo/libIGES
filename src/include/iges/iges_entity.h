@@ -297,7 +297,7 @@ public:
     virtual ~IGES_ENTITY();
 
     /**
-     * Function SetValidFlag
+     * Function AttachValidFlag
      * sets a pointer to the boolean used to signal an
      * API layer upon destruction
      *

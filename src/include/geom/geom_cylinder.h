@@ -53,8 +53,29 @@ public:
     ~IGES_GEOM_CYLINDER();
 
     bool SetParams( MCAD_POINT center, MCAD_POINT start, MCAD_POINT end );
+
+    /**
+     * Function Instantiate
+     * uses current parameters to create IGES entities which represent
+     * a cylindrical arc. If data is returned in 'result' the
+     * caller is responsible for deleting the pointer array when it
+     * is no longer needed.
+     *
+     * @param model is the IGES object which will own the entities
+     * created.
+     * @param top is the height of the top of the cylindrical arc
+     * @param bot is the height of the bottom of the cylindrical arc
+     * @param result [out] is a list of pointers to the Trimmed
+     * Parametric Surfaces which represent the cylindrical arc;
+     * if non-NULL on return the caller is responsible for calling
+     * delete[] on the pointer.
+     * @param nParts will hold the number of surface pointers in
+     * 'result'
+     * @return true if the cylindrical arc was successfully
+     * instantiated; in such a case 'result' will be non-null
+     */
     bool Instantiate( IGES* model, double top, double bot,
-                      std::vector<IGES_ENTITY_144*>& result );
+                      IGES_ENTITY_144**& result, int& nParts );
 };
 
 #endif  // IGES_GEOM_CYLINDER_H

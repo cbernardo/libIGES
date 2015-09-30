@@ -54,6 +54,7 @@
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 #include <mcad_segment.h>
+#include "../include/iges/entity508.h"
 
 using namespace std;
 
@@ -156,7 +157,7 @@ int main()
     seg.SetParams( p[4], p[3] );
     GetSegmentWall( &model, res, 1.5, -1.5, &seg );
 
-    model.Write( "test_segs.igs", true );
+    model.Write( "test_curves.igs", true );
 
     return 0;
 }
@@ -269,14 +270,16 @@ int test_cyl_wall( void )
         return -1;
     }
 
-    vector<IGES_ENTITY_144*> tlist;
+    IGES_ENTITY_144** tlist;
+    int nParts;
 
-    if( !cyl.Instantiate( &model, 2.5, -1.5, tlist ) )
+    if( !cyl.Instantiate( &model, 2.5, -1.5, tlist, nParts ) )
     {
         cerr << "[FAIL]: could not instantiate cylinder\n";
         return -1;
     }
 
+    delete [] tlist;
     model.Write( "test_cyl_wall.igs", true );
 
     return 0;
@@ -313,23 +316,22 @@ bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
             {
                 IGES_GEOM_CYLINDER cyl;
 
-                /* XXX - Original; restore if there are problems
-                 *                if( !aSegment->IsCW() )
-                 *                {
-                 *                    cyl.SetParams( aSegment->GetCenter(), aSegment->GetMStart(),
-                 *                                   aSegment->GetMEnd() );
-            }
-            else
-            {
-            cyl.SetParams( aSegment->GetCenter(), aSegment->GetMEnd(),
-            aSegment->GetMStart() );
-            }
-            */
-
                 cyl.SetParams( aSegment->GetCenter(), aSegment->GetStart(),
                                aSegment->GetEnd() );
 
-                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, aSurface );
+                IGES_ENTITY_144** surfs = NULL;
+                int nParts;
+
+                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, surfs, nParts );
+
+                if( ok )
+                {
+                    for( int i = 0; i < nParts; ++i )
+                        aSurface.push_back( surfs[i] );
+
+                    delete [] surfs;
+                }
+
             } while( 0 );
 
             break;

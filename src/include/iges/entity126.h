@@ -33,6 +33,14 @@
 #include <iges_curve.h>
 #include <mcad_elements.h>
 
+// XXX - NOTE: for now if we build with SISL support we can calculate
+// the first and last points on a NURBS curve. Since the aim is to
+// remove SISL from the core IGES code this should be deprecated in
+// favor of a libIGES implementation of the de Boors - Cox algorithm.
+#ifdef USE_SISL
+    #include <sisl.h>
+#endif
+
 
 // NOTE:
 // The associated parameter data are:
@@ -77,6 +85,9 @@ class IGES_ENTITY_126 : public IGES_CURVE
 private:
     // norm: if provided the normal to the plane will be returned
     bool hasUniquePlane( MCAD_POINT* norm = NULL );
+#ifdef USE_SISL
+    SISLCurve* scurve;
+#endif
 
 protected:
 

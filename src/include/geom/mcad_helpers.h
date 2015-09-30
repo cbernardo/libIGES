@@ -50,6 +50,6 @@ struct MCAD_POINT;
 MCAD_API void print_vec(const MCAD_POINT* p);
 
 // calculate the normal given points p0, p1, p2
-MCAD_API bool CalcNormal(const MCAD_POINT* p0, const MCAD_POINT* p1, const MCAD_POINT* p2, MCAD_POINT* pn);
+MCAD_API bool CalcNormal( const MCAD_POINT* p0, const MCAD_POINT* p1, const MCAD_POINT* p2, MCAD_POINT* pn );
 
 #endif  // MCAD_HELPERS_H

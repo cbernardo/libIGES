@@ -286,10 +286,12 @@ bool IGES_GEOM_CYLINDER::SetParams( MCAD_POINT center, MCAD_POINT start, MCAD_PO
 
 
 bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
-                                      std::vector<IGES_ENTITY_144*>& result )
+    IGES_ENTITY_144**& result, int& nParts )
 {
     // note: we never clear 'result' as the user may be storing a list of
     // trimmed entity pointers
+    nParts = 0;
+    result = NULL;
 
     if( !narcs )
     {
@@ -311,6 +313,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
     if( top < bot )
         swap( top, bot );
+
+    std::vector<IGES_ENTITY_144*> parts;
 
     // Requirements:
     // + [4*narcs]xE110: iline, Line (axis of revolution, generatrix, and geometric bound)
@@ -934,7 +938,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     }
 
     for( int i = 0; i < narcs; ++i )
-        result.push_back( itps[i] );
+        parts.push_back( itps[i] );
 
     // clean up on success
     do
@@ -972,6 +976,12 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
     } while( 0 );
+
+    nParts = (int)parts.size();
+    result = new IGES_ENTITY_144*[nParts];
+
+    for( int i = 0; i < nParts; ++i )
+        result[i] = parts[i];
 
     return true;
 }

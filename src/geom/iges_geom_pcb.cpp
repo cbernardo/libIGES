@@ -45,6 +45,7 @@
 #include <entity142.h>
 #include <entity144.h>
 #include <sisl.h>
+#include "../include/iges/iges_entity.h"
 
 
 using namespace std;
@@ -1012,7 +1013,19 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
                 cyl.SetParams( aSegment->GetCenter(), aSegment->GetStart(),
                     aSegment->GetEnd() );
 
-                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, aSurface );
+                IGES_ENTITY_144** surfs = NULL;
+                int nParts;
+
+                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, surfs, nParts  );
+
+                if( ok )
+                {
+                    for( int i = 0; i < nParts; ++i )
+                        aSurface.push_back( surfs[i] );
+
+                    delete [] surfs;
+                }
+
             } while( 0 );
 
             break;

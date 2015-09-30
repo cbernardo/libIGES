@@ -54,12 +54,21 @@ IGES_ENTITY_126::IGES_ENTITY_126( IGES* aParent ) : IGES_CURVE( aParent )
     knots = NULL;
     coeffs = NULL;
 
+#ifdef USE_SISL
+    scurve = NULL;
+#endif
+
     return;
 }
 
 
 IGES_ENTITY_126::~IGES_ENTITY_126()
 {
+#ifdef USE_SISL
+    if( NULL != scurve )
+        freeCurve( scurve );
+#endif
+
     if( knots )
         delete [] knots;
 
@@ -827,8 +836,46 @@ bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
     if( nCoeffs < 2 )
         return false;
 
-    // XXX -
-    // To be implemented: evaluate first point
+    // XXX - To be reimplemented with self-contained de Boors - Cox algorithm
+#ifdef USE_SISL
+    if( !scurve )
+    {
+        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+        if( !scurve )
+        {
+            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+            return false;
+        }
+    }
+
+    double vals[6];
+    int kt = 0;
+    double r = 0;
+    int stat = 0;
+
+    s1225( scurve, 0, V0, &kt, vals, &vals[3], &r, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            stat = 0;
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            return false;
+            break;
+    }
+
+    pt.x = vals[0];
+    pt.y = vals[1];
+    pt.z = vals[2];
+#endif
 
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
@@ -842,8 +889,46 @@ bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
     if( nCoeffs < 2 )
         return false;
 
-    // XXX -
-    // To be implemented: evaluate last point
+    // XXX - To be reimplemented with self-contained de Boors - Cox algorithm
+#ifdef USE_SISL
+    if( !scurve )
+    {
+        scurve = newCurve( nCoeffs, M + 1, knots, coeffs, PROP3 ? 1 : 2, 3, 0 );
+
+        if( !scurve )
+        {
+            ERRMSG << "\n + [INFO] memory allocation failed in SISL newCurve()\n";
+            return false;
+        }
+    }
+
+    double vals[6];
+    int kt = 0;
+    double r = 0;
+    int stat = 0;
+
+    s1225( scurve, 0, V1, &kt, vals, &vals[3], &r, &stat );
+
+    switch( stat )
+    {
+        case 0:
+            break;
+
+        case 1:
+            ERRMSG << "\n + [WARNING] unspecified warning from SISL s1225() [evaluate position from left]\n";
+            stat = 0;
+            break;
+
+        default:
+            ERRMSG << "\n + [ERROR] SISL s1225() could not compute the position on a curve\n";
+            return false;
+            break;
+    }
+
+    pt.x = vals[0];
+    pt.y = vals[1];
+    pt.z = vals[2];
+#endif
 
     if( xform && pTransform )
         pt = pTransform->GetTransformMatrix() * pt;
@@ -901,6 +986,11 @@ bool IGES_ENTITY_126::GetNURBSData( int& nCoeff, int& order, double** knot,
 bool IGES_ENTITY_126::SetNURBSData( int nCoeff, int order, const double* knot,
     const double* coeff, bool isRational, double v0, double v1 )
 {
+#ifdef USE_SISL
+    if( NULL != scurve )
+        freeCurve( scurve );
+#endif
+
     if( !knot || !coeff )
     {
         ERRMSG << "\n + [INFO] invalid NURBS parameter pointer (NULL)\n";

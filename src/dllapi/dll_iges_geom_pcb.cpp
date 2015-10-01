@@ -74,7 +74,7 @@ bool DLL_IGES_GEOM_PCB::NewOutline( void )
 
 bool DLL_IGES_GEOM_PCB::Attach( MCAD_OUTLINE* aOutline )
 {
-    if( NULL != m_outline && m_valid || NULL == aOutline )
+    if( ( NULL != m_outline && m_valid ) || NULL == aOutline )
         return false;
 
     if( MCAD_OT_PCB != aOutline->GetOutlineType() )

@@ -112,7 +112,7 @@ void DLL_MCAD_OUTLINE::Detach( void )
 
 bool DLL_MCAD_OUTLINE::Attach( MCAD_OUTLINE* aOutline )
 {
-    if( NULL != m_outline && m_valid || NULL == aOutline )
+    if( ( NULL != m_outline && m_valid ) || NULL == aOutline )
         return false;
 
     m_outline = aOutline;

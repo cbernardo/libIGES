@@ -460,7 +460,8 @@ int test_arcs( void )
 
 int test_lines( void )
 {
-    DLL_MCAD_SEGMENT sides[4]( true );
+    DLL_MCAD_SEGMENT sides[4] = { DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ),
+                                  DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ) };
     MCAD_POINT v[4];
 
     v[0].x = 10.0;
@@ -671,7 +672,8 @@ int test_lines( void )
 
 int test_addr( void )
 {
-    DLL_MCAD_SEGMENT sides[4]( true );
+    DLL_MCAD_SEGMENT sides[4] = { DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ),
+                                  DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ) };
     MCAD_POINT v[4];
 
     if( 0 )
@@ -837,7 +839,8 @@ int test_addr( void )
 
 int test_otln( bool subs, bool primeA )
 {
-    DLL_MCAD_SEGMENT sides[4]( true );
+    DLL_MCAD_SEGMENT sides[4] = { DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT(true),
+                                  DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ) };
     MCAD_POINT v[4];
 
     v[0].x = 10.0;
@@ -875,8 +878,12 @@ int test_otln( bool subs, bool primeA )
     }
 
     MCAD_POINT c1[2];   // parameters for circles
-    DLL_MCAD_SEGMENT circ[6]( true );
-    DLL_IGES_GEOM_PCB otln[6]( true );
+    DLL_MCAD_SEGMENT circ[6] = { DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ),
+                                 DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ),
+                                 DLL_MCAD_SEGMENT( true ), DLL_MCAD_SEGMENT( true ) };
+    DLL_IGES_GEOM_PCB otln[6] = { DLL_IGES_GEOM_PCB( true ), DLL_IGES_GEOM_PCB( true ),
+                                  DLL_IGES_GEOM_PCB( true ), DLL_IGES_GEOM_PCB( true ),
+                                  DLL_IGES_GEOM_PCB( true ), DLL_IGES_GEOM_PCB( true ) };
 
     // create the various circular outlines
 

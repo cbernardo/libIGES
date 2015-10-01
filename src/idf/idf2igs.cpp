@@ -59,14 +59,15 @@ class IGES_ENTITY_408;
 
 using namespace std;
 
+// colors to be used in the output assembly model
+#define NCOLORS 9
+
 static struct
 {
     string basename;
-    IGES_ENTITY_314** colors;
+    IGES_ENTITY_314* colors[NCOLORS];
 } globs;
 
-// colors to be used in the output assembly model
-#define NCOLORS 9
 bool initColors( DLL_IGES& model, IGES_ENTITY_314** colors );
 
 // convert IDF outline to IGS outline
@@ -149,16 +150,11 @@ int main( int argc, char **argv )
     model.SetUnitsFlag( UNIT_MM );
     model.SetMinResolution( 1e-8 );
 
-    // create the color schemes:
-    IGES_ENTITY_314* colors[NCOLORS];
-
-    if( !initColors( model, colors ) )
+    if( !initColors( model, globs.colors ) )
     {
         cerr << "** Failed to create IGES color entities\n";
         return -1;
     }
-
-    globs.colors = colors;
 
     // Create the VRML file and write the header
     MCAD_FILEPATH mofname;

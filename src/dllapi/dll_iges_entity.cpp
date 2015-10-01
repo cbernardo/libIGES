@@ -42,6 +42,10 @@
 DLL_IGES_ENTITY::DLL_IGES_ENTITY( IGES* aParent )
 {
     m_parent = aParent;
+
+    if( NULL != aParent )
+        m_parent->AttachValidFlag( &m_hasParent );
+
     m_entity = NULL;
     m_valid = false;
     m_type = ENT_NULL;
@@ -52,6 +56,10 @@ DLL_IGES_ENTITY::DLL_IGES_ENTITY( IGES* aParent )
 DLL_IGES_ENTITY::DLL_IGES_ENTITY( DLL_IGES& aParent )
 {
     m_parent = aParent.GetRawPtr();
+
+    if( NULL != m_parent )
+        m_parent->AttachValidFlag( &m_hasParent );
+
     m_entity = NULL;
     m_valid = false;
     m_type = ENT_NULL;

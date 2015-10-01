@@ -153,9 +153,6 @@ bool IGES_ENTITY_314::format( int &index )
         blue = 20.0;
     }
 
-    if( cname.empty() )
-        cname = "none";
-
     if( index < 1 || index > 9999999 )
     {
         ERRMSG << "\n + [INFO] invalid Parameter Data Sequence Number\n";
@@ -197,10 +194,17 @@ bool IGES_ENTITY_314::format( int &index )
 
     char idelim;
 
-    if( extras.empty() )
-        idelim = rd;
+    if( cname.empty() )
+    {
+        if( extras.empty() )
+            idelim = rd;
+        else
+            idelim = pd;
+    }
     else
+    {
         idelim = pd;
+    }
 
     if( !FormatPDREal( tStr, blue, idelim, 0.1 ) )
     {
@@ -210,6 +214,19 @@ bool IGES_ENTITY_314::format( int &index )
     }
 
     AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+
+    if( !cname.empty() )
+    {
+        if( extras.empty() )
+            idelim = rd;
+        else
+            idelim = pd;
+
+        ostr.str( "" );
+        ostr << cname.size() << "H" << cname << idelim;
+        tStr = ostr.str();
+        AddPDItem( tStr, fStr, pdout, index, sequenceNumber, pd, rd );
+    }
 
     if( !extras.empty() && !formatExtraParams( fStr, index, pd, rd ) )
     {

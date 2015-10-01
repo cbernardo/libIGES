@@ -313,7 +313,7 @@ bool DLL_MCAD_SEGMENT::GetIntersections( MCAD_SEGMENT const* aSegment,
     if( !m_segment->GetIntersections( *aSegment, ilist, flags ) )
         return false;
 
-    aNumIntersections = ilist.size();
+    aNumIntersections = (int)ilist.size();
     aIntersectList = new MCAD_POINT[aNumIntersections];
     std::list<MCAD_POINT>::iterator sL = ilist.begin();
     std::list<MCAD_POINT>::iterator eL = ilist.end();
@@ -351,7 +351,7 @@ bool DLL_MCAD_SEGMENT::GetIntersections( DLL_MCAD_SEGMENT& aSegment,
     if( !m_segment->GetIntersections( *aSegment.GetRawPtr(), ilist, flags ) )
         return false;
 
-    aNumIntersections = ilist.size();
+    aNumIntersections = (int)ilist.size();
     aIntersectList = new MCAD_POINT[aNumIntersections];
     std::list<MCAD_POINT>::iterator sL = ilist.begin();
     std::list<MCAD_POINT>::iterator eL = ilist.end();
@@ -436,6 +436,6 @@ bool DLL_MCAD_SEGMENT::Split( MCAD_POINT** aIntersectList, int aNumIntersects,
     }
 
     aNewSegmentList = sp;
-    aNumNewSegs += slist.size();
+    aNumNewSegs += (int)slist.size();
     return true;
 }

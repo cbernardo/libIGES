@@ -40,6 +40,8 @@ public:
     DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_308();
 
+    virtual bool NewEntity( void );
+
     bool GetNumDE( size_t& aDESize );
     bool GetDEList( size_t& aDESize, IGES_ENTITY**& aDEList );
     bool AddDE(IGES_ENTITY* aPtr);
@@ -48,7 +50,7 @@ public:
     bool DelDE(DLL_IGES_ENTITY*& aPtr);
     bool GetNestDepth( int& aNestDepth );
     bool GetName( const char*& aName );
-    bool SetName( const char*& aName );
+    bool SetName( const char* aName );
 };
 
 #endif  // DLL_ENTITY_308_H

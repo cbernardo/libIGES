@@ -39,6 +39,8 @@ public:
     DLL_IGES_ENTITY_110( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_110();
 
+    virtual bool NewEntity( void );
+
     bool GetLineStart( MCAD_POINT& pt );
     bool GetLineStart( double& aX, double& aY, double& aZ );
     bool GetLineEnd( MCAD_POINT& pt );

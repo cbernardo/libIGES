@@ -40,6 +40,8 @@ public:
     DLL_IGES_ENTITY_124( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_124();
 
+    virtual bool NewEntity( void );
+
     bool GetOverallTransform( MCAD_TRANSFORM& aTX );
     bool GetRootTransform( MCAD_TRANSFORM& aTX );
     bool SetRootTransform( MCAD_TRANSFORM*& aTX );

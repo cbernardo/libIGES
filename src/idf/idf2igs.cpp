@@ -43,14 +43,19 @@
 #include <idf_parser.h>
 
 #include <error_macros.h>
-#include <iges.h>
+#include <dll_iges.h>
 #include <geom_wall.h>
 #include <geom_cylinder.h>
-#include <mcad_segment.h>
-#include <iges_geom_pcb.h>
-#include <all_entities.h>
+#include <dll_mcad_segment.h>
+#include <dll_iges_geom_pcb.h>
+#include <all_api_entities.h>
 #include <mcad_utils.h>
 
+class IGES_ENTITY_124;
+class IGES_ENTITY_144;
+class IGES_ENTITY_308;
+class IGES_ENTITY_314;
+class IGES_ENTITY_408;
 
 using namespace std;
 
@@ -62,11 +67,11 @@ static struct
 
 // colors to be used in the output assembly model
 #define NCOLORS 9
-bool initColors( IGES& model, IGES_ENTITY_314** colors );
+bool initColors( DLL_IGES& model, IGES_ENTITY_314** colors );
 
 // convert IDF outline to IGS outline
 bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF );
-bool convertDrills( list< MCAD_SEGMENT* >& drills, const list<IDF_DRILL_DATA*>* dh );
+bool convertDrills( list< MCAD_SEGMENT* >& drills, const list< IDF_DRILL_DATA* >* dh );
 // merge overlapping drills into cutouts; return true if any drills were merged;
 // if invalid geometry was encountered the error flag will be set
 bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts, bool& error );
@@ -77,15 +82,15 @@ void killDrills( list< MCAD_SEGMENT* >& drills );
 // delete cutout data
 void killCutouts( list< MCAD_OUTLINE* >& cutouts );
 
-bool MakeBoard( IDF3_BOARD& board, IGES& model );
-bool MakeComponents( IDF3_BOARD& board, IGES& model );
-bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model );
+bool MakeBoard( IDF3_BOARD& board, DLL_IGES& model );
+bool MakeComponents( IDF3_BOARD& board, DLL_IGES& model );
+bool MakeOtherOutlines( IDF3_BOARD& board, DLL_IGES& model );
 // build a component part model from the given outline data
-bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig );
+bool buildComponent( DLL_IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig );
 
 // routines to make IGES model creation easier
-bool newSubfigure( IGES& model, IGES_ENTITY_308** aNewSubfig );
-IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, double dA, bool bottom );
+bool newSubfigure( DLL_IGES& model, IGES_ENTITY_308** aNewSubfig );
+IGES_ENTITY_124* calcTransform( DLL_IGES& model, double dX, double dY, double dZ, double dA, bool bottom );
 
 // retrieve an index to the next color in the sequence
 int GetComponentColor( void );
@@ -137,13 +142,12 @@ int main( int argc, char **argv )
     setlocale( LC_ALL, "" );
 
     // create an IGES model and set its parameters
-    IGES model;
+    DLL_IGES model;
     // WARNING: TO BE FIXED: iges.h/cpp needs accessro functions implemented
     // model.globalData.productIDSS = "idf2igs test";
     // model.globalData.nativeSystemID = "libIGES";
-    model.globalData.modelScale = 1.0;
-    model.globalData.unitsFlag = UNIT_MM;
-    model.globalData.minResolution = 1e-8;
+    model.SetUnitsFlag( UNIT_MM );
+    model.SetMinResolution( 1e-8 );
 
     // create the color schemes:
     IGES_ENTITY_314* colors[NCOLORS];
@@ -181,7 +185,7 @@ int main( int argc, char **argv )
 
 
 
-bool MakeBoard( IDF3_BOARD& board, IGES& model )
+bool MakeBoard( IDF3_BOARD& board, DLL_IGES& model )
 {
     if( board.GetBoardOutlinesSize() < 1 )
     {
@@ -190,7 +194,8 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
         return false;
     }
 
-    IGES_GEOM_PCB otln; // main board outline
+    DLL_IGES_GEOM_PCB otln( true );     // main board outline
+    DLL_MCAD_OUTLINE  loop( false );    // outline for a cutout
     MCAD_OUTLINE* pIGS;
     list< MCAD_OUTLINE* > cutouts;
     list< MCAD_SEGMENT* > drills;
@@ -203,14 +208,20 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
     while( scont != econt )
     {
         if( scont == rcont )
-            pIGS = &otln;
+        {
+            pIGS = otln.GetRawPtr();
+        }
         else
-            pIGS = new MCAD_OUTLINE;
+        {
+            loop.Detach();
+            loop.NewOutline();
+            pIGS = loop.GetRawPtr();
+        }
 
         if( !convertOln( pIGS, *scont ) )
         {
             if( scont != rcont )
-                delete pIGS;
+                loop.DelOutline();
 
             return false;
         }
@@ -220,6 +231,8 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
 
         ++scont;
     }
+
+    loop.Detach();
 
     // extract the board drill holes
     convertDrills( drills, &board.GetBoardDrills() );
@@ -281,15 +294,17 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
     // add drill holes to outline edges
     list< MCAD_OUTLINE* >::iterator sMO = cutouts.begin();
     list< MCAD_OUTLINE* >::iterator eMO = cutouts.end();
+    DLL_MCAD_OUTLINE mO( false );
 
     while( sMO != eMO )
     {
         sDH = drills.begin();
         eDH = drills.end();
+        mO.Attach( *sMO );
 
         while( sDH != eDH )
         {
-            if( (*sMO)->AddOutline( *sDH , dud ) )
+            if( mO.AddOutline( *sDH , dud ) )
             {
                 sDH = drills.erase( sDH );
                 continue;
@@ -306,6 +321,7 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
             ++sDH;
         }
 
+        mO.Detach();
         ++sMO;
     }
 
@@ -330,39 +346,43 @@ bool MakeBoard( IDF3_BOARD& board, IGES& model )
 
     // put in part and solid instance, names, and color
     // create the PCB model
-    vector<IGES_ENTITY_144*> surfs;
+    IGES_ENTITY_144** surfs = NULL;
+    int nSurfs = 0;
     double th = 0.5 * board.GetBoardThickness();
-    otln.GetVerticalSurface( &model, dud, surfs, th, -th );
-    otln.GetTrimmedPlane( &model, dud, surfs, th );
-    otln.GetTrimmedPlane( &model, dud, surfs, -th );
+    otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th, -th );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -th );
+    otln.Detach();
 
     IGES_ENTITY_308* subfig;
 
     if( !newSubfigure( model, &subfig ) )
     {
         ERROR_IDF << "\n + could not create a subfigure entity\n";
+        delete [] surfs;
         return false;
     }
 
-    vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
-    vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
+    DLL_IGES_ENTITY_144 e144( model, false );
+    DLL_IGES_ENTITY_308 e308( model, false );
+    e308.Attach( (IGES_ENTITY*)subfig );
 
-    while( sSL != eSL )
+    for( int i = 0; i < nSurfs; ++i )
     {
-        (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[0] );
-        subfig->AddDE((IGES_ENTITY *) (*sSL));
-        ++sSL;
+        e144.Attach( (IGES_ENTITY*)surfs[i] );
+        e144.SetColor( (IGES_ENTITY*) globs.colors[0] );
+        e144.Detach();
+        e308.AddDE( (IGES_ENTITY *)surfs[i] );
     }
 
     // add the name
-    subfig->NAME = globs.basename;
+    e308.SetName( (char const*)globs.basename.c_str() );
+    e308.Detach();
 
-    IGES_ENTITY* ep;
-    IGES_ENTITY_408* p408;
-    model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
-    p408 = (IGES_ENTITY_408*)ep;
-    p408->SetDE( subfig );
-    p408->SetLabel( globs.basename );
+    DLL_IGES_ENTITY_408 e408( model, true );
+    e408.SetDE( subfig );
+    e408.SetLabel( globs.basename.c_str() );
+    e408.Detach();
 
     return true;
 }
@@ -377,10 +397,13 @@ bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
         return false;
     }
 
+    DLL_MCAD_OUTLINE oIGS( false );
+    oIGS.Attach( olnIGS );
+
     std::list<IDF_SEGMENT*>::iterator sseg;
     std::list<IDF_SEGMENT*>::iterator eseg;
     IDF_SEGMENT* ps;
-    MCAD_SEGMENT* pm;
+    DLL_MCAD_SEGMENT pm( false );
     MCAD_POINT   pts[3];
     sseg = olnIDF->begin();
     eseg = olnIDF->end();
@@ -390,11 +413,10 @@ bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
     {
         // convert IDF to IGES
         ps = *sseg;
-        pm = new MCAD_SEGMENT;
+        pm.NewSegment();
 
         if( ps->IsCircle() )
         {
-            bool SetParams( MCAD_POINT aCenter, MCAD_POINT aStart, MCAD_POINT aEnd, bool isCW );
             pts[0].x = ps->center.x;
             pts[0].y = ps->center.y;
             pts[0].z = 0;
@@ -403,7 +425,7 @@ bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
             pts[1].y = pts[0].y;
             pts[1].z = 0;
 
-            pm->SetParams( pts[0], pts[1], pts[1], false );
+            pm.SetParams( pts[0], pts[1], pts[1], false );
         }
         else if( ps->radius > 0.0 )
         {
@@ -420,9 +442,9 @@ bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
             pts[2].z = 0;
 
             if( ps->angle > 0.0 )
-                pm->SetParams( pts[0], pts[1], pts[2], false );
+                pm.SetParams( pts[0], pts[1], pts[2], false );
             else
-                pm->SetParams( pts[0], pts[1], pts[2], true );
+                pm.SetParams( pts[0], pts[1], pts[2], true );
 
         }
         else
@@ -435,19 +457,22 @@ bool convertOln( MCAD_OUTLINE* olnIGS, IDF_OUTLINE* olnIDF )
             pts[1].y = ps->endPoint.y;
             pts[1].z = 0;
 
-            pm->SetParams( pts[0], pts[1] );
+            pm.SetParams( pts[0], pts[1] );
         }
 
-        if( !olnIGS->AddSegment( pm, dud ) || dud )
+        if( !oIGS.AddSegment( pm, dud ) || dud )
         {
-            delete pm;
+            oIGS.Detach();
+            pm.DelSegment();
             ERROR_IDF << "could not add segment to outline\n";
             return false;
         }
 
+        pm.Detach();
         ++sseg;
     }
 
+    oIGS.Detach();
     return true;
 }
 
@@ -456,14 +481,14 @@ bool convertDrills( list< MCAD_SEGMENT* >& drills, const list<IDF_DRILL_DATA*>* 
 {
     // XXX - for brevity, error checking has been left out
 
-    list<IDF_DRILL_DATA*>::const_iterator sD = dh->begin();
-    list<IDF_DRILL_DATA*>::const_iterator eD = dh->end();
-    MCAD_SEGMENT* sp;
+    list< IDF_DRILL_DATA* >::const_iterator sD = dh->begin();
+    list< IDF_DRILL_DATA* >::const_iterator eD = dh->end();
+    DLL_MCAD_SEGMENT sp( false );
     MCAD_POINT p[2];
 
     while( sD != eD )
     {
-        sp = new MCAD_SEGMENT;
+        sp.NewSegment();
 
         p[0].x = (*sD)->GetDrillXPos();
         p[0].y = (*sD)->GetDrillYPos();
@@ -473,14 +498,16 @@ bool convertDrills( list< MCAD_SEGMENT* >& drills, const list<IDF_DRILL_DATA*>* 
         p[1].y = p[0].y;
         p[1].z = 0.0;
 
-        sp->SetParams( p[0], p[1], p[1], false );
-        drills.push_back( sp );
+        sp.SetParams( p[0], p[1], p[1], false );
+        drills.push_back( sp.GetRawPtr() );
+        sp.Detach();
 
         ++sD;
     }
 
     return true;
 }
+
 
 // merge overlapping drills into cutouts; return true if any drills were merged;
 // if invalid geometry was encountered the error flag will be set
@@ -494,21 +521,33 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
     list< MCAD_SEGMENT* >::iterator sD = drills.begin();
     list< MCAD_SEGMENT* >::iterator eD = drills.end();
     list< MCAD_SEGMENT* >::iterator iD;
-    list<MCAD_POINT> ilist;
+    MCAD_POINT* ilist = NULL;
+    int nPoints = 0;
     MCAD_INTERSECT_FLAG flag = MCAD_IFLAG_NONE;
+
+#define CLEAR_ILIST() do {\
+    if( NULL != ilist ) delete [] ilist; \
+    ilist = NULL; \
+    nPoints = 0; } while( 0 )
 
     list< list< MCAD_SEGMENT* >* >bundles;
     list< MCAD_SEGMENT* >* sp;
 
+    DLL_MCAD_SEGMENT seg0( false );
+    DLL_MCAD_SEGMENT seg1( false );
+    DLL_MCAD_SEGMENT seg2( false );
+
     while( sD != eD )
     {
+        seg2.Attach( *sD );
         iD = sD;
         ++iD;
 
         while( iD != eD )
         {
-            if( (*sD)->GetIntersections( **iD, ilist, flag ) )
+            if( seg2.GetIntersections( *iD, ilist, nPoints, flag ) )
             {
+                CLEAR_ILIST();
                 sp = new list< MCAD_SEGMENT* >;
                 bundles.push_back( sp );
                 sp->push_back( *sD );
@@ -531,11 +570,16 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
                 {
                     sD1 = drills.begin();
                     eD1 = drills.end();
+                    seg0.Attach( *sS );
 
                     while( sD1 != eD1 )
                     {
-                        if( (*sS)->GetIntersections( **sD1, ilist, flag ) )
+                        seg1.Attach( *sD1 );
+
+                        if( seg0.GetIntersections( seg1, ilist, nPoints, flag ) )
                         {
+                            CLEAR_ILIST();
+
                             sp->push_back( *sD1 );
 
                             if( sD == sD1 )
@@ -550,16 +594,20 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
 
                         }
 
+                        seg1.Detach();
+
                         if( flag )
                         {
                             ERROR_IDF << "\n + [INFO] geometry error (flag = " << flag << ")\n";
+                            seg0.Detach();
+                            seg2.Detach();
                             return false;
                         }
 
                         ++sD1;
                     }
 
-
+                    seg0.Detach();
                     ++sS;
                 }
 
@@ -573,6 +621,7 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
 
             if( flag )
             {
+                seg2.Detach();
                 ERROR_IDF << "\n + [INFO] geometry error (flag = " << flag << ")\n";
                 return false;
             }
@@ -580,7 +629,8 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
             ++iD;
         }
 
-      ++sD;
+        seg2.Detach();
+        ++sD;
     }
 
     if( bundles.empty() )
@@ -613,15 +663,23 @@ bool bundleDrills( list< MCAD_SEGMENT* >* drills, list< MCAD_OUTLINE* >& cutouts
     list< MCAD_SEGMENT* >::iterator eD = drills->end();
     ++sD;
 
-    MCAD_POINT p0 = drills->front()->GetCenter();
+    MCAD_POINT p0;
     MCAD_POINT p1;
     double dx;
     double dy;
 
+    DLL_MCAD_SEGMENT seg0( false );
+    seg0.Attach( drills->front() );
+    seg0.GetCenter( p0 );
+    seg0.Detach();
+
     // calculate distance^2 between each drill hole
     while( sD != eD )
     {
-        p1 = (*sD)->GetCenter();
+        seg0.Attach( *sD );
+        seg0.GetCenter( p1 );
+        seg0.Detach();
+
         dx = p1.x - p0.x;
         dy = p1.y - p0.y;
         dx = dx*dx + dy*dy;
@@ -646,20 +704,21 @@ bool bundleDrills( list< MCAD_SEGMENT* >* drills, list< MCAD_OUTLINE* >& cutouts
         }
     }
 
-    MCAD_OUTLINE* op = new MCAD_OUTLINE;
+    DLL_MCAD_OUTLINE op( true );
     bool dud = false;
-    op->AddSegment( drills->front(), dud );
-    cutouts.push_back( op );
+    op.AddSegment( drills->front(), dud );
+    cutouts.push_back( op.GetRawPtr() );
 
     for( size_t i = 0; i < nd; ++i )
     {
-        if( !op->AddOutline( dist[i].second, dud ) )
+        if( !op.AddOutline( dist[i].second, dud ) )
         {
             ERROR_IDF << "\n + [INFO] could not merge drill holes\n";
             return false;
         }
     }
 
+    op.Detach();
     drills->clear();
     return true;
 }
@@ -673,10 +732,12 @@ void killDrills( list< MCAD_SEGMENT* >& drills )
 
     list< MCAD_SEGMENT* >::iterator sD = drills.begin();
     list< MCAD_SEGMENT* >::iterator eD = drills.end();
+    DLL_MCAD_SEGMENT seg0( false );
 
     while( sD != eD )
     {
-        delete *sD;
+        seg0.Attach( *sD );
+        seg0.DelSegment();
         ++sD;
     }
 
@@ -692,10 +753,12 @@ void killCutouts( list< MCAD_OUTLINE* >& cutouts )
 
     list< MCAD_OUTLINE* >::iterator sO = cutouts.begin();
     list< MCAD_OUTLINE* >::iterator eO = cutouts.end();
+    DLL_MCAD_OUTLINE out0( false );
 
     while( sO != eO )
     {
-        delete *sO;
+        out0.Attach( *sO );
+        out0.DelOutline();
         ++sO;
     }
 
@@ -704,10 +767,8 @@ void killCutouts( list< MCAD_OUTLINE* >& cutouts )
 }
 
 
-bool initColors( IGES& model, IGES_ENTITY_314** colors )
+bool initColors( DLL_IGES& model, IGES_ENTITY_314** colors )
 {
-    IGES_ENTITY* ep;
-
     unsigned char cdef[NCOLORS][3] = {
         { 0x2F, 0xD0, 0x37 },   // green for PC board
         { 0x2F, 0xAA, 0xD0 },   // cyan
@@ -732,17 +793,24 @@ bool initColors( IGES& model, IGES_ENTITY_314** colors )
       "pcb olive"
     };
 
+    DLL_IGES_ENTITY_314 dE( model, false );
+
     for( int i = 0; i < NCOLORS; ++i )
     {
-        if( !model.NewEntity( ENT_COLOR_DEFINITION, &ep ) )
-            return false;
+        dE.Detach();
+        dE.NewEntity();
 
-        colors[i] = dynamic_cast<IGES_ENTITY_314*>( ep );
+        dE.SetColor( cdef[i][0] * 100.0 / 255.0,
+                     cdef[i][1] * 100.0 / 255.0,
+                     cdef[i][2] * 100.0 / 255.0 );
+        dE.SetName( cname[i].c_str() );
+
+        colors[i] = (IGES_ENTITY_314*)dE.GetRawPtr();
 
         if( !colors[i] )
         {
             cerr << "*** could not cast pointer to color entity\n";
-            model.DelEntity( ep );
+            dE.DelEntity();
 
             for( int j = 0; j < i; ++j )
             {
@@ -752,19 +820,13 @@ bool initColors( IGES& model, IGES_ENTITY_314** colors )
 
             return false;
         }
-
-        colors[i]->red = cdef[i][0] * 100.0 / 255.0 ;
-        colors[i]->green = cdef[i][1] * 100.0 / 255.0 ;
-        colors[i]->blue = cdef[i][2] * 100.0 / 255.0 ;
-
-        colors[i]->cname = cname[i];
     }
 
     return true;
 }
 
 
-bool MakeComponents( IDF3_BOARD& board, IGES& model )
+bool MakeComponents( IDF3_BOARD& board, DLL_IGES& model )
 {
     map< string, IGES_ENTITY_308*> componentList; // the IGES component models
     double th = 0.5 * board.GetBoardThickness();
@@ -851,13 +913,11 @@ bool MakeComponents( IDF3_BOARD& board, IGES& model )
                 return false;
             }
 
-            IGES_ENTITY* ep;
-            IGES_ENTITY_408* p408;
-            model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
-            p408 = (IGES_ENTITY_408*)ep;
-            p408->SetTransform( tx );
-            p408->SetDE( outline->second );
-            p408->SetLabel( sc->second->GetRefDes() );
+            DLL_IGES_ENTITY_408 e408( model, true );
+            e408.SetTransform( (IGES_ENTITY*)tx );
+            e408.SetDE( outline->second );
+            e408.SetLabel( sc->second->GetRefDes().c_str() );
+            e408.Detach();
 
             ++so;
         }
@@ -869,7 +929,7 @@ bool MakeComponents( IDF3_BOARD& board, IGES& model )
 }
 
 
-bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
+bool MakeOtherOutlines( IDF3_BOARD& board, DLL_IGES& model )
 {
     double bt = 0.5 * board.GetBoardThickness();
 
@@ -877,6 +937,8 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
     const std::map< std::string, OTHER_OUTLINE* >*const comp = board.GetOtherOutlines();
     std::map< std::string, OTHER_OUTLINE* >::const_iterator sc = comp->begin();
     std::map< std::string, OTHER_OUTLINE* >::const_iterator ec = comp->end();
+
+    DLL_IGES_GEOM_PCB otln( true );     // main outline for this section
 
     while( sc != ec )
     {
@@ -886,7 +948,7 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
             continue;
         }
 
-        IGES_GEOM_PCB otln; // main outline for this section
+        DLL_MCAD_OUTLINE  loop( false );    // individual outlines
         MCAD_OUTLINE* pIGS;
         list< MCAD_OUTLINE* > cutouts;
 
@@ -898,14 +960,20 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
         while( scont != econt )
         {
             if( scont == rcont )
-                pIGS = &otln;
+            {
+                pIGS = otln.GetRawPtr();
+            }
             else
-                pIGS = new MCAD_OUTLINE;
+            {
+                loop.Detach();
+                loop.NewOutline();
+                pIGS = loop.GetRawPtr();
+            }
 
             if( !convertOln( pIGS, *scont ) )
             {
                 if( scont != rcont )
-                    delete pIGS;
+                    loop.DelOutline();
 
                 return false;
             }
@@ -915,6 +983,8 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
 
             ++scont;
         }
+
+        loop.Detach();
 
         // add all cutouts to the main outline
         bool dud = false;
@@ -933,85 +1003,83 @@ bool MakeOtherOutlines( IDF3_BOARD& board, IGES& model )
         if( sc->second->GetSide() == IDF3::LYR_BOTTOM )
             bottom = true;
 
-        vector<IGES_ENTITY_144*> surfs;
+        IGES_ENTITY_144** surfs = NULL;
+        int nSurfs = 0;
         double th = sc->second->GetThickness();
 
         if( bottom )
         {
-            otln.GetVerticalSurface( &model, dud, surfs, -(th + bt), -bt );
-            otln.GetTrimmedPlane( &model, dud, surfs, -(th + bt) );
-            otln.GetTrimmedPlane( &model, dud, surfs, -bt );
+            otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, -(th + bt), -bt );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -(th + bt) );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -bt );
         }
         else
         {
-            otln.GetVerticalSurface( &model, dud, surfs, th + bt, bt );
-            otln.GetTrimmedPlane( &model, dud, surfs, th + bt );
-            otln.GetTrimmedPlane( &model, dud, surfs, bt );
+            otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th + bt, bt );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th + bt );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, bt );
         }
 
-        IGES_ENTITY_308* subfig;
+        DLL_IGES_ENTITY_308 subfig( model, true );
 
-        if( !newSubfigure( model, &subfig ) )
+        if( !subfig.IsValid() )
         {
+            otln.Detach();
+            delete [] surfs;
             ERROR_IDF << "\n + could not create a subfigure entity\n";
             return false;
         }
 
-        vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
-        vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
         int cidx = GetComponentColor();
 
-        while( sSL != eSL )
+        DLL_IGES_ENTITY_144 e144( model, false );
+
+        for( int i = 0; i < nSurfs; ++ i )
         {
-            (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
-            subfig->AddDE((IGES_ENTITY *) (*sSL));
-            ++sSL;
+            e144.Attach( (IGES_ENTITY*)surfs[i] );
+            e144.SetColor( (IGES_ENTITY*) globs.colors[cidx] );
+            e144.Detach();
+            subfig.AddDE( (IGES_ENTITY *)surfs[i] );
         }
 
-        // add the name
-        subfig->NAME = sc->first;
+        delete [] surfs;
 
-        IGES_ENTITY* ep;
-        IGES_ENTITY_408* p408;
-        model.NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &ep );
-        p408 = (IGES_ENTITY_408*)ep;
-        p408->SetDE( subfig );
-        p408->SetLabel( sc->first );
+        // add the name
+        subfig.SetName( sc->first.c_str() );
+
+        DLL_IGES_ENTITY_408 e408( model, true );
+        e408.SetDE( (IGES_ENTITY_308*)subfig.GetRawPtr() );
+        e408.SetLabel( sc->first.c_str() );
+        e408.Detach();
+        subfig.Detach();
         ++sc;
     }
 
+    otln.Detach();
     return true;
 }
 
 
-bool newSubfigure( IGES& model, IGES_ENTITY_308** aNewSubfig )
+bool newSubfigure( DLL_IGES& model, IGES_ENTITY_308** aNewSubfig )
 {
     *aNewSubfig = NULL;
-    IGES_ENTITY* ep;
-    IGES_ENTITY_308* p308;
 
-    if( !model.NewEntity( ENT_SUBFIGURE_DEFINITION, &ep ) )
+    DLL_IGES_ENTITY_308 e308( model, true );
+
+    if( !e308.IsValid() )
     {
         ERRMSG << "\n + [INFO] could not create Subfigure Definition Entity\n";
         return false;
     }
 
-    p308 = dynamic_cast<IGES_ENTITY_308*>(ep);
-
-    if( !p308 )
-    {
-        model.DelEntity( ep );
-        ERRMSG << "\n + [INFO] could not cast pointer to Subfigure Definition Entity\n";
-        return false;
-    }
-
-    *aNewSubfig = p308;
+    *aNewSubfig = (IGES_ENTITY_308*)e308.GetRawPtr();
+    e308.Detach();
     return true;
 }
 
 
 // build a component part model from the given outline data
-bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig )
+bool buildComponent( DLL_IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308** subfig )
 {
     *subfig = NULL;
 
@@ -1029,9 +1097,9 @@ bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308*
         return true;
     }
 
-    IGES_GEOM_PCB otln;     // component outline
+    DLL_IGES_GEOM_PCB otln( true ); // component outline
 
-    if( !convertOln( &otln, op ) )
+    if( !convertOln( otln.GetRawPtr(), op ) )
     {
         ERRMSG << "\n + [INFO] could not convert component outline\n";
         return true;
@@ -1039,10 +1107,13 @@ bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308*
 
     // put in part definition, names, color and create the component model
     bool dud = false;
-    vector<IGES_ENTITY_144*> surfs;
-    otln.GetVerticalSurface( &model, dud, surfs, th, 0.0 );
-    otln.GetTrimmedPlane( &model, dud, surfs, th );
-    otln.GetTrimmedPlane( &model, dud, surfs, 0.0 );
+    IGES_ENTITY_144** surfs = NULL;
+    int nSurfs = 0;
+
+    otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th, 0.0 );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, 0.0 );
+    otln.Detach();
 
     if( !newSubfigure( model, subfig ) )
     {
@@ -1050,20 +1121,22 @@ bool buildComponent( IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_308*
         return false;
     }
 
-    vector<IGES_ENTITY_144*>::iterator sSL = surfs.begin();
-    vector<IGES_ENTITY_144*>::iterator eSL = surfs.end();
-
     int cidx = GetComponentColor();
+    DLL_IGES_ENTITY_144 e144( model, false );
+    DLL_IGES_ENTITY_308 e308( model, false );
+    e308.Attach( (IGES_ENTITY*)*subfig );
 
-    while( sSL != eSL )
+    for( int i = 0; i < nSurfs; ++ i )
     {
-        (*sSL)->SetColor( (IGES_ENTITY*) globs.colors[cidx] );
-        (*subfig)->AddDE((IGES_ENTITY *) (*sSL));
-        ++sSL;
+        e144.Attach( (IGES_ENTITY*)surfs[i] );
+        e144.SetColor( (IGES_ENTITY*) globs.colors[cidx] );
+        e144.Detach();
+        e308.AddDE((IGES_ENTITY *) surfs[i] );
     }
 
     // add the name; note this dirty trick to work around retrieval of the UID
-    (*subfig)->NAME = ((IDF3_COMP_OUTLINE*)idf)->GetUID().c_str();
+    e308.SetName( ((IDF3_COMP_OUTLINE*)idf)->GetUID().c_str() );
+    e308.Detach();
 
     return true;
 }
@@ -1106,7 +1179,7 @@ void rotateZ( MCAD_MATRIX& mat, double angle )
 }
 
 
-IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, double dA, bool bottom )
+IGES_ENTITY_124* calcTransform( DLL_IGES& model, double dX, double dY, double dZ, double dA, bool bottom )
 {
     MCAD_MATRIX m0;
     MCAD_MATRIX m1;
@@ -1123,17 +1196,16 @@ IGES_ENTITY_124* calcTransform( IGES& model, double dX, double dY, double dZ, do
     }
 
     m1 *= m0;
-    IGES_ENTITY_124* p124 = NULL;
-    IGES_ENTITY* ep;
+    DLL_IGES_ENTITY_124 e124( model, true );
+    MCAD_TRANSFORM tx;
+    tx.R = m1;
+    tx.T.x = dX;
+    tx.T.y = dY;
+    tx.T.z = dZ;
+    MCAD_TRANSFORM* tp = &tx;
+    e124.SetRootTransform( tp );
+    IGES_ENTITY_124* ep = (IGES_ENTITY_124*)e124.GetRawPtr();
+    e124.Detach();
 
-    if( !model.NewEntity( ENT_TRANSFORMATION_MATRIX, &ep ) )
-        return NULL;
-
-    p124 = (IGES_ENTITY_124*)ep;
-    p124->T.R = m1;
-    p124->T.T.x = dX;
-    p124->T.T.y = dY;
-    p124->T.T.z = dZ;
-
-    return p124;
+    return ep;
 }

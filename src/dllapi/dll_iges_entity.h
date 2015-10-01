@@ -30,6 +30,7 @@
 
 #include <libigesconf.h>
 #include <iges_base.h>
+#include <dll_iges.h>
 
 class  IGES;
 class  DLL_IGES;            // Overarching data structure and parent to all entities
@@ -45,8 +46,10 @@ class DLL_IGES_ENTITY_314;
 class MCAD_API DLL_IGES_ENTITY
 {
 protected:
+    IGES* m_parent;
     IGES_ENTITY* m_entity;
     bool         m_valid;       // set to false if m_entity is deleted
+    bool         m_hasParent;   // set to false if no parent or m_parent is deleted
     IGES_ENTITY_TYPE m_type;    // IGES type exposed by this class
 
 public:
@@ -57,8 +60,13 @@ public:
     // of the specified type is created; otherwise the DLL entity
     // serves as a convenient manipulator of an IGES_ENTITY to
     // be specified by the user.
-    DLL_IGES_ENTITY( );
+    DLL_IGES_ENTITY( IGES* aParent );
+    DLL_IGES_ENTITY( DLL_IGES& aParent );
     virtual ~DLL_IGES_ENTITY();
+
+    virtual bool NewEntity( void ) = 0;
+    bool SetAPIParentIGES( IGES* aParent );
+    bool SetAPIParentIGES( DLL_IGES& aParent );
 
     /**
      * Function GetEntityType
@@ -87,6 +95,7 @@ public:
      * but preserve the related entity object.
      */
     IGES_ENTITY* Detach( void );
+    void DelEntity( void );
 
     /**
      * Function Attach
@@ -564,7 +573,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetLabel( const char*& aLabel );
+    bool SetLabel( const char* aLabel );
 
 
     /**

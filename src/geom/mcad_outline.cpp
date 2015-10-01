@@ -140,6 +140,15 @@ MCAD_OUTLINE::~MCAD_OUTLINE()
         mholes.pop_back();
     }
 
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        **sVF = false;
+        ++sVF;
+    }
+
     return;
 }
 

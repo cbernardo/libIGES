@@ -87,7 +87,7 @@ class IGES
 private:
     static int idxPartNum;                  //< index used to create Part Name
     static int idxAssyNum;                  //< index used to create Assembly Name
-    bool*      m_valid;                     //< valid flag to signal API container upon destruction
+    std::list< bool* > m_validFlags;        //< DLL layer validation flags
     std::vector< const char* > vStartSection;   //< temp. vector table for DLL access
 
     std::list<std::string> startSection;    //< text from the Start section
@@ -125,7 +125,7 @@ public:
     IGES_GLOBAL globalData;    //< Global Section data
 
     /**
-     * Function SetValidFlag
+     * Function AttachValidFlag
      * sets a pointer to the boolean used to signal an
      * API layer upon destruction or change of ownership
      *
@@ -136,7 +136,8 @@ public:
      * accepted; this can result in another API layer object
      * being invalidated.
      */
-    void SetValidFlag( bool* aFlag );
+    void AttachValidFlag( bool* aFlag );
+    void DetachValidFlag( bool* aFlag );
 
 
     /**

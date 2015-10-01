@@ -40,6 +40,8 @@ public:
     DLL_IGES_ENTITY_104( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_104();
 
+    virtual bool NewEntity( void );
+
     bool GetConicStart( MCAD_POINT& pt );
     bool GetConicStart( double& aX, double& aY, double& aZ );
     bool GetConicEnd( double& aX, double& aY, double& aZ );

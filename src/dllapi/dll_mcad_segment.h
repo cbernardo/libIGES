@@ -35,7 +35,7 @@
 
 class MCAD_SEGMENT;
 
-class DLL_MCAD_SEGMENT
+class MCAD_API DLL_MCAD_SEGMENT
 {
 private:
     MCAD_SEGMENT* m_segment;

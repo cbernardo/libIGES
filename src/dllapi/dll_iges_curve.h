@@ -39,8 +39,11 @@ class IGES_CURVE;
 class MCAD_API DLL_IGES_CURVE : public DLL_IGES_ENTITY
 {
 public:
-    DLL_IGES_CURVE();
+    DLL_IGES_CURVE( IGES* aParent );
+    DLL_IGES_CURVE( DLL_IGES& aParent );
     virtual ~DLL_IGES_CURVE();
+
+    virtual bool NewEntity( void ) = 0;
 
     bool IsClosed( void );
     int GetNCurves( void );

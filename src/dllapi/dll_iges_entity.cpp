@@ -39,8 +39,19 @@
      } } while( 0 )
 
 
-DLL_IGES_ENTITY::DLL_IGES_ENTITY( )
+DLL_IGES_ENTITY::DLL_IGES_ENTITY( IGES* aParent )
 {
+    m_parent = aParent;
+    m_entity = NULL;
+    m_valid = false;
+    m_type = ENT_NULL;
+    return;
+}
+
+
+DLL_IGES_ENTITY::DLL_IGES_ENTITY( DLL_IGES& aParent )
+{
+    m_parent = aParent.GetRawPtr();
     m_entity = NULL;
     m_valid = false;
     m_type = ENT_NULL;
@@ -50,16 +61,57 @@ DLL_IGES_ENTITY::DLL_IGES_ENTITY( )
 
 DLL_IGES_ENTITY::~DLL_IGES_ENTITY()
 {
-    if( m_valid && NULL != m_entity )
-    {
-        m_entity->DetachValidFlag( &m_valid );
+    if( m_parent && m_hasParent )
+        m_parent->DetachValidFlag( &m_hasParent );
 
-        if( false == m_entity->HasAPIRefs() )
-            delete m_entity;
-    }
+    if( m_valid && NULL != m_entity )
+        m_entity->DetachValidFlag( &m_valid );
 
     return;
 }
+
+
+bool DLL_IGES_ENTITY::SetAPIParentIGES( IGES* aParent )
+{
+    if( m_hasParent && NULL != m_parent )
+        m_parent->DetachValidFlag( &m_hasParent );
+
+    if( aParent )
+    {
+        m_parent = aParent;
+        aParent->AttachValidFlag( &m_hasParent );
+    }
+    else
+    {
+        m_parent = NULL;
+        m_hasParent = false;
+    }
+
+    return true;
+}
+
+
+bool DLL_IGES_ENTITY::SetAPIParentIGES( DLL_IGES& aParent )
+{
+    if( m_hasParent && NULL != m_parent )
+        m_parent->DetachValidFlag( &m_hasParent );
+
+    IGES* ap = aParent.GetRawPtr();
+
+    if( ap )
+    {
+        m_parent = ap;
+        ap->AttachValidFlag( &m_hasParent );
+    }
+    else
+    {
+        m_parent = NULL;
+        m_hasParent = false;
+    }
+
+    return true;
+}
+
 
 
 IGES_ENTITY_TYPE DLL_IGES_ENTITY::GetEntityType() const
@@ -92,12 +144,27 @@ IGES_ENTITY* DLL_IGES_ENTITY::Detach( void )
         IGES_ENTITY* tmp = m_entity;
         m_entity->DetachValidFlag( &m_valid );
         m_entity = NULL;
+        m_valid = false;
         return tmp;
     }
 
     m_entity = NULL;
     m_valid = false;
     return NULL;
+}
+
+
+void DLL_IGES_ENTITY::DelEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        delete m_entity;
+    }
+
+    m_entity = NULL;
+    m_valid = false;
+    return;
 }
 
 
@@ -504,11 +571,18 @@ bool DLL_IGES_ENTITY::GetLineWeightNum( int& aLineWeight )
 }
 
 
-bool DLL_IGES_ENTITY::SetLabel( const char*& aLabel )
+bool DLL_IGES_ENTITY::SetLabel( const char* aLabel )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetLabel( aLabel );
+    std::string tl;
+
+    if( NULL == aLabel )
+        tl = "";
+    else
+        tl = aLabel;
+
+    return m_entity->SetLabel( tl );
 }
 
 

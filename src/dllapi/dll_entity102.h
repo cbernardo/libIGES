@@ -40,6 +40,8 @@ public:
     DLL_IGES_ENTITY_102( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_102();
 
+    virtual bool NewEntity( void );
+
     bool AddSegment( IGES_CURVE* aSegment );
 };
 

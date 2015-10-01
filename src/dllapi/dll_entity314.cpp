@@ -34,7 +34,7 @@
 using namespace std;
 
 
-DLL_IGES_ENTITY_314::DLL_IGES_ENTITY_314( IGES* aParent, bool create )
+DLL_IGES_ENTITY_314::DLL_IGES_ENTITY_314( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_COLOR_DEFINITION;
 
@@ -53,7 +53,7 @@ DLL_IGES_ENTITY_314::DLL_IGES_ENTITY_314( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_314::DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_314::DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_COLOR_DEFINITION;
 
@@ -77,14 +77,37 @@ DLL_IGES_ENTITY_314::~DLL_IGES_ENTITY_314()
 }
 
 
+bool DLL_IGES_ENTITY_314::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_COLOR_DEFINITION, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_314( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag( &m_valid );
+        return true;
+    }
+
+    return false;
+}
+
+
 bool DLL_IGES_ENTITY_314::GetColor( double& aRed, double& aGreen, double& aBlue )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
-    aRed = ((IGES_ENTITY_314*)m_valid)->red;
-    aGreen = ((IGES_ENTITY_314*)m_valid)->green;
-    aBlue = ((IGES_ENTITY_314*)m_valid)->blue;
+    aRed = ((IGES_ENTITY_314*)m_entity)->red;
+    aGreen = ((IGES_ENTITY_314*)m_entity)->green;
+    aBlue = ((IGES_ENTITY_314*)m_entity)->blue;
 
     return true;
 }
@@ -104,9 +127,9 @@ bool DLL_IGES_ENTITY_314::SetColor( double aRed, double aGreen, double aBlue )
         return false;
     }
 
-    ((IGES_ENTITY_314*)m_valid)->red = aRed;
-    ((IGES_ENTITY_314*)m_valid)->green = aGreen;
-    ((IGES_ENTITY_314*)m_valid)->blue = aBlue;
+    ((IGES_ENTITY_314*)m_entity)->red = aRed;
+    ((IGES_ENTITY_314*)m_entity)->green = aGreen;
+    ((IGES_ENTITY_314*)m_entity)->blue = aBlue;
 
     return true;
 }
@@ -117,7 +140,7 @@ bool DLL_IGES_ENTITY_314::GetName( const char*& aName )
     if( !m_valid || NULL == m_entity )
         return false;
 
-    string* sp = &((IGES_ENTITY_314*)m_valid)->cname;
+    string* sp = &((IGES_ENTITY_314*)m_entity)->cname;
 
     if( sp->empty() )
     {
@@ -130,11 +153,15 @@ bool DLL_IGES_ENTITY_314::GetName( const char*& aName )
 }
 
 
-bool DLL_IGES_ENTITY_314::SetName( const char*& aName )
+bool DLL_IGES_ENTITY_314::SetName( const char* aName )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
-    ((IGES_ENTITY_314*)m_valid)->cname = aName;
+    if( NULL != aName )
+        ((IGES_ENTITY_314*)m_entity)->cname = aName;
+    else
+        ((IGES_ENTITY_314*)m_entity)->cname.clear();
+
     return true;
 }

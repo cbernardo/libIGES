@@ -27,7 +27,7 @@
 #include <iges.h>
 #include <entity122.h>
 
-DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( IGES* aParent, bool create )
+DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_TABULATED_CYLINDER;
 
@@ -46,7 +46,7 @@ DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_TABULATED_CYLINDER;
     IGES* ip = aParent.GetRawPtr();
@@ -66,6 +66,29 @@ DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_122::~DLL_IGES_ENTITY_122()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_122::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_TABULATED_CYLINDER, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_122( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 

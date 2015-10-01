@@ -29,7 +29,7 @@
 #include <entity142.h>
 
 
-DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( IGES* aParent, bool create )
+DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_CURVE_ON_PARAMETRIC_SURFACE;
 
@@ -47,7 +47,8 @@ DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( IGES* aParent, bool create )
     return;
 }
 
-DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( DLL_IGES& aParent, bool create )
+
+DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_CURVE_ON_PARAMETRIC_SURFACE;
     IGES* ip = aParent.GetRawPtr();
@@ -67,6 +68,29 @@ DLL_IGES_ENTITY_142::DLL_IGES_ENTITY_142( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_142::~DLL_IGES_ENTITY_142()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_142::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_CURVE_ON_PARAMETRIC_SURFACE, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_142( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 

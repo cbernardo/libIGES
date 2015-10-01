@@ -39,10 +39,12 @@ public:
     DLL_IGES_ENTITY_314( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_314();
 
+    virtual bool NewEntity( void );
+
     bool GetColor( double& aRed, double& aGreen, double& aBlue );
     bool SetColor( double aRed, double aGreen, double aBlue );
     bool GetName( const char*& aName );
-    bool SetName( const char*& aName );
+    bool SetName( const char* aName );
 };
 
 #endif  // DLL_ENTITY314_H

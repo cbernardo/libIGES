@@ -53,6 +53,7 @@
 #include <all_entities.h>
 #include <iges.h>
 #include <mcad_utils.h>
+#include "../include/iges/iges.h"
 
 
 using namespace std;
@@ -255,7 +256,6 @@ public:
 
 IGES::IGES()
 {
-    m_valid = NULL;
     init();
     return;
 }   // IGES()
@@ -263,23 +263,66 @@ IGES::IGES()
 
 IGES::~IGES()
 {
-    if( m_valid )
-        *m_valid = false;
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
 
+    while( sVF != eVF )
+    {
+        **sVF = false;
+        ++sVF;
+    }
+
+    m_validFlags.clear();
     Clear();
     return;
 }
 
 
-void IGES::SetValidFlag( bool* aFlag )
+void IGES::AttachValidFlag( bool* aFlag )
 {
-    if( m_valid )
-        *m_valid = false;
+    if( NULL == aFlag )
+        return;
 
-    m_valid = aFlag;
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
 
-    if( m_valid )
-        *m_valid = true;
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            // exit if we already have this registered
+            *aFlag = true;
+            return;
+        }
+
+        ++sVF;
+    }
+
+    *aFlag = true;
+    m_validFlags.push_back( aFlag );
+    return;
+}
+
+
+void IGES::DetachValidFlag( bool* aFlag )
+{
+    if( NULL == aFlag )
+        return;
+
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        if( *sVF == aFlag )
+        {
+            *aFlag = false;
+            m_validFlags.erase( sVF );
+            return;
+        }
+
+        ++sVF;
+    }
 
     return;
 }

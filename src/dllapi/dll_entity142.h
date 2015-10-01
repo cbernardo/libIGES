@@ -57,6 +57,8 @@ public:
     DLL_IGES_ENTITY_142( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_142();
 
+    virtual bool NewEntity( void );
+
     bool GetSurface( IGES_ENTITY** aPtr );
     bool SetSurface( IGES_ENTITY* aPtr );
     bool GetParameterSpaceBound( IGES_ENTITY** aPtr );

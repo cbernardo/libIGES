@@ -28,7 +28,7 @@
 #include <entity408.h>
 
 
-DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( IGES* aParent, bool create )
+DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_SINGULAR_SUBFIGURE_INSTANCE;
 
@@ -47,7 +47,7 @@ DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_SINGULAR_SUBFIGURE_INSTANCE;
     IGES* ip = aParent.GetRawPtr();
@@ -67,6 +67,29 @@ DLL_IGES_ENTITY_408::DLL_IGES_ENTITY_408( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_408::~DLL_IGES_ENTITY_408()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_408::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_408( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -113,4 +136,22 @@ bool DLL_IGES_ENTITY_408::SetSubfigParams( double aX, double aY, double aZ, doub
     ip->Z = aZ;
     ip->S = aScale;
     return true;
+}
+
+
+bool DLL_IGES_ENTITY_408::GetDE( IGES_ENTITY_308*& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_408*)m_entity)->GetDE( aPtr );
+}
+
+
+bool DLL_IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_408*)m_entity)->SetDE( aPtr );
 }

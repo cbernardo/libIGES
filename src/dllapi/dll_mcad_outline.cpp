@@ -112,10 +112,7 @@ void DLL_MCAD_OUTLINE::Detach( void )
 
 bool DLL_MCAD_OUTLINE::Attach( MCAD_OUTLINE* aOutline )
 {
-    if( NULL != m_outline && m_valid )
-        return false;
-
-    if( NULL == aOutline || MCAD_OT_BASE != aOutline->GetOutlineType() )
+    if( NULL != m_outline && m_valid || NULL == aOutline )
         return false;
 
     m_outline = aOutline;
@@ -304,13 +301,16 @@ bool DLL_MCAD_OUTLINE::AddSegment( MCAD_SEGMENT* aSegment, bool& error )
 
 bool DLL_MCAD_OUTLINE::AddSegment( DLL_MCAD_SEGMENT& aSegment, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_SEGMENT* sp = aSegment.GetRawPtr();
 
-    if( NULL != sp )
-        return m_outline->AddSegment( sp, error );
+    if( NULL != sp && m_outline->AddSegment( sp, error ) )
+    {
+        aSegment.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -327,13 +327,16 @@ bool DLL_MCAD_OUTLINE::AddOutline( MCAD_OUTLINE* aOutline, bool& error )
 
 bool DLL_MCAD_OUTLINE::AddOutline( DLL_MCAD_OUTLINE& aOutline, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_OUTLINE* op = aOutline.GetRawPtr();
 
-    if( NULL != op )
-        return m_outline->AddOutline( op, error );
+    if( NULL != op && m_outline->AddOutline( op, error ) )
+    {
+        aOutline.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -350,13 +353,16 @@ bool DLL_MCAD_OUTLINE::AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 
 bool DLL_MCAD_OUTLINE::AddOutline( DLL_MCAD_SEGMENT& aCircle, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_SEGMENT* sp = aCircle.GetRawPtr();
 
-    if( NULL != sp )
-        return m_outline->AddOutline( sp, error );
+    if( NULL != sp && m_outline->AddOutline( sp, error ) )
+    {
+        aCircle.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -373,13 +379,16 @@ bool DLL_MCAD_OUTLINE::SubOutline( MCAD_OUTLINE* aOutline, bool& error )
 
 bool DLL_MCAD_OUTLINE::SubOutline( DLL_MCAD_OUTLINE& aOutline, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_OUTLINE* op = aOutline.GetRawPtr();
 
-    if( NULL != op )
-        return m_outline->SubOutline( op, error );
+    if( NULL != op && m_outline->SubOutline( op, error ) )
+    {
+        aOutline.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -396,13 +405,16 @@ bool DLL_MCAD_OUTLINE::SubOutline( MCAD_SEGMENT* aCircle, bool& error )
 
 bool DLL_MCAD_OUTLINE::SubOutline( DLL_MCAD_SEGMENT& aCircle, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_SEGMENT* sp = aCircle.GetRawPtr();
 
-    if( NULL != sp )
-        return m_outline->SubOutline( sp, error );
+    if( NULL != sp && m_outline->SubOutline( sp, error ) )
+    {
+        aCircle.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -419,13 +431,16 @@ bool DLL_MCAD_OUTLINE::AddCutout( MCAD_OUTLINE* aCutout, bool overlaps, bool& er
 
 bool DLL_MCAD_OUTLINE::AddCutout( DLL_MCAD_OUTLINE& aCutout, bool overlaps, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_OUTLINE* op = aCutout.GetRawPtr();
 
-    if( NULL != op )
-        return m_outline->AddCutout( op, overlaps, error );
+    if( NULL != op && m_outline->AddCutout( op, overlaps, error ) )
+    {
+        aCutout.Detach();
+        return true;
+    }
 
     return false;
 }
@@ -442,13 +457,16 @@ bool DLL_MCAD_OUTLINE::AddCutout( MCAD_SEGMENT* aCircle, bool overlaps, bool& er
 
 bool DLL_MCAD_OUTLINE::AddCutout( DLL_MCAD_SEGMENT& aCircle, bool overlaps, bool& error )
 {
-    if( NULL != m_outline || m_valid )
+    if( NULL == m_outline || !m_valid )
         return false;
 
     MCAD_SEGMENT* sp = aCircle.GetRawPtr();
 
-    if( NULL != sp )
-        return m_outline->AddCutout( sp, overlaps, error );
+    if( NULL != sp && m_outline->AddCutout( sp, overlaps, error ) )
+    {
+        aCircle.Detach();
+        return true;
+    }
 
     return false;
 }

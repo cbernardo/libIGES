@@ -29,7 +29,7 @@
 #include <entity128.h>
 
 
-DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( IGES* aParent, bool create )
+DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_NURBS_SURFACE;
 
@@ -48,7 +48,7 @@ DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_NURBS_SURFACE;
     IGES* ip = aParent.GetRawPtr();
@@ -68,6 +68,29 @@ DLL_IGES_ENTITY_128::DLL_IGES_ENTITY_128( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_128::~DLL_IGES_ENTITY_128()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_128::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_NURBS_SURFACE, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_128( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 

@@ -31,11 +31,15 @@
 #include <iges_curve.h>
 
 
-DLL_IGES_CURVE::DLL_IGES_CURVE()
+DLL_IGES_CURVE::DLL_IGES_CURVE( IGES* aParent ) : DLL_IGES_ENTITY( aParent )
 {
     return;
 }
 
+DLL_IGES_CURVE::DLL_IGES_CURVE( DLL_IGES& aParent ) : DLL_IGES_ENTITY( aParent )
+{
+    return;
+}
 
 DLL_IGES_CURVE::~DLL_IGES_CURVE()
 {

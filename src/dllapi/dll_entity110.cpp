@@ -29,7 +29,7 @@
 #include <entity110.h>
 
 
-DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( IGES* aParent, bool create )
+DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( IGES* aParent, bool create ) : DLL_IGES_CURVE( aParent )
 {
     m_type = ENT_LINE;
 
@@ -48,7 +48,7 @@ DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( DLL_IGES& aParent, bool create ) : DLL_IGES_CURVE( aParent )
 {
     m_type = ENT_LINE;
     IGES* ip = aParent.GetRawPtr();
@@ -68,6 +68,29 @@ DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_110::~DLL_IGES_ENTITY_110()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_110::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_LINE, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_110( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 

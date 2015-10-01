@@ -77,7 +77,7 @@ class IGES_GEOM_PCB;
 class MCAD_SEGMENT;
 class IGES;
 
-class DLL_IGES_GEOM_PCB : public DLL_MCAD_OUTLINE
+class MCAD_API DLL_IGES_GEOM_PCB : public DLL_MCAD_OUTLINE
 {
 public:
     DLL_IGES_GEOM_PCB( bool create );

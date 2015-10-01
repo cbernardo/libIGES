@@ -74,7 +74,7 @@
 class MCAD_SEGMENT;
 class MCAD_OUTLINE;
 
-class DLL_MCAD_OUTLINE
+class MCAD_API DLL_MCAD_OUTLINE
 {
 protected:
     MCAD_OUTLINE* m_outline;
@@ -134,7 +134,9 @@ public:
 
     // Add a segment to this outline; the user must ensure that
     // the outline is closed before performing any other type
-    // of operation.
+    // of operation. On success the segment will be managed
+    // by the outline object and should not be deleted by the
+    // caller.
     bool AddSegment( MCAD_SEGMENT* aSegment, bool& error );
     bool AddSegment( DLL_MCAD_SEGMENT& aSegment, bool& error );
 

@@ -39,6 +39,8 @@ public:
     DLL_IGES_ENTITY_144( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_144();
 
+    virtual bool NewEntity( void );
+
     bool GetSurface( IGES_ENTITY*& aPtr );
     bool SetSurface( IGES_ENTITY* aPtr );
     bool GetBoundCurve( IGES_ENTITY_142*& aPtr );

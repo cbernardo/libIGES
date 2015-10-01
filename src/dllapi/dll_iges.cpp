@@ -41,7 +41,7 @@ DLL_IGES::DLL_IGES()
     m_iges = new IGES;
 
     if( m_iges )
-        m_iges->SetValidFlag( &m_valid );
+        m_iges->AttachValidFlag( &m_valid );
 
     return;
 }
@@ -50,7 +50,10 @@ DLL_IGES::DLL_IGES()
 DLL_IGES::~DLL_IGES()
 {
     if( m_iges && m_valid )
+    {
+        m_iges->DetachValidFlag( &m_valid );
         delete m_iges;
+    }
 
     m_iges = NULL;
     return;

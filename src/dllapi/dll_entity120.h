@@ -41,6 +41,8 @@ public:
     DLL_IGES_ENTITY_120( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_120();
 
+    virtual bool NewEntity( void );
+
     bool GetAxis( IGES_CURVE** aCurve );
     bool SetAxis( IGES_CURVE* aCurve );
     bool GetGeneratrix( IGES_CURVE** aCurve );

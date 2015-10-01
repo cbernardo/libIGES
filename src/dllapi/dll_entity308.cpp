@@ -29,7 +29,7 @@
 #include <entity308.h>
 
 
-DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( IGES* aParent, bool create )
+DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_SUBFIGURE_DEFINITION;
 
@@ -48,7 +48,7 @@ DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {
     m_type = ENT_SUBFIGURE_DEFINITION;
     IGES* ip = aParent.GetRawPtr();
@@ -68,6 +68,29 @@ DLL_IGES_ENTITY_308::DLL_IGES_ENTITY_308( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_308::~DLL_IGES_ENTITY_308()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_308::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_SUBFIGURE_DEFINITION, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_308( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -118,7 +141,7 @@ bool DLL_IGES_ENTITY_308::AddDE(IGES_ENTITY* aPtr)
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_308*)m_valid)->AddDE( aPtr );
+    return ((IGES_ENTITY_308*)m_entity)->AddDE( aPtr );
 }
 
 bool DLL_IGES_ENTITY_308::AddDE(DLL_IGES_ENTITY*& aPtr)
@@ -126,7 +149,7 @@ bool DLL_IGES_ENTITY_308::AddDE(DLL_IGES_ENTITY*& aPtr)
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_308*)m_valid)->AddDE( aPtr->GetRawPtr() );
+    return ((IGES_ENTITY_308*)m_entity)->AddDE( aPtr->GetRawPtr() );
 }
 
 
@@ -135,7 +158,7 @@ bool DLL_IGES_ENTITY_308::DelDE( IGES_ENTITY* aPtr )
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_308*)m_valid)->DelDE( aPtr );
+    return ((IGES_ENTITY_308*)m_entity)->DelDE( aPtr );
 }
 
 
@@ -144,7 +167,7 @@ bool DLL_IGES_ENTITY_308::DelDE(DLL_IGES_ENTITY*& aPtr)
     if( !m_valid || NULL == m_entity )
         return false;
 
-    return ((IGES_ENTITY_308*)m_valid)->DelDE( aPtr->GetRawPtr() );
+    return ((IGES_ENTITY_308*)m_entity)->DelDE( aPtr->GetRawPtr() );
 }
 
 
@@ -156,7 +179,7 @@ bool DLL_IGES_ENTITY_308::GetNestDepth( int& aNestDepth )
         return false;
     }
 
-    aNestDepth = ((IGES_ENTITY_308*)m_valid)->getDepthLevel();
+    aNestDepth = ((IGES_ENTITY_308*)m_entity)->getDepthLevel();
     return true;
 }
 
@@ -166,7 +189,7 @@ bool DLL_IGES_ENTITY_308::GetName( const char*& aName )
     if( !m_valid || NULL == m_entity )
         return false;
 
-    std::string* sp = &((IGES_ENTITY_308*)m_valid)->NAME;
+    std::string* sp = &((IGES_ENTITY_308*)m_entity)->NAME;
 
     if( sp->empty() )
     {
@@ -179,11 +202,15 @@ bool DLL_IGES_ENTITY_308::GetName( const char*& aName )
 }
 
 
-bool DLL_IGES_ENTITY_308::SetName( const char*& aName )
+bool DLL_IGES_ENTITY_308::SetName( const char* aName )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
-    ((IGES_ENTITY_308*)m_valid)->NAME = aName;
+    if( NULL == aName )
+        ((IGES_ENTITY_308*)m_entity)->NAME = "";
+    else
+        ((IGES_ENTITY_308*)m_entity)->NAME = aName;
+
     return true;
 }

@@ -36,6 +36,8 @@ public:
     DLL_IGES_ENTITY_126( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_126();
 
+    virtual bool NewEntity( void );
+
     bool GetNURBSData( int& nCoeff, int& order, double** knot, double** coeff,
         bool& isRational, bool& isClosed, bool& isPeriodic, double& v0, double& v1 );
     bool SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff,

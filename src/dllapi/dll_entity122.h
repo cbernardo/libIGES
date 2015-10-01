@@ -40,6 +40,8 @@ public:
     DLL_IGES_ENTITY_122( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_122();
 
+    virtual bool NewEntity( void );
+
     bool GetGeneratrixEnd( MCAD_POINT& pt );
     bool GetGeneratrixEnd( double& aX, double& aY, double& aZ );
     bool GetDirectrix( IGES_CURVE*& aPtr );

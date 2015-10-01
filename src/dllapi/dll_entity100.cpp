@@ -30,7 +30,7 @@
 #include <entity100.h>
 
 
-DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( IGES* aParent, bool create )
+DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( IGES* aParent, bool create ) : DLL_IGES_CURVE( aParent )
 {
     m_type = ENT_CIRCULAR_ARC;
 
@@ -49,7 +49,7 @@ DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( IGES* aParent, bool create )
 }
 
 
-DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create )
+DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create ) : DLL_IGES_CURVE( aParent )
 {
     m_type = ENT_CIRCULAR_ARC;
 
@@ -70,6 +70,29 @@ DLL_IGES_ENTITY_100::DLL_IGES_ENTITY_100( DLL_IGES& aParent, bool create )
 DLL_IGES_ENTITY_100::~DLL_IGES_ENTITY_100()
 {
     return;
+}
+
+
+bool DLL_IGES_ENTITY_100::NewEntity( void )
+{
+    if( m_valid && NULL != m_entity )
+    {
+        m_entity->DetachValidFlag( &m_valid );
+        m_entity = NULL;
+    }
+
+    if( NULL != m_parent && m_hasParent )
+        m_parent->NewEntity( ENT_CIRCULAR_ARC, &m_entity );
+    else
+        m_entity = new IGES_ENTITY_100( NULL );
+
+    if( NULL != m_entity )
+    {
+        m_entity->AttachValidFlag(&m_valid);
+        return true;
+    }
+
+    return false;
 }
 
 

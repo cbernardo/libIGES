@@ -61,6 +61,15 @@ MCAD_SEGMENT::MCAD_SEGMENT()
 
 MCAD_SEGMENT::~MCAD_SEGMENT()
 {
+    list< bool* >::iterator sVF = m_validFlags.begin();
+    list< bool* >::iterator eVF = m_validFlags.end();
+
+    while( sVF != eVF )
+    {
+        **sVF = false;
+        ++sVF;
+    }
+
     return;
 }
 

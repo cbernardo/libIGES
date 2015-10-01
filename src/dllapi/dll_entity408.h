@@ -42,18 +42,12 @@ public:
     DLL_IGES_ENTITY_408( DLL_IGES& aParent, bool create );
     virtual ~DLL_IGES_ENTITY_408();
 
+    virtual bool NewEntity( void );
+
     bool GetSubfigure( IGES_ENTITY_308*& aPtr );
     bool SetSubfigure( IGES_ENTITY_308* aPtr );
     bool GetSubfigParams( double& aX, double& aY, double& aZ, double& aScale );
     bool SetSubfigParams( double aX, double aY, double aZ, double aScale = 1.0 );
-
-    // parameters
-    double X;   //< X translation relative to type space of a referring entity
-    double Y;   //< Y translation relative to type space of a referring entity
-    double Z;   //< Z translation relative to type space of a referring entity
-    double S;   //< scale factor relative to type space of a referring entity
-
-
     bool GetDE( IGES_ENTITY_308*& aPtr );
     bool SetDE( IGES_ENTITY_308* aPtr );
 };

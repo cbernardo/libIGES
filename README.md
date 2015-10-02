@@ -1,3 +1,15 @@
+2 Oct 2015
+  + Finished basic DLL wrapper routines and conversion of all tools
+    and test programs to use the DLL wrapper. The code now compiles
+    with MSVC 2013 with no errors and no warnings and produces the
+    expected results. While *NIX systems built with gcc may directly
+    access the core IGES objects, users are encouraged to use only
+    the DLL wrapper objects to ensure cross-platform portability of
+    the code. DLL wrappers shall be implemented or extended as
+    required by users. In the interest of cross-platform portability
+    and code maintainability please resist the temptation to use the
+    lower level objects.
+
 29 Sep 2015
   + Boost:
     All Boost dependencies have been removed.

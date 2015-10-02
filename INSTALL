@@ -122,8 +122,6 @@ IV. Build: create a build directory and run cmake then make:
         cd build
         cmake -G "Visual Studio 12 2013 Win64" \
               -DUSE_SISL=ON \
-              -DBOOST_INCLUDEDIR=[path to boost source dir] \
-              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib  ..
         cmake --build . -- /p:Configuration=Release /m:8
 
         Note: the configuration option may also be set to Debug;
@@ -136,8 +134,6 @@ IV. Build: create a build directory and run cmake then make:
         mkdir build
         cd build
         cmake -G "Visual Studio 12 2013 Win64" \
-              -DBOOST_INCLUDEDIR=[path to boost source dir] \
-              -DBOOST_LIBRARYDIR=[path to boost source dir]\stage\lib \
               -DUSE_SISL=ON \
               -DSISL_INCLUDE_DIR=[path to sisl include directory] \
               -DSISL_LIBRARIES=[path to SISL Release (or Debug) library] ..

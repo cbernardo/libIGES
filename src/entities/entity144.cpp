@@ -118,6 +118,7 @@ IGES_ENTITY_144::~IGES_ENTITY_144()
 
 void IGES_ENTITY_144::Compact( void )
 {
+    IGES_ENTITY::Compact();
     vPTI.clear();
     return;
 }
@@ -710,6 +711,9 @@ bool IGES_ENTITY_144::SetPTS( IGES_ENTITY* aPtr )
     else
         N1 = 1;
 
+    if( NULL != parent && parent != PTS->GetParentIGES() )
+        parent->AddEntity( PTS );
+
     return true;
 }
 
@@ -753,6 +757,9 @@ bool IGES_ENTITY_144::SetPTO( IGES_ENTITY_142* aPtr )
 
     PTO->SetDependency( STAT_DEP_PHY );
     N1 = 1;
+
+    if( NULL != parent && parent != PTO->GetParentIGES() )
+        parent->AddEntity( PTO );
 
     return true;
 }
@@ -852,6 +859,10 @@ bool IGES_ENTITY_144::AddPTI( IGES_ENTITY_142* aPtr )
     N2 = (int)PTI.size();
 
     vPTI.clear();
+
+    if( NULL != parent && parent != aPtr->GetParentIGES() )
+        parent->AddEntity( aPtr );
+
     return true;
 }
 

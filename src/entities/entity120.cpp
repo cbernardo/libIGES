@@ -60,12 +60,6 @@ IGES_ENTITY_120::~IGES_ENTITY_120()
 }
 
 
-void IGES_ENTITY_120::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_120::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -475,6 +469,9 @@ bool IGES_ENTITY_120::SetL( IGES_CURVE* aCurve )
     L = aCurve;
     L->SetDependency( STAT_DEP_PHY );
 
+    if( NULL != parent && parent != L->GetParentIGES() )
+        parent->AddEntity( L );
+
     return true;
 }
 
@@ -530,6 +527,9 @@ bool IGES_ENTITY_120::SetC( IGES_CURVE* aCurve )
 
     C = aCurve;
     C->SetDependency( STAT_DEP_PHY );
+
+    if( NULL != parent && parent != C->GetParentIGES() )
+        parent->AddEntity( C );
 
     return true;
 }

@@ -119,7 +119,6 @@ public:
     bool AddSegment( IGES_CURVE* aSegment );
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetEntityForm(int aForm);
     virtual bool SetHierarchy(IGES_STAT_HIER aHierarchy);
 

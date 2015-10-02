@@ -68,12 +68,6 @@ IGES_ENTITY_142::~IGES_ENTITY_142()
 }
 
 
-void IGES_ENTITY_142::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_142::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -590,6 +584,9 @@ bool IGES_ENTITY_142::SetSPTR( IGES_ENTITY* aPtr )
 
     SPTR->SetDependency( STAT_DEP_PHY );
 
+    if( NULL != parent && parent != SPTR->GetParentIGES() )
+        parent->AddEntity( SPTR );
+
     return true;
 }
 
@@ -633,6 +630,9 @@ bool IGES_ENTITY_142::SetBPTR( IGES_ENTITY* aPtr )
 
     BPTR->SetDependency( STAT_DEP_PHY );
 
+    if( NULL != parent && parent != BPTR->GetParentIGES() )
+        parent->AddEntity( BPTR );
+
     return true;
 }
 
@@ -675,6 +675,9 @@ bool IGES_ENTITY_142::SetCPTR( IGES_ENTITY* aPtr )
     }
 
     CPTR->SetDependency( STAT_DEP_PHY );
+
+    if( NULL != parent && parent != CPTR->GetParentIGES() )
+        parent->AddEntity( CPTR );
 
     return true;
 }

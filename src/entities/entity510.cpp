@@ -73,12 +73,6 @@ IGES_ENTITY_510::~IGES_ENTITY_510()
 }
 
 
-void IGES_ENTITY_510::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_510::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -560,6 +554,9 @@ bool IGES_ENTITY_510::AddBound( IGES_ENTITY_508* aLoop )
     // once
     mloops.push_back( aLoop );
 
+    if( NULL != parent && parent != aLoop->GetParentIGES() )
+        parent->AddEntity( (IGES_ENTITY*)aLoop );
+
     return true;
 }
 
@@ -570,6 +567,10 @@ bool IGES_ENTITY_510::SetSurface( IGES_ENTITY* aSurface )
         return false;
 
     msurface = aSurface;
+
+    if( NULL != parent && parent != aSurface->GetParentIGES() )
+        parent->AddEntity( (IGES_ENTITY*)aSurface );
+
     return true;
 }
 

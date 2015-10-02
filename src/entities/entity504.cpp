@@ -87,6 +87,7 @@ IGES_ENTITY_504::~IGES_ENTITY_504()
 
 void IGES_ENTITY_504::Compact( void )
 {
+    IGES_ENTITY::Compact();
     vedges.clear();
     return;
 }
@@ -639,6 +640,19 @@ bool IGES_ENTITY_504::AddEdge( IGES_ENTITY* aCurve,
     nc.tv = aTV;
 
     edges.push_back( nc );
+
+    if( NULL != parent )
+    {
+        if( parent != aCurve->GetParentIGES() )
+            parent->AddEntity( aCurve );
+
+        if( parent != aSVP->GetParentIGES() )
+            parent->AddEntity( aSVP );
+
+        if( parent != aTVP->GetParentIGES() )
+            parent->AddEntity( aTVP );
+    }
+
     return true;
 }
 
@@ -701,6 +715,9 @@ bool IGES_ENTITY_504::addCurve( IGES_ENTITY* aCurve )
         return false;
     }
 
+    if( NULL != parent && parent != aCurve->GetParentIGES() )
+        parent->AddEntity( aCurve );
+
     return true;
 }
 
@@ -743,6 +760,10 @@ bool IGES_ENTITY_504::addVertexList( IGES_ENTITY_502* aVertexList )
     }
 
     vertices.push_back( pair<IGES_ENTITY_502*, int>(aVertexList, 1) );
+
+    if( NULL != parent && parent != aVertexList->GetParentIGES() )
+        parent->AddEntity( aVertexList );
+
     return true;
 }
 

@@ -60,12 +60,6 @@ IGES_ENTITY_122::~IGES_ENTITY_122()
 }
 
 
-void IGES_ENTITY_122::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_122::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -422,6 +416,9 @@ bool IGES_ENTITY_122::SetDE( IGES_CURVE* aPtr )
 
     DE = aPtr;
     DE->SetDependency( STAT_DEP_PHY );
+
+    if( NULL != parent && parent != DE->GetParentIGES() )
+        parent->AddEntity( DE );
 
     return true;
 }

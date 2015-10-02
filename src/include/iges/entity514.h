@@ -86,7 +86,6 @@ public:
     virtual ~IGES_ENTITY_514();
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetTransform( IGES_ENTITY* aTransform );
     virtual bool SetEntityForm( int aForm );
     // parameters not supported by the specification:

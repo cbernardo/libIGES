@@ -586,6 +586,9 @@ bool IGES_ENTITY_308::AddDE(IGES_ENTITY *aPtr)
     N = (int)DE.size();
     m_DE.clear();
 
+    if( NULL != parent && parent != aPtr->GetParentIGES() )
+        parent->AddEntity( aPtr );
+
     return true;
 }
 

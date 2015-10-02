@@ -272,15 +272,6 @@ void IGES_ENTITY::DetachValidFlag( bool* aFlag )
 }
 
 
-bool IGES_ENTITY::HasAPIRefs( void )
-{
-    if( m_validFlags.empty() )
-        return false;
-
-    return true;
-}
-
-
 void IGES_ENTITY::Compact( void )
 {
     vcomments.clear();
@@ -2025,6 +2016,10 @@ bool IGES_ENTITY::SetLineFontPattern( IGES_ENTITY* aPattern )
 
     pLineFontPattern = aPattern;
 
+
+    if( NULL != parent && parent != aPattern->parent )
+        parent->AddEntity( aPattern );
+
     return true;
 }
 
@@ -2123,6 +2118,10 @@ bool IGES_ENTITY::SetLevel( IGES_ENTITY* aLevel )
     }
 
     pLevel = aLevel;
+
+    if( NULL != parent && parent != aLevel->parent )
+        parent->AddEntity( aLevel );
+
     return true;
 }
 
@@ -2181,6 +2180,10 @@ bool IGES_ENTITY::SetView( IGES_ENTITY* aView )
     }
 
     pView = aView;
+
+    if( NULL != parent && parent != aView->parent )
+        parent->AddEntity( aView );
+
     return true;
 }
 
@@ -2247,6 +2250,9 @@ bool IGES_ENTITY::SetTransform( IGES_ENTITY* aTransform )
         return false;
     }
 
+    if( NULL != parent && parent != aTransform->parent )
+        parent->AddEntity( aTransform );
+
     return true;
 }
 
@@ -2310,6 +2316,10 @@ bool IGES_ENTITY::SetLabelAssoc( IGES_ENTITY* aLabelAssoc )
     }
 
     pLabelAssoc = aLabelAssoc;
+
+    if( NULL != parent && parent != aLabelAssoc->parent )
+        parent->AddEntity( aLabelAssoc );
+
     return true;
 }
 
@@ -2368,6 +2378,7 @@ bool IGES_ENTITY::SetColor( IGES_COLOR aColor )
     }
 
     colorNum = aColor;
+
     return true;
 }
 
@@ -2411,6 +2422,10 @@ bool IGES_ENTITY::SetColor( IGES_ENTITY* aColor )
     }
 
     pColor = aColor;
+
+    if( NULL != parent && parent != aColor->parent )
+        parent->AddEntity( aColor );
+
     return true;
 }
 
@@ -2867,6 +2882,10 @@ bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
     }
 
     extras.push_back( aEntity );
+
+    if( NULL != parent && parent != aEntity->parent )
+        parent->AddEntity( aEntity );
+
     return true;
 }
 

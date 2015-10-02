@@ -47,12 +47,6 @@ IGES_ENTITY_NULL::~IGES_ENTITY_NULL()
 }
 
 
-void IGES_ENTITY_NULL::Compact( void )
-{
-    return;
-}
-
-
 void IGES_ENTITY_NULL::setEntityType( int aEntityID )
 {
     switch( aEntityID )

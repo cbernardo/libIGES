@@ -81,7 +81,6 @@ public:
     virtual ~IGES_ENTITY_408();
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetHierarchy( IGES_STAT_HIER aHierarchy );
 

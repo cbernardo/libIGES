@@ -77,7 +77,6 @@ public:
     virtual ~IGES_ENTITY_186();
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetEntityForm( int aForm );
 
     // functions unique to E186

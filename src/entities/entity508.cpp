@@ -126,12 +126,6 @@ IGES_ENTITY_508::~IGES_ENTITY_508()
 }
 
 
-void IGES_ENTITY_508::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_508::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -742,6 +736,10 @@ bool IGES_ENTITY_508::addEdge( IGES_ENTITY* aEdge )
     }
 
     redges.push_back(pair<IGES_ENTITY*, int>( aEdge, 1 ) );
+
+    if( NULL != parent && parent != aEdge->GetParentIGES() )
+        parent->AddEntity( (IGES_ENTITY*)aEdge );
+
     return true;
 }
 
@@ -845,6 +843,9 @@ bool IGES_ENTITY_508::addPCurve( IGES_ENTITY* aCurve )
         ERRMSG << "\n + [BUG]: unhandled duplicate reference to PS curve\n";
         return false;
     }
+
+    if( NULL != parent && parent != aCurve->GetParentIGES() )
+        parent->AddEntity( aCurve );
 
     return true;
 }

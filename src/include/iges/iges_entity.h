@@ -310,13 +310,6 @@ public:
     void DetachValidFlag( bool* aFlag );
 
     /**
-     * Function HasAPIRefs
-     * returns true if the entity still has references held
-     * by an API layer entity
-     */
-    bool HasAPIRefs( void );
-
-    /**
      * Function Compact
      * deletes any temporary data which may have been created for the
      * convenience of passing data across the DLL boundary.

@@ -75,12 +75,6 @@ IGES_ENTITY_102::~IGES_ENTITY_102()
 }
 
 
-void IGES_ENTITY_102::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_102::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -764,6 +758,9 @@ bool IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
 
         curves.push_back( aSegment );
     }
+
+    if( NULL != parent && parent != aSegment->GetParentIGES() )
+        parent->AddEntity( aSegment );
 
     return true;
 }

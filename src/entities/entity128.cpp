@@ -1,5 +1,5 @@
 /*
- * file: entity126.cpp
+ * file: entity128.cpp
  *
  * Copyright 2015, Dr. Cirilo Bernardo (cirilo.bernardo@gmail.com)
  *
@@ -75,12 +75,6 @@ IGES_ENTITY_128::~IGES_ENTITY_128()
     if( coeffs )
         delete [] coeffs;
 
-    return;
-}
-
-
-void IGES_ENTITY_128::Compact( void )
-{
     return;
 }
 

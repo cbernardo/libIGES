@@ -104,7 +104,6 @@ public:
     }
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetEntityForm( int aForm );
     virtual bool SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern );
     virtual bool SetLineFontPattern( IGES_ENTITY* aPattern );

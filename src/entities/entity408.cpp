@@ -62,12 +62,6 @@ IGES_ENTITY_408::~IGES_ENTITY_408()
 }
 
 
-void IGES_ENTITY_408::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_408::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )
@@ -458,6 +452,9 @@ bool IGES_ENTITY_408::SetDE( IGES_ENTITY_308* aPtr )
         DE = NULL;
         return false;
     }
+
+    if( NULL != parent && parent != aPtr->GetParentIGES() )
+        parent->AddEntity( aPtr );
 
     return true;
 }

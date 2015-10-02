@@ -87,7 +87,6 @@ public:
     virtual ~IGES_ENTITY_180();
 
     // Inherited virtual functions
-    virtual void Compact( void );
     virtual bool SetEntityForm(int aForm);
     virtual bool SetDependency(IGES_STAT_DEPENDS aDependency);
     virtual bool SetEntityUse(IGES_STAT_USE aUseCase);

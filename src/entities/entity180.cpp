@@ -49,12 +49,6 @@ IGES_ENTITY_180::~IGES_ENTITY_180()
 }
 
 
-void IGES_ENTITY_180::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_180::typeOK( int aTypeNum )
 {
     // ALLOWED ENTITIES:
@@ -621,6 +615,9 @@ bool IGES_ENTITY_180::AddArg( IGES_ENTITY* aOperand )
 
     np->pEnt = aOperand;
     nodes.push_back( np );
+
+    if( NULL != parent && parent != aOperand->GetParentIGES() )
+        parent->AddEntity( aOperand );
 
     return true;
 }

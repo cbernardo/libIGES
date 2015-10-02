@@ -64,12 +64,6 @@ IGES_ENTITY_124::~IGES_ENTITY_124()
 }
 
 
-void IGES_ENTITY_124::Compact( void )
-{
-    return;
-}
-
-
 bool IGES_ENTITY_124::associate(std::vector<IGES_ENTITY *> *entities)
 {
     if( !IGES_ENTITY::associate(entities) )

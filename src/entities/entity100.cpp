@@ -32,7 +32,6 @@
 #include <mcad_helpers.h>
 #include <entity100.h>
 #include <entity124.h>
-#include "../include/iges/iges_entity.h"
 
 using namespace std;
 

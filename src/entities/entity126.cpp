@@ -32,7 +32,6 @@
 #include <entity124.h>
 #include <entity126.h>
 #include <entity142.h>
-#include "../include/iges/entity126.h"
 
 using namespace std;
 

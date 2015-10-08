@@ -32,7 +32,6 @@
 #include <iges.h>
 #include <all_entities.h>
 #include <iges_io.h>
-#include "../include/iges/iges_entity.h"
 
 
 using namespace std;

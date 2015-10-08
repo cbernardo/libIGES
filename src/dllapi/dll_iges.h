@@ -68,10 +68,11 @@ public:
 
     /**
      * Function Cull
-     * culls all orphaned entities and top-level entities which
-     * are not Type 408 (Singular Subfigure Instance)
+     * culls all orphaned entities; if vicious = true then
+     * all top-level entities which are not Type 408
+     * (Singular Subfigure Instance) are also culled
      */
-    void Cull( void );
+    void Cull( bool vicious = false );
 
     /**
      * Function Clear

@@ -108,11 +108,6 @@ private:
     bool readPD( IGES_RECORD& rec, std::ifstream& file );
     // read the TERMINATE section and verify data
     bool readTS( IGES_RECORD& rec, std::ifstream& file );
-    // cull orphaned entities; setting the 'vicious' flag will result in the culling
-    // of most entity types which do not have a parent; only Type 408 entities are
-    // allowed to exist without a parent.
-    void cull( bool vicious = false );
-
     // write out the START SECTION
     bool writeStart( std::ofstream& file );
     // write out the GLOBAL SECTION
@@ -151,11 +146,11 @@ public:
 
     /**
      * Function Cull
-     * culls all orphaned entities and top-level entities which
-     * are not Type 408 (Singular Subfigure Instance)
+     * culls all orphaned entities; if vicious = true then all top-level
+     * entities which are not Type 408 (Singular Subfigure Instance)
+     * are culled as well.
      */
-    void Cull( void );
-
+    void Cull( bool vicious = false );
 
     /**
      * Function Clear

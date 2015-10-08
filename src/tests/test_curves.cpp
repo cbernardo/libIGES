@@ -36,7 +36,6 @@
 #include <geom_wall.h>
 #include <geom_cylinder.h>
 #include <dll_mcad_segment.h>
-#include "../include/iges/entity508.h"
 
 using namespace std;
 

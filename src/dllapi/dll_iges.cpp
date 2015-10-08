@@ -84,10 +84,10 @@ void DLL_IGES::Compact( void )
 }
 
 
-void DLL_IGES::Cull( void )
+void DLL_IGES::Cull( bool vicious )
 {
     if( m_valid && NULL != m_iges )
-        m_iges->Cull();
+        m_iges->Cull( vicious );
 
     ERRMSG << "\n + [BUG] invoked with invalid IGES object\n";
     return;

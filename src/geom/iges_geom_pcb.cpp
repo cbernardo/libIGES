@@ -45,8 +45,6 @@
 #include <entity142.h>
 #include <entity144.h>
 #include <sisl.h>
-#include "../include/iges/iges_entity.h"
-#include "../include/geom/mcad_outline.h"
 
 
 using namespace std;

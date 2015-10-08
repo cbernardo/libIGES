@@ -31,7 +31,6 @@
 #include <entity124.h>
 #include <entity502.h>
 #include <entity504.h>
-#include "../include/iges/entity504.h"
 
 using namespace std;
 

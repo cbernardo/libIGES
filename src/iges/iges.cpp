@@ -35,8 +35,6 @@
 // names shall be valid base names and it is possible that we wind up
 // with names which have multiple suffixes.
 //
-// 2. Allow vicious culling in the Read/Write operations; there is no
-// need to directly expose the routine to the user.
 
 #include <libigesconf.h>
 #include <locale.h>
@@ -53,7 +51,6 @@
 #include <all_entities.h>
 #include <iges.h>
 #include <mcad_utils.h>
-#include "../include/iges/iges.h"
 
 
 using namespace std;
@@ -610,7 +607,7 @@ bool IGES::Read( const char* aFileName )
             entities[iEnt]->rescale( globalData.cf );
     }
 
-    cull();
+    Cull();
     return true;
 }
 
@@ -626,7 +623,7 @@ bool IGES::Write( const char* aFileName, bool fOverwrite )
         return false;
     }
 
-    cull();
+    Cull();
 
     if( entities.empty() )
     {
@@ -1730,7 +1727,7 @@ bool IGES::readTS( IGES_RECORD& rec, std::ifstream& file )
 
 
 // cull unsupported and orphaned entities
-void IGES::cull( bool vicious )
+void IGES::Cull( bool vicious )
 {
     size_t nEnt = entities.size();
     size_t iEnt;
@@ -1765,12 +1762,6 @@ void IGES::cull( bool vicious )
 #endif
 
     return;
-}
-
-
-void IGES::Cull( void )
-{
-    cull( true );
 }
 
 
@@ -1927,7 +1918,7 @@ bool IGES::AddToHeader( const char*& comments )
 bool IGES::writeStart( std::ofstream& file )
 {
     if( startSection.empty() )
-        startSection.push_back( "# NOTE: no user-provided comment. This comment is provided to meet spec." );
+        startSection.push_back( "# Created via the free libIGES (https://github.com/cbernardo/libIGES)" );
 
     std::list<std::string>::iterator ssc = startSection.begin();
     std::list<std::string>::iterator esc = startSection.end();

@@ -51,6 +51,19 @@
 #include <all_api_entities.h>
 #include <error_macros.h>
 
+#ifdef STATIC_IGES
+    #include <iges_io.h>
+#else
+    bool ParseLString( const std::string& data, int& idx, std::string& param,
+                       bool& eor, char pd, char rd );
+
+    bool ParseReal( const std::string& data, int& idx, double& param, bool& eor,
+                    char pd, char rd, double* ddefault = NULL );
+
+    bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
+                  char pd, char rd, int* idefault = NULL);
+#endif
+
 using namespace std;
 
 #define ONAME "test_out_merge.igs"
@@ -101,9 +114,10 @@ struct TPARAMS
 // merge the model with the given filename 'modelOut' and instantiate
 // the new model with the given list of transforms
 bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vector<pair<string, ORIENT > >& o );
-
 // parse a line an update the model/placement data
-void parseLine( vector<pair<string, list<TPARAMS>* > >& models, vector<pair<string, ORIENT > >& orients, const std::string& iline );
+void parseLine( std::vector< std::pair< std::string, std::list< TPARAMS >* > >& models,
+                std::vector< std::pair< std::string, ORIENT > >& orients,
+                const std::string& iline );
 // parse a filename and add the result to the file list
 void parseFile( vector<pair<string, list<TPARAMS>* > >& models, const std::string& iline );
 // parse a position line and add the result to the list
@@ -119,13 +133,6 @@ void rotateY( MCAD_MATRIX& mat, double angle );
 // create a rotation matrix around Z
 void rotateZ( MCAD_MATRIX& mat, double angle );
 
-bool ParseReal( const std::string& data, int& idx, double& param, bool& eor,
-                char pd, char rd, double* ddefault = NULL );
-
-bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd );
-
-bool ParseInt(const std::string& data, int& idx, int& param, bool& eor,
-              char pd, char rd, int* idefault = NULL);
 
 IGES_UNIT unit = UNIT_END;
 
@@ -215,7 +222,6 @@ int main( int argc, char** argv )
         if( !iline.empty() )
             parseLine( modelNames, orients, iline );
     }
-
     if( modelNames.empty() )
     {
         cerr << "Nothing to do; no valid model/position data\n";
@@ -396,7 +402,169 @@ void TPARAMS::GetTransform( MCAD_TRANSFORM& T )
     return;
 }
 
-void parseLine( vector<pair<string, list<TPARAMS>* > >& models, vector<pair<string, ORIENT > >& orients, const std::string& iline )
+#ifndef STATIC_IGES
+
+bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault )
+{
+    std::string tmp;
+    int tidx = idx;
+
+    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
+    {
+        ERRMSG << "[BAD DATA]\n";
+        return false;
+    }
+
+    if( tmp.empty() )
+    {
+        if( ddefault )
+        {
+            param = *ddefault;
+            return true;
+        }
+
+        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    size_t dex = tmp.find_first_of( 'D' );
+
+    if( dex != string::npos )
+        tmp[dex] = 'E';
+
+    const char* cp = tmp.c_str();
+    char* rp;
+
+    errno = 0;
+    double d = strtod( cp, &rp );
+
+    if( errno || cp == rp )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid floating point number\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    if( rp - cp != (int)tmp.length() )
+    {
+        ERRMSG << "\n + [WARNING]: extra characters at end of floating point number\n";
+        cerr << "Float value: " << setprecision(12) << d << setprecision(0) << "\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+    }
+
+    param = d;
+    return true;
+}
+
+bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault )
+{
+    std::string tmp;
+    int tidx = idx;
+
+    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
+    {
+        ERRMSG << "[BAD DATA]\n";
+        return false;
+    }
+
+    if( tmp.empty() )
+    {
+        if( idefault )
+        {
+            param = *idefault;
+            return true;
+        }
+
+        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    const char* cp = tmp.c_str();
+    char* rp;
+
+    errno = 0;
+    int i = strtol( cp, &rp, 10 );
+
+    if( errno || cp == rp )
+    {
+        ERRMSG << "\n + [BAD DATA]: invalid integer\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+        return false;
+    }
+
+    if( rp - cp != (int)tmp.length() )
+    {
+        ERRMSG << "\n + [WARNING]: extra characters at end of integer\n";
+        cerr << "Integer value: " << i << "\n";
+        cerr << "Data: " << data.substr(tidx) << "\n";
+    }
+
+    param = i;
+    return true;
+}
+
+bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd )
+{
+    param.clear();
+    int tidx = idx;
+
+    if( idx >= (int)data.length() )
+    {
+        ERRMSG << "\n + [BUG] out of bounds\n";
+        return false;
+    }
+
+    if( data[idx] == pd || data[idx] == rd )
+    {
+        if( data[idx] == rd )
+            eor = true;
+
+        ++idx;
+        return true;
+    }
+
+    size_t strEnd = data.find_first_of( pd, idx );
+    size_t strEnd2 = data.find_first_of( rd, idx );
+
+    if( strEnd == string::npos || (strEnd2 != string::npos && strEnd > strEnd2) )
+    {
+        if( strEnd2 == string::npos )
+        {
+            ERRMSG << "\n + [BAD DATA] no Parameter or Record delimeter found in data\n";
+            cerr << "Data: " << data.substr( idx ) << "\n";
+            return false;
+        }
+
+        strEnd = strEnd2;
+    }
+
+    param = data.substr( idx, strEnd - idx );
+    idx += (int)param.length();
+
+    if( data[idx] == rd )
+    {
+        ++idx;
+        eor = true;
+        return true;
+    }
+
+    if( data[idx] == pd )
+    {
+        ++idx;
+        return true;
+    }
+
+    ERRMSG << "\n + [BAD DATA]: invalid record; no Parameter or Record delimeter after string\n";
+    cerr << "Data: " << data.substr(tidx) << "\n";
+    return false;
+}
+#endif  // ifndef( STATIC_IGES )
+
+void parseLine( vector<pair<string, list<TPARAMS>* > >& models,
+                vector<pair<string, ORIENT > >& orients,
+                const std::string& iline )
 {
     if( iline.find("file:") != string::npos )
         parseFile( models, iline );
@@ -646,163 +814,4 @@ void parseUnit( const std::string& iline )
     }
 
     return;
-}
-
-bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, char pd, char rd, double* ddefault )
-{
-    std::string tmp;
-    int tidx = idx;
-
-    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
-    {
-        ERRMSG << "[BAD DATA]\n";
-        return false;
-    }
-
-    if( tmp.empty() )
-    {
-        if( ddefault )
-        {
-            param = *ddefault;
-            return true;
-        }
-
-        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-        return false;
-    }
-
-    size_t dex = tmp.find_first_of( 'D' );
-
-    if( dex != string::npos )
-        tmp[dex] = 'E';
-
-    const char* cp = tmp.c_str();
-    char* rp;
-
-    errno = 0;
-    double d = strtod( cp, &rp );
-
-    if( errno || cp == rp )
-    {
-        ERRMSG << "\n + [BAD DATA]: invalid floating point number\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-        return false;
-    }
-
-    if( rp - cp != (int)tmp.length() )
-    {
-        ERRMSG << "\n + [WARNING]: extra characters at end of floating point number\n";
-        cerr << "Float value: " << setprecision(12) << d << setprecision(0) << "\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-    }
-
-    param = d;
-    return true;
-}
-
-
-bool ParseLString( const std::string& data, int& idx, std::string& param, bool& eor, char pd, char rd )
-{
-    param.clear();
-    int tidx = idx;
-
-    if( idx >= (int)data.length() )
-    {
-        ERRMSG << "\n + [BUG] out of bounds\n";
-        return false;
-    }
-
-    if( data[idx] == pd || data[idx] == rd )
-    {
-        if( data[idx] == rd )
-            eor = true;
-
-        ++idx;
-        return true;
-    }
-
-    size_t strEnd = data.find_first_of( pd, idx );
-    size_t strEnd2 = data.find_first_of( rd, idx );
-
-    if( strEnd == string::npos || (strEnd2 != string::npos && strEnd > strEnd2) )
-    {
-        if( strEnd2 == string::npos )
-        {
-            ERRMSG << "\n + [BAD DATA] no Parameter or Record delimeter found in data\n";
-            cerr << "Data: " << data.substr( idx ) << "\n";
-            return false;
-        }
-
-        strEnd = strEnd2;
-    }
-
-    param = data.substr( idx, strEnd - idx );
-    idx += (int)param.length();
-
-    if( data[idx] == rd )
-    {
-        ++idx;
-        eor = true;
-        return true;
-    }
-
-    if( data[idx] == pd )
-    {
-        ++idx;
-        return true;
-    }
-
-    ERRMSG << "\n + [BAD DATA]: invalid record; no Parameter or Record delimeter after string\n";
-    cerr << "Data: " << data.substr(tidx) << "\n";
-    return false;
-}
-
-
-bool ParseInt( const std::string& data, int& idx, int& param, bool& eor, char pd, char rd, int* idefault )
-{
-    std::string tmp;
-    int tidx = idx;
-
-    if( !ParseLString( data, idx, tmp, eor, pd, rd ) )
-    {
-        ERRMSG << "[BAD DATA]\n";
-        return false;
-    }
-
-    if( tmp.empty() )
-    {
-        if( idefault )
-        {
-            param = *idefault;
-            return true;
-        }
-
-        ERRMSG << "\n + [BAD DATA]: empty field for non-default parameter\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-        return false;
-    }
-
-    const char* cp = tmp.c_str();
-    char* rp;
-
-    errno = 0;
-    int i = strtol( cp, &rp, 10 );
-
-    if( errno || cp == rp )
-    {
-        ERRMSG << "\n + [BAD DATA]: invalid integer\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-        return false;
-    }
-
-    if( rp - cp != (int)tmp.length() )
-    {
-        ERRMSG << "\n + [WARNING]: extra characters at end of integer\n";
-        cerr << "Integer value: " << i << "\n";
-        cerr << "Data: " << data.substr(tidx) << "\n";
-    }
-
-    param = i;
-    return true;
 }

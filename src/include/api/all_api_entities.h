@@ -29,6 +29,23 @@
 #ifndef ALL_API_ENTITIES_H
 #define ALL_API_ENTITIES_H
 
+// declare the core IGES classes
+class IGES_ENTITY;
+class IGES_ENTITY_100;
+class IGES_ENTITY_102;
+class IGES_ENTITY_104;
+class IGES_ENTITY_110;
+class IGES_ENTITY_120;
+class IGES_ENTITY_122;
+class IGES_ENTITY_124;
+class IGES_ENTITY_126;
+class IGES_ENTITY_128;
+class IGES_ENTITY_142;
+class IGES_ENTITY_144;
+class IGES_ENTITY_308;
+class IGES_ENTITY_314;
+class IGES_ENTITY_408;
+
 #include <dll_entity100.h>
 #include <dll_entity102.h>
 #include <dll_entity104.h>

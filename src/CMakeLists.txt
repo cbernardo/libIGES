@@ -1,115 +1,6 @@
-# Project: libIGES (IGESv6)
-#
-project( libIGES CXX C )
-
-cmake_minimum_required( VERSION 2.8.4 FATAL_ERROR )
-
-set( CMAKE_VERBOSE_MAKEFILE ON )
-
-# Version information
-set( LIBIGES_VERSION_MAJOR 0 )
-set( LIBIGES_VERSION_MINOR 1 )
-
-set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules )
-
-if( USE_SISL )
-    #NOTE: the SISL_LIBRARIES path has only been checked on Linux;
-    #I don't know if it will work on other platforms.
-    if( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
-        find_package( SISL )
-
-        if( NOT SISL_FOUND )
-            message( WARNING "SISL could not be found; attempting to build from git submodule" )
-
-            include( ExternalProject )
-            set( SISL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sisl" )
-            find_path( SISL_INCLUDE_DIR sisl.h PATHS "${SISL_SOURCE_DIR}/include" NO_DEFAULT_PATH )
-
-            if( ${SISL_INCLUDE_DIR} MATCHES SISL_INCLUDE_DIR-NOTFOUND )
-                execute_process( COMMAND git submodule init
-                    COMMAND git submodule update
-                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-                    RESULT_VARIABLE SISL_SRC_OK
-                    )
-
-                if( NOT ${SISL_SRC_OK} EQUAL 0 )
-                    message( FATAL_ERROR "Could not initialize/update SISL source" )
-                endif()
-
-                set( SISL_INCLUDE_DIR "${SISL_SOURCE_DIR}/include" CACHE PATH "SISL includes" FORCE )
-
-            endif()
-
-            if( CMAKE_C_COMPILER_ID MATCHES "MSVC" )
-                ExternalProject_Add( sisl_submod
-                    PREFIX sisl_submod
-                    SOURCE_DIR  .
-                    BINARY_DIR sisl_submod
-                    BUILD_IN_SOURCE 0
-                    CONFIGURE_COMMAND cmake -G "${CMAKE_GENERATOR}" -DBUILD_SHARED_LIBS:BOOL=TRUE -DCMAKE_SHARED_LINKER_FLAGS="/DEF:../../sisl_exports.def" ${SISL_SOURCE_DIR}
-                    BUILD_COMMAND msbuild sisl.sln /p:Configuration=Release
-                    INSTALL_COMMAND ""
-                )
-
-                if( CMAKE_BUILD_TYPE MATCHES "Debug" )
-                    set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/Debug/${CMAKE_SHARED_LIBRARY_PREFIX}sisl.lib )
-                else()
-                    set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/Release/${CMAKE_SHARED_LIBRARY_PREFIX}sisl.lib )
-                endif()
-
-                add_definitions( /D SISLNEEDPROTOTYPES )
-
-            elseif( WIN32 )
-
-                ExternalProject_Add( sisl_submod
-                    PREFIX sisl_submod
-                    SOURCE_DIR  .
-                    BINARY_DIR sisl_submod
-                    BUILD_IN_SOURCE 0
-                    CONFIGURE_COMMAND cmake -G "${CMAKE_GENERATOR}" -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_AR=${CMAKE_AR} -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
-                    INSTALL_COMMAND ""
-                )
-
-                set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
-
-            else()
-
-                ExternalProject_Add( sisl_submod
-                    PREFIX sisl_submod
-                    SOURCE_DIR  .
-                    BINARY_DIR sisl_submod
-                    BUILD_IN_SOURCE 0
-                    CONFIGURE_COMMAND cmake -DBUILD_SHARED_LIBS:BOOL=TRUE ${SISL_SOURCE_DIR}
-                    INSTALL_COMMAND ""
-                )
-
-                set( SISL_LIBRARIES ${CMAKE_BINARY_DIR}/sisl_submod/${CMAKE_SHARED_LIBRARY_PREFIX}sisl${CMAKE_SHARED_LIBRARY_SUFFIX} )
-
-            endif()
-
-            set( SISL_NEEDS_BUILD TRUE )
-
-        endif()
-
-    else( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
-
-        message( WARNING "Using user-provided SISL_INCLUDE_DIR and NOT SISL_LIBRARIES" )
-
-    endif( NOT SISL_INCLUDE_DIR OR NOT SISL_LIBRARIES )
-
-    set( HAS_NURBS_LIB 1 )
-
-endif( USE_SISL )
-
-
 set( LIBIGES_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( LIBIGES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
-if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    set( LIBIGES_LIBDIR RUNTIME DESTINATION bin )
-else()
-    set( LIBIGES_LIBDIR LIBRARY DESTINATION lib/iges )
-endif()
 
 # create a config file
 configure_file(
@@ -123,27 +14,11 @@ include_directories(
     "${LIBIGES_SOURCE_DIR}/include"
     "${LIBIGES_SOURCE_DIR}/include/iges"
     "${LIBIGES_SOURCE_DIR}/include/geom"
-    "${LIBIGES_SOURCE_DIR}/dllapi"
+    "${LIBIGES_SOURCE_DIR}/include/api"
     )
 
-if( USE_SISL )
-    include_directories( "${SISL_INCLUDE_DIR}" )
-endif()
 
-if( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
-elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    add_definitions( -D_USE_MATH_DEFINES )
-endif()
 
-if( NOT CMAKE_BUILD_TYPE )
-    set( CMAKE_BUILD_TYPE Release CACHE STRING
-        "Build type, options are Debug or Release (default)" FORCE )
-endif()
-
-if( CMAKE_BUILD_TYPE MATCHES Debug )
-    add_definitions( -DDEBUG )
-endif()
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
 set( SRC_IGS "${CMAKE_CURRENT_SOURCE_DIR}/iges" )
@@ -163,7 +38,7 @@ if( HAS_NURBS_LIB )
     )
 endif( HAS_NURBS_LIB )
 
-add_library( iges SHARED
+set( IGES_SOURCES
     "${SRC_ENT}/iges_entity.cpp"
     "${SRC_ENT}/iges_curve.cpp"
     "${SRC_ENT}/entityNULL.cpp"
@@ -215,16 +90,36 @@ add_library( iges SHARED
     ${NURBS_DEPS}
     )
 
+if( STATIC_IGES )
+    add_library( iges_static STATIC ${IGES_SOURCES} )
+    set( IGES_LIBS iges_static )
+else()
+    add_library( iges SHARED ${IGES_SOURCES} )
+    set( IGES_LIBS iges )
+endif()
+
 if( USE_SISL AND SISL_NEEDS_BUILD )
-    add_dependencies( iges sisl_submod )
+
+    # CAVEAT: even when we build SISL we do not install it;
+    # the user is responsible for copying the appropriate
+    # files to the appropriate directories.
+
+    add_dependencies( ${IGES_LIBS} sisl_submod )
+
 endif()
 
 # Note that putting quotes around the variables here will make linking
 # fail on windows target bulds, both GCC cross compilation and MSVC
 # native.
 if( USE_SISL )
-    target_link_libraries( iges ${SISL_LIBRARIES} )
+    target_link_libraries( ${IGES_LIBS} ${SISL_LIBRARIES} )
 endif()
+
+install( TARGETS ${IGES_LIBS}
+        ARCHIVE DESTINATION ${LIBIGES_LIBDIR}
+        LIBRARY DESTINATION ${LIBIGES_LIBDIR}
+        CONFIGURATIONS Release
+    )
 
 add_executable( readtest
     "${LIBIGES_SOURCE_DIR}/tests/test_read.cpp"
@@ -234,32 +129,149 @@ add_executable( mergetest
     "${LIBIGES_SOURCE_DIR}/tests/test_merge.cpp"
     )
 
-target_link_libraries( readtest iges )
-target_link_libraries( mergetest iges )
+target_link_libraries( readtest ${IGES_LIBS} )
+target_link_libraries( mergetest ${IGES_LIBS} )
 
 if( HAS_NURBS_LIB )
     add_executable( curvetest
             "${LIBIGES_SOURCE_DIR}/tests/test_curves.cpp"
     )
+    target_link_libraries( curvetest ${IGES_LIBS} )
 
     add_executable( segtest
             "${LIBIGES_SOURCE_DIR}/tests/test_segs.cpp"
     )
+    target_link_libraries( segtest ${IGES_LIBS} )
 
     add_executable( olntest
             "${LIBIGES_SOURCE_DIR}/tests/test_outline.cpp"
     )
+    target_link_libraries( olntest ${IGES_LIBS} )
 
     add_executable( planetest
             "${LIBIGES_SOURCE_DIR}/tests/test_plane.cpp"
     )
+    target_link_libraries( planetest ${IGES_LIBS} )
 
-    target_link_libraries( curvetest iges )
-    target_link_libraries( segtest iges )
-    target_link_libraries( olntest iges )
-    target_link_libraries( planetest iges )
+    add_executable( circles
+            "${LIBIGES_SOURCE_DIR}/tests/test_circle.cpp"
+    )
+    target_link_libraries( circles ${IGES_LIBS} )
 
     # build the idf2igs tool
     add_subdirectory( idf )
 
 endif(HAS_NURBS_LIB)
+
+
+# Installation of header files
+set( HDR_CORE include/iges/core )
+set( HDR_API include/iges )
+set( INC_IGES "${CMAKE_CURRENT_SOURCE_DIR}/include/iges" )
+set( INC_API "${CMAKE_CURRENT_SOURCE_DIR}/include/api" )
+set( INC_GEOM "${CMAKE_CURRENT_SOURCE_DIR}/include/geom" )
+
+# files essential to the IGES core; some users may want
+# these for direct interaction with the core objects
+# in statically linked programs
+set( CORE_FILES
+        ${INC_IGES}/all_entities.h
+        ${INC_IGES}/entity100.h
+        ${INC_IGES}/entity102.h
+        ${INC_IGES}/entity104.h
+        ${INC_IGES}/entity110.h
+        ${INC_IGES}/entity120.h
+        ${INC_IGES}/entity122.h
+        ${INC_IGES}/entity124.h
+        ${INC_IGES}/entity126.h
+        ${INC_IGES}/entity128.h
+        ${INC_IGES}/entity142.h
+        ${INC_IGES}/entity144.h
+        ${INC_IGES}/entity154.h
+        ${INC_IGES}/entity164.h
+        ${INC_IGES}/entity180.h
+        ${INC_IGES}/entity184.h
+        ${INC_IGES}/entity186.h
+        ${INC_IGES}/entity308.h
+        ${INC_IGES}/entity314.h
+        ${INC_IGES}/entity408.h
+        ${INC_IGES}/entity430.h
+        ${INC_IGES}/entity502.h
+        ${INC_IGES}/entity504.h
+        ${INC_IGES}/entity508.h
+        ${INC_IGES}/entity510.h
+        ${INC_IGES}/entity514.h
+        ${INC_IGES}/entityNULL.h
+        ${INC_IGES}/iges_curve.h
+        ${INC_IGES}/iges_entity.h
+        ${INC_IGES}/iges.h
+    )
+
+# files essential to the API layer as well as the core layer
+set( API_FILES
+        ${INC_IGES}/iges_base.h
+        ${INC_IGES}/mcad_utils.h
+        ${INC_API}/all_api_entities.h
+        ${INC_API}/dll_entity100.h
+        ${INC_API}/dll_entity102.h
+        ${INC_API}/dll_entity104.h
+        ${INC_API}/dll_entity110.h
+        ${INC_API}/dll_entity120.h
+        ${INC_API}/dll_entity122.h
+        ${INC_API}/dll_entity124.h
+        ${INC_API}/dll_entity126.h
+        ${INC_API}/dll_entity128.h
+        ${INC_API}/dll_entity142.h
+        ${INC_API}/dll_entity144.h
+        ${INC_API}/dll_entity308.h
+        ${INC_API}/dll_entity314.h
+        ${INC_API}/dll_entity408.h
+        ${INC_API}/dll_iges_curve.h
+        ${INC_API}/dll_iges_entity.h
+        ${INC_API}/dll_iges.h
+    )
+
+# core files which are only present when built with SISL support
+set( EXTRA_CORE_FILES
+        ${INC_GEOM}/iges_geom_pcb.h
+        ${INC_GEOM}/mcad_outline.h
+        ${INC_GEOM}/mcad_segment.h
+    )
+
+# API layer files which are only present when built with SISL support
+set( EXTRA_API_FILES
+        ${INC_GEOM}/geom_cylinder.h
+        ${INC_GEOM}/geom_wall.h
+        ${INC_GEOM}/mcad_elements.h
+        ${INC_GEOM}/mcad_helpers.h
+        ${INC_API}/dll_mcad_outline.h
+        ${INC_API}/dll_mcad_segment.h
+        ${INC_API}/dll_iges_geom_pcb.h
+)
+
+
+install( FILES
+    ${API_FILES}
+    DESTINATION ${HDR_API}
+    CONFIGURATIONS Release
+)
+
+install( FILES
+    ${CORE_FILES}
+    DESTINATION ${HDR_CORE}
+    CONFIGURATIONS Release
+)
+
+if( USE_SISL )
+    install( FILES
+        ${EXTRA_API_FILES}
+        DESTINATION ${HDR_API}
+        CONFIGURATIONS Release
+    )
+
+    install( FILES
+        ${EXTRA_CORE_FILES}
+        DESTINATION ${HDR_CORE}
+        CONFIGURATIONS Release
+    )
+endif()

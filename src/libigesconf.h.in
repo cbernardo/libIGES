@@ -6,6 +6,9 @@
 #define LIB_VERSION_MAJOR (@LIBIGES_VERSION_MAJOR@)
 #define LIB_VERSION_MINOR (@LIBIGES_VERSION_MINOR@)
 
+// indicates if IGES is being built as a static lib
+#cmakedefine STATIC_IGES
+
 #if defined( _MSC_VER )
     #if defined(_DLL)
         #define MCAD_API __declspec( dllexport )

@@ -22,62 +22,59 @@ c. GCC (gcc, g++, GNU make) and other build tools:
 II. Cloning with git:
     git clone https://github.com/cbernardo/libIGES.git
 
-III. Cloning the SINTEF SISL libraries: (only required if
-     you wish to build with -DUSE_SISL=ON and do not have a
-     pre-built library installed)
-    cd libIGES
-    git submodule init
-    git submodule update
+III. Build: create a build directory and run cmake then make:
 
-
-IV. Build: create a build directory and run cmake then make:
-
-    CASE 1: building WITHOUT the SISL library; various tools
+    CASE 1: Dynamic IGES library WITHOUT the SISL library; various tools
             and test programs which depend on SISL will not be built:
-        cd src
         mkdir build
         cd build
         cmake ..
         make
         (alt: "make -j 8" or similar to use multiple cores to compile)
-    
-    CASE 2: building WITH the SISL submodule OR a pre-installed
+
+    CASE 2: Static IGES library WITHOUT the SISL library; various tools
+            and test programs which depend on SISL will not be built:
+        mkdir build
+        cd build
+        cmake -DSTATIC_IGES=ON ..
+        make
+        (alt: "make -j 8" or similar to use multiple cores to compile)
+
+    CASE 3: Dynamic IGES library WITH the SISL submodule OR a pre-installed
             SISL library which can be found by CMake's find_package():
-        cd src
         mkdir build
         cd build
         cmake -DUSE_SISL=ON ..
         make
         (alt: "make -j 8" or similar to use multiple cores to compile)
 
-    CASE 3: building WITH a pre-built SISL library which cannot
+    CASE 4: Dynamic IGES library WITH a pre-built SISL library which cannot
             be found by find_package():
-        cd src
         mkdir build
         cd build
         cmake -DUSE_SISL=ON -DSISL_INCLUDE_DIR=PATH_TO_SISL_INCLUDE_DIR \
               -DSISL_LIBRARIES=PATH_TO_SISL_LIBRARY ..
         make
 
-    OPTION: By default a release build is built; this can be changed by passing
-    the command line argument: -DCMAKE_BUILD_TYPE=Debug
+    OPTIONS:
+    a. By default a release build is built; this can be changed by passing
+       the command line argument: -DCMAKE_BUILD_TYPE=Debug
+    b. CMake by default will use /usr/local as the installation prefix;
+       you can change this by passing something like
+       -DCMAKE_INSTALL_PREFIX=/usr
 
     NOTE: Pay attention to the messages displayed at the cmake configuration
     stage to make sure that the SISL options are being configured as desired.
 
-That's all; there is no INSTALL script at this point since
-the software is still under development.
-
-Most of the test programs will be in the 'build' directory
-except for the 'idf2igs' tool which will be in the 'build/idf'
+Most of the test programs will be in the 'build/src' directory
+except for the 'idf2igs' tool which will be in the 'build/src/idf'
 directory. To run the idf2igs tool:
 
 ./idf2igs -f some_IDF_file.emn
 
-The resulting IGES file can be viewed in your favorite
-MCAD software. SolidWorks will display the assembly
-with colors while FreeCAD uses only grey.
+The resulting IGES file can be viewed in your favorite MCAD software.
 
+To install: make install DESTDIR=(installation root)
 
 
 =========================================
@@ -98,15 +95,9 @@ c. cmake: install your favorite Windows version of cmake
 II. Cloning with git:
     git clone https://github.com/cbernardo/libIGES.git
 
-III. Cloning the SINTEF SISL libraries: (only required if
-     you wish to use the SISL libraries)
-    cd libIGES
-    git submodule init
-    git submodule update
+III. Build: create a build directory and run cmake then make:
 
-IV. Build: create a build directory and run cmake then make:
-
-    CASE 1: building WITHOUT the SISL library; various tools
+    CASE 1: Dynamic IGES library WITHOUT the SISL library; various tools
             and test programs which depend on SISL will not be built:
         cd src
         mkdir build
@@ -115,7 +106,16 @@ IV. Build: create a build directory and run cmake then make:
         make
         (alt: "make -j 8" or similar to use multiple cores to compile)
 
-    CASE 2: building with the SISL submodule OR a pre-installed
+    CASE 1: Static IGES library WITHOUT the SISL library; various tools
+            and test programs which depend on SISL will not be built:
+        cd src
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 12 2013 Win64" -DSTATIC_IGES=ON ..
+        make
+        (alt: "make -j 8" or similar to use multiple cores to compile)
+
+    CASE 2: Dynamic IGES library with the SISL submodule OR a pre-installed
             SISL library which can be found by CMake's find_package():
         cd src
         mkdir build
@@ -128,7 +128,7 @@ IV. Build: create a build directory and run cmake then make:
         the /m:8 option specifies a maximum of 8 cores to be used for
         the compilation.
 
-    CASE 3: building with a pre-built SISL library which cannot
+    CASE 3: Dynamic IGES library with a pre-built SISL library which cannot
             be found by find_package():
         cd src
         mkdir build
@@ -138,9 +138,6 @@ IV. Build: create a build directory and run cmake then make:
               -DSISL_INCLUDE_DIR=[path to sisl include directory] \
               -DSISL_LIBRARIES=[path to SISL Release (or Debug) library] ..
         cmake --build . -- /p:Configuration=Release /m:8
-
-There is no INSTALL script at this point since the software
-is still under development.
 
 The programs will be in the 'build\Release' directory (or
 'build\Debug' for debug builds). To run the programs you
@@ -153,6 +150,9 @@ idf2igs -f some_IDF_file.emn
 
 The resulting IGES file can be viewed in your favorite
 MCAD software.
+
+To install to a staging directory:
+cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 
 
 ===================================
@@ -179,7 +179,7 @@ BUILDING ON MS WINDOWS WITH MINGW64
    when building :
     git submodule init
     git submodule update
-    cd src\sisl
+    cd  sisl
     git apply ../patches/0001-sisl.patch
 
     Note: The patch is only necessary for the MS Windows
@@ -187,6 +187,7 @@ BUILDING ON MS WINDOWS WITH MINGW64
 
 7. install cmake:
     pacman -S mingw-w64-x86_64-cmake
+
 8. Configure and build:
   cd ~/libIGES
   mkdir build
@@ -206,6 +207,14 @@ BUILDING ON MS WINDOWS WITH MINGW64
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DUSE_SISL=ON ..
+  (OPTION: Static lib, no SISL)
+  /mingw64/bin/cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DSTATIC_IGES=ON \
+    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    -DCMAKE_AR=/mingw64/bin/ar.exe \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON ..
 
   Note: most test programs will be in the build directory
   while the idf2igs tool will be in the build/idf directory.

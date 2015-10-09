@@ -25,7 +25,7 @@
 
 /*
  * Description: common basic structures required for the implementation
- * of the Initial Graphics Exchange Specification (IGES) v6.
+ * of the Initial Graphics Exchange Specification (IGES) v5.3
  */
 
 #ifndef IGES_BASE_H

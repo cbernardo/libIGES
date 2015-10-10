@@ -1,3 +1,11 @@
+10 Oct 2015
+  + Install targets have been created; in a Release build the libraries,
+    headers, and idf2igs tool can be installed to a staging directory.
+  + Headers have been reorganized; the DLL wrapper headers are now in
+    include/api.
+  + A static library target has been created; configure with
+    -DSTATIC_IGES to build a static library.
+
 2 Oct 2015
   + Finished basic DLL wrapper routines and conversion of all tools
     and test programs to use the DLL wrapper. The code now compiles

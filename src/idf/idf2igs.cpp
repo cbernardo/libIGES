@@ -539,10 +539,13 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
         iD = sD;
         ++iD;
 
+        bool skip = false;
+
         while( iD != eD )
         {
             if( seg2.GetIntersections( *iD, ilist, nPoints, flag ) )
             {
+                skip = true;
                 CLEAR_ILIST();
                 sp = new list< MCAD_SEGMENT* >;
                 bundles.push_back( sp );
@@ -588,6 +591,8 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
                                 sD1 = drills.erase( sD1 );
                             }
 
+                            seg1.Detach();
+                            continue;
                         }
 
                         seg1.Detach();
@@ -608,10 +613,6 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
                 }
 
                 iD = sD;
-
-                if( iD != eD )
-                    ++iD;
-
                 continue;
             }
 
@@ -626,6 +627,10 @@ bool mergeDrills( list< MCAD_SEGMENT* >& drills, list< MCAD_OUTLINE* >& cutouts,
         }
 
         seg2.Detach();
+
+        if( skip )
+            continue;
+
         ++sD;
     }
 
@@ -663,22 +668,30 @@ bool bundleDrills( list< MCAD_SEGMENT* >* drills, list< MCAD_OUTLINE* >& cutouts
     MCAD_POINT p1;
     double dx;
     double dy;
+    double r0;
+    double r1;
+    double r2;
 
     DLL_MCAD_SEGMENT seg0( false );
     seg0.Attach( drills->front() );
     seg0.GetCenter( p0 );
+    seg0.GetRadius( r0 );
     seg0.Detach();
 
-    // calculate distance^2 between each drill hole
+    // calculate [distance - (R0 + R1)] between each drill hole
     while( sD != eD )
     {
         seg0.Attach( *sD );
         seg0.GetCenter( p1 );
+        seg0.GetRadius( r1 );
         seg0.Detach();
 
+        r2 = r0 + r1;
         dx = p1.x - p0.x;
         dy = p1.y - p0.y;
         dx = dx*dx + dy*dy;
+        dx = sqrt( dx );
+        dx -= r2;
         dist.push_back( pair<double, MCAD_SEGMENT*>( dx, *sD ) );
         ++sD;
     }

@@ -66,6 +66,12 @@ III. Build: create a build directory and run cmake then make:
     NOTE: Pay attention to the messages displayed at the cmake configuration
     stage to make sure that the SISL options are being configured as desired.
 
+    If you intended to pull in the SISL source and build it, you should
+    run the following commands before configuring and building libIGES:
+
+        git submodule init
+        git submodule update
+
 Most of the test programs will be in the 'build/src' directory
 except for the 'idf2igs' tool which will be in the 'build/src/idf'
 directory. To run the idf2igs tool:
@@ -138,6 +144,13 @@ III. Build: create a build directory and run cmake then make:
               -DSISL_INCLUDE_DIR=[path to sisl include directory] \
               -DSISL_LIBRARIES=[path to SISL Release (or Debug) library] ..
         cmake --build . -- /p:Configuration=Release /m:8
+
+    NOTE:
+    If you intended to pull in the SISL source and build it, you should
+    run the following commands before configuring and building libIGES:
+
+        git submodule init
+        git submodule update
 
 The programs will be in the 'build\Release' directory (or
 'build\Debug' for debug builds). To run the programs you
@@ -220,3 +233,10 @@ BUILDING ON MS WINDOWS WITH MINGW64
   while the idf2igs tool will be in the build/idf directory.
   The programs must be run within the MSys environment to
   ensure that all shared libraries can be found.
+
+  If you intended to pull in the SISL source and build it, you should
+  run the following commands before configuring and building libIGES:
+
+      git submodule init
+      git submodule update
+

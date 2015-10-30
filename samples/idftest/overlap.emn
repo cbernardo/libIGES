@@ -1,0 +1,41 @@
+.HEADER
+BOARD_FILE 3.0 "hand edited file" 2015/10/11.16:58:30 1
+"overlap_test" MM
+.END_HEADER
+
+#
+# This file was created as a test for a regression in which
+# overlapping drill holes were not correctly handled and
+# bad geometry was produced.
+#
+
+.BOARD_OUTLINE UNOWNED
+1.60000
+0 -10 -10 0
+0 10 -10 0
+0 10 10 0
+0 -10 10 0
+0 -10 -10 0
+.END_BOARD_OUTLINE
+
+
+.DRILLED_HOLES
+1.8 -0.8 -4 NPTH "@HOLE6" MTG ECAD
+1.8 0 -4 NPTH "@HOLE7" MTG ECAD
+1.8 0.8 -4 NPTH "@HOLE8" MTG ECAD
+1.8 -3 0.8 NPTH "@HOLE0" MTG ECAD
+1.8 -3 0.0 NPTH "@HOLE1" MTG ECAD
+1.8 -3 -0.8 NPTH "@HOLE2" MTG ECAD
+1.8 -0.8 4 NPTH "@HOLE6" MTG ECAD
+1.8 0 4 NPTH "@HOLE7" MTG ECAD
+1.8 0.8 4 NPTH "@HOLE8" MTG ECAD
+1.8 2.9 0.0 NPTH "@HOLE3" MTG ECAD
+1.8 3 0.8 NPTH "@HOLE4" MTG ECAD
+1.8 3 -0.8 NPTH "@HOLE5" MTG ECAD
+1.8 -0.8 8 NPTH "@HOLE6" MTG ECAD
+1.8 0 8 NPTH "@HOLE7" MTG ECAD
+1.8 0.8 8 NPTH "@HOLE8" MTG ECAD
+1.8 -0.8 -8 NPTH "@HOLE6" MTG ECAD
+1.8 0 -8 NPTH "@HOLE7" MTG ECAD
+1.8 0.8 -8 NPTH "@HOLE8" MTG ECAD
+.END_DRILLED_HOLES

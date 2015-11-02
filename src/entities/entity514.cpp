@@ -159,10 +159,9 @@ bool IGES_ENTITY_514::format( int &index )
     string tStr;
 
     vector< pair< IGES_ENTITY_510*, bool > >::iterator sF = mfaces.begin();
-    vector< pair< IGES_ENTITY_510*, bool > >::iterator eF = mfaces.end();
-    vector< pair< IGES_ENTITY_510*, bool > >::iterator iF = --(mfaces.end());
+    vector< pair< IGES_ENTITY_510*, bool > >::iterator eF = --(mfaces.end());
 
-    while( sF != iF )
+    while( sF != eF )
     {
         ostr.str("");
         ostr << sF->first->getDESequence() << pd;

@@ -76,14 +76,8 @@ int main()
     };
 
     nc.SetNURBSData( 9, 3, cknots, cpts, true, 0.125, 1 );
-    IGES_ENTITY* c0 = nc.GetRawPtr();
     nc.NewEntity();
     nc.SetNURBSData( 9, 3, cknots, cpts2, true, 0.125, 1 );
-
-    /*
-    bool SetNURBSData( int nCoeff, int order, const double* knot, const double* coeff,
-                       bool isRational, double v0, double v1 );
-    */
 
     model.Write( "circle.igs", true );
 

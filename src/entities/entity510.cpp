@@ -196,10 +196,9 @@ bool IGES_ENTITY_510::format( int &index )
     string tStr;
 
     vector< IGES_ENTITY_508* >::iterator sL = mloops.begin();
-    vector< IGES_ENTITY_508* >::iterator eL = mloops.end();
-    vector< IGES_ENTITY_508* >::iterator iL = --(mloops.end());
+    vector< IGES_ENTITY_508* >::iterator eL = --(mloops.end());
 
-    while( sL != iL )
+    while( sL != eL )
     {
         ostr.str("");
         ostr << (*sL)->getDESequence() << pd;

@@ -294,10 +294,9 @@ bool IGES_ENTITY_508::format( int &index )
 
         // write out PS curve data
         vector< LOOP_PAIR* >::iterator sP = (*sV)->pcurves.begin();
-        vector< LOOP_PAIR* >::iterator eP = (*sV)->pcurves.end();
-        vector< LOOP_PAIR* >::iterator iP = --((*sV)->pcurves.end());
+        vector< LOOP_PAIR* >::iterator eP = --((*sV)->pcurves.end());
 
-        while( sP != iP )
+        while( sP != eP )
         {
             // ISOP(n,k)
             ostr.str("");
@@ -313,7 +312,7 @@ bool IGES_ENTITY_508::format( int &index )
             // CURV(n, k)
             ostr.str("");
 
-            if( sV == iV && sP == iP && extras.empty() )
+            if( sV == iV && sP == eP && extras.empty() )
                 ostr << (*sP)->curve->getDESequence() << rd;
             else
                 ostr << (*sP)->curve->getDESequence() << pd;

@@ -1474,7 +1474,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
         list<MCAD_POINT>::iterator iPts = iList.begin();
-        list<MCAD_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {
@@ -1559,7 +1558,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
         list<MCAD_POINT>::iterator iPts = iList.begin();
-        list<MCAD_POINT>::iterator ePts = iList.end();
 
         while( sSegs != eSegs )
         {

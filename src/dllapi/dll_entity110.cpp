@@ -23,10 +23,10 @@
  */
 
 
-#include <dll_entity110.h>
-#include <dll_iges.h>
-#include <iges.h>
-#include <entity110.h>
+#include <api/dll_entity110.h>
+#include <api/dll_iges.h>
+#include <core/iges.h>
+#include <core/entity110.h>
 
 
 DLL_IGES_ENTITY_110::DLL_IGES_ENTITY_110( IGES* aParent, bool create ) : DLL_IGES_CURVE( aParent )

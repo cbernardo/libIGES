@@ -27,9 +27,9 @@
 #error This is a template only and not suitable for compilation or inclusion
 
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <entity124.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/entity124.h>
 #include <entity_template.h>
 
 using namespace std;

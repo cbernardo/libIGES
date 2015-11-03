@@ -25,9 +25,9 @@
  */
 
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <entityNULL.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/entityNULL.h>
 
 using namespace std;
 

@@ -27,11 +27,11 @@
 #include <sstream>
 #include <cmath>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <iges_curve.h>
-#include <entity120.h>
-#include <entity124.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/iges_curve.h>
+#include <core/entity120.h>
+#include <core/entity124.h>
 
 using namespace std;
 

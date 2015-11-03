@@ -40,8 +40,8 @@
 
 #include <iostream>
 #include <cmath>
-#include <dll_iges.h>
-#include <all_api_entities.h>
+#include <api/dll_iges.h>
+#include <api/all_api_entities.h>
 
 int main()
 {

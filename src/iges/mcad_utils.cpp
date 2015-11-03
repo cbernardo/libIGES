@@ -36,7 +36,7 @@
     #include <unistd.h>
 #endif
 
-#include <mcad_utils.h>
+#include <geom/mcad_utils.h>
 
 
 static bool checkWinPath( std::string& aPath, char sep, char alt  )

@@ -22,10 +22,10 @@
  *
  */
 
-#include <dll_entity122.h>
-#include <dll_iges.h>
-#include <iges.h>
-#include <entity122.h>
+#include <api/dll_entity122.h>
+#include <api/dll_iges.h>
+#include <core/iges.h>
+#include <core/entity122.h>
 
 DLL_IGES_ENTITY_122::DLL_IGES_ENTITY_122( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )
 {

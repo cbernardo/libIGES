@@ -46,26 +46,26 @@ class IGES_ENTITY_308;
 class IGES_ENTITY_314;
 class IGES_ENTITY_408;
 
-#include <dll_entity100.h>
-#include <dll_entity102.h>
-#include <dll_entity104.h>
-#include <dll_entity110.h>
-#include <dll_entity120.h>
-#include <dll_entity122.h>
-#include <dll_entity124.h>
-#include <dll_entity126.h>
-#include <dll_entity128.h>
-#include <dll_entity142.h>
-#include <dll_entity144.h>
+#include <api/dll_entity100.h>
+#include <api/dll_entity102.h>
+#include <api/dll_entity104.h>
+#include <api/dll_entity110.h>
+#include <api/dll_entity120.h>
+#include <api/dll_entity122.h>
+#include <api/dll_entity124.h>
+#include <api/dll_entity126.h>
+#include <api/dll_entity128.h>
+#include <api/dll_entity142.h>
+#include <api/dll_entity144.h>
 /*
 #include <dll_entity154.h>
 #include <dll_entity164.h>
 #include <dll_entity180.h>
 #include <dll_entity186.h>
 */
-#include <dll_entity308.h>
-#include <dll_entity314.h>
-#include <dll_entity408.h>
+#include <api/dll_entity308.h>
+#include <api/dll_entity314.h>
+#include <api/dll_entity408.h>
 /*
 #include <dll_entity502.h>
 #include <dll_entity504.h>

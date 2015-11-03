@@ -33,7 +33,7 @@
 
 #include <idf_parser.h>
 #include <idf_helpers.h>
-#include <mcad_utils.h>
+#include <geom/mcad_utils.h>
 
 using namespace std;
 using namespace IDF3;

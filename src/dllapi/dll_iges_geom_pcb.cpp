@@ -27,14 +27,14 @@
  *
  */
 
-#include <dll_mcad_outline.h>
-#include <dll_iges_geom_pcb.h>
-#include <mcad_outline.h>
-#include <mcad_segment.h>
-#include <iges_geom_pcb.h>
-#include <iges_curve.h>
-#include <entity126.h>
-#include <entity144.h>
+#include <api/dll_mcad_outline.h>
+#include <api/dll_iges_geom_pcb.h>
+#include <geom/mcad_outline.h>
+#include <geom/mcad_segment.h>
+#include <geom/iges_geom_pcb.h>
+#include <core/iges_curve.h>
+#include <core/entity126.h>
+#include <core/entity144.h>
 #include <error_macros.h>
 
 DLL_IGES_GEOM_PCB::DLL_IGES_GEOM_PCB( bool create ) : DLL_MCAD_OUTLINE( false )

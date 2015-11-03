@@ -30,7 +30,7 @@
 #define DLL_ENTITY_308_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
+#include <api/dll_iges_entity.h>
 
 
 class MCAD_API DLL_IGES_ENTITY_308 : public DLL_IGES_ENTITY

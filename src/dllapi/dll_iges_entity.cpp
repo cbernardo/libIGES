@@ -25,11 +25,11 @@
  */
 
 
-#include <dll_iges.h>
-#include <dll_iges_entity.h>
-#include <dll_entity314.h>
-#include <iges.h>
-#include <entity124.h>
+#include <api/dll_iges.h>
+#include <api/dll_iges_entity.h>
+#include <api/dll_entity314.h>
+#include <core/iges.h>
+#include <core/entity124.h>
 #include <error_macros.h>
 
 #define CHECK_VALID_RETURN_FALSE do { \

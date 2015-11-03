@@ -32,7 +32,7 @@
 #include <list>
 #include <vector>
 #include <libigesconf.h>
-#include <mcad_elements.h>
+#include <geom/mcad_elements.h>
 
 
 class MCAD_SEGMENT

@@ -30,7 +30,7 @@
 
 #include <vector>
 #include <libigesconf.h>
-#include <mcad_elements.h>
+#include <geom/mcad_elements.h>
 
 class IGES;
 class IGES_ENTITY_144;

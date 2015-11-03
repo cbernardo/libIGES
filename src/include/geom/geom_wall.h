@@ -29,7 +29,7 @@
 #define IGES_GEOM_WALL_H
 
 #include <libigesconf.h>
-#include <mcad_elements.h>
+#include <geom/mcad_elements.h>
 
 struct SISLSurf;
 struct SISLCurve;

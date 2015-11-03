@@ -11,5 +11,4 @@ target_link_libraries( idf2igs ${IGES_LIBS} idf3 )
 
 install( TARGETS idf2igs
         RUNTIME DESTINATION ${LIBIGES_BINDIR}
-        CONFIGURATIONS Release
     )

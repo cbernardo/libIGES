@@ -26,10 +26,10 @@
 
 
 #include <error_macros.h>
-#include <dll_entity314.h>
-#include <dll_iges.h>
-#include <iges.h>
-#include <entity314.h>
+#include <api/dll_entity314.h>
+#include <api/dll_iges.h>
+#include <core/iges.h>
+#include <core/entity314.h>
 
 using namespace std;
 

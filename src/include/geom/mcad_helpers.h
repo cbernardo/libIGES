@@ -29,7 +29,7 @@
 
 #include <string>
 #include <libigesconf.h>
-#include <mcad_elements.h>
+#include <geom/mcad_elements.h>
 
 // return true if the 2 points match to within 'minRes'
 MCAD_API bool PointMatches( MCAD_POINT p1, MCAD_POINT p2, double minRes );

@@ -70,7 +70,7 @@
 #include <list>
 #include <string>
 #include <libigesconf.h>
-#include <mcad_outline.h>
+#include <geom/mcad_outline.h>
 
 class IGES_CURVE;
 class IGES_ENTITY_126;

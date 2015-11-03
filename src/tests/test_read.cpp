@@ -33,8 +33,8 @@
 
 #include <iostream>
 #include <iomanip>
-#include <dll_iges.h>
-#include <all_api_entities.h>
+#include <api/dll_iges.h>
+#include <api/all_api_entities.h>
 
 #define ONAME "test_out_read.igs"
 

@@ -28,7 +28,7 @@
 #define DLL_ENTITY_144_H
 
 #include <libigesconf.h>
-#include <dll_iges_curve.h>
+#include <api/dll_iges_curve.h>
 
 class IGES_ENTITY_142;
 

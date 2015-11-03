@@ -30,7 +30,7 @@
 #define DLL_ENTITY_120_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
+#include <api/dll_iges_entity.h>
 
 class IGES_CURVE;
 

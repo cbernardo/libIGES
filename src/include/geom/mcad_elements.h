@@ -29,37 +29,38 @@
 
 #include <libigesconf.h>
 
-enum MCAD_SEGTYPE
-{
-    MCAD_SEGTYPE_NONE = 0,
-    MCAD_SEGTYPE_LINE = 1,
-    MCAD_SEGTYPE_ARC = 2,
-    MCAD_SEGTYPE_CIRCLE = 4
-};
+#ifdef USE_SISL
+    enum MCAD_SEGTYPE
+    {
+        MCAD_SEGTYPE_NONE = 0,
+        MCAD_SEGTYPE_LINE = 1,
+        MCAD_SEGTYPE_ARC = 2,
+        MCAD_SEGTYPE_CIRCLE = 4
+    };
 
-// flag used for geometry intersection information
-// Note that many of the cases in which we flag invalid geometry may in fact
-// not be invalid geometry but the geom_* code is intended to help in an ECAD
-// application rather than provide full MCAD support. This decision keeps this
-// code simpler while forcing the ECAD designer to put more thought into the
-// manufacturing design of the board.
-enum MCAD_INTERSECT_FLAG
-{
-    MCAD_IFLAG_NONE = 0,    // no special conditions to report
-    MCAD_IFLAG_ENDPOINT,    // intersection is at the endpoint of a segment
-    MCAD_IFLAG_TANGENT,     // intersection is at a tangent (invalid geometry)
-    MCAD_IFLAG_EDGE,        // intersection is along an edge; result contains
-    // start and end point of the edge. Initially the code
-    // shall enforce simple geometry so an EDGE flag
-    // shall be treated as invalid geometry.
-        MCAD_IFLAG_INSIDE,      // this circle is inside the given circle (invalid geometry)
-    // or this arc is inside the given arc.
-        MCAD_IFLAG_ENCIRCLES,   // this circle envelopes the given circle (invalid geometry)
-    MCAD_IFLAG_OUTSIDE,     // this arc is outside the given arc
-    MCAD_IFLAG_IDENT,       // 2 circles are identical
-    MCAD_IFLAG_MULTIEDGE    // arcs overlap on 2 edges (invalid geometry)
-};
-
+    // flag used for geometry intersection information
+    // Note that many of the cases in which we flag invalid geometry may in fact
+    // not be invalid geometry but the geom_* code is intended to help in an ECAD
+    // application rather than provide full MCAD support. This decision keeps this
+    // code simpler while forcing the ECAD designer to put more thought into the
+    // manufacturing design of the board.
+    enum MCAD_INTERSECT_FLAG
+    {
+        MCAD_IFLAG_NONE = 0,    // no special conditions to report
+        MCAD_IFLAG_ENDPOINT,    // intersection is at the endpoint of a segment
+        MCAD_IFLAG_TANGENT,     // intersection is at a tangent (invalid geometry)
+        MCAD_IFLAG_EDGE,        // intersection is along an edge; result contains
+        // start and end point of the edge. Initially the code
+        // shall enforce simple geometry so an EDGE flag
+        // shall be treated as invalid geometry.
+            MCAD_IFLAG_INSIDE,      // this circle is inside the given circle (invalid geometry)
+        // or this arc is inside the given arc.
+            MCAD_IFLAG_ENCIRCLES,   // this circle envelopes the given circle (invalid geometry)
+        MCAD_IFLAG_OUTSIDE,     // this arc is outside the given arc
+        MCAD_IFLAG_IDENT,       // 2 circles are identical
+        MCAD_IFLAG_MULTIEDGE    // arcs overlap on 2 edges (invalid geometry)
+    };
+#endif
 
 struct MCAD_MATRIX;
 struct MCAD_API MCAD_POINT

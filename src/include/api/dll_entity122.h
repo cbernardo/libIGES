@@ -30,8 +30,8 @@
 #define DLL_ENTITY_122_H
 
 #include <libigesconf.h>
-#include <mcad_elements.h>
-#include <dll_iges_curve.h>
+#include <geom/mcad_elements.h>
+#include <api/dll_iges_curve.h>
 
 class MCAD_API DLL_IGES_ENTITY_122 : public DLL_IGES_ENTITY
 {

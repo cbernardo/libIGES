@@ -29,8 +29,8 @@
 #define DLL_IGES_ENTITY_H
 
 #include <libigesconf.h>
-#include <iges_base.h>
-#include <dll_iges.h>
+#include <core/iges_base.h>
+#include <api/dll_iges.h>
 
 class  IGES;
 class  DLL_IGES;            // Overarching data structure and parent to all entities

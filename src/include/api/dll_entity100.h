@@ -27,7 +27,7 @@
 #define DLL_ENTITY_100_H
 
 #include <libigesconf.h>
-#include <dll_iges_curve.h>
+#include <api/dll_iges_curve.h>
 
 class MCAD_API DLL_IGES_ENTITY_100 : public DLL_IGES_CURVE
 {

@@ -8,16 +8,11 @@ configure_file(
     "${LIBIGES_BINARY_DIR}/libigesconf.h"
     )
 
-# ensure that the newly created k3dconfig.h can be found
+# ensure that the newly created libigesconf.h can be found
 include_directories(
     "${LIBIGES_BINARY_DIR}"
     "${LIBIGES_SOURCE_DIR}/include"
-    "${LIBIGES_SOURCE_DIR}/include/iges"
-    "${LIBIGES_SOURCE_DIR}/include/geom"
-    "${LIBIGES_SOURCE_DIR}/include/api"
     )
-
-
 
 
 set( SRC_ENT "${CMAKE_CURRENT_SOURCE_DIR}/entities" )
@@ -93,6 +88,11 @@ set( IGES_SOURCES
 if( STATIC_IGES )
     add_library( iges_static STATIC ${IGES_SOURCES} )
     set( IGES_LIBS iges_static )
+    
+    if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+        set_target_properties( iges_static PROPERTIES COMPILE_FLAGS "-fPIC" )
+    endif( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+
 else()
     add_library( iges SHARED ${IGES_SOURCES} )
     set( IGES_LIBS iges )
@@ -109,7 +109,7 @@ if( USE_SISL AND SISL_NEEDS_BUILD )
 endif()
 
 # Note that putting quotes around the variables here will make linking
-# fail on windows target bulds, both GCC cross compilation and MSVC
+# fail on windows target builds, both GCC cross compilation and MSVC
 # native.
 if( USE_SISL )
     target_link_libraries( ${IGES_LIBS} ${SISL_LIBRARIES} )
@@ -165,9 +165,11 @@ endif(HAS_NURBS_LIB)
 
 
 # Installation of header files
+set( HDR_TOP include/iges )
 set( HDR_CORE include/iges/core )
-set( HDR_API include/iges )
-set( INC_IGES "${CMAKE_CURRENT_SOURCE_DIR}/include/iges" )
+set( HDR_GEOM include/iges/geom )
+set( HDR_API include/iges/api )
+set( INC_IGES "${CMAKE_CURRENT_SOURCE_DIR}/include/core" )
 set( INC_API "${CMAKE_CURRENT_SOURCE_DIR}/include/api" )
 set( INC_GEOM "${CMAKE_CURRENT_SOURCE_DIR}/include/geom" )
 
@@ -205,12 +207,11 @@ set( CORE_FILES
         ${INC_IGES}/iges_curve.h
         ${INC_IGES}/iges_entity.h
         ${INC_IGES}/iges.h
+        ${INC_IGES}/iges_base.h
     )
 
 # files essential to the API layer as well as the core layer
 set( API_FILES
-        ${INC_IGES}/iges_base.h
-        ${INC_IGES}/mcad_utils.h
         ${INC_API}/all_api_entities.h
         ${INC_API}/dll_entity100.h
         ${INC_API}/dll_entity102.h
@@ -231,47 +232,58 @@ set( API_FILES
         ${INC_API}/dll_iges.h
     )
 
+set( GEOM_FILES
+    ${INC_GEOM}/mcad_utils.h
+    ${INC_GEOM}/mcad_elements.h
+    )
+
 # core files which are only present when built with SISL support
-set( EXTRA_CORE_FILES
+set( EXTRA_GEOM_FILES
         ${INC_GEOM}/iges_geom_pcb.h
         ${INC_GEOM}/mcad_outline.h
         ${INC_GEOM}/mcad_segment.h
+        ${INC_GEOM}/geom_cylinder.h
+        ${INC_GEOM}/geom_wall.h
+        ${INC_GEOM}/mcad_helpers.h
     )
 
 # API layer files which are only present when built with SISL support
 set( EXTRA_API_FILES
-        ${INC_GEOM}/geom_cylinder.h
-        ${INC_GEOM}/geom_wall.h
-        ${INC_GEOM}/mcad_elements.h
-        ${INC_GEOM}/mcad_helpers.h
         ${INC_API}/dll_mcad_outline.h
         ${INC_API}/dll_mcad_segment.h
         ${INC_API}/dll_iges_geom_pcb.h
+)
+
+install( FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/error_macros.h"
+    "${LIBIGES_BINARY_DIR}/libigesconf.h"
+    DESTINATION ${HDR_TOP}
 )
 
 
 install( FILES
     ${API_FILES}
     DESTINATION ${HDR_API}
-    CONFIGURATIONS Release
 )
 
 install( FILES
     ${CORE_FILES}
     DESTINATION ${HDR_CORE}
-    CONFIGURATIONS Release
+)
+
+install( FILES
+    ${GEOM_FILES}
+    DESTINATION ${HDR_GEOM}
 )
 
 if( USE_SISL )
     install( FILES
         ${EXTRA_API_FILES}
         DESTINATION ${HDR_API}
-        CONFIGURATIONS Release
     )
 
     install( FILES
-        ${EXTRA_CORE_FILES}
-        DESTINATION ${HDR_CORE}
-        CONFIGURATIONS Release
+        ${EXTRA_GEOM_FILES}
+        DESTINATION ${HDR_GEOM}
     )
 endif()

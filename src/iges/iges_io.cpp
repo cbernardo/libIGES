@@ -34,8 +34,8 @@
 #include <cmath>
 
 #include <error_macros.h>
-#include <iges_io.h>
-#include <mcad_elements.h>
+#include <core/iges_io.h>
+#include <geom/mcad_elements.h>
 
 
 using namespace std;

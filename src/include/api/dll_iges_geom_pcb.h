@@ -68,7 +68,7 @@
 #define DLL_IGES_GEOM_OUTLINE_H
 
 #include <libigesconf.h>
-#include <dll_mcad_outline.h>
+#include <api/dll_mcad_outline.h>
 
 class IGES_CURVE;
 class IGES_ENTITY_126;

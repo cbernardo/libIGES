@@ -29,10 +29,10 @@
 
 #include <iostream>
 #include <cmath>
-#include <dll_iges.h>
-#include <geom_wall.h>
-#include <geom_cylinder.h>
-#include <dll_mcad_segment.h>
+#include <api/dll_iges.h>
+#include <geom/geom_wall.h>
+#include <geom/geom_cylinder.h>
+#include <api/dll_mcad_segment.h>
 
 using namespace std;
 

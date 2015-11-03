@@ -31,9 +31,9 @@
 #include <cmath>
 #include <algorithm>
 #include <error_macros.h>
-#include <mcad_helpers.h>
-#include <mcad_segment.h>
-#include <mcad_outline.h>
+#include <geom/mcad_helpers.h>
+#include <geom/mcad_segment.h>
+#include <geom/mcad_outline.h>
 
 using namespace std;
 

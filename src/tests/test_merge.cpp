@@ -46,13 +46,13 @@
 #include <list>
 #include <string>
 #include <fstream>
-#include <dll_iges.h>
-#include <mcad_helpers.h>
-#include <all_api_entities.h>
+#include <api/dll_iges.h>
+#include <geom/mcad_helpers.h>
+#include <api/all_api_entities.h>
 #include <error_macros.h>
 
 #ifdef STATIC_IGES
-    #include <iges_io.h>
+    #include <core/iges_io.h>
 #else
     bool ParseLString( const std::string& data, int& idx, std::string& param,
                        bool& eor, char pd, char rd );

@@ -8,7 +8,7 @@ set( CMAKE_VERBOSE_MAKEFILE ON )
 
 # Version information
 set( LIBIGES_VERSION_MAJOR 0 )
-set( LIBIGES_VERSION_MINOR 1 )
+set( LIBIGES_VERSION_MINOR 2 )
 
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules )
 
@@ -107,8 +107,6 @@ if( USE_SISL )
     set( HAS_NURBS_LIB 1 )
 
 endif( USE_SISL )
-
-
 
 if( USE_SISL )
     include_directories( "${SISL_INCLUDE_DIR}" )

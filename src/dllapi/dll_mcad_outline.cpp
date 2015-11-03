@@ -29,11 +29,11 @@
 
 #include <list>
 #include <libigesconf.h>
-#include <mcad_elements.h>
-#include <dll_mcad_segment.h>
-#include <dll_mcad_outline.h>
-#include <mcad_segment.h>
-#include <mcad_outline.h>
+#include <geom/mcad_elements.h>
+#include <api/dll_mcad_segment.h>
+#include <api/dll_mcad_outline.h>
+#include <geom/mcad_segment.h>
+#include <geom/mcad_outline.h>
 #include <error_macros.h>
 
 DLL_MCAD_OUTLINE::DLL_MCAD_OUTLINE( bool create )

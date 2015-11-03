@@ -46,11 +46,11 @@
 #include <ctime>
 #include <algorithm>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <all_entities.h>
-#include <iges.h>
-#include <mcad_utils.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/all_entities.h>
+#include <core/iges.h>
+#include <geom/mcad_utils.h>
 
 
 using namespace std;

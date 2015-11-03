@@ -29,9 +29,9 @@
 
 #include <list>
 #include <libigesconf.h>
-#include <mcad_elements.h>
-#include <dll_mcad_segment.h>
-#include <mcad_segment.h>
+#include <geom/mcad_elements.h>
+#include <api/dll_mcad_segment.h>
+#include <geom/mcad_segment.h>
 #include <error_macros.h>
 
 

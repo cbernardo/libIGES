@@ -25,10 +25,10 @@
  */
 
 
-#include <dll_iges_curve.h>
+#include <api/dll_iges_curve.h>
 #include <error_macros.h>
 
-#include <iges_curve.h>
+#include <core/iges_curve.h>
 
 
 DLL_IGES_CURVE::DLL_IGES_CURVE( IGES* aParent ) : DLL_IGES_ENTITY( aParent )

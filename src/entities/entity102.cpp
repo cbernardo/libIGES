@@ -34,10 +34,10 @@
 
 #include <libigesconf.h>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <mcad_helpers.h>
-#include <all_entities.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <geom/mcad_helpers.h>
+#include <core/all_entities.h>
 
 using namespace std;
 

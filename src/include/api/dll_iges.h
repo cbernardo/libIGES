@@ -32,7 +32,7 @@
 #include <cstddef>
 
 #include <libigesconf.h>
-#include <iges_base.h>
+#include <core/iges_base.h>
 
 class IGES;
 class DLL_IGES_ENTITY;

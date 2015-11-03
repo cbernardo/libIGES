@@ -26,8 +26,8 @@
 #define DLL_IGES_CURVE_H
 
 #include <libigesconf.h>
-#include <dll_iges_entity.h>
-#include <mcad_elements.h>
+#include <api/dll_iges_entity.h>
+#include <geom/mcad_elements.h>
 
 class IGES_ENTITY;
 class IGES_CURVE;

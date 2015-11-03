@@ -25,11 +25,11 @@
  */
 
 
-#include <dll_entity144.h>
-#include <dll_iges.h>
-#include <iges.h>
-#include <entity144.h>
-#include <entity142.h>
+#include <api/dll_entity144.h>
+#include <api/dll_iges.h>
+#include <core/iges.h>
+#include <core/entity144.h>
+#include <core/entity142.h>
 
 
 DLL_IGES_ENTITY_144::DLL_IGES_ENTITY_144( IGES* aParent, bool create ) : DLL_IGES_ENTITY( aParent )

@@ -27,11 +27,11 @@
 
 
 #include <string>
-#include <dll_iges.h>
-//#include <dll_entity308.h>
-#include <iges.h>
-#include <all_entities.h>
-#include <all_api_entities.h>
+#include <api/dll_iges.h>
+//#include <api/dll_entity308.h>
+#include <core/iges.h>
+#include <core/all_entities.h>
+#include <api/all_api_entities.h>
 #include <error_macros.h>
 
 

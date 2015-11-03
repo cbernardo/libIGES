@@ -26,11 +26,11 @@
 
 #include <error_macros.h>
 #include <sstream>
-#include <iges.h>
-#include <iges_io.h>
-#include <entity124.h>
-#include <entity502.h>
-#include <entity504.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/entity124.h>
+#include <core/entity502.h>
+#include <core/entity504.h>
 
 using namespace std;
 

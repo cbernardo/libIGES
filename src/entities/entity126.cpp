@@ -26,12 +26,12 @@
 
 #include <sstream>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <mcad_helpers.h>
-#include <entity124.h>
-#include <entity126.h>
-#include <entity142.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <geom/mcad_helpers.h>
+#include <core/entity124.h>
+#include <core/entity126.h>
+#include <core/entity142.h>
 
 using namespace std;
 

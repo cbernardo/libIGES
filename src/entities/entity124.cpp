@@ -42,9 +42,9 @@
 
 #include <sstream>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <entity124.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/entity124.h>
 
 
 using namespace std;

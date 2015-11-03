@@ -29,9 +29,9 @@
 #include <iomanip>
 #include <sstream>
 #include <error_macros.h>
-#include <iges.h>
-#include <all_entities.h>
-#include <iges_io.h>
+#include <core/iges.h>
+#include <core/all_entities.h>
+#include <core/iges_io.h>
 
 
 using namespace std;

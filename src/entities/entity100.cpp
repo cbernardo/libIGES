@@ -27,11 +27,11 @@
 #include <sstream>
 #include <cmath>
 #include <error_macros.h>
-#include <iges.h>
-#include <iges_io.h>
-#include <mcad_helpers.h>
-#include <entity100.h>
-#include <entity124.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <geom/mcad_helpers.h>
+#include <core/entity100.h>
+#include <core/entity124.h>
 
 using namespace std;
 

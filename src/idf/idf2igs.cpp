@@ -43,13 +43,13 @@
 #include <idf_parser.h>
 
 #include <error_macros.h>
-#include <dll_iges.h>
-#include <geom_wall.h>
-#include <geom_cylinder.h>
-#include <dll_mcad_segment.h>
-#include <dll_iges_geom_pcb.h>
-#include <all_api_entities.h>
-#include <mcad_utils.h>
+#include <api/dll_iges.h>
+#include <geom/geom_wall.h>
+#include <geom/geom_cylinder.h>
+#include <api/dll_mcad_segment.h>
+#include <api/dll_iges_geom_pcb.h>
+#include <api/all_api_entities.h>
+#include <geom/mcad_utils.h>
 
 class IGES_ENTITY_124;
 class IGES_ENTITY_144;

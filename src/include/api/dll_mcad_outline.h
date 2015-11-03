@@ -68,8 +68,8 @@
 #define DLL_MCAD_OUTLINE_H
 
 #include <libigesconf.h>
-#include <mcad_elements.h>
-#include <dll_mcad_segment.h>
+#include <geom/mcad_elements.h>
+#include <api/dll_mcad_segment.h>
 
 class MCAD_SEGMENT;
 class MCAD_OUTLINE;

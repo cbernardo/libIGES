@@ -29,21 +29,21 @@
 
 #include <sstream>
 #include <cmath>
-#include <iges.h>
+#include <core/iges.h>
 #include <error_macros.h>
-#include <mcad_helpers.h>
-#include <mcad_segment.h>
-#include <geom_wall.h>
-#include <geom_cylinder.h>
-#include <iges_geom_pcb.h>
-#include <entity100.h>
-#include <entity102.h>
-#include <entity110.h>
-#include <entity124.h>
-#include <entity126.h>
-#include <entity128.h>
-#include <entity142.h>
-#include <entity144.h>
+#include <geom/mcad_helpers.h>
+#include <geom/mcad_segment.h>
+#include <geom/geom_wall.h>
+#include <geom/geom_cylinder.h>
+#include <geom/iges_geom_pcb.h>
+#include <core/entity100.h>
+#include <core/entity102.h>
+#include <core/entity110.h>
+#include <core/entity124.h>
+#include <core/entity126.h>
+#include <core/entity128.h>
+#include <core/entity142.h>
+#include <core/entity144.h>
 #include <sisl.h>
 
 

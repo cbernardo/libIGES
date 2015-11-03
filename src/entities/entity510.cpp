@@ -27,13 +27,13 @@
 
 #include <error_macros.h>
 #include <sstream>
-#include <iges.h>
-#include <iges_io.h>
-#include <entity124.h>
-#include <entity502.h>
-#include <entity504.h>
-#include <entity508.h>
-#include <entity510.h>
+#include <core/iges.h>
+#include <core/iges_io.h>
+#include <core/entity124.h>
+#include <core/entity502.h>
+#include <core/entity504.h>
+#include <core/entity508.h>
+#include <core/entity510.h>
 
 using namespace std;
 

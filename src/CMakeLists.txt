@@ -88,7 +88,7 @@ set( IGES_SOURCES
 if( STATIC_IGES )
     add_library( iges_static STATIC ${IGES_SOURCES} )
     set( IGES_LIBS iges_static )
-    
+
     if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
         set_target_properties( iges_static PROPERTIES COMPILE_FLAGS "-fPIC" )
     endif( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
@@ -259,7 +259,6 @@ install( FILES
     "${LIBIGES_BINARY_DIR}/libigesconf.h"
     DESTINATION ${HDR_TOP}
 )
-
 
 install( FILES
     ${API_FILES}

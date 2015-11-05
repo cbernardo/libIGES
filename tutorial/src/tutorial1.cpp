@@ -39,7 +39,10 @@
  * c. create a Trimmed Parametric Surface consisting of the cylinder
  *    (b) and the bounding curve (a).
  * d. apply a magenta color to the surface (c)
- *
+ * e. close the trimmed cylinder by applying an untrimmed NURBS plane
+ *    to fill the partial arc
+ * f. cap the top with a trimmed NURBS plane
+ * g. cap the bottom with a trimmed NURBS plane
  */
 
 #include <iostream>
@@ -131,6 +134,117 @@ int main()
     nc.NewEntity();
     nc.SetNURBSData( 2, 2, lknots, lpts2, false, 0, 1.0 );
     compound.AddSegment( (IGES_CURVE*) nc.GetRawPtr() );
+
+    // create the Surface of Revolution;
+    //   + create axis
+    //   + create generatrix
+    //   + set startAngle and endAngle
+    DLL_IGES_ENTITY_120 rev( model, true );
+    DLL_IGES_ENTITY_110 mline( model, true );
+    // axis
+    mline.SetLineStart( 0.0, 0.0, -5.0 );
+    mline.SetLineEnd( 0.0, 0.0, 0.0 );
+    rev.SetAxis( (IGES_CURVE*) mline.GetRawPtr() );
+    // generatrix
+    mline.NewEntity();
+    mline.SetLineStart( 1.0, 0.0, 0.0 );
+    mline.SetLineEnd( 1.0, 0.0, -5.0 );
+    rev.SetGeneratrix( (IGES_CURVE*) mline.GetRawPtr() );
+    rev.SetAngles( 0.0, 2.0 * M_PI );
+
+    // use the compound curve to define a surface boundary in model space
+    DLL_IGES_ENTITY_142 bound( model, true );
+    bound.SetModelSpaceBound( compound.GetRawPtr() );
+    bound.SetCurveCreationFlag( CURVE_CREATE_PROJECTION );
+    bound.SetCurvePreference( BOUND_PREF_MODELSPACE );
+    bound.SetSurface( rev.GetRawPtr() );
+
+    // create the Trimmed Parametric Surface (TPS)
+    DLL_IGES_ENTITY_144 surf( model, true );
+    surf.SetSurface( rev.GetRawPtr() );
+    surf.SetBoundCurve( (IGES_ENTITY_142*) bound.GetRawPtr() );
+
+    // create a custom color (magenta)
+    DLL_IGES_ENTITY_314 color( model, true );
+    color.SetColor( 100.0, 0.0, 100.0 );
+    // attach the color to the trimmed surface
+    surf.SetColor( color.GetRawPtr() );
+
+    // create a NURBS plane
+    DLL_IGES_ENTITY_128 plane( model, true );
+    double ppts[] = { 1.0, 0.0, 0.0, 1.0, 0.0, -5.0,
+                      SQHALF, SQHALF, 0.0, SQHALF, SQHALF, -5.0 };
+    plane.SetNURBSData( 2, 2, 2, 2, lknots, lknots, ppts, false, false, false, 0.0, 1.0, 0.0, 1.0 );
+    // add the plane to a TPS and add the color; we do not specify a
+    // bounding curve since the bounds of the plane section already
+    // form the desired boundary
+    surf.NewEntity();
+    surf.SetSurface( plane.GetRawPtr() );
+    surf.SetColor( color.GetRawPtr() );
+
+    // create a trimmed NURBS plane to cap the bottom of the cylinder
+    compound.NewEntity();
+    // arc segment
+    double cpts3[] = {   1.0, 0.0, -5.0, 1.0,
+                        1.0, 1.0, -5.0, SQHALF,
+                        0.0, 1.0, -5.0, 1,
+                        -1.0, 1.0, -5.0, SQHALF,
+                        -1.0, 0.0, -5.0, 1,
+                        -1.0, -1.0, -5.0, SQHALF,
+                        0.0, -1.0, -5.0, 1,
+                        1.0, -1.0, -5.0, SQHALF,
+                        1.0, 0.0, -5.0, 1
+    };
+    nc.NewEntity();
+    nc.SetNURBSData( 9, 3, cknots, cpts3, true, 0.125, 1 );
+    compound.AddSegment( (IGES_CURVE*) nc.GetRawPtr() );
+    // line segment, bottom
+    nc.NewEntity();
+    double lpts3[] = { 1.0, 0.0, -5.0,
+                       SQHALF, SQHALF, -5.0 };
+    nc.SetNURBSData( 2, 2, lknots, lpts3, true, 0, 1 );
+    compound.AddSegment( (IGES_CURVE*) nc.GetRawPtr() );
+    // plane
+    plane.NewEntity();
+    double ppts2[] = { -1.0, -1.0, -5.0, 1.0, -1.0, -5.0,
+                       -1.0, 1.0, -5.0, 1.0, 1.0, -5.0 };
+    plane.SetNURBSData( 2, 2, 2, 2, lknots, lknots, ppts2, false, false, false, 0.0, 1.0, 0.0, 1.0 );
+    // boundary
+    bound.NewEntity();
+    bound.SetModelSpaceBound( compound.GetRawPtr() );
+    bound.SetSurface( plane.GetRawPtr() );
+    // define the PTS
+    surf.NewEntity();
+    surf.SetSurface( plane.GetRawPtr() );
+    surf.SetBoundCurve( (IGES_ENTITY_142*) bound.GetRawPtr() );
+    surf.SetColor( color.GetRawPtr() );
+
+    // create a trimmed NURBS plane to cap the top of the cylinder
+    compound.NewEntity();
+    // arc segment
+    nc.NewEntity();
+    nc.SetNURBSData( 9, 3, cknots, cpts, true, 0.125, 1 );
+    compound.AddSegment( (IGES_CURVE*) nc.GetRawPtr() );
+    // line segment, bottom
+    nc.NewEntity();
+    double lpts4[] = { 1.0, 0.0, 0.0,
+                       SQHALF, SQHALF, 0.0 };
+    nc.SetNURBSData( 2, 2, lknots, lpts3, true, 0, 1 );
+    compound.AddSegment( (IGES_CURVE*) nc.GetRawPtr() );
+    // plane
+    plane.NewEntity();
+    double ppts3[] = { -1.0, -1.0, 0.0, 1.0, -1.0, 0.0,
+                       -1.0, 1.0, 0.0, 1.0, 1.0, 0.0 };
+    plane.SetNURBSData( 2, 2, 2, 2, lknots, lknots, ppts3, false, false, false, 0.0, 1.0, 0.0, 1.0 );
+    // boundary
+    bound.NewEntity();
+    bound.SetModelSpaceBound( compound.GetRawPtr() );
+    bound.SetSurface( plane.GetRawPtr() );
+    // define the PTS
+    surf.NewEntity();
+    surf.SetSurface( plane.GetRawPtr() );
+    surf.SetBoundCurve( (IGES_ENTITY_142*) bound.GetRawPtr() );
+    surf.SetColor( color.GetRawPtr() );
 
     model.Write( "tutorial1.igs", true );
 

@@ -298,14 +298,6 @@ bool IGES_ENTITY_144::format( int &index )
         return false;
     }
 
-    /* XXX -
-    if( NULL == PTO )
-    {
-        ERRMSG << "\n + [BUG] unspecified outline entity\n";
-        return false;
-    }
-    */
-
     if( N1 < 0 || N1 >  1 )
     {
         ERRMSG << "\n + [BUG] invalid value for N1 (" << N1 << ")\n";

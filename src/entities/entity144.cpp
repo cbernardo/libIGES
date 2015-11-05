@@ -298,11 +298,13 @@ bool IGES_ENTITY_144::format( int &index )
         return false;
     }
 
+    /* XXX -
     if( NULL == PTO )
     {
         ERRMSG << "\n + [BUG] unspecified outline entity\n";
         return false;
     }
+    */
 
     if( N1 < 0 || N1 >  1 )
     {
@@ -313,7 +315,11 @@ bool IGES_ENTITY_144::format( int &index )
 	N2 = (int)PTI.size();
 
     iPTS = PTS->getDESequence();
-    iPTO = PTO->getDESequence();
+
+    if( PTO )
+        iPTO = PTO->getDESequence();
+    else
+        iPTO = 0;
 
     parameterData = index;
 
@@ -437,7 +443,7 @@ bool IGES_ENTITY_144::unlink(IGES_ENTITY *aChild)
 bool IGES_ENTITY_144::isOrphaned( void )
 {
     if( (refs.empty() && depends != STAT_INDEPENDENT)
-        || ( NULL == PTS ) || ( NULL == PTO ) )
+        || ( NULL == PTS ) )
         return true;
 
     return false;

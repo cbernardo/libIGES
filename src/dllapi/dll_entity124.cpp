@@ -113,11 +113,21 @@ bool DLL_IGES_ENTITY_124::GetRootTransform( MCAD_TRANSFORM& aTX )
 }
 
 
-bool DLL_IGES_ENTITY_124::SetRootTransform( MCAD_TRANSFORM*& aTX )
+bool DLL_IGES_ENTITY_124::SetRootTransform( MCAD_TRANSFORM* aTX )
+{
+    if( !m_valid || NULL == m_entity || NULL == aTX )
+        return false;
+
+    ((IGES_ENTITY_124*)m_entity)->T = *aTX;
+    return true;
+}
+
+
+bool DLL_IGES_ENTITY_124::SetRootTransform( MCAD_TRANSFORM& aTX )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
-    ((IGES_ENTITY_124*)m_entity)->T = *aTX;
+    ((IGES_ENTITY_124*)m_entity)->T = aTX;
     return true;
 }

@@ -122,8 +122,7 @@ int main()
     // set diagonal matrix to -1, +1, -1
     T.R.v[0][0] = -1.0;
     T.R.v[2][2] = -1.0;
-    MCAD_TRANSFORM* tt = &T;
-    tx0.SetRootTransform( tt );
+    tx0.SetRootTransform( T );
 
     nc.SetTransform( tx0 );
 

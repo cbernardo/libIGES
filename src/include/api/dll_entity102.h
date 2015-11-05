@@ -43,6 +43,7 @@ public:
     virtual bool NewEntity( void );
 
     bool AddSegment( IGES_CURVE* aSegment );
+    bool AddSegment( DLL_IGES_CURVE& aSegment );
 };
 
 #endif  // DLL_ENTITY_102_H

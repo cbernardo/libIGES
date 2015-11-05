@@ -101,3 +101,12 @@ bool DLL_IGES_ENTITY_102::AddSegment( IGES_CURVE* aSegment )
 
     return ((IGES_ENTITY_102*)m_entity)->AddSegment( aSegment );
 }
+
+
+bool DLL_IGES_ENTITY_102::AddSegment( DLL_IGES_CURVE& aSegment )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_102*)m_entity)->AddSegment( (IGES_CURVE*) aSegment.GetRawPtr() );
+}

@@ -112,6 +112,15 @@ bool DLL_IGES_ENTITY_142::SetSurface( IGES_ENTITY* aPtr )
 }
 
 
+bool DLL_IGES_ENTITY_142::SetSurface( DLL_IGES_ENTITY& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_142*)m_entity)->SetSPTR( aPtr.GetRawPtr() );
+}
+
+
 bool DLL_IGES_ENTITY_142::GetParameterSpaceBound( IGES_ENTITY** aPtr )
 {
     if( !m_valid || NULL == m_entity )
@@ -130,6 +139,15 @@ bool DLL_IGES_ENTITY_142::SetParameterSpaceBound( IGES_ENTITY* aPtr )
 }
 
 
+bool DLL_IGES_ENTITY_142::SetParameterSpaceBound( DLL_IGES_ENTITY& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_142*)m_entity)->SetBPTR( aPtr.GetRawPtr() );
+}
+
+
 bool DLL_IGES_ENTITY_142::GetModelSpaceBound( IGES_ENTITY** aPtr )
 {
     if( !m_valid || NULL == m_entity )
@@ -145,6 +163,15 @@ bool DLL_IGES_ENTITY_142::SetModelSpaceBound( IGES_ENTITY* aPtr )
         return false;
 
     return ((IGES_ENTITY_142*)m_entity)->SetCPTR( aPtr );
+}
+
+
+bool DLL_IGES_ENTITY_142::SetModelSpaceBound( DLL_IGES_ENTITY& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_142*)m_entity)->SetCPTR( aPtr.GetRawPtr() );
 }
 
 

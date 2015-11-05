@@ -113,6 +113,15 @@ bool DLL_IGES_ENTITY_120::SetAxis( IGES_CURVE* aCurve )
 }
 
 
+bool DLL_IGES_ENTITY_120::SetAxis( DLL_IGES_CURVE& aCurve )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_120*)m_entity)->SetAxis( (IGES_CURVE*) aCurve.GetRawPtr() );
+}
+
+
 bool DLL_IGES_ENTITY_120::GetGeneratrix( IGES_CURVE** aCurve )
 {
     if( !m_valid || NULL == m_entity )
@@ -128,6 +137,15 @@ bool DLL_IGES_ENTITY_120::SetGeneratrix( IGES_CURVE* aCurve )
         return false;
 
     return ((IGES_ENTITY_120*)m_entity)->SetGeneratrix( aCurve );
+}
+
+
+bool DLL_IGES_ENTITY_120::SetGeneratrix( DLL_IGES_CURVE& aCurve )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_120*)m_entity)->SetGeneratrix( (IGES_CURVE*) aCurve.GetRawPtr() );
 }
 
 

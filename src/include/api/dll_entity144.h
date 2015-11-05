@@ -29,6 +29,7 @@
 
 #include <libigesconf.h>
 #include <api/dll_iges_curve.h>
+#include <api/dll_entity142.h>
 
 class IGES_ENTITY_142;
 
@@ -43,12 +44,16 @@ public:
 
     bool GetSurface( IGES_ENTITY*& aPtr );
     bool SetSurface( IGES_ENTITY* aPtr );
+    bool SetSurface( DLL_IGES_ENTITY& aPtr );
     bool GetBoundCurve( IGES_ENTITY_142*& aPtr );
     bool SetBoundCurve( IGES_ENTITY_142* aPtr );
+    bool SetBoundCurve( DLL_IGES_ENTITY_142& aPtr );
     bool GetNCutouts( int& aNCutouts );
     bool GetCutouts( size_t& aListSize, IGES_ENTITY_142**& aCutoutList );
     bool AddCutout( IGES_ENTITY_142* aPtr );
+    bool AddCutout( DLL_IGES_ENTITY_142& aPtr );
     bool DelCutout( IGES_ENTITY_142* aPtr );
+    bool DelCutout( DLL_IGES_ENTITY_142& aPtr );
 };
 
 #endif  // DLL_ENTITY_144_H

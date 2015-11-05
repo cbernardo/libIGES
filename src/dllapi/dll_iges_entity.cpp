@@ -229,11 +229,11 @@ bool DLL_IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 }
 
 
-bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY*& aEntity )
+bool DLL_IGES_ENTITY::AddOptionalEntity( DLL_IGES_ENTITY& aEntity )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->AddOptionalEntity( aEntity->GetRawPtr() );
+    return m_entity->AddOptionalEntity( aEntity.GetRawPtr() );
 }
 
 
@@ -245,11 +245,11 @@ bool DLL_IGES_ENTITY::DelOptionalEntity( IGES_ENTITY* aEntity )
 }
 
 
-bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY*& aEntity )
+bool DLL_IGES_ENTITY::DelOptionalEntity( DLL_IGES_ENTITY& aEntity )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->DelOptionalEntity( aEntity->GetRawPtr() );
+    return m_entity->DelOptionalEntity( aEntity.GetRawPtr() );
 }
 
 
@@ -302,13 +302,13 @@ bool DLL_IGES_ENTITY::SetParentIGES( IGES* aParent )
 }
 
 
-bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES*& aParent )
+bool DLL_IGES_ENTITY::SetParentIGES( DLL_IGES& aParent )
 {
     CHECK_VALID_RETURN_FALSE;
 
     // note: no check for validity of aParent->GetRawPtr()
     // since NULL is a valid argument for this function
-    return m_entity->SetParentIGES( aParent->GetRawPtr() );
+    return m_entity->SetParentIGES( aParent.GetRawPtr() );
 }
 
 
@@ -355,11 +355,11 @@ bool DLL_IGES_ENTITY::SetStructure( IGES_ENTITY* aStructure )
 }
 
 
-bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY*& aStructure )
+bool DLL_IGES_ENTITY::SetStructure( DLL_IGES_ENTITY& aStructure )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetStructure( aStructure->GetRawPtr() );
+    return m_entity->SetStructure( aStructure.GetRawPtr() );
 }
 
 
@@ -379,11 +379,11 @@ bool DLL_IGES_ENTITY::SetLineFontPattern( IGES_LINEFONT_PATTERN aPattern )
 }
 
 
-bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY*& aPattern )
+bool DLL_IGES_ENTITY::SetLineFontPattern( DLL_IGES_ENTITY& aPattern )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetLineFontPattern( aPattern->GetRawPtr() );
+    return m_entity->SetLineFontPattern( aPattern.GetRawPtr() );
 }
 
 
@@ -419,11 +419,11 @@ bool DLL_IGES_ENTITY::SetLevel( int aLevel )
 }
 
 
-bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY*& aLevel )
+bool DLL_IGES_ENTITY::SetLevel( DLL_IGES_ENTITY& aLevel )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetLevel( aLevel->GetRawPtr() );
+    return m_entity->SetLevel( aLevel.GetRawPtr() );
 }
 
 
@@ -451,11 +451,11 @@ bool DLL_IGES_ENTITY::GetLevelEntity( IGES_ENTITY*& aLevel )
 }
 
 
-bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY*& aView )
+bool DLL_IGES_ENTITY::SetView( DLL_IGES_ENTITY& aView )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetView( aView->GetRawPtr() );
+    return m_entity->SetView( aView.GetRawPtr() );
 }
 
 
@@ -475,11 +475,11 @@ bool DLL_IGES_ENTITY::GetView( IGES_ENTITY*& aView )
 }
 
 
-bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY*& aTransform )
+bool DLL_IGES_ENTITY::SetTransform( DLL_IGES_ENTITY& aTransform )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetTransform( aTransform->GetRawPtr() );
+    return m_entity->SetTransform( aTransform.GetRawPtr() );
 }
 
 
@@ -499,11 +499,11 @@ bool DLL_IGES_ENTITY::GetTransform( IGES_ENTITY*& aTransform )
 }
 
 
-bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY*& aLabelAssoc )
+bool DLL_IGES_ENTITY::SetLabelAssoc( DLL_IGES_ENTITY& aLabelAssoc )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetLabelAssoc( aLabelAssoc->GetRawPtr() );
+    return m_entity->SetLabelAssoc( aLabelAssoc.GetRawPtr() );
 }
 
 
@@ -531,11 +531,11 @@ bool DLL_IGES_ENTITY::SetColor( IGES_COLOR aColor )
 }
 
 
-bool DLL_IGES_ENTITY::SetColor( DLL_IGES_ENTITY_314*& aColor )
+bool DLL_IGES_ENTITY::SetColor( DLL_IGES_ENTITY_314& aColor )
 {
     CHECK_VALID_RETURN_FALSE;
 
-    return m_entity->SetColor( aColor->GetRawPtr() );
+    return m_entity->SetColor( aColor.GetRawPtr() );
 }
 
 

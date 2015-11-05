@@ -115,6 +115,15 @@ bool DLL_IGES_ENTITY_144::SetSurface( IGES_ENTITY* aPtr )
 }
 
 
+bool DLL_IGES_ENTITY_144::SetSurface( DLL_IGES_ENTITY& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_144*)m_entity)->SetPTS( aPtr.GetRawPtr() );
+}
+
+
 bool DLL_IGES_ENTITY_144::GetBoundCurve( IGES_ENTITY_142*& aPtr )
 {
     if( !m_valid || NULL == m_entity )
@@ -130,6 +139,15 @@ bool DLL_IGES_ENTITY_144::SetBoundCurve( IGES_ENTITY_142* aPtr )
         return false;
 
     return ((IGES_ENTITY_144*)m_entity)->SetPTO( aPtr );
+}
+
+
+bool DLL_IGES_ENTITY_144::SetBoundCurve( DLL_IGES_ENTITY_142& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_144*)m_entity)->SetPTO( (IGES_ENTITY_142*) aPtr.GetRawPtr() );
 }
 
 
@@ -161,10 +179,28 @@ bool DLL_IGES_ENTITY_144::AddCutout( IGES_ENTITY_142* aPtr )
 }
 
 
+bool DLL_IGES_ENTITY_144::AddCutout( DLL_IGES_ENTITY_142& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_144*)m_entity)->AddPTI( (IGES_ENTITY_142*) aPtr.GetRawPtr() );
+}
+
+
 bool DLL_IGES_ENTITY_144::DelCutout( IGES_ENTITY_142* aPtr )
 {
     if( !m_valid || NULL == m_entity )
         return false;
 
     return ((IGES_ENTITY_144*)m_entity)->DelPTI( aPtr );
+}
+
+
+bool DLL_IGES_ENTITY_144::DelCutout( DLL_IGES_ENTITY_142& aPtr )
+{
+    if( !m_valid || NULL == m_entity )
+        return false;
+
+    return ((IGES_ENTITY_144*)m_entity)->DelPTI( (IGES_ENTITY_142*) aPtr.GetRawPtr() );
 }

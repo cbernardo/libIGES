@@ -61,10 +61,13 @@ public:
 
     bool GetSurface( IGES_ENTITY** aPtr );
     bool SetSurface( IGES_ENTITY* aPtr );
+    bool SetSurface( DLL_IGES_ENTITY& aPtr );
     bool GetParameterSpaceBound( IGES_ENTITY** aPtr );
     bool SetParameterSpaceBound( IGES_ENTITY* aPtr );
+    bool SetParameterSpaceBound( DLL_IGES_ENTITY& aPtr );
     bool GetModelSpaceBound( IGES_ENTITY** aPtr );
     bool SetModelSpaceBound( IGES_ENTITY* aPtr );
+    bool SetModelSpaceBound( DLL_IGES_ENTITY& aPtr );
     bool GetCurvePreference( BOUND_CURVE_PREF& aPref );
     bool SetCurvePreference( BOUND_CURVE_PREF aPref );
     bool GetCurveCreationFlag( CURVE_CREATION& aFlag );

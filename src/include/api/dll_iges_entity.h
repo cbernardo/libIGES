@@ -137,7 +137,7 @@ public:
      * @return false if there is no valid entity or the underlying operation failed.
      */
     bool AddOptionalEntity( IGES_ENTITY* aEntity );
-    bool AddOptionalEntity( DLL_IGES_ENTITY*& aEntity );
+    bool AddOptionalEntity( DLL_IGES_ENTITY& aEntity );
 
 
     /**
@@ -151,7 +151,7 @@ public:
      * @return false if there is no valid entity or the underlying operation failed.
      */
     bool DelOptionalEntity( IGES_ENTITY* aEntity );
-    bool DelOptionalEntity( DLL_IGES_ENTITY*& aEntity );
+    bool DelOptionalEntity( DLL_IGES_ENTITY& aEntity );
 
 
     // Routines for manipulating the optional comments
@@ -218,7 +218,7 @@ public:
      * @return false if there is no valid entity
      */
     bool SetParentIGES( IGES* aParent );
-    bool SetParentIGES( DLL_IGES*& aParent );
+    bool SetParentIGES( DLL_IGES& aParent );
 
 
     /**
@@ -283,7 +283,7 @@ public:
      * operation failed.
      */
     bool SetStructure( IGES_ENTITY* aStructure );
-    bool SetStructure( DLL_IGES_ENTITY*& aStructure );
+    bool SetStructure( DLL_IGES_ENTITY& aStructure );
 
 
     /**
@@ -320,7 +320,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetLineFontPattern( DLL_IGES_ENTITY*& aPattern );
+    bool SetLineFontPattern( DLL_IGES_ENTITY& aPattern );
     bool SetLineFontPattern( IGES_ENTITY* aPattern );
 
 
@@ -373,7 +373,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetLevel( DLL_IGES_ENTITY*& aLevel );
+    bool SetLevel( DLL_IGES_ENTITY& aLevel );
     bool SetLevel( IGES_ENTITY* aLevel );
 
 
@@ -412,7 +412,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetView( DLL_IGES_ENTITY*& aView );
+    bool SetView( DLL_IGES_ENTITY& aView );
     bool SetView( IGES_ENTITY* aView );
 
 
@@ -438,7 +438,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetTransform( DLL_IGES_ENTITY*& aTransform );
+    bool SetTransform( DLL_IGES_ENTITY& aTransform );
     bool SetTransform( IGES_ENTITY* aTransform );
 
     /**
@@ -463,7 +463,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetLabelAssoc( DLL_IGES_ENTITY*& aLabelAssoc );
+    bool SetLabelAssoc( DLL_IGES_ENTITY& aLabelAssoc );
     bool SetLabelAssoc( IGES_ENTITY* aLabelAssoc );
 
 
@@ -501,7 +501,7 @@ public:
      * @return false if there is no valid entity or the underlying
      * operation failed.
      */
-    bool SetColor( DLL_IGES_ENTITY_314*& aColor );
+    bool SetColor( DLL_IGES_ENTITY_314& aColor );
     bool SetColor( IGES_ENTITY* aColor );
 
     /**

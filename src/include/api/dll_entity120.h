@@ -31,8 +31,8 @@
 
 #include <libigesconf.h>
 #include <api/dll_iges_entity.h>
+#include <api/dll_iges_curve.h>
 
-class IGES_CURVE;
 
 class MCAD_API DLL_IGES_ENTITY_120 : public DLL_IGES_ENTITY
 {
@@ -45,8 +45,10 @@ public:
 
     bool GetAxis( IGES_CURVE** aCurve );
     bool SetAxis( IGES_CURVE* aCurve );
+    bool SetAxis( DLL_IGES_CURVE& aCurve );
     bool GetGeneratrix( IGES_CURVE** aCurve );
     bool SetGeneratrix( IGES_CURVE* aCurve );
+    bool SetGeneratrix( DLL_IGES_CURVE& aCurve );
     bool GetAngles( double& aStartAngle, double& aEndAngle );
     bool SetAngles( double aStartAngle, double aEndAngle );
 };

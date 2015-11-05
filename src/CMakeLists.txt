@@ -118,7 +118,6 @@ endif()
 install( TARGETS ${IGES_LIBS}
         ARCHIVE DESTINATION ${LIBIGES_LIBDIR}
         LIBRARY DESTINATION ${LIBIGES_LIBDIR}
-        CONFIGURATIONS Release
     )
 
 add_executable( readtest

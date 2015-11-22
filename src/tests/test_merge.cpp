@@ -347,13 +347,12 @@ bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vect
         modelOut.NewAPIEntity( ENT_TRANSFORMATION_MATRIX, ep );
         p124 = (DLL_IGES_ENTITY_124*)ep;
         MCAD_TRANSFORM TX;
-        MCAD_TRANSFORM* pTX;
         sPos->GetTransform( TX );
 
         if( pO )
             TX = TX * (*pO);
 
-        p124->SetRootTransform( pTX );
+        p124->SetRootTransform( TX );
 
         modelOut.NewAPIEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, ep );
         p408 = (DLL_IGES_ENTITY_408*)ep;

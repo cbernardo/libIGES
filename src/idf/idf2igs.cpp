@@ -1195,7 +1195,10 @@ IGES_ENTITY_124* calcTransform( DLL_IGES& model, double dX, double dY, double dZ
 
     if( dA != 0.0 )
     {
-        rotateZ( m0, dA );
+        if( bottom )
+            rotateZ( m0, -dA );
+        else
+            rotateZ( m0, dA );
     }
 
     if( bottom )
@@ -1204,7 +1207,7 @@ IGES_ENTITY_124* calcTransform( DLL_IGES& model, double dX, double dY, double dZ
         rotateY( m1, M_PI );
     }
 
-    m1 *= m0;
+    m1 = m0 * m1;
     DLL_IGES_ENTITY_124 e124( model, true );
     MCAD_TRANSFORM tx;
     tx.R = m1;

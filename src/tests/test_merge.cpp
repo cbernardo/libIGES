@@ -276,10 +276,10 @@ bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vect
         return false;
     }
 
-    DLL_IGES_ENTITY* ep;
+    DLL_IGES_ENTITY* ep = NULL;
     MCAD_TRANSFORM* pO = NULL;
 
-    // determine if there is an transform to associate with the basic model
+    // determine if there is a transform to associate with the basic model
     if( !o.empty() )
     {
         vector<pair<string, ORIENT > >::iterator sbeg = o.begin();
@@ -353,10 +353,11 @@ bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vect
             TX = TX * (*pO);
 
         p124->SetRootTransform( TX );
+        IGES_ENTITY* rp124 = p124->GetRawPtr();
 
         modelOut.NewAPIEntity( ENT_SINGULAR_SUBFIGURE_INSTANCE, ep );
         p408 = (DLL_IGES_ENTITY_408*)ep;
-        p408->SetTransform( p124->GetRawPtr() );
+        p408->SetTransform( rp124 );
         p408->SetSubfigure( p308 );
 
         ++sPos;

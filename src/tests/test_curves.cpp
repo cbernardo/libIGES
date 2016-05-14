@@ -186,7 +186,7 @@ bool GetSegmentWall( DLL_IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
                 IGES_ENTITY_144** surfs = NULL;
                 int nParts = 0;
 
-                ok = cyl.Instantiate( aModel->GetRawPtr(), aTopZ, aBotZ, surfs, nParts );
+                ok = cyl.Instantiate( aModel->GetRawPtr(), aTopZ, aBotZ, surfs, nParts, false );
 
                 if( ok )
                 {

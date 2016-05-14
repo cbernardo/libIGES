@@ -219,7 +219,7 @@ bool IGES_GEOM_PCB::GetVerticalSurface( IGES* aModel, bool& error,
 
     while( sSeg != eSeg )
     {
-        if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg ) )
+        if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg, false ) )
         {
             ostringstream msg;
             GEOM_ERR( msg );
@@ -241,7 +241,7 @@ bool IGES_GEOM_PCB::GetVerticalSurface( IGES* aModel, bool& error,
         while( sSeg != eSeg )
         {
 
-            if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg ) )
+            if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg, true ) )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );
@@ -270,7 +270,7 @@ bool IGES_GEOM_PCB::GetVerticalSurface( IGES* aModel, bool& error,
 
             while( sSeg != eSeg )
             {
-                if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg ) )
+                if( !GetSegmentWall( aModel, aSurface, aTopZ, aBotZ, *sSeg, true ) )
                 {
                     ostringstream msg;
                     GEOM_ERR( msg );
@@ -296,7 +296,7 @@ bool IGES_GEOM_PCB::GetVerticalSurface( IGES* aModel, bool& error,
 // top or bottom plane of the board
 bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
                       std::vector<IGES_ENTITY_144*>& aSurface,
-                      double aHeight )
+                      double aHeight, bool aReverse )
 {
     error = false;
 
@@ -325,7 +325,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     }
 
     // Step 1: create the plane to be trimmed;
-    IGES_ENTITY_144* plane = getUntrimmedPlane( aModel, aHeight );
+    IGES_ENTITY_144* plane = getUntrimmedPlane( aModel, aHeight, aReverse );
 
     if( !plane )
     {
@@ -341,7 +341,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     // Step 2: create the outer bound (PTO); this is a Curve on Parametric Surface
     list<MCAD_SEGMENT*>::iterator sSeg = msegments.begin();
     list<MCAD_SEGMENT*>::iterator eSeg = msegments.end();
-    list<IGES_CURVE*> ncurves;  // curves representing outlines in geometric representation
+    list<IGES_CURVE*> ncurves;      // curves representing outlines in geometric representation
     list<IGES_ENTITY_126*> bcurves; // BREP curves representing outlines
     IGES_ENTITY_102*  ccurve[2];    // composite curve (BREP and geom representations)
 
@@ -365,7 +365,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
         cout << "XXX: adding segment #" << (++acc) << " of " << msegments.size() << "\n";
 
         if( !GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-            mBottomLeft.y, mTopRight.y, aHeight, *sSeg ) )
+            mBottomLeft.y, mTopRight.y, aHeight, *sSeg, aReverse ) )
         {
             ostringstream msg;
             GEOM_ERR( msg );
@@ -518,7 +518,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
         while( sSeg != eSeg )
         {
             if( !GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-                mBottomLeft.y, mTopRight.y, aHeight, *sSeg ) )
+                mBottomLeft.y, mTopRight.y, aHeight, *sSeg, aReverse ) )
             {
                 ostringstream msg;
                 GEOM_ERR( msg );
@@ -582,7 +582,6 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
 
             ++sNC;
         }
-
         if( !scurve->SetBPTR( (IGES_ENTITY*)ccurve[0] )
             || !scurve->SetCPTR( (IGES_ENTITY*)ccurve[1] ) )
         {
@@ -648,7 +647,7 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
         }
 
         if( !GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
-            mBottomLeft.y, mTopRight.y, aHeight, *sDH ) )
+            mBottomLeft.y, mTopRight.y, aHeight, *sDH, aReverse ) )
         {
             ostringstream msg;
             GEOM_ERR( msg );
@@ -742,32 +741,57 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
 
 
 // create a Trimmed Parametric Surface entity with only the PTS member instantiated
-IGES_ENTITY_144* IGES_GEOM_PCB::getUntrimmedPlane( IGES* aModel, double aHeight )
+IGES_ENTITY_144* IGES_GEOM_PCB::getUntrimmedPlane( IGES* aModel, double aHeight, bool aReverse )
 {
     double data[12];
 
     // note: the vertex order used here ensures that X is parameterized
     // in U (parameter 1) and Y is parameterized in V (parameter 2)
 
-    // vertex 0, bottom left
-    data[0] = mBottomLeft.x;
-    data[1] = mBottomLeft.y;
-    data[2] = aHeight;
+    if( aReverse )
+    {
+        // vertex 1, top left
+        data[0] = mBottomLeft.x;
+        data[1] = mTopRight.y;
+        data[2] = aHeight;
 
-    // vertex 1, bottom right
-    data[3] = mTopRight.x;
-    data[4] = mBottomLeft.y;
-    data[5] = aHeight;
+        // vertex 2, top right
+        data[3] = mTopRight.x;
+        data[4] = mTopRight.y;
+        data[5] = aHeight;
 
-    // vertex 3, top left
-    data[6] = mBottomLeft.x;
-    data[7] = mTopRight.y;
-    data[8] = aHeight;
+        // vertex 3, bottom left
+        data[6] = mBottomLeft.x;
+        data[7] = mBottomLeft.y;
+        data[8] = aHeight;
 
-    // vertex 4, top right
-    data[9]  = mTopRight.x;
-    data[10] = mTopRight.y;
-    data[11] = aHeight;
+        // vertex 4, bottom right
+        data[9] = mTopRight.x;
+        data[10] = mBottomLeft.y;
+        data[11] = aHeight;
+    }
+    else
+    {
+        // vertex 1, bottom left
+        data[0] = mBottomLeft.x;
+        data[1] = mBottomLeft.y;
+        data[2] = aHeight;
+
+        // vertex 2, bottom right
+        data[3] = mTopRight.x;
+        data[4] = mBottomLeft.y;
+        data[5] = aHeight;
+
+        // vertex 3, top left
+        data[6] = mBottomLeft.x;
+        data[7] = mTopRight.y;
+        data[8] = aHeight;
+
+        // vertex 4, top right
+        data[9] = mTopRight.x;
+        data[10] = mTopRight.y;
+        data[11] = aHeight;
+    }
 
     int stat = 0;
     SISLSurf* plane;
@@ -905,7 +929,7 @@ IGES_ENTITY_144* IGES_GEOM_PCB::getUntrimmedPlane( IGES* aModel, double aHeight 
 // user to decide whether these curves shall be part of a loop consiting
 // of multiple segments.
 bool IGES_GEOM_PCB::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                                   double zHeight, MCAD_SEGMENT* aSegment )
+    double zHeight, MCAD_SEGMENT* aSegment )
 {
     bool ok;
 
@@ -939,7 +963,7 @@ bool IGES_GEOM_PCB::GetCurves( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
 // multiple segments.
 bool IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                                           double aMinX, double aMaxX, double aMinY, double aMaxY,
-                                          double zHeight, MCAD_SEGMENT* aSegment )
+                                          double zHeight, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     double scale = 1.0 / ( aMaxX - aMinX ); // scale factor (must be same for X and Y axes)
     bool ok;
@@ -947,15 +971,15 @@ bool IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>&
     switch( aSegment->GetSegType() )
     {
         case MCAD_SEGTYPE_CIRCLE:
-            ok = copCircle( aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment );
+            ok = copCircle( aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment, aReverse );
             break;
 
         case MCAD_SEGTYPE_ARC:
-            ok = copArc( aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment );
+            ok = copArc( aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment, aReverse );
             break;
 
         case MCAD_SEGTYPE_LINE:
-            ok = copLine( aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment );
+            ok = copLine(aModel, aCurves, aMinX, aMinY, scale, zHeight, aSegment, aReverse);
             break;
 
         default:
@@ -980,7 +1004,7 @@ bool IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>&
 
 // retrieve a trimmed parametric surface representing a vertical side
 bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
-                                        double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment )
+    double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     if( !aModel )
     {
@@ -1016,7 +1040,10 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
                 IGES_ENTITY_144** surfs = NULL;
                 int nParts;
 
-                ok = cyl.Instantiate( aModel, aTopZ, aBotZ, surfs, nParts  );
+                if( ( aSegment->IsCW() && !aReverse ) || ( !aSegment->IsCW() && aReverse ) )
+                    ok = cyl.Instantiate( aModel, aTopZ, aBotZ, surfs, nParts, true );
+                else
+                    ok = cyl.Instantiate( aModel, aTopZ, aBotZ, surfs, nParts, false );
 
                 if( ok )
                 {
@@ -1042,7 +1069,12 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
                 p2.z = aBotZ;
                 MCAD_POINT p3 = aSegment->GetMStart();
                 p3.z = aBotZ;
-                wall.SetParams( p0, p1, p2, p3 );
+
+                if( aReverse )
+                    wall.SetParams( p0, p1, p2, p3 );
+                else
+                    wall.SetParams( p3, p2, p1, p0 );
+
                 IGES_ENTITY_144* ep = wall.Instantiate( aModel );
 
                 if( NULL == ep )
@@ -1066,7 +1098,7 @@ bool IGES_GEOM_PCB::GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>&
 
 
 bool IGES_GEOM_PCB::getCurveCircle( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                                        double zHeight, MCAD_SEGMENT* aSegment )
+    double zHeight, MCAD_SEGMENT* aSegment )
 {
     IGES_ENTITY_100* arcs[2];
     arcs[0] = NULL;
@@ -1432,7 +1464,7 @@ bool IGES_GEOM_PCB::getCurveArc( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
 
 
 bool IGES_GEOM_PCB::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
-                                      double zHeight, MCAD_SEGMENT* aSegment )
+    double zHeight, MCAD_SEGMENT* aSegment )
 {
     IGES_ENTITY*     ep;
     IGES_ENTITY_110* lp;
@@ -1479,7 +1511,7 @@ bool IGES_GEOM_PCB::getCurveLine( IGES* aModel, std::list<IGES_CURVE*>& aCurves,
 
 bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                                    double offX, double offY, double aScale,
-                                   double zHeight, MCAD_SEGMENT* aSegment )
+                                   double zHeight, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     IGES_ENTITY_126* cp[2];
 
@@ -1506,9 +1538,15 @@ bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurve
     SISLCurve* pCurve[2] = { NULL, NULL };
     int stat = 0;
 
+    if( aReverse )
+    {
+        axis[2] = -1.0;
+        centrp[1] = 1.0 - centrp[1];
+    }
+
     for( int i = 0; i < 2; ++i )
     {
-        if( 0 == i )
+        if( ( 0 == i && !aReverse ) || ( i && aReverse ) )
         {
             startp[0] = centrp[0] + mradius * aScale;
             startp[1] = centrp[1];
@@ -1576,16 +1614,12 @@ bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurve
 
 bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                                 double offX, double offY, double aScale,
-                                double zHeight, MCAD_SEGMENT* aSegment )
+                                double zHeight, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     IGES_ENTITY_126* cp[3]; // we may have up to 3 entities to describe a single arc
-    IGES_ENTITY_124* tx[3]; // each arc segment must have a Transform if the arc is CW
 
     for( int i = 0; i < 3; ++i )
-    {
         cp[i] = NULL;
-        tx[i] = NULL;
-    }
 
     MCAD_POINT mstart = aSegment->GetMStart();
     MCAD_POINT mend = aSegment->GetMEnd();
@@ -1600,64 +1634,34 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
     double spt[3][3];       // start points for each angle
     double cpt[3];          // center point for all angles
 
-    if( aSegment->IsCW() )
+    sAng = aSegment->GetStartAngle();
+    eAng = aSegment->GetEndAngle();
+    ptArc[0] = mstart;
+    ptArc[1] = mend;
+
+    ptArc[0].x = ( ptArc[0].x - offX ) * aScale;
+    ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
+    ptArc[0].z = zHeight;
+
+    ptArc[1].x = ( ptArc[1].x - offX ) * aScale;
+    ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
+    ptArc[1].z = zHeight;
+
+    cpt[0] = ( mcenter.x - offX ) * aScale;
+    cpt[1] = ( mcenter.y - offY ) * aScale;
+    cpt[2] = zHeight;
+
+    if( aReverse )
     {
-        ptArc[0] = mstart;
-        ptArc[1] = mend;
-        cout << "XXX: mstart: " << mstart.x << ", " << mstart.y << "\n";
-        cout << "XXX: mend  : " << mend.x << ", " << mend.y << "\n";
-        cout << "XXX: center: " << mcenter.x << ", " << mcenter.y << "\n";
-
-        cout << "XXX: old mstart: " << (ptArc[0].x -offX)*aScale << ", " << (ptArc[0].y -offY)*aScale << ", " << ptArc[0].z << "\n";
-
-        ptArc[0].x = ( mcenter.x - ptArc[0].x ) * aScale;
-        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
-        ptArc[0].z = zHeight;
-        cout << "XXX: new mstart: " << ptArc[0].x << ", " << ptArc[0].y << ", " << ptArc[0].z << "\n";
-
-        ptArc[1].x = ( mcenter.x - ptArc[1].x ) * aScale;
-        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
-        ptArc[1].z = zHeight;
-
-        cpt[0] = 0.0;
-        cpt[1] = ( mcenter.y - offY ) * aScale;
-        cpt[2] = zHeight;
-
-        ptC = mcenter;
-        ptC.x = ( ptC.x - offX ) * aScale;
-        ptC.y = ( ptC.y - offY ) * aScale;
-        ptC.z = zHeight;
-
-        sAng = atan2( ptArc[0].y - cpt[1], ptArc[0].x );
-        eAng = atan2( ptArc[1].y - cpt[1], ptArc[1].x );
-
-        if( eAng < sAng )
-            eAng += 2.0 * M_PI;
+        ptArc[0].y = 1.0 - ptArc[0].y;
+        ptArc[1].y = 1.0 - ptArc[1].y;
+        cpt[1] = 1.0 - cpt[1];
     }
-    else
+
+    if( sAng > M_PI )
     {
-        sAng = aSegment->GetMSAngle();
-        eAng = aSegment->GetMEAngle();
-        ptArc[0] = mstart;
-        ptArc[1] = mend;
-
-        ptArc[0].x = ( ptArc[0].x - offX ) * aScale;
-        ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
-        ptArc[0].z = zHeight;
-
-        ptArc[1].x = ( ptArc[1].x - offX ) * aScale;
-        ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
-        ptArc[1].z = zHeight;
-
-        cpt[0] = ( mcenter.x - offX ) * aScale;
-        cpt[1] = ( mcenter.y - offY ) * aScale;
-        cpt[2] = zHeight;
-
-        if( sAng > M_PI )
-        {
-            sAng -= 2.0 * M_PI;
-            eAng -= 2.0 * M_PI;
-        }
+        sAng -= 2.0 * M_PI;
+        eAng -= 2.0 * M_PI;
     }
 
     int na = 0; // number of arcs in the curve
@@ -1756,44 +1760,10 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
         if( !newArc126( aModel, &cp[i] ) )
         {
             for( int j = 0; j < i; ++j )
-            {
                 aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                if( tx[j] )
-                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-            }
 
             ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
             return false;
-        }
-
-        if( aSegment->IsCW() )
-        {
-            if( !newTx124( aModel, &tx[i] ) )
-            {
-                for( int j = 0; j < i; ++j )
-                {
-                    aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                    if( tx[j] )
-                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-                }
-
-                aModel->DelEntity( (IGES_ENTITY*)(cp[i]) );
-                ERRMSG << "\n + [INFO] could not instantiate IGES NURBS curve\n";
-                return false;
-            }
-            else
-            {
-                tx[i]->T.T.x = ptC.x;
-                tx[i]->T.T.z = 2.0 * zHeight;
-                tx[i]->T.R.v[0][0] = -1.0;
-                tx[i]->T.R.v[2][2] = -1.0;
-                tx[i]->SetEntityForm( 1 );
-                cp[i]->SetTransform( tx[i] );
-            }
         }
     }
 
@@ -1801,6 +1771,9 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
     double startp[3];
     SISLCurve* pCurve[3] = { NULL, NULL, NULL };
     int stat = 0;
+
+    if( (!aSegment->IsCW() && aReverse) || (aSegment->IsCW() && !aReverse) )
+        axis[2] = -1.0;
 
     // set up the NURBS data
     for( int i = 0; i < na; ++i )
@@ -1826,13 +1799,7 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                     freeCurve( pCurve[j] );
 
                 for( int j = 0; j < na; ++j )
-                {
                     aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                    if( tx[j] )
-                        aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
-                }
 
                 ERRMSG << "\n + [ERROR] could not create NURBS arc\n";
                 return false;
@@ -1853,10 +1820,6 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                     freeCurve( pCurve[j] );
 
                 aModel->DelEntity( (IGES_ENTITY*)(cp[j]) );
-
-                if( tx[j] )
-                    aModel->DelEntity( (IGES_ENTITY*)(tx[j]) );
-
             }
 
             ERRMSG << "\n + [WARNING] problems setting data in NURBS arc\n";
@@ -1876,7 +1839,7 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
 
 bool IGES_GEOM_PCB::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                                  double offX, double offY, double aScale,
-                                 double zHeight, MCAD_SEGMENT* aSegment )
+                                 double zHeight, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     IGES_ENTITY_126* cp;
 
@@ -1899,6 +1862,12 @@ bool IGES_GEOM_PCB::copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
     endp[0] = (mend.x - offX) * aScale;
     endp[1] = (mend.y - offY) * aScale;
     endp[2] = zHeight;
+
+    if( aReverse )
+    {
+        startp[1] = 1.0 - startp[1];
+        endp[1] = 1.0 - endp[1];
+    }
 
     double epar;
     int stat = 0;

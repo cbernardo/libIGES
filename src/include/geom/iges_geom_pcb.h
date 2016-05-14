@@ -92,17 +92,17 @@ private:
     // a trimmed parametric surface
     bool copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                     double offX, double offY, double aScale,
-                    double zHeight, MCAD_SEGMENT* aSegment );
+                    double zHeight, MCAD_SEGMENT* aSegment, bool aReverse );
     bool copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                  double offX, double offY, double aScale,
-                 double zHeight, MCAD_SEGMENT* aSegment );
+                 double zHeight, MCAD_SEGMENT* aSegment, bool aReverse );
     bool copLine( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                   double offX, double offY, double aScale,
-                  double zHeight, MCAD_SEGMENT* aSegment );
+                  double zHeight, MCAD_SEGMENT* aSegment, bool aReverse );
 
 protected:
    // create a Trimmed Parametric Surface entity with only the PTS member instantiated
-   IGES_ENTITY_144* getUntrimmedPlane( IGES* aModel, double aHeight );
+   IGES_ENTITY_144* getUntrimmedPlane( IGES* aModel, double aHeight, bool aReverse );
 
 public:
     IGES_GEOM_PCB();
@@ -129,7 +129,7 @@ public:
     // top or bottom plane of the board
     bool GetTrimmedPlane( IGES* aModel, bool& error,
                           std::vector<IGES_ENTITY_144*>& aSurface,
-                          double aHeight );
+                          double aHeight, bool aReverse );
 
     // retrieve the representation of the curve as IGES
     // 2D primitives (Entity 100 or Entity 110). An arc
@@ -151,11 +151,11 @@ public:
     //    calculated.
     bool GetCurveOnPlane(  IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
                            double aMinX, double aMaxX, double aMinY, double aMaxY,
-                           double zHeight, MCAD_SEGMENT* aSegment );
+                           double zHeight, MCAD_SEGMENT* aSegment, bool aReverse );
 
     // retrieve a trimmed parametric surface representing a vertical side
     bool GetSegmentWall( IGES* aModel, std::vector<IGES_ENTITY_144*>& aSurface,
-                         double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment );
+                         double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment, bool aReverse );
 };
 
 #endif  // IGES_GEOM_PCB_H

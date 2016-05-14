@@ -346,8 +346,8 @@ bool MakeBoard( IDF3_BOARD& board, DLL_IGES& model )
     int nSurfs = 0;
     double th = 0.5 * board.GetBoardThickness();
     otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th, -th );
-    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th );
-    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -th );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th, false );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -th, true );
     otln.Detach();
 
     IGES_ENTITY_308* subfig;
@@ -1019,14 +1019,14 @@ bool MakeOtherOutlines( IDF3_BOARD& board, DLL_IGES& model )
         if( bottom )
         {
             otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, -(th + bt), -bt );
-            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -(th + bt) );
-            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -bt );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -(th + bt), true );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, -bt, true );
         }
         else
         {
             otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th + bt, bt );
-            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th + bt );
-            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, bt );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th + bt, false );
+            otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, bt, false );
         }
 
         DLL_IGES_ENTITY_308 subfig( model, true );
@@ -1120,8 +1120,8 @@ bool buildComponent( DLL_IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_
     int nSurfs = 0;
 
     otln.GetVerticalSurface( model.GetRawPtr(), dud, surfs, nSurfs, th, 0.0 );
-    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th );
-    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, 0.0 );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, th, false );
+    otln.GetTrimmedPlane( model.GetRawPtr(), dud, surfs, nSurfs, 0.0, true );
     otln.Detach();
 
     if( !newSubfigure( model, subfig ) )

@@ -75,7 +75,7 @@ public:
      * instantiated; in such a case 'result' will be non-null
      */
     bool Instantiate( IGES* model, double top, double bot,
-                      IGES_ENTITY_144**& result, int& nParts );
+                      IGES_ENTITY_144**& result, int& nParts, bool aReverse );
 };
 
 #endif  // IGES_GEOM_CYLINDER_H

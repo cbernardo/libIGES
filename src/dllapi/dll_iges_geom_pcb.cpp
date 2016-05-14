@@ -144,7 +144,7 @@ bool DLL_IGES_GEOM_PCB::GetVerticalSurface( IGES* aModel, bool& error,
 
 bool DLL_IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     IGES_ENTITY_144**& aSurfaceList,
-    int& nSurfaces, double aHeight )
+    int& nSurfaces, double aHeight, bool aReverse )
 {
     if( NULL == m_outline || !m_valid )
         return false;
@@ -152,7 +152,7 @@ bool DLL_IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     std::vector< IGES_ENTITY_144* > surfs;
 
     bool ok = ((IGES_GEOM_PCB*)m_outline)->GetTrimmedPlane( aModel, error,
-    surfs, aHeight );
+    surfs, aHeight, aReverse );
 
     if( ok && !surfs.empty() )
     {
@@ -247,7 +247,7 @@ bool DLL_IGES_GEOM_PCB::GetCurves( IGES* aModel, IGES_CURVE**& aCurveList, int& 
 bool DLL_IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel,
     IGES_ENTITY_126**& aCurveList, int& nCurves,
     double aMinX, double aMaxX, double aMinY, double aMaxY,
-    double zHeight, MCAD_SEGMENT* aSegment )
+    double zHeight, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     if( NULL == m_outline && !m_valid )
         return false;
@@ -255,7 +255,7 @@ bool DLL_IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel,
     std::list< IGES_ENTITY_126* > curves;
 
     bool ok = ((IGES_GEOM_PCB*)m_outline)->GetCurveOnPlane( aModel, curves, aMinX, aMaxX,
-        aMinY, aMaxY, zHeight, aSegment );
+        aMinY, aMaxY, zHeight, aSegment, aReverse );
 
     if( ok && !curves.empty() )
     {
@@ -299,7 +299,7 @@ bool DLL_IGES_GEOM_PCB::GetCurveOnPlane(  IGES* aModel,
 
 bool DLL_IGES_GEOM_PCB::GetSegmentWall( IGES* aModel,
     IGES_ENTITY_144**& aSurfaceList, int& nSurfaces,
-    double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment )
+    double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment, bool aReverse )
 {
     if( NULL == m_outline || m_valid )
         return false;
@@ -307,7 +307,7 @@ bool DLL_IGES_GEOM_PCB::GetSegmentWall( IGES* aModel,
     std::vector< IGES_ENTITY_144* > surfs;
 
     bool ok = ((IGES_GEOM_PCB*)m_outline)->GetSegmentWall( aModel,
-        surfs, aTopZ, aBotZ, aSegment );
+        surfs, aTopZ, aBotZ, aSegment, aReverse );
 
     if( ok && !surfs.empty() )
     {

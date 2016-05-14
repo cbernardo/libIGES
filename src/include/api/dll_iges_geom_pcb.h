@@ -110,7 +110,7 @@ public:
     // when no longer needed
     bool GetTrimmedPlane( IGES* aModel, bool& error,
                           IGES_ENTITY_144**& aSurfaceList,
-                          int& nSurfaces, double aHeight );
+                          int& nSurfaces, double aHeight, bool aReverse );
 
     // retrieve the representation of the curve as IGES
     // 2D primitives (Entity 100 or Entity 110). An arc
@@ -136,13 +136,13 @@ public:
     // caller when no longer needed
     bool GetCurveOnPlane(  IGES* aModel, IGES_ENTITY_126**& aCurveList, int& nCurves,
                            double aMinX, double aMaxX, double aMinY, double aMaxY,
-                           double zHeight, MCAD_SEGMENT* aSegment );
+                           double zHeight, MCAD_SEGMENT* aSegment, bool aReverse );
 
     // retrieve a trimmed parametric surface representing a vertical side
     // note: aSurfaceLIst [in/out] must be deletd [] by the
     // caller when no longer needed
     bool GetSegmentWall( IGES* aModel, IGES_ENTITY_144**& aSurfaceList, int& nSurfaces,
-                         double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment );
+                         double aTopZ, double aBotZ, MCAD_SEGMENT* aSegment, bool aReverse );
 };
 
 #endif  // DLL_IGES_GEOM_PCB_H

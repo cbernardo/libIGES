@@ -445,8 +445,8 @@ int test_arcs( void )
         nSurfs = 0;
     }
 
-    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
         cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
@@ -657,8 +657,8 @@ int test_lines( void )
         return -1;
     }
 
-    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
         cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
@@ -824,8 +824,8 @@ int test_addr( void )
         return -1;
     }
 
-    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
         cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
@@ -998,8 +998,8 @@ int test_otln( bool subs, bool primeA )
             return -1;
         }
 
-        if( !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-            || !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+        if( !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+            || !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
         {
             cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
@@ -1071,8 +1071,8 @@ int test_otln( bool subs, bool primeA )
             return -1;
         }
 
-        if( !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-            || !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+        if( !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+            || !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
         {
             cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
@@ -1158,8 +1158,8 @@ int test_cc0( void )
         return -1;
     }
 
-    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
         cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
@@ -1242,8 +1242,8 @@ int test_cc1( void )
         }
     }
 
-    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP )
-        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT ) )
+    if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
+        || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
         cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;

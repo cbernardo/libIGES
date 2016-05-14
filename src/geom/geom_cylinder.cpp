@@ -286,7 +286,7 @@ bool IGES_GEOM_CYLINDER::SetParams( MCAD_POINT center, MCAD_POINT start, MCAD_PO
 
 
 bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
-    IGES_ENTITY_144**& result, int& nParts )
+    IGES_ENTITY_144**& result, int& nParts, bool aReverse )
 {
     // note: we never clear 'result' as the user may be storing a list of
     // trimmed entity pointers
@@ -311,7 +311,12 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         return false;;
     }
 
+    // swap top and bot so that the non-reversed case
+    // results in a surface seen from the outside
     if( top < bot )
+        swap( top, bot );
+
+    if( aReverse )
         swap( top, bot );
 
     std::vector<IGES_ENTITY_144*> parts;
@@ -635,16 +640,25 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
 
         iline[idx0]->X1 = arcs[0].x;
         iline[idx0]->Y1 = arcs[0].y;
-        iline[idx0]->Z1 = bot;
         iline[idx0]->X2 = arcs[0].x;
         iline[idx0]->Y2 = arcs[0].y;
-        iline[idx0]->Z2 = top;
 
         iline[idx1]->X1 = arcs[0].x + radius;
         iline[idx1]->Y1 = arcs[0].y;
-        iline[idx1]->Z1 = top;
         iline[idx1]->X2 = arcs[0].x + radius;
         iline[idx1]->Y2 = arcs[0].y;
+
+        if( aReverse )
+        {
+            iline[idx0]->Z1 = top;
+            iline[idx0]->Z2 = bot;
+        }
+        else
+        {
+            iline[idx0]->Z1 = bot;
+            iline[idx0]->Z2 = top;
+        }
+        iline[idx1]->Z1 = top;
         iline[idx1]->Z2 = bot;
 
         if( !isurf[i]->SetAxis( (IGES_CURVE*)iline[idx0] )
@@ -816,12 +830,24 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         int idx = i * 4;
         int idx2 = i * 2;
         double data[6]; // 2 control points for inurbs
+        double endpoints[2];
+
+        if( aReverse )
+        {
+            endpoints[0] = 0.0;
+            endpoints[1] = 1.0;
+        }
+        else
+        {
+            endpoints[0] = 1.0;
+            endpoints[1] = 0.0;
+        }
 
         // (0, startAng, 0) .. (0, endAng, 0)
-        data[0] = 0.0;
+        data[0] = endpoints[0];
         data[1] = angles[idx2];
         data[2] = 0.0;
-        data[3] = 0.0;
+        data[3] = endpoints[0];
         data[4] = angles[idx2 + 1];
         data[5] = 0.0;
 
@@ -833,10 +859,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (0, endAng, 0) .. (1, endAng, 0)
-        data[0] = 0.0;
+        data[0] = endpoints[0];
         data[1] = angles[idx2 + 1];
         data[2] = 0.0;
-        data[3] = 1.0;
+        data[3] = endpoints[1];
         data[4] = angles[idx2 + 1];
         data[5] = 0.0;
 
@@ -848,10 +874,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (1, endAng, 0) .. (1, startAng, 0)
-        data[0] = 1.0;
+        data[0] = endpoints[1];
         data[1] = angles[idx2 + 1];
         data[2] = 0.0;
-        data[3] = 1.0;
+        data[3] = endpoints[1];
         data[4] = angles[idx2];
         data[5] = 0.0;
 
@@ -863,10 +889,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (1, startAng, 0) .. (0, startAng, 0)
-        data[0] = 1.0;
+        data[0] = endpoints[1];
         data[1] = angles[idx2];
         data[2] = 0.0;
-        data[3] = 0.0;
+        data[3] = endpoints[0];
         data[4] = angles[idx2];
         data[5] = 0.0;
 

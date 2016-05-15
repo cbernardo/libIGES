@@ -312,11 +312,8 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
     }
 
     // swap top and bot so that the non-reversed case
-    // results in a surface seen from the outside
+    // results in a surface seen from the inside
     if( top < bot )
-        swap( top, bot );
-
-    if( aReverse )
         swap( top, bot );
 
     std::vector<IGES_ENTITY_144*> parts;
@@ -658,6 +655,7 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
             iline[idx0]->Z1 = bot;
             iline[idx0]->Z2 = top;
         }
+
         iline[idx1]->Z1 = top;
         iline[idx1]->Z2 = bot;
 
@@ -830,26 +828,20 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         int idx = i * 4;
         int idx2 = i * 2;
         double data[6]; // 2 control points for inurbs
-        double endpoints[2];
+
+        // (0, startAng, 0) .. (0, endAng, 0)
+        data[0] = 0.0;
+        data[1] = angles[idx2];
+        data[2] = 0.0;
+        data[3] = 0.0;
+        data[4] = angles[idx2 + 1];
+        data[5] = 0.0;
 
         if( aReverse )
         {
-            endpoints[0] = 0.0;
-            endpoints[1] = 1.0;
+            data[1] = 2.0 * M_PI - data[1];
+            data[4] = 2.0 * M_PI - data[4];
         }
-        else
-        {
-            endpoints[0] = 1.0;
-            endpoints[1] = 0.0;
-        }
-
-        // (0, startAng, 0) .. (0, endAng, 0)
-        data[0] = endpoints[0];
-        data[1] = angles[idx2];
-        data[2] = 0.0;
-        data[3] = endpoints[0];
-        data[4] = angles[idx2 + 1];
-        data[5] = 0.0;
 
         if( !makeNurb( data, &data[3], &inurbs[idx] ) )
         {
@@ -859,11 +851,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (0, endAng, 0) .. (1, endAng, 0)
-        data[0] = endpoints[0];
-        data[1] = angles[idx2 + 1];
+        data[0] = 0.0;
+        data[1] = data[4];
         data[2] = 0.0;
-        data[3] = endpoints[1];
-        data[4] = angles[idx2 + 1];
+        data[3] = 1.0;
         data[5] = 0.0;
 
         if( !makeNurb( data, &data[3], &inurbs[idx +1] ) )
@@ -874,12 +865,14 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (1, endAng, 0) .. (1, startAng, 0)
-        data[0] = endpoints[1];
-        data[1] = angles[idx2 + 1];
+        data[0] = 1.0;
         data[2] = 0.0;
-        data[3] = endpoints[1];
+        data[3] = 1.0;
         data[4] = angles[idx2];
         data[5] = 0.0;
+
+        if( aReverse )
+            data[4] = 2.0 * M_PI - data[4];
 
         if( !makeNurb( data, &data[3], &inurbs[idx +2] ) )
         {
@@ -889,11 +882,10 @@ bool IGES_GEOM_CYLINDER::Instantiate( IGES* model, double top, double bot,
         }
 
         // (1, startAng, 0) .. (0, startAng, 0)
-        data[0] = endpoints[1];
-        data[1] = angles[idx2];
+        data[0] = 1.0;
+        data[1] = data[4];
         data[2] = 0.0;
-        data[3] = endpoints[0];
-        data[4] = angles[idx2];
+        data[3] = 0.0;
         data[5] = 0.0;
 
         if( !makeNurb( data, &data[3], &inurbs[idx +3] ) )

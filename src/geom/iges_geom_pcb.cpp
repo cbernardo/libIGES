@@ -1546,7 +1546,7 @@ bool IGES_GEOM_PCB::copCircle( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurve
 
     for( int i = 0; i < 2; ++i )
     {
-        if( ( 0 == i && !aReverse ) || ( i && aReverse ) )
+        if( 0 == i )
         {
             startp[0] = centrp[0] + mradius * aScale;
             startp[1] = centrp[1];
@@ -1621,8 +1621,8 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
     for( int i = 0; i < 3; ++i )
         cp[i] = NULL;
 
-    MCAD_POINT mstart = aSegment->GetMStart();
-    MCAD_POINT mend = aSegment->GetMEnd();
+    MCAD_POINT mstart = aSegment->GetStart();
+    MCAD_POINT mend = aSegment->GetEnd();
     MCAD_POINT mcenter = aSegment->GetCenter();
     double mradius = aSegment->GetRadius();
 
@@ -1636,13 +1636,13 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
 
     sAng = aSegment->GetStartAngle();
     eAng = aSegment->GetEndAngle();
-    ptArc[0] = mstart;
-    ptArc[1] = mend;
 
+    ptArc[0] = mstart;
     ptArc[0].x = ( ptArc[0].x - offX ) * aScale;
     ptArc[0].y = ( ptArc[0].y - offY ) * aScale;
     ptArc[0].z = zHeight;
 
+    ptArc[1] = mend;
     ptArc[1].x = ( ptArc[1].x - offX ) * aScale;
     ptArc[1].y = ( ptArc[1].y - offY ) * aScale;
     ptArc[1].z = zHeight;
@@ -1772,15 +1772,33 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
     SISLCurve* pCurve[3] = { NULL, NULL, NULL };
     int stat = 0;
 
-    if( (!aSegment->IsCW() && aReverse) || (aSegment->IsCW() && !aReverse) )
+    if( (aSegment->IsCW() && !aReverse) || (!aSegment->IsCW() && aReverse) )
         axis[2] = -1.0;
 
     // set up the NURBS data
     for( int i = 0; i < na; ++i )
     {
-        startp[0] = spt[i][0];
-        startp[1] = spt[i][1];
-        startp[2] = spt[i][2];
+        if( aSegment->IsCW() )
+        {
+            if( i < (na -1) )
+            {
+                startp[0] = spt[i+1][0];
+                startp[1] = spt[i+1][1];
+                startp[2] = spt[i+1][2];
+            }
+            else
+            {
+                startp[0] = ptArc[1].x;
+                startp[1] = ptArc[1].y;
+                startp[2] = ptArc[1].z;
+            }
+        }
+        else
+        {
+            startp[0] = spt[i][0];
+            startp[1] = spt[i][1];
+            startp[2] = spt[i][2];
+        }
 
         s1303( startp, 1e-8, angles[i], cpt, axis, 3, &pCurve[i], &stat );
 
@@ -1809,10 +1827,17 @@ bool IGES_GEOM_PCB::copArc( IGES* aModel, std::list<IGES_ENTITY_126*>& aCurves,
 
     for( int i = 0; i < na; ++i )
     {
-        int iKE = pCurve[i]->in + pCurve[i]->ik - 1;
+        int idx;
 
-        if( !cp[i]->SetNURBSData( pCurve[i]->in, pCurve[i]->ik, pCurve[i]->et,
-            pCurve[i]->ecoef, false, pCurve[i]->et[0], pCurve[i]->et[iKE] ) )
+        if( aSegment->IsCW()  )
+            idx = na - i - 1;
+        else
+            idx = i;
+
+        int iKE = pCurve[idx]->in + pCurve[idx]->ik - 1;
+
+        if( !cp[i]->SetNURBSData( pCurve[idx]->in, pCurve[idx]->ik, pCurve[idx]->et,
+            pCurve[idx]->ecoef, false, pCurve[idx]->et[0], pCurve[idx]->et[iKE] ) )
         {
             for( int j = 0; j < na; ++j )
             {

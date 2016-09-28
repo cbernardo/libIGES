@@ -2,8 +2,39 @@ Known bugs:
 
 Sep 26 2015:
 
-    1. MSBO and related entities:
+    1. [DONE] MSBO and related entities:
         The MSBO object is buggy; although models are largely preserved and rendered as
         expected, some features are damaged and in FreeCAD they can be seen as points
         scattered in space. The logic must be checked to ensure a faithful copy of the
         data.
+
+Sep 29 2016:
+
+    Items to check:
+
+    1. [DONE] FormatDEInt: what does the specification say about integers in the Directory Entry
+    section? If a positive integer may have 8 characters, is any extra code needed to
+    guard the formatting of the DE Line number?
+
+        NOTE: no explicit limit is set, but since Section Line Numbers are only 7 characters
+        we are limited to a maximum of 9 999 999 PE lines. Since the fields are only 8
+        characters, the implicit limits for all other values are -9 999 999 to +99 999 999.
+        The range of the negative values is consistent with a negative value being used to
+        represent a DE or PE line number.
+
+        DE formatter (iges_entity.cpp) already guards against Line Numbers with more than
+        7 digits. AddPDItem() in iges_io.cpp was updated to guard against line number
+        overflows.
+
+
+
+    2. Numeric formatting in the Parameter Section: the specification states that the
+    end of parameter or end of record must appear on the same line as a number; this
+    may require blank padding of some PE lines and possibly some modification of the
+    numeric formatters to ensure that numbers end before Column 71 (end marker goes in C71).
+    Check:
+        a. [OK] the numeric output formatters
+        b. [OK] the parser (must skip blank padding)
+
+    3. Extending support for other Entity Types:
+        Use model 10029449-001LF.igs as input to provide support for Entity Type 406.

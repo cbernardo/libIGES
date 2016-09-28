@@ -1,3 +1,8 @@
+29 Sep 2016
+  + Fixed an output reformatting bug which restricted integers
+    in the Directory Entry to the range -9999999 .. +9999999.
+    The correct upper limit is +99999999.
+
 10 Oct 2015
   + Install targets have been created; in a Release build the libraries,
     headers, and idf2igs tool can be installed to a staging directory.
@@ -33,13 +38,13 @@
     of this library.  Note that the SINTEF SISL library uses
     the GNU Affero GPL Version 3 and that its terms apply to
     libIGES if libIGES is compiled with SISL support.
-    
+
   + Use of SISL:
     SISL has been removed from the base IGES objects to allow
     users to take advantage of the LGPLv2.1+ license of libIGES.
     The INSTALL instructions have been updated to show build
     configurations with and without SISL.
-    
+
 30 May 2015
   + The idf2igs tool now exports IGES assemblies which
     include the PCB and component models. If your MCAD

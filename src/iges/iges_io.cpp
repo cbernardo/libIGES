@@ -472,10 +472,10 @@ bool ParseReal( const std::string& data, int& idx, double& param, bool& eor, cha
 
 bool FormatDEInt( std::string& out, const int num )
 {
-    if( num > 9999999 || num < -9999999 )
+    if( num > 99999999 || num < -9999999 )
     {
         ERRMSG << "\n + [BUG] integer to format (" << num;
-        cerr << ") exceeds 7-digit limitation of IGES format\n";
+        cerr << ") exceeds 8-digit limitation of IGES format\n";
         return false;
     }
 
@@ -664,6 +664,12 @@ bool AddPDItem( std::string& tStr, std::string& fStr, std::string& fOut,
         fOut += "\n";
         fStr.clear();
         ++pdIndex;
+    }
+
+    if( pdIndex > 9999999 )
+    {
+        ERRMSG << "\n + [ERROR] PD Sequence Number exceeds limitations of IGES specification\n";
+        return false;
     }
 
     // tack tStr onto fStr

@@ -1,3 +1,6 @@
+25 Nov 2017:
+  + Added support for Entity Type 406 Form 15.
+
 29 Sep 2016
   + Fixed an output reformatting bug which restricted integers
     in the Directory Entry to the range -9999999 .. +9999999.

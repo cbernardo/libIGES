@@ -259,7 +259,6 @@ bool IGES_ENTITY_406::format( int &index )
         pdout.clear();
         return false;
     }
-    std::cout << "PDOUT: '" << pdout << "'\n";
 
     paramLineCount = index - parameterData;
 

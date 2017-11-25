@@ -1004,6 +1004,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY *> *entities)
 
             switch( tEnt )
             {
+                case ENT_PROPERTY:
                 case ENT_GENERAL_NOTE:
                 case ENT_TEXT_DISPLAY_TEMPLATE:
                     if( !(*entities)[iEnt]->addReference(this, dup) )
@@ -1029,7 +1030,7 @@ bool IGES_ENTITY::associate(std::vector<IGES_ENTITY *> *entities)
                     break;
 
                 default:
-                    ERRMSG << "\n + [CORRUPT FILE] invalid entity (" << tEnt;
+                    ERRMSG << "\n + [INFO] unsupported entity (" << tEnt;
                     cerr << ") in Optional Parameters section for Entity DE ";
                     cerr << sequenceNumber << "\n";
                     ok = false;

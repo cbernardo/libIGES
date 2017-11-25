@@ -174,9 +174,6 @@ bool IGES_ENTITY_308::format( int &index )
     string lstr = ostr.str();
     string tstr;
 
-    if( NAME.empty() )
-        NAME = "none";
-
     if( !AddPDHStr( NAME, lstr, pdout, index, sequenceNumber, pd, rd, pd ) )
     {
         ERRMSG << "\n + [INFO] could not add Subfigure name\n";

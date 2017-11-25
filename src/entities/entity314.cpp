@@ -380,9 +380,6 @@ bool IGES_ENTITY_314::readPD(std::ifstream &aFile, int &aSequenceVar)
         blue = 20.0;
     }
 
-    if( cname.empty() )
-        cname = "none";
-
     if( !eor && !readExtraParams( idx ) )
     {
         ERRMSG << "\n + [BAD FILE] could not read optional pointers\n";

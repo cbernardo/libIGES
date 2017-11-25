@@ -234,4 +234,21 @@ bool AddSecItem( std::string& tStr, std::string& fStr, std::string& fOut,
 bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
                  int& index, char pd, char rd, char delim );
 
+/**
+ * Function AddPDHStr
+ * convert a string into a Hollerith string and append to the Parameter Data;
+ * return true on success.
+ *
+ * @param tStr = string to be output
+ * @param fStr = current record being assembled for output
+ * @param fOut = string storing the entire PD
+ * @param index = (I/O) sequence index for PD entry
+ * @param deIndex = sequence index of PD's Directory Entry
+ * @param pd = IGES Parameter Delimeter
+ * @param rd = IGES Record Delimeter
+ * @param delim = delimeter to use for the string being output
+ */
+bool AddPDHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
+	int& index, int deIndex, char pd, char rd, char delim );
+
 #endif  // IGES_IO_H

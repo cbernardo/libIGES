@@ -27,6 +27,9 @@
  *  and component outine files, and creates an IGES assembly file.
  */
 
+// define to test Type 406 Form 15 as a replacement for the DE Name
+#define ENABLE_TYPE_406
+
 
 #include <iostream>
 #include <iomanip>
@@ -372,7 +375,14 @@ bool MakeBoard( IDF3_BOARD& board, DLL_IGES& model )
     }
 
     // add the name
+    #ifdef ENABLE_TYPE_406
+    DLL_IGES_ENTITY_406 e406( model, true );
+    e406.SetProperty_Name( (char const*)globs.basename.c_str() );
+    e308.AddOptionalEntity(e406.GetRawPtr());
+    e406.Detach();
+    #else
     e308.SetName( (char const*)globs.basename.c_str() );
+    #endif
     e308.Detach();
 
     DLL_IGES_ENTITY_408 e408( model, true );
@@ -812,7 +822,16 @@ bool initColors( DLL_IGES& model, IGES_ENTITY_314** colors )
         dE.SetColor( cdef[i][0] * 100.0 / 255.0,
                      cdef[i][1] * 100.0 / 255.0,
                      cdef[i][2] * 100.0 / 255.0 );
+
+        // Set the name
+        #ifdef ENABLE_TYPE_406
+        DLL_IGES_ENTITY_406 e406( model, true );
+        dE.AddOptionalEntity(e406.GetRawPtr());
+        e406.SetProperty_Name( cname[i].c_str() );
+        e406.Detach();
+        #else
         dE.SetName( cname[i].c_str() );
+        #endif
 
         colors[i] = (IGES_ENTITY_314*)dE.GetRawPtr();
 
@@ -1054,8 +1073,14 @@ bool MakeOtherOutlines( IDF3_BOARD& board, DLL_IGES& model )
         delete [] surfs;
 
         // add the name
+        #ifdef ENABLE_TYPE_406
+        DLL_IGES_ENTITY_406 e406( model, true );
+        e406.SetProperty_Name( sc->first.c_str() );
+        subfig.AddOptionalEntity(e406.GetRawPtr());
+        e406.Detach();
+        #else
         subfig.SetName( sc->first.c_str() );
-
+        #endif
         DLL_IGES_ENTITY_408 e408( model, true );
         e408.SetDE( (IGES_ENTITY_308*)subfig.GetRawPtr() );
         e408.SetLabel( sc->first.c_str() );
@@ -1144,7 +1169,14 @@ bool buildComponent( DLL_IGES& model, const IDF3_COMP_OUTLINE* idf, IGES_ENTITY_
     }
 
     // add the name; note this dirty trick to work around retrieval of the UID
+    #ifdef ENABLE_TYPE_406
+    DLL_IGES_ENTITY_406 e406( model, true );
+    e406.SetProperty_Name( ((IDF3_COMP_OUTLINE*)idf)->GetUID().c_str() );
+    e308.AddOptionalEntity(e406.GetRawPtr());
+    e406.Detach();
+    #else
     e308.SetName( ((IDF3_COMP_OUTLINE*)idf)->GetUID().c_str() );
+    #endif
     e308.Detach();
 
     return true;

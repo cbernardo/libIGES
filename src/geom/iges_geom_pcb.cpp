@@ -362,8 +362,6 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     int acc = 0;
     while( sSeg != eSeg )
     {
-        cout << "XXX: adding segment #" << (++acc) << " of " << msegments.size() << "\n";
-
         if( !GetCurveOnPlane( aModel, bcurves, mBottomLeft.x, mTopRight.x,
             mBottomLeft.y, mTopRight.y, aHeight, *sSeg, aReverse ) )
         {
@@ -389,7 +387,6 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
 
         ++sSeg;
     }
-    cout << "XXX: total curves in outline: " << bcurves.size() << "\n";
 
     // stuff contents of ncurves, bcurves, and isurf->GetPTS() into ENTITY 142
     IGES_ENTITY_142* scurve;    // Curve on Surface
@@ -479,8 +476,6 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     acc = 0;
     while( sCO != eCO )
     {
-        cout << "XXX: adding irregular cutout #" << (++acc) << "\n";
-
         if( !newEnt142( aModel, &scurve ) )
         {
             ostringstream msg;
@@ -615,7 +610,6 @@ bool IGES_GEOM_PCB::GetTrimmedPlane( IGES* aModel, bool& error,
     acc = 0;
     while( sDH != eDH )
     {
-        cout << "XXX: adding circular cutout #" << (++acc) << "\n";
         if( !newEnt142( aModel, &scurve ) )
         {
             ostringstream msg;

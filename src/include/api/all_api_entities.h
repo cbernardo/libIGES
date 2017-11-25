@@ -44,6 +44,7 @@ class IGES_ENTITY_142;
 class IGES_ENTITY_144;
 class IGES_ENTITY_308;
 class IGES_ENTITY_314;
+class IGES_ENTITY_406;
 class IGES_ENTITY_408;
 
 #include <api/dll_entity100.h>
@@ -65,6 +66,7 @@ class IGES_ENTITY_408;
 */
 #include <api/dll_entity308.h>
 #include <api/dll_entity314.h>
+#include <api/dll_entity406.h>
 #include <api/dll_entity408.h>
 /*
 #include <dll_entity502.h>

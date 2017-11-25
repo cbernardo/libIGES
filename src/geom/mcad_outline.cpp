@@ -316,8 +316,6 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
         p2.x = bb1.x;
 
     p2.y = aPoint.y;
-    cout << "XXX: test point 2 ";
-    PrintPoint( p2 );
 
     MCAD_SEGMENT ls0;
     ls0.SetParams( aPoint, p2 );
@@ -332,13 +330,8 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
 
     while( sSegs != eSegs )
     {
-        cout << "XXX: iter " << ++acc << "\n";
-        cout << "XXX: seg\n";
-        PrintSeg( *sSegs );
-
         if( (*sSegs)->GetIntersections( ls0, iList, flag ) )
         {
-            cout << "XXX: " << iList.size() << " intersections\n";
             list<MCAD_POINT>::iterator sL = iList.begin();
             list<MCAD_POINT>::iterator eL = iList.end();
 
@@ -347,7 +340,6 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
                 // note: handle the case of a circle differently
                 if( MCAD_SEGTYPE_CIRCLE == (*sSegs)->GetSegType() )
                 {
-                    cout << "XXX: circle\n";
                     ++nI;
                 }
                 else
@@ -357,16 +349,10 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
 
                     if( isEnd0 || isEnd1 )
                     {
-                        cout << "XXX: boundary test\n";
                         (*sSegs)->GetBoundingBox( bb0, bb1 );
-
-                        cout << "bb0: " << bb0.x << ", " << bb0.y << "\n";
-                        cout << "bb1: " << bb1.x << ", " << bb1.y << "\n";
-                        cout << "aPt: " << aPoint.x << ", " << aPoint.y << "\n";
 
                         if( bb0.y <= aPoint.y && bb1.y <= aPoint.y )
                         {
-                            cout << "XXX: ++nI\n";
                             ++nI;
                         }
                         else
@@ -377,7 +363,6 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
                             // increment nI is those bounds are exclusively >= aPoint.y
                             if( MCAD_SEGTYPE_ARC == (*sSegs)->GetSegType() && bb0.y < aPoint.y )
                             {
-                                cout << "XXX: cheking loop\n";
                                 list<MCAD_SEGMENT*>::iterator tSeg = sSegs;
 
                                 if( isEnd1 )
@@ -396,14 +381,10 @@ bool MCAD_OUTLINE::IsInside( MCAD_POINT aPoint, bool& error )
                                     --tSeg;
                                 }
 
-                                cout << "XXX: testing alt seg\n";
-                                PrintSeg( *tSeg );
-
                                 (*tSeg)->GetBoundingBox( bb0, bb1 );
 
                                 if( bb0.y >= aPoint.y && bb1.y >= aPoint.y )
                                 {
-                                    cout << "XXX: ++nI in backup loop\n";
                                     ++nI;
                                 }
 
@@ -679,9 +660,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
         if( (*iSeg)->GetIntersections( *aCircle, iList, flag ) )
         {
-            cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
-            PrintSeg(*iSeg);
-
             if( MCAD_IFLAG_NONE != flag && MCAD_IFLAG_ENDPOINT != flag
                 && MCAD_IFLAG_TANGENT != flag )
             {
@@ -697,14 +675,10 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
             std::list<MCAD_POINT>::iterator iPts = iList.begin();
             std::list<MCAD_POINT>::iterator ePts = iList.end();
 
-            cout << "XXX: iList has " << iList.size() << " intersections\n";
-
             while( iPts != ePts )
             {
                 MCAD_INTERSECT gi;
                 gi.vertex = *iPts;
-                cout << "XXX: v";
-                PrintPoint( *iPts );
                 gi.segA = *iSeg;
                 gi.segB = aCircle;
                 gi.iSegA = iSeg;
@@ -734,7 +708,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
                 error = true;
                 return false;
             }
-            cout << "XXX: NO X in seg " << acc << " of " << msegments.size() << "\n";
         }
 
         ++acc;
@@ -904,27 +877,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
 
     } while( 0 );
 
-    if( isIn )
-    {
-        cout << "XXX: (POINT INSIDE)\n";
-        cout << "c";
-        PrintPoint(p0);
-        cout << "s";
-        PrintPoint(iList.front());
-        cout << "e";
-        PrintPoint(iList.back());
-    }
-    else
-    {
-        cout << "XXX: (POINT OUTSIDE)\n";
-        cout << "c";
-        PrintPoint(p0);
-        cout << "s";
-        PrintPoint(iList.front());
-        cout << "e";
-        PrintPoint(iList.back());
-    }
-
     MCAD_POINT pF[2];   // final point order
     bool isEnd[2];      // indicates if pF[n] is an endpoint
     list<MCAD_SEGMENT*>::iterator pSeg[2]; // segment iterators associated with each point
@@ -950,8 +902,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
     // into a list; if the list has 2 entities and they are
     // the same entity then the single Split() operator
     // must specify both split points.
-
-    cout << "XXX: lSegs.size(): " << lSegs.size() << "\n";
 
     if( isIn )
     {
@@ -1029,7 +979,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         // if both points lie on a single segment then split at 2 points
         if( pSeg[0] == pSeg[1] )
         {
-            cout << "XXX: splitting at multiple points\n";
             iList.clear();
             iList.push_back(pF[0]);
             iList.push_back(pF[1]);
@@ -1077,15 +1026,11 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         }
     }
 
-    cout << "XXX: splitting at single points\n";
-    cout << "XXX: (p1e, p2e) : (" << p1e << ", " << p2e << ")\n";
-
     // perform the splits
     for( int i = 0; i < 2; ++ i )
     {
         if( !isEnd[i] )
         {
-            cout << "XXX: splitting, i = " << i << "\n";
             // split here
             iList.clear();
             iList.push_back(pF[i]);
@@ -1185,14 +1130,10 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         if( PointMatches( (*tSeg)->mstart, pF[1], 1e-8 ) )
             break;
 
-        cout << "XXX: deleting segment ...\n";
-        PrintSeg( *tSeg );
         delete *tSeg;
         tSeg = msegments.erase( tSeg );
     }
 
-    cout << "XXX: inserting segment ...\n";
-    PrintSeg( sp );
     msegments.insert( tSeg, sp );
     return true;
 }   // opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
@@ -1296,9 +1237,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         {
             if( (*iSeg)->GetIntersections( **sO, iList, flag ) )
             {
-                cout << "XXX: INTERSECT in seg " << acc << " of " << msegments.size() << "\n";
-                PrintSeg(*iSeg);
-
                 if( MCAD_IFLAG_NONE != flag && MCAD_IFLAG_ENDPOINT != flag
                     && MCAD_IFLAG_TANGENT != flag )
                 {
@@ -1314,14 +1252,10 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
                 std::list<MCAD_POINT>::iterator iPts = iList.begin();
                 std::list<MCAD_POINT>::iterator ePts = iList.end();
 
-                cout << "XXX: iList has " << iList.size() << " intersections\n";
-
                 while( iPts != ePts )
                 {
                     MCAD_INTERSECT gi;
                     gi.vertex = *iPts;
-                    cout << "XXX: v";
-                    PrintPoint( *iPts );
                     gi.segA = *iSeg;
                     gi.segB = *sO;
                     gi.iSegA = iSeg;
@@ -1351,7 +1285,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
                     error = true;
                     return false;
                 }
-                cout << "XXX: NO X in seg " << acc << " of " << msegments.size() << "\n";
             }
 
             ++sO;
@@ -1470,7 +1403,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     else
     {
         // we are splitting individual entities at single points
-        cout << "XXX: splitting at single points\n";
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = lSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = lSegs.end();
         list<MCAD_POINT>::iterator iPts = iList.begin();
@@ -1498,10 +1430,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
                     return false;
                 }
 
-                cout << "XXX: old nsegs: " << msegments.size() << "\n";
                 list<MCAD_SEGMENT*>::iterator ps0 = *sSegs;
                 msegments.insert( ++ps0, sList.front() );
-                cout << "XXX: new nsegs: " << msegments.size() << "\n";
             }
 
             ++iPts;
@@ -1530,7 +1460,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     if( !p1e && !p2e && *oSegs.front() == *oSegs.back() )
     {
         // we are splitting a single entity at 2 points
-        cout << "XXX: splitting aOutline at 2 points\n";
         list<MCAD_SEGMENT*> sList;
 
         if( !(*oSegs.front())->Split(iList, sList) )
@@ -1544,17 +1473,14 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
             return false;
         }
 
-        cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
         list<MCAD_SEGMENT*>::iterator sSL = sList.begin();
         list<MCAD_SEGMENT*>::iterator eSL = sList.end();
         list<MCAD_SEGMENT*>::iterator ps0 = oSegs.front();
         aOutline->msegments.insert( ++ps0, sSL, eSL );
-        cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
     }
     else
     {
         // we are splitting individual entities at single points
-        cout << "XXX: splitting aOutline at single points\n";
         list<list<MCAD_SEGMENT*>::iterator>::iterator sSegs = oSegs.begin();
         list<list<MCAD_SEGMENT*>::iterator>::iterator eSegs = oSegs.end();
         list<MCAD_POINT>::iterator iPts = iList.begin();
@@ -1582,10 +1508,8 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
                     return false;
                 }
 
-                cout << "XXX: old nsegs: " << aOutline->msegments.size() << "\n";
                 list<MCAD_SEGMENT*>::iterator ps0 = *sSegs;
                 aOutline->msegments.insert( ++ps0, sList.front() );
-                cout << "XXX: new nsegs: " << aOutline->msegments.size() << "\n";
             }
 
             ++iPts;
@@ -1645,8 +1569,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
     }
 
-    cout << "XXX: midpoint on *this segment: ";
-    PrintPoint( pT );
     bool tpIn0 = aOutline->IsInside( pT, error );
 
     if( !tpIn0 && error )
@@ -1701,8 +1623,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
         }
     }
 
-    cout << "XXX: midpoint on aOutline segment: ";
-    PrintPoint( pT );
     bool tpIn1 = IsInside( pT, error );
 
     if( !tpIn1 && error )
@@ -1719,8 +1639,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
     //    inside (or outside) then we have invalid geometry due
     //    to a case of 2 non-overlapping outlines coinciding at
     //    2 points.
-    cout << "XXX: In0(" << tpIn0 << "), In1(" << tpIn1 << ")\n";
-
     if( tpIn0 == tpIn1 )
     {
         ostringstream msg;
@@ -2004,8 +1922,6 @@ bool MCAD_OUTLINE::opOutline( MCAD_OUTLINE* aOutline, bool& error, bool opsub )
 // the two outlines may only intersect at 2 points.
 bool MCAD_OUTLINE::AddOutline( MCAD_OUTLINE* aOutline, bool& error )
 {
-    cout << "XXX: ADD OUTLINE ITERATION\n";
-
     bool res = opOutline( aOutline, error, false );
 
     if( error )
@@ -2024,8 +1940,6 @@ bool MCAD_OUTLINE::AddOutline( MCAD_OUTLINE* aOutline, bool& error )
 
 bool MCAD_OUTLINE::AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 {
-    cout << "XXX: ADD CIRCLE ITERATION\n";
-
     bool res = opOutline( aCircle, error, false );
 
     if( error )
@@ -2050,8 +1964,6 @@ bool MCAD_OUTLINE::AddOutline( MCAD_SEGMENT* aCircle, bool& error )
 // the two outlines may only intersect at 2 points.
 bool MCAD_OUTLINE::SubOutline( MCAD_SEGMENT* aCircle, bool& error )
 {
-    cout << "XXX: SUB CIRCLE ITERATION\n";
-
     bool res = opOutline( aCircle, error, true );
 
     if( error )
@@ -2076,8 +1988,6 @@ bool MCAD_OUTLINE::SubOutline( MCAD_SEGMENT* aCircle, bool& error )
 // the two outlines may only intersect at 2 points.
 bool MCAD_OUTLINE::SubOutline( MCAD_OUTLINE* aOutline, bool& error )
 {
-    cout << "XXX: SUB OUTLINE ITERATION\n";
-
     bool res = opOutline( aOutline, error, true );
 
     if( error )

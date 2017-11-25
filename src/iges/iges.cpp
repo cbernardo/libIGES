@@ -885,6 +885,10 @@ bool IGES::NewEntity( int aEntityType, IGES_ENTITY** aEntityPointer )
             ep = new IGES_ENTITY_314( this );
             break;
 
+        case ENT_PROPERTY:
+            ep = new IGES_ENTITY_406( this );
+            break;
+
         case ENT_SINGULAR_SUBFIGURE_INSTANCE:
             ep = new IGES_ENTITY_408( this );
             break;

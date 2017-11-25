@@ -177,7 +177,7 @@ bool IGES_ENTITY_308::format( int &index )
     if( NAME.empty() )
         NAME = "none";
 
-    if( !AddSecHStr( NAME, lstr, pdout, index, pd, rd, pd ) )
+    if( !AddPDHStr( NAME, lstr, pdout, index, sequenceNumber, pd, rd, pd ) )
     {
         ERRMSG << "\n + [INFO] could not add Subfigure name\n";
         return false;

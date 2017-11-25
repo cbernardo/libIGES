@@ -2440,6 +2440,8 @@ bool IGES_ENTITY::SetLineWeightNum( int aLineWeight )
 {
     if( aLineWeight < 0 )
     {
+        ERRMSG << "\n + [WARNING] [BUG] negative line weight number\n";
+        return false;
     }
 
     if( !parent )
@@ -2663,26 +2665,29 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
         return false;
     }
 
-    std::list<int> secA;    // section for Types 402 and 212
-    std::list<int> secB;    // section for Types 4312
+    std::list<int> secA;    // section for Types 402, 212, and 312
+    std::list<int> secB;    // section for Property or Attribute Tables
 
     vector<IGES_ENTITY*>::iterator sExt = extras.begin();
     vector<IGES_ENTITY*>::iterator eExt = extras.end();
     int eType;
+    int dePointer;
 
     while( sExt != eExt )
     {
         eType = (*sExt)->GetEntityType();
+        dePointer = (*sExt)->getDESequence();  // note: pointers must be positive in this case
 
         switch( eType )
         {
-            case 402:
             case 212:
-                secA.push_back( eType );
+            case 312:
+            case 402:
+                secA.push_back( dePointer );
                 break;
 
-            case 312:
-                secB.push_back( eType );
+            case 406:
+                secB.push_back( dePointer );
                 break;
 
             default:
@@ -2705,7 +2710,6 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
     if( secA.empty() )
     {
         tstr = pd;
-
         AddPDItem( tstr, fStr, pdout, pdSeq, sequenceNumber, pd, rd );
     }
     else
@@ -2713,6 +2717,7 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
         sSec = secA.begin();
         eSec = secA.end();
 
+        // note: anticipating a RD rather than a PD at end of Section A list
         if( secB.empty() )
             --eSec;
 
@@ -2770,9 +2775,11 @@ bool IGES_ENTITY::formatExtraParams( std::string& fStr,int& pdSeq, char pd, char
 // format optional (extra) PD comments for output
 bool IGES_ENTITY::formatComments( int& pdSeq )
 {
+    // note: multiple is 81 due to end-of-line character
     if( 0 != pdout.length() % 81 )
     {
         ERRMSG << "\n + [BUG] PD output is not a multiple of 81\n";
+        std::cerr << "@" << pdout << "@\n====\n";
         return false;
     }
 
@@ -2799,15 +2806,15 @@ bool IGES_ENTITY::formatComments( int& pdSeq )
             if( tmp.length() < 72 )
                 tmp.append( 72 - tmp.length(), ' ' );
 
-                if( !FormatDEInt( tmp1, pdSeq++ ) )
-                {
-                    ERRMSG << "\n + [BUG] could not format optional parameter comment\n";
-                    return false;
-                }
+            if( !FormatDEInt( tmp1, pdSeq++ ) )
+            {
+                ERRMSG << "\n + [BUG] could not format optional parameter comment\n";
+                return false;
+            }
 
-                tmp1[0] = 'P';
-                tmp += tmp1 + "\n";
-                pdout += tmp;
+            tmp1[0] = 'P';
+            tmp += tmp1 + "\n";
+            pdout += tmp;
         }
         ++sCom;
     }
@@ -2857,15 +2864,17 @@ bool IGES_ENTITY::AddOptionalEntity( IGES_ENTITY* aEntity )
 
     int eType = aEntity->GetEntityType();
 
-    if( eType != 402 && eType != 212 && eType != 312 )
+    if( eType != 402 && eType != 406 && eType != 212 && eType != 312 )
     {
         ERRMSG << "\n + [BUG] invalid entity (Type " << eType;
-        cerr << "); only types 402, 212, and 312 are valid.\n";
+        cerr << "); only types 402, 406, 212, and 312 are currently supported.\n";
         return false;
     }
 
     bool dup = false;
 
+    // note: Type 402 is a special case which only contains 'back-pointers';
+    // all other types shall hold a reference to the parent.
     if( eType != 402 )
     {
         if( !aEntity->addReference( this, dup ) )

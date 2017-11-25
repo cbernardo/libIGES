@@ -45,6 +45,7 @@
 #include <core/entity186.h>
 #include <core/entity308.h>
 #include <core/entity314.h>
+#include <core/entity406.h>
 #include <core/entity408.h>
 #include <core/entity502.h>
 #include <core/entity504.h>

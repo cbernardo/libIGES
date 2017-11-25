@@ -54,6 +54,7 @@ set( IGES_SOURCES
     "${SRC_ENT}/entity186.cpp"
     "${SRC_ENT}/entity308.cpp"
     "${SRC_ENT}/entity314.cpp"
+    "${SRC_ENT}/entity406.cpp"
     "${SRC_ENT}/entity408.cpp"
     "${SRC_ENT}/entity502.cpp"
     "${SRC_ENT}/entity504.cpp"
@@ -79,6 +80,7 @@ set( IGES_SOURCES
     "${SRC_DLL}/dll_entity144.cpp"
     "${SRC_DLL}/dll_entity308.cpp"
     "${SRC_DLL}/dll_entity314.cpp"
+    "${SRC_DLL}/dll_entity406.cpp"
     "${SRC_DLL}/dll_entity408.cpp"
     "${SRC_GEOM}/mcad_elements.cpp"
     "${SRC_GEOM}/mcad_helpers.cpp"
@@ -196,6 +198,7 @@ set( CORE_FILES
         ${INC_IGES}/entity186.h
         ${INC_IGES}/entity308.h
         ${INC_IGES}/entity314.h
+        ${INC_IGES}/entity406.h
         ${INC_IGES}/entity408.h
         ${INC_IGES}/entity430.h
         ${INC_IGES}/entity502.h
@@ -226,6 +229,7 @@ set( API_FILES
         ${INC_API}/dll_entity144.h
         ${INC_API}/dll_entity308.h
         ${INC_API}/dll_entity314.h
+        ${INC_API}/dll_entity406.h
         ${INC_API}/dll_entity408.h
         ${INC_API}/dll_iges_curve.h
         ${INC_API}/dll_iges_entity.h

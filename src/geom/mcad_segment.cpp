@@ -760,7 +760,6 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
     {
         ++isOnArc[0];
         ++isOnArc[1];
-        cout << "XXX: *aSegment is a circle, ++isOnArc\n";
     }
     else
     {
@@ -775,13 +774,7 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
         if( tang <= b1 )
         {
-            cout << "XXX: p0 is on arc *aSegment\n";
             ++isOnArc[0];
-        }
-        else
-        {
-            cout << "XXX: p0 not on *aSegment\n";
-            cout << "XXX: a(" << a0 << ", " << a1 << "), aX0: " << angX0 << ", tang: " << tang << "\n";
         }
 
         tang = angX1;
@@ -794,19 +787,12 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
         if( tang <= b1 )
         {
-            cout << "XXX: p1 is on arc *aSegment\n";
             ++isOnArc[1];
-        }
-        else
-        {
-            cout << "XXX: p1 not on *aSegment\n";
-            cout << "XXX: a(" << a0 << ", " << a1 << "), aX1: " << angX1 << ", tang: " << tang << "\n";
         }
     }
 
     if( MCAD_SEGTYPE_CIRCLE == msegtype )
     {
-        cout << "XXX: *this is a circle, ++isOnArc\n";
         ++isOnArc[0];
         ++isOnArc[1];
     }
@@ -823,13 +809,7 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
         if( tang <= a1 )
         {
-            cout << "XXX: p0 is on arc *this\n";
             ++isOnArc[0];
-        }
-        else
-        {
-            cout << "XXX: p0 not on *this\n";
-            cout << "XXX: a(" << a0 << ", " << a1 << "), aX0: " << angX0 << ", tang: " << tang << "\n";
         }
 
         tang = angX1;
@@ -842,13 +822,7 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
         if( tang <= a1 )
         {
-            cout << "XXX: p1 is on arc *this\n";
             ++isOnArc[1];
-        }
-        else
-        {
-            cout << "XXX: p1 not on *this\n";
-            cout << "XXX: a(" << a0 << ", " << a1 << "), aX1: " << angX1 << ", tang: " << tang << "\n";
         }
     }
 
@@ -860,7 +834,6 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
     if( 2 == isOnArc[0] )
     {
-        cout << "XXX: adding p0\n";
         p0[0] = p1;
         ang0[0] = angX0;
         ++np;
@@ -868,13 +841,10 @@ bool MCAD_SEGMENT::checkArcs( const MCAD_SEGMENT& aSegment,
 
     if( 2 == isOnArc[1] )
     {
-        cout << "XXX: adding p1\n";
         p0[np] = p2;
         ang0[np] = angX1;
         ++np;
     }
-
-    cout << "XXX: np: " << np << "\n";
 
     if( 0 == np )
     {
@@ -1856,18 +1826,6 @@ bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
 
     if( 1 == aIntersectList.size() )
     {
-        cout << "XXX: arc0[c(" << mcenter.x << ", " << mcenter.y;
-        cout << "), s(" << mstart.x << ", " << mstart.y;
-        cout << "), e(" << p0.x << ", " << p0.y;
-        cout << "), a(" << msang << ", " << a0 << "), r = ";
-        cout << mradius << ", CW: " << mCWArc << "]\n";
-
-        cout << "XXX: arc1[c(" << mcenter.x << ", " << mcenter.y;
-        cout << "), s(" << p0.x << ", " << p0.y;
-        cout << "), e(" << mend.x << ", " << mend.y;
-        cout << "), a(" << a0 << ", " << meang << "), r = ";
-        cout << mradius << ", CW: " << mCWArc << "]\n";
-
         // create the new arc
         sp = new MCAD_SEGMENT;
         sp->mstart = p0;
@@ -1939,24 +1897,6 @@ bool MCAD_SEGMENT::splitArc( std::list<MCAD_POINT>& aIntersectList,
             p1 = tp0;
         }
     }
-
-    cout << "XXX: arc0[c(" << mcenter.x << ", " << mcenter.y;
-    cout << "), s(" << mstart.x << ", " << mstart.y;
-    cout << "), e(" << p0.x << ", " << p0.y;
-    cout << "), a(" << msang << ", " << a0 << "), r = ";
-    cout << mradius << ", CW: " << mCWArc << "]\n";
-
-    cout << "XXX: arc1[c(" << mcenter.x << ", " << mcenter.y;
-    cout << "), s(" << p0.x << ", " << p0.y;
-    cout << "), e(" << p1.x << ", " << p1.y;
-    cout << "), a(" << a0 << ", " << a1 << "), r = ";
-    cout << mradius << ", CW: " << mCWArc << "]\n";
-
-    cout << "XXX: arc2[c(" << mcenter.x << ", " << mcenter.y;
-    cout << "), s(" << p1.x << ", " << p1.y;
-    cout << "), e(" << mend.x << ", " << mend.y;
-    cout << "), a(" << a1 << ", " << meang << "), r = ";
-    cout << mradius << ", CW: " << mCWArc << "]\n";
 
     // create the first of 2 new arcs
     sp = new MCAD_SEGMENT;

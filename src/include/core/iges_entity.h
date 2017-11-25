@@ -313,7 +313,7 @@ public:
      * Function Compact
      * deletes any temporary data which may have been created for the
      * convenience of passing data across the DLL boundary.
-     * All classes which have their own temporary data mus implement
+     * All classes which have their own temporary data must implement
      * this function and invoke the base class function from within.
      */
     virtual void Compact( void );

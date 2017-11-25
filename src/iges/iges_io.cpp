@@ -72,6 +72,7 @@ bool DEItemToInt( const std::string& input, int field, int& var, int* defaulted 
             ERRMSG << "\n + [BUG/BAD DATA]: no data for non-default parameter\n";
             cerr << " + string: '" << input.substr(j, 8) << "'\n";
             cerr << " + position: " << j << "\n";
+            cerr << " + field: " << field << "\n";
             return false;
         }
 
@@ -909,6 +910,134 @@ bool AddSecHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
 
         tmp[0] = 'G';
         fStr += tmp + "\n";
+        fOut += fStr;
+        fStr.clear();
+    }
+
+    return true;
+}
+
+// convert the string in tStr to a Hollerith string and append to the PD Section fOut
+bool AddPDHStr( const std::string& tStr, std::string& fStr, std::string& fOut,
+    int& index, int deIndex, char pd, char rd, char delim )
+{
+    std::string hc;
+    std::string tmp;
+
+    if( tStr.empty() )
+    {
+        tmp = delim;
+
+        if( !AddPDItem( tmp, fStr, fOut, index, deIndex, pd, rd ) )
+        {
+            ERRMSG << "\n + [BUG] could not add defaulted Hollerith string\n";
+            return false;
+        }
+
+        return true;
+    }
+
+    if( delim != pd && delim != rd )
+    {
+        ERRMSG << "\n + [BUG] 'delim' (" << delim << ") is neither a parameter (";
+        cerr << pd << ") nor record (" << rd << ") delimeter\n";
+        return false;
+    }
+
+    if( !GetHConst( tStr, hc ) )
+    {
+        ERRMSG << "\n + [BUG] could not retrieve Hollerith constant for '";
+        cerr << tStr << "'\n";
+        return false;
+    }
+
+    // note: as per spec, if the Hollerith constant cannot fit on
+    // the current line then it must be placed on the next line.
+    if( fStr.length() + hc.length() > 64 )
+    {
+        fStr.append( 64 - fStr.length(), ' ' );
+
+        if( !FormatDEInt( tmp, deIndex ) )
+        {
+            ERRMSG << "\n + [BUG] could not format PD section sequence number\n";
+            return false;
+        }
+
+        fStr += tmp;
+
+        if( !FormatDEInt( tmp, index++ ) )
+        {
+            ERRMSG << "\n + [BUG] could not format PD section index\n";
+            return false;
+        }
+
+        tmp[0] = 'P';
+        fStr += tmp;
+        fStr.append( "\n" );
+        fOut += fStr;
+        fStr.clear();
+    }
+
+    // concatenate the Hollerith string
+    hc += tStr + delim;
+
+    size_t sz = hc.length();
+    size_t sidx;
+
+    for( sidx = 0; sidx < sz; )
+    {
+        tmp = hc.substr( sidx, 64 - fStr.length() );
+        sidx += tmp.length();
+
+        fStr += tmp;
+
+        if( fStr.length() == 64 )
+        {
+            if( !FormatDEInt( tmp, deIndex ) )
+            {
+                ERRMSG << "\n + [BUG] could not format PD section sequence number\n";
+                return false;
+            }
+
+            fStr += tmp;
+
+            if( !FormatDEInt( tmp, index++ ) )
+            {
+                ERRMSG << "\n + [BUG] could not format PD section index\n";
+                return false;
+            }
+
+            tmp[0] = 'P';
+            fStr += tmp;
+            fStr.append( "\n" );
+            fOut += fStr;
+            fStr.clear();
+        }
+    }
+
+    // check if we should finalize the entry
+    if( fStr.length() && delim == rd )
+    {
+        if( fStr.length() != 64 )
+            fStr.append( 64 - fStr.length(), ' ' );
+
+        if( !FormatDEInt( tmp, deIndex ) )
+        {
+            ERRMSG << "\n + [BUG] could not format PD section sequence number\n";
+            return false;
+        }
+
+        fStr += tmp;
+
+        if( !FormatDEInt( tmp, index++ ) )
+        {
+            ERRMSG << "\n + [BUG] could not format PD section index\n";
+            return false;
+        }
+
+        tmp[0] = 'P';
+        fStr += tmp;
+        fStr.append( "\n" );
         fOut += fStr;
         fStr.clear();
     }

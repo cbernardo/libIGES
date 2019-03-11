@@ -238,15 +238,27 @@ static bool checkDate( const std::string aDate )
 // the user's locale
 class IGES_LOCALE
 {
+private:
+    char locale[80];
 public:
     IGES_LOCALE()
     {
-        setlocale( LC_NUMERIC, "C" );   // switch the numerics locale to "C"
+        const char *cp = setlocale( LC_NUMERIC, NULL );
+        if (NULL != cp)
+        {
+            sprintf(locale, "%.79s", cp);
+        }
+        else
+        {
+            locale[0] = 0;
+        }
+
+        setlocale( LC_NUMERIC, "C" );     // switch the numerics locale to "C"
     }
 
     ~IGES_LOCALE()
     {
-        setlocale( LC_NUMERIC, "" );    // revert to the current numerics default locale
+        setlocale( LC_NUMERIC, locale );  // revert to the current numerics default locale
     }
 };
 

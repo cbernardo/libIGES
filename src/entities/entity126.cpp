@@ -868,6 +868,10 @@ bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
     pt.x = vals[0];
     pt.y = vals[1];
     pt.z = vals[2];
+#else
+    pt.x = coeffs[0];
+    pt.y = coeffs[1];
+    pt.z = coeffs[2];
 #endif
 
     if( xform && pTransform )
@@ -921,6 +925,10 @@ bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
     pt.x = vals[0];
     pt.y = vals[1];
     pt.z = vals[2];
+#else
+    pt.x = coeffs[nCoeffs-2];
+    pt.y = coeffs[nCoeffs-1];
+    pt.z = coeffs[nCoeffs];
 #endif
 
     if( xform && pTransform )

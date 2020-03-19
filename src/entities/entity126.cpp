@@ -926,9 +926,22 @@ bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
     pt.y = vals[1];
     pt.z = vals[2];
 #else
-    pt.x = coeffs[nCoeffs-2];
-    pt.y = coeffs[nCoeffs-1];
-    pt.z = coeffs[nCoeffs];
+    if ( PROP3 == 0 ) // rational
+    {
+        int nPnts = nCoeffs * 4;
+
+        pt.x = coeffs[nPnts - 4];
+        pt.y = coeffs[nPnts - 3];
+        pt.z = coeffs[nPnts - 2];
+    }
+    else
+    {
+        int nPnts = nCoeffs * 3;
+
+        pt.x = coeffs[nPnts - 3];
+        pt.y = coeffs[nPnts - 2];
+        pt.z = coeffs[nPnts - 1];
+    }
 #endif
 
     if( xform && pTransform )

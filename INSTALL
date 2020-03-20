@@ -240,3 +240,13 @@ BUILDING ON MS WINDOWS WITH MINGW64
       git submodule init
       git submodule update
 
+---
+
+/mingw64/bin/cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DUSE_SISL=ON ..
+
+mingw32-make all
+mingw32-make install DESTDIR=c:\msys64\mingw64

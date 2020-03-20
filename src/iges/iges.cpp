@@ -55,7 +55,7 @@
 
 using namespace std;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 struct tm *gmtime_r(time_t const *timep, struct tm *tmp)
 {
     if( gmtime_s( tmp, timep ) == 0 )

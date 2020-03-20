@@ -868,6 +868,11 @@ bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
     pt.x = vals[0];
     pt.y = vals[1];
     pt.z = vals[2];
+#else
+    // nCoeffs >= 2 and SISL is not linked
+    pt.x = coeffs[1];
+    pt.y = coeffs[2];
+    pt.z = coeffs[3];
 #endif
 
     if( xform && pTransform )
@@ -921,6 +926,22 @@ bool IGES_ENTITY_126::GetEndPoint( MCAD_POINT& pt, bool xform )
     pt.x = vals[0];
     pt.y = vals[1];
     pt.z = vals[2];
+#else
+    // nCoeffs >= 2 and SISL is not linked
+    int index;
+
+    if ( 0 == PROP3 )   // rational B-spline
+    {
+        index = (nCoeffs - 1) << 2;
+    }
+    else                // B-spline
+    {
+        index = (nCoeffs - 1) * 3;
+    }
+
+    pt.x = coeffs[index++];
+    pt.y = coeffs[index++];
+    pt.z = coeffs[index];
 #endif
 
     if( xform && pTransform )

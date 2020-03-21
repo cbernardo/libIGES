@@ -870,9 +870,9 @@ bool IGES_ENTITY_126::GetStartPoint( MCAD_POINT& pt, bool xform )
     pt.z = vals[2];
 #else
     // nCoeffs >= 2 and SISL is not linked
-    pt.x = coeffs[1];
-    pt.y = coeffs[2];
-    pt.z = coeffs[3];
+    pt.x = coeffs[0];
+    pt.y = coeffs[1];
+    pt.z = coeffs[2];
 #endif
 
     if( xform && pTransform )

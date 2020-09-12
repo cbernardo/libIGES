@@ -41,6 +41,7 @@ set( IGES_SOURCES
     "${SRC_ENT}/entity100.cpp"
     "${SRC_ENT}/entity102.cpp"
     "${SRC_ENT}/entity104.cpp"
+    "${SRC_ENT}/entity108.cpp"
     "${SRC_ENT}/entity110.cpp"
     "${SRC_ENT}/entity120.cpp"
     "${SRC_ENT}/entity122.cpp"
@@ -184,6 +185,7 @@ set( CORE_FILES
         ${INC_IGES}/entity100.h
         ${INC_IGES}/entity102.h
         ${INC_IGES}/entity104.h
+        ${INC_IGES}/entity108.h
         ${INC_IGES}/entity110.h
         ${INC_IGES}/entity120.h
         ${INC_IGES}/entity122.h

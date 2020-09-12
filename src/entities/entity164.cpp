@@ -286,7 +286,7 @@ bool IGES_ENTITY_164::readDE(IGES_RECORD *aRecord, std::ifstream &aFile, int &aS
 
     if( form != 0 )
     {
-        ERRMSG << "\n + [CORRUPT FILE] non-zero Form Number in Circle\n";
+        ERRMSG << "\n + [CORRUPT FILE] non-zero Form Number in linear extrusion\n";
         cerr << " + DE: " << aRecord->index << "\n";
         return false;
     }

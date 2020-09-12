@@ -31,6 +31,7 @@
 #include <core/entity100.h>
 #include <core/entity102.h>
 #include <core/entity104.h>
+#include <core/entity108.h>
 #include <core/entity110.h>
 #include <core/entity120.h>
 #include <core/entity122.h>

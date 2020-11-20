@@ -1460,8 +1460,8 @@ bool IGES_ENTITY::readPD(std::ifstream &aFile, int &aSequenceVar)
     char rd = parent->globalData.rdelim;
 
 #ifdef DEBUG
-    cout << "[INFO] Entity(" << entityType;
-    cout << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+    cerr << "[INFO] Entity(" << entityType;
+    cerr << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
 #endif
 
     bool first = true;
@@ -1480,7 +1480,7 @@ bool IGES_ENTITY::readPD(std::ifstream &aFile, int &aSequenceVar)
         }
 
 #ifdef DEBUG
-        cout << "    " << rec.data << "\n";
+        cerr << "    " << rec.data << "\n";
 #endif
 
         if( rec.section_type != 'P' )
@@ -1571,7 +1571,7 @@ bool IGES_ENTITY::readPD(std::ifstream &aFile, int &aSequenceVar)
     }
 
 #ifdef DEBUG
-    cout << "-----\n";
+    cerr << "-----\n";
 #endif
 
     return true;

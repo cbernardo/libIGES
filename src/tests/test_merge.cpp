@@ -294,7 +294,7 @@ bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vect
 
                 if( !pO )
                 {
-                    cout << "Could not instantiate a transform for '" << fname << "'\n";
+                    cerr << "Could not instantiate a transform for '" << fname << "'\n";
                     return false;
                 }
 
@@ -339,7 +339,7 @@ bool merge( DLL_IGES& modelOut, const std::string fname, list<TPARAMS>*pos, vect
                 if( pO )
                     delete pO;
 
-                cout << "Could not export model '" << fname << "'\n";
+                cerr << "Could not export model '" << fname << "'\n";
                 return false;
             }
         }

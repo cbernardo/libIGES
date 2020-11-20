@@ -66,7 +66,7 @@ int main()
     {
         if( test_cc0() )
         {
-            cout << "[FAIL]: test_cc0() encountered problems\n";
+            cerr << "[FAIL]: test_cc0() encountered problems\n";
             return -1;
         }
     }
@@ -75,7 +75,7 @@ int main()
     {
         if( test_cc1() )
         {
-            cout << "[FAIL]: test_cc1() encountered problems\n";
+            cerr << "[FAIL]: test_cc1() encountered problems\n";
             return -1;
         }
     }
@@ -84,7 +84,7 @@ int main()
     {
         if( test_arcs() )
         {
-            cout << "[FAIL]: test_arcs() encountered problems\n";
+            cerr << "[FAIL]: test_arcs() encountered problems\n";
             return -1;
         }
     }
@@ -93,7 +93,7 @@ int main()
     {
         if( test_lines() )
         {
-            cout << "[FAIL]: test_lines() encountered problems\n";
+            cerr << "[FAIL]: test_lines() encountered problems\n";
             return -1;
         }
     }
@@ -102,7 +102,7 @@ int main()
     {
         if( test_addr() )
         {
-            cout << "[FAIL]: test_addr() encountered problems\n";
+            cerr << "[FAIL]: test_addr() encountered problems\n";
             return -1;
         }
     }
@@ -113,7 +113,7 @@ int main()
         {
             if( test_otln( false, true ) )
             {
-                cout << "[FAIL]: test_otln() encountered problems adding to Outline A\n";
+                cerr << "[FAIL]: test_otln() encountered problems adding to Outline A\n";
                 return -1;
             }
         }
@@ -122,7 +122,7 @@ int main()
         {
             if( test_otln( false, false ) )
             {
-                cout << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
+                cerr << "[FAIL]: test_otln() encountered problems adding to Outline B\n";
                 return -1;
             }
         }
@@ -131,7 +131,7 @@ int main()
         {
             if( test_otln( true, true ) )
             {
-                cout << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
+                cerr << "[FAIL]: test_otln() encountered problems subtracting from Outline A\n";
                 return -1;
             }
         }
@@ -140,14 +140,14 @@ int main()
         {
             if( test_otln( true, false ) )
             {
-                cout << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
+                cerr << "[FAIL]: test_otln() encountered problems subtracting from Outline B\n";
                 return -1;
             }
         }
 
     }
 
-    cout << "[OK]: All tests passed\n";
+    cerr << "[OK]: All tests passed\n";
     return 0;
 }
 
@@ -184,7 +184,7 @@ int test_arcs( void )
 
     if( !otln.AddSegment( seg1, error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -192,13 +192,13 @@ int test_arcs( void )
 
     if( !otln.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
     if( !otln.SubOutline( seg2, error ) )
     {
-        cout << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
+        cerr << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
         return -1;
     }
 
@@ -216,7 +216,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg2, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
 
@@ -232,7 +232,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg2, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
 
@@ -248,7 +248,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg2, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -267,7 +267,7 @@ int test_arcs( void )
 
         if( !otln.SubOutline( seg2, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -286,7 +286,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg2, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -305,7 +305,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg2, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -343,7 +343,7 @@ int test_arcs( void )
 
         if( !otln.SubOutline( s1, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout which intersects endpoints, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout which intersects endpoints, error: " << error << "\n";
             return -1;
         }
 
@@ -363,7 +363,7 @@ int test_arcs( void )
 
         if( !otln.AddCutout( seg3, true, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -382,7 +382,7 @@ int test_arcs( void )
 
         if( !otln.SubOutline( seg2, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -401,7 +401,7 @@ int test_arcs( void )
 
         if( !otln.SubOutline( seg2, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+            cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
             return -1;
         }
     }
@@ -418,13 +418,13 @@ int test_arcs( void )
 
     if( !otln.AddCutout( seg2, true, error ) )
     {
-        cout << "* [FAIL]: could not add a cutout, error: " << error << "\n";
+        cerr << "* [FAIL]: could not add a cutout, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.IsContiguous( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline was not contiguous\n";
+        cerr << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 
@@ -436,7 +436,7 @@ int test_arcs( void )
     {
         if( !otln.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
         {
-            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
             return -1;
         }
 
@@ -448,7 +448,7 @@ int test_arcs( void )
     if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
         || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
-        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
     }
 
@@ -486,7 +486,7 @@ int test_lines( void )
         || !otln.AddSegment( sides[2], error )
         || !otln.AddSegment( sides[3], error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -494,7 +494,7 @@ int test_lines( void )
 
     if( !otln.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
@@ -515,7 +515,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -530,7 +530,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -545,7 +545,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -560,7 +560,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -575,7 +575,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -590,7 +590,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -605,7 +605,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
 
@@ -620,7 +620,7 @@ int test_lines( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add a cutout\n";
+            cerr << "* [FAIL]: could not add a cutout\n";
             return -1;
         }
     }
@@ -637,13 +637,13 @@ int test_lines( void )
 
     if( !otln.AddCutout( hole, true, error ) )
     {
-        cout << "* [FAIL]: could not add a cutout\n";
+        cerr << "* [FAIL]: could not add a cutout\n";
         return -1;
     }
 
     if( !otln.IsContiguous( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline was not contiguous\n";
+        cerr << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 
@@ -653,14 +653,14 @@ int test_lines( void )
 
     if( !otln.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
     {
-        cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
         || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
-        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
     }
 
@@ -712,7 +712,7 @@ int test_addr( void )
         || !otln.AddSegment( sides[2], error )
         || !otln.AddSegment( sides[3], error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -720,7 +720,7 @@ int test_addr( void )
 
     if( !otln.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
@@ -743,7 +743,7 @@ int test_addr( void )
 
         if( !otln.AddOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add an outline\n";
+            cerr << "* [FAIL]: could not add an outline\n";
             return -1;
         }
     }
@@ -766,7 +766,7 @@ int test_addr( void )
 
         if( !otln.AddOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add an outline\n";
+            cerr << "* [FAIL]: could not add an outline\n";
             return -1;
         }
     }
@@ -784,7 +784,7 @@ int test_addr( void )
 
         if( !otln.SubOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add an outline\n";
+            cerr << "* [FAIL]: could not add an outline\n";
             return -1;
         }
     }
@@ -803,14 +803,14 @@ int test_addr( void )
 
         if( !otln.AddOutline( circ, error ) )
         {
-            cout << "* [FAIL]: could not add an outline\n";
+            cerr << "* [FAIL]: could not add an outline\n";
             return -1;
         }
     }
 
     if( !otln.IsContiguous( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline was not contiguous\n";
+        cerr << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 
@@ -820,14 +820,14 @@ int test_addr( void )
 
     if( !otln.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
     {
-        cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
         || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
-        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
     }
 
@@ -865,7 +865,7 @@ int test_otln( bool subs, bool primeA )
         || !otlnB.AddSegment( sides[2], error )
         || !otlnB.AddSegment( sides[3], error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -873,7 +873,7 @@ int test_otln( bool subs, bool primeA )
 
     if( !otlnB.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
@@ -937,7 +937,7 @@ int test_otln( bool subs, bool primeA )
 
     if( !otln[0].IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
@@ -948,7 +948,7 @@ int test_otln( bool subs, bool primeA )
             // add outline B to A
             if( !otln[0].AddOutline( otlnB, error ) )
             {
-                cout << "* [FAIL]: could not add an outline\n";
+                cerr << "* [FAIL]: could not add an outline\n";
                 return -1;
             }
 
@@ -957,7 +957,7 @@ int test_otln( bool subs, bool primeA )
             {
                 if( !otln[0].AddOutline( otln[i], error ) )
                 {
-                    cout << "* [FAIL]: could not add outline " << i << "\n";
+                    cerr << "* [FAIL]: could not add outline " << i << "\n";
                     return -1;
                 }
             }
@@ -967,7 +967,7 @@ int test_otln( bool subs, bool primeA )
             // subtract outline B from A
             if( !otln[0].SubOutline( otlnB, error ) )
             {
-                cout << "* [FAIL]: could not subtract an outline\n";
+                cerr << "* [FAIL]: could not subtract an outline\n";
                 return -1;
             }
 
@@ -976,7 +976,7 @@ int test_otln( bool subs, bool primeA )
             {
                 if( !otln[0].SubOutline( otln[i], error ) )
                 {
-                    cout << "* [FAIL]: could not subtract outline " << i << "\n";
+                    cerr << "* [FAIL]: could not subtract outline " << i << "\n";
                     return -1;
                 }
             }
@@ -984,7 +984,7 @@ int test_otln( bool subs, bool primeA )
 
         if( !otln[0].IsContiguous( ret ) || !ret )
         {
-            cout << "* [FAIL]: outline was not contiguous\n";
+            cerr << "* [FAIL]: outline was not contiguous\n";
             return -1;
         }
 
@@ -994,14 +994,14 @@ int test_otln( bool subs, bool primeA )
 
         if( !otln[0].GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
         {
-            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
             return -1;
         }
 
         if( !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
             || !otln[0].GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
         {
-            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
         }
 
@@ -1019,7 +1019,7 @@ int test_otln( bool subs, bool primeA )
             // add outline A to B
             if( !otlnB.AddOutline( otln[0], error ) )
             {
-                cout << "* [FAIL]: could not add an outline\n";
+                cerr << "* [FAIL]: could not add an outline\n";
                 return -1;
             }
 
@@ -1028,7 +1028,7 @@ int test_otln( bool subs, bool primeA )
             {
                 if( !otlnB.AddOutline( otln[i], error ) )
                 {
-                    cout << "* [FAIL]: could not add outline " << i << "\n";
+                    cerr << "* [FAIL]: could not add outline " << i << "\n";
                     return -1;
                 }
             }
@@ -1039,7 +1039,7 @@ int test_otln( bool subs, bool primeA )
             // subtract outline A from B
             if( !otlnB.SubOutline( otln[0], error ) )
             {
-                cout << "* [FAIL]: could not subtract an outline\n";
+                cerr << "* [FAIL]: could not subtract an outline\n";
                 return -1;
             }
 
@@ -1048,7 +1048,7 @@ int test_otln( bool subs, bool primeA )
             {
                 if( !otlnB.SubOutline( otln[i], error ) )
                 {
-                    cout << "* [FAIL]: could not subtract outline " << i << "\n";
+                    cerr << "* [FAIL]: could not subtract outline " << i << "\n";
                     return -1;
                 }
             }
@@ -1057,7 +1057,7 @@ int test_otln( bool subs, bool primeA )
 
         if( !otlnB.IsContiguous( ret ) || !ret )
         {
-            cout << "* [FAIL]: outline was not contiguous\n";
+            cerr << "* [FAIL]: outline was not contiguous\n";
             return -1;
         }
 
@@ -1067,14 +1067,14 @@ int test_otln( bool subs, bool primeA )
 
         if( !otlnB.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
         {
-            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
             return -1;
         }
 
         if( !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
             || !otlnB.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
         {
-            cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
             return -1;
         }
 
@@ -1124,7 +1124,7 @@ int test_cc0( void )
 
     if( !otln.AddSegment( seg1, error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -1132,19 +1132,19 @@ int test_cc0( void )
 
     if( !otln.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
     if( !otln.AddCutout( otlnB, false, error ) )
     {
-        cout << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
+        cerr << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.IsContiguous( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline was not contiguous\n";
+        cerr << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 
@@ -1154,14 +1154,14 @@ int test_cc0( void )
 
     if( !otln.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
     {
-        cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
         || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
-        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
     }
 
@@ -1205,7 +1205,7 @@ int test_cc1( void )
 
     if( !otln.AddSegment( seg1, error ) )
     {
-        cout << "* [FAIL]: could not add segment to outline\n";
+        cerr << "* [FAIL]: could not add segment to outline\n";
         return -1;
     }
 
@@ -1213,19 +1213,19 @@ int test_cc1( void )
 
     if( !otln.IsClosed( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline is not closed\n";
+        cerr << "* [FAIL]: outline is not closed\n";
         return -1;
     }
 
     if( !otln.AddCutout( otlnB, true, error ) )
     {
-        cout << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
+        cerr << "* [FAIL]: could not subtract an outline, error: " << error << "\n";
         return -1;
     }
 
     if( !otln.IsContiguous( ret ) || !ret )
     {
-        cout << "* [FAIL]: outline was not contiguous\n";
+        cerr << "* [FAIL]: outline was not contiguous\n";
         return -1;
     }
 
@@ -1237,7 +1237,7 @@ int test_cc1( void )
     {
         if( !otln.GetVerticalSurface( model.GetRawPtr(), error, res, nSurfs, BTOP, BBOT ) )
         {
-            cout << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
+            cerr << "* [FAIL]: could not create vertical structures, error: " << error << "\n";
             return -1;
         }
     }
@@ -1245,7 +1245,7 @@ int test_cc1( void )
     if( !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BTOP, false )
         || !otln.GetTrimmedPlane( model.GetRawPtr(), error, res, nSurfs, BBOT, true ) )
     {
-        cout << "* [FAIL]: could not create planar structures, error: " << error << "\n";
+        cerr << "* [FAIL]: could not create planar structures, error: " << error << "\n";
         return -1;
     }
 

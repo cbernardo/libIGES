@@ -245,8 +245,8 @@ bool IGES_ENTITY_NULL::readPD(std::ifstream &aFile, int &aSequenceVar)
     IGES_RECORD rec;
 
 #ifdef DEBUG
-    cout << "[INFO] Entity(NULL/" << trueEntity;
-    cout << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
+    cerr << "[INFO] Entity(NULL/" << trueEntity;
+    cerr << ") Parameter Data Record for entity at DE " << sequenceNumber << "\n";
 #endif
 
     for(int i = 0; i < paramLineCount; ++i)
@@ -261,7 +261,7 @@ bool IGES_ENTITY_NULL::readPD(std::ifstream &aFile, int &aSequenceVar)
         }
 
 #ifdef DEBUG
-        cout << "    " << rec.data << "\n";
+        cerr << "    " << rec.data << "\n";
 #endif
 
         if( rec.section_type != 'P' )
@@ -285,7 +285,7 @@ bool IGES_ENTITY_NULL::readPD(std::ifstream &aFile, int &aSequenceVar)
     }
 
 #ifdef DEBUG
-    cout << "-----\n";
+    cerr << "-----\n";
 #endif
 
     aSequenceVar += paramLineCount;

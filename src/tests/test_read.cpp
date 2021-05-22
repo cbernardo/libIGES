@@ -42,8 +42,8 @@ using namespace std;
 
 void print_vec( const MCAD_POINT p )
 {
-    cout << setprecision( 3 );
-    cout << "V: " << p.x << ", " << p.y << ", " << p.z << "\n";
+    cerr << setprecision( 3 );
+    cerr << "V: " << p.x << ", " << p.y << ", " << p.z << "\n";
     return;
 }
 
@@ -51,7 +51,7 @@ int main( int argc, char **argv )
 {
     if( argc != 2 )
     {
-        cout << "*** Usage: readtest modelname\n";
+        cerr << "*** Usage: readtest modelname\n";
         return -1;
     }
 
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
     }
     else
     {
-        cout << "[OK]: things are looking good\n";
+        cerr << "[OK]: things are looking good\n";
     }
 
     model.Write( ONAME, true );

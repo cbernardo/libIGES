@@ -1757,7 +1757,7 @@ void IGES::Cull( bool vicious )
             && entities[iEnt]->GetEntityType() != ENT_SINGULAR_SUBFIGURE_INSTANCE ) )
         {
 #ifdef DEBUG
-            cout << " + [INFO] deleting Entity " << entities[iEnt]->GetEntityType() << "\n";
+            cerr << " + [INFO] deleting Entity " << entities[iEnt]->GetEntityType() << "\n";
 #endif
 
             ++nCulled;
@@ -1773,8 +1773,8 @@ void IGES::Cull( bool vicious )
     entities = tmpEnts;
 
 #ifdef DEBUG
-    cout << " + [INFO] Entities culled: " << nCulled << "\n";
-    cout << " + [INFO] Entities remaining: " << entities.size() << "\n";
+    cerr << " + [INFO] Entities culled: " << nCulled << "\n";
+    cerr << " + [INFO] Entities remaining: " << entities.size() << "\n";
 #endif
 
     return;

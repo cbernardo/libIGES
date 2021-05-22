@@ -107,28 +107,28 @@ bool CheckNormal( double& X, double &Y, double& Z )
 
 void print_transform( const MCAD_TRANSFORM* T )
 {
-    cout << setprecision( 3 );
-    cout << "R1: " << T->R.v[0][0] << ", " << T->R.v[0][1] << ", " << T->R.v[0][2] << ",  T.x = " << T->T.x << "\n";
-    cout << "R2: " << T->R.v[1][0] << ", " << T->R.v[1][1] << ", " << T->R.v[1][2] << ",  T.y = " << T->T.y << "\n";
-    cout << "R3: " << T->R.v[2][0] << ", " << T->R.v[2][1] << ", " << T->R.v[2][2] << ",  T.z = " << T->T.z << "\n";
+    cerr << setprecision( 3 );
+    cerr << "R1: " << T->R.v[0][0] << ", " << T->R.v[0][1] << ", " << T->R.v[0][2] << ",  T.x = " << T->T.x << "\n";
+    cerr << "R2: " << T->R.v[1][0] << ", " << T->R.v[1][1] << ", " << T->R.v[1][2] << ",  T.y = " << T->T.y << "\n";
+    cerr << "R3: " << T->R.v[2][0] << ", " << T->R.v[2][1] << ", " << T->R.v[2][2] << ",  T.z = " << T->T.z << "\n";
     return;
 }
 
 
 void print_matrix( const MCAD_MATRIX* m )
 {
-    cout << setprecision( 3 );
-    cout << "R1: " << m->v[0][0] << ", " << m->v[0][1] << ", " << m->v[0][2] << "\n";
-    cout << "R2: " << m->v[1][0] << ", " << m->v[1][1] << ", " << m->v[1][2] << "\n";
-    cout << "R3: " << m->v[2][0] << ", " << m->v[2][1] << ", " << m->v[2][2] << "\n";
+    cerr << setprecision( 3 );
+    cerr << "R1: " << m->v[0][0] << ", " << m->v[0][1] << ", " << m->v[0][2] << "\n";
+    cerr << "R2: " << m->v[1][0] << ", " << m->v[1][1] << ", " << m->v[1][2] << "\n";
+    cerr << "R3: " << m->v[2][0] << ", " << m->v[2][1] << ", " << m->v[2][2] << "\n";
     return;
 }
 
 
 void print_vec( const MCAD_POINT* p )
 {
-    cout << setprecision( 3 );
-    cout << "V: " << p->x << ", " << p->y << ", " << p->z << "\n";
+    cerr << setprecision( 3 );
+    cerr << "V: " << p->x << ", " << p->y << ", " << p->z << "\n";
     return;
 }
 

@@ -45,50 +45,50 @@ using namespace std;
 
 void MCAD_OUTLINE::PrintPoint( MCAD_POINT p0 )
 {
-    cout << "(" << p0.x << ", " << p0.y << ")\n";
+    cerr << "(" << p0.x << ", " << p0.y << ")\n";
 }
 
 
 void MCAD_OUTLINE::PrintSeg( MCAD_SEGMENT* seg )
 {
-    cout << "      type: ";
+    cerr << "      type: ";
 
     switch( seg->GetSegType() )
     {
         case MCAD_SEGTYPE_NONE:
-            cout << "NONE\n";
+            cerr << "NONE\n";
             break;
 
         case MCAD_SEGTYPE_ARC:
-            cout << "ARC\n";
-            cout << "            c";
+            cerr << "ARC\n";
+            cerr << "            c";
             PrintPoint( seg->GetCenter() );
-            cout << "            s";
+            cerr << "            s";
             PrintPoint( seg->GetStart() );
-            cout << "            e";
+            cerr << "            e";
             PrintPoint( seg->GetEnd() );
-            cout << "            cw: " << seg->IsCW() << "\n";
-            cout << "            ang_start/ang_end: ";
-            cout << seg->GetStartAngle() << ", " << seg->GetEndAngle() << "\n";
+            cerr << "            cw: " << seg->IsCW() << "\n";
+            cerr << "            ang_start/ang_end: ";
+            cerr << seg->GetStartAngle() << ", " << seg->GetEndAngle() << "\n";
             break;
 
         case MCAD_SEGTYPE_CIRCLE:
-            cout << "CIRCLE\n";
-            cout << "            c";
+            cerr << "CIRCLE\n";
+            cerr << "            c";
             PrintPoint( seg->GetCenter() );
-            cout << "            r:" << seg->GetRadius();
+            cerr << "            r:" << seg->GetRadius();
             break;
 
         case MCAD_SEGTYPE_LINE:
-            cout << "LINE\n";
-            cout << "            s";
+            cerr << "LINE\n";
+            cerr << "            s";
             PrintPoint( seg->GetStart() );
-            cout << "            e";
+            cerr << "            e";
             PrintPoint( seg->GetEnd() );
             break;
 
         default:
-            cout << "INVALID\n";
+            cerr << "INVALID\n";
             break;
     }
 }
@@ -932,11 +932,11 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
         ERRMSG << msg.str() << "\n";
         errors.push_back( msg.str() );
         error = true;
-        cout << "  c";
+        cerr << "  c";
         PrintPoint( p0 );
-        cout << "  s";
+        cerr << "  s";
         PrintPoint( pF[0] );
-        cout << "  e";
+        cerr << "  e";
         PrintPoint( pF[1] );
         delete sp;
         return false;
@@ -1044,9 +1044,9 @@ bool MCAD_OUTLINE::opOutline( MCAD_SEGMENT* aCircle, bool& error, bool opsub )
                 ERRMSG << msg.str() << "\n";
                 errors.push_back( msg.str() );
                 error = true;
-                cout << "Segment to be split:\n";
+                cerr << "Segment to be split:\n";
                 PrintSeg(*pSeg[i]);
-                cout << "Split point v";
+                cerr << "Split point v";
                 PrintPoint(pF[i]);
                 delete sp;
                 return false;

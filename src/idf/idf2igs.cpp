@@ -102,7 +102,7 @@ int GetComponentColor( void );
 
 void PrintUsage( void )
 {
-    cout << "-\nUsage: idfigs input_file.emn\n";
+    cerr << "-\nUsage: idfigs input_file.emn\n";
     return;
 }
 
@@ -132,7 +132,7 @@ int main( int argc, char **argv )
 
     IDF3_BOARD pcb( IDF3::CAD_ELEC );
 
-    cout << "** Reading file: " << inputFilename << "\n";
+    cerr << "** Reading file: " << inputFilename << "\n";
 
     if( !pcb.ReadFile( inputFilename, true ) )
     {
@@ -166,7 +166,7 @@ int main( int argc, char **argv )
     string fname = mofname.GetFullPath();
     globs.basename = mofname.GetBaseName();
 
-    cout << "Output file: '" << fname << "'\n";
+    cerr << "Output file: '" << fname << "'\n";
 
     // STEP 1: Render the PCB alone
     MakeBoard( pcb, model );
